@@ -1,4 +1,5 @@
 import { PantryItem, Activity, ActivityType } from '../types';
+import { useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -64,3 +65,11 @@ export const processUsage = (usageData: any) =>
     method: 'POST',
     body: JSON.stringify(usageData),
   });
+
+// Auth token setup hook (stub for Clerk integration)
+export function useSetupAuthToken() {
+  useEffect(() => {
+    // This is a stub - the real implementation would set up Clerk auth headers
+    // For now, we just accept the default fetch behavior
+  }, []);
+}

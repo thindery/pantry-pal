@@ -6,6 +6,7 @@ export interface PantryItem {
   unit: string;
   category: string;
   lastUpdated: string;
+  barcode?: string;
 }
 
 export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';
@@ -30,4 +31,27 @@ export interface ScanResult {
 export interface UsageResult {
   name: string;
   quantityUsed: number;
+}
+
+export interface ThresholdConfig {
+  [category: string]: number;
+}
+
+export interface ShoppingListItem {
+  id: string;
+  name: string;
+  category: string;
+  currentQuantity: number;
+  suggestedQuantity: number;
+  unit: string;
+  isManual: boolean;
+  isChecked: boolean;
+  addedAt: string;
+  reason: 'low_stock' | 'manual' | 'recommendation';
+}
+
+export interface ShoppingList {
+  items: ShoppingListItem[];
+  generatedAt: string;
+  thresholdConfig: ThresholdConfig;
 }
