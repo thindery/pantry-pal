@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
 import {
@@ -705,8 +705,13 @@ const InventoryItemRow: React.FC<{
         <div className={`font-medium ${isOutOfStock ? 'text-slate-400' : 'text-slate-800'}`}>
           {item.name}
         </div>
-        <div className="text-xs text-slate-400 capitalize">
-          {item.category}
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="capitalize">{item.category}</span>
+          {item.barcode && (
+            <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
+              📱 {item.barcode.slice(-6)}
+            </span>
+          )}
         </div>
       </td>
       <td className="px-3 py-3 md:px-6 md:py-4">
@@ -947,8 +952,8 @@ const SignInPage: React.FC = () => {
           <p className="text-slate-600">Smart inventory & ledger for your home</p>
         </div>
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <SignIn 
-            routing="path" 
+          <SignIn
+            routing="path"
             path="/sign-in"
             appearance={{
               elements: {
@@ -965,6 +970,9 @@ const SignInPage: React.FC = () => {
 
 // Main App Content Component
 const AppContent: React.FC = () => {
+  // Set up auth token for API calls
+  useSetupAuthToken();
+
   const [view, setView] = useState<View>('dashboard');
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -1246,9 +1254,6 @@ const AppContent: React.FC = () => {
       copyToClipboard();
     }
   }, [exportShoppingList, copyToClipboard]);
-
-  // Set up auth token for API calls
-  useSetupAuthToken();
 
   // Load inventory from API
   const loadInventory = async () => {
@@ -1859,15 +1864,18 @@ const AppContent: React.FC = () => {
           <BarcodeScanner
             onBarcodeDetected={async (product) => {
               try {
+                // Check if item with this barcode already exists
                 const existing = inventory.find(
                   (i) => i.barcode === product.barcode || 
                          i.name.toLowerCase() === product.name.toLowerCase()
                 );
 
                 if (existing) {
+                  // Update existing item
                   await handleAdjustQuantity(existing.id, 1);
                   alert(`Added 1 ${existing.unit} to ${existing.name}`);
                 } else {
+                  // Create new item with barcode
                   await handleCreateItem({
                     name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
                     quantity: 1,

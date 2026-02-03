@@ -1,4 +1,3 @@
-
 export interface PantryItem {
   id: string;
   name: string;
@@ -7,6 +6,14 @@ export interface PantryItem {
   category: string;
   lastUpdated: string;
   barcode?: string;
+}
+
+export interface BarcodeProduct {
+  barcode: string;
+  name: string;
+  brand?: string;
+  category?: string;
+  image?: string;
 }
 
 export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';
