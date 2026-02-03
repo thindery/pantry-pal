@@ -408,6 +408,261 @@ const EditItemModal: React.FC<{
   );
 };
 
+// Receipt Scanner Component
+const ReceiptScanner: React.FC<{
+  onAddItems: (items: ScanResult[]) => Promise<void>;
+  onCancel: () => void;
+}> = ({ onAddItems, onCancel }) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [base64Image, setBase64Image] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanResults, setScanResults] = useState<ScanResult[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setScanResults(null);
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image is too large. Max size is 10MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setSelectedImage(result);
+      // Extract base64 part (remove data:image/...;base64, prefix)
+      const base64 = result.split(',')[1];
+      setBase64Image(base64);
+    };
+    reader.onerror = () => {
+      setError('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleScan = async () => {
+    if (!base64Image) {
+      setError('Please select an image first');
+      return;
+    }
+
+    setIsScanning(true);
+    setError(null);
+
+    try {
+      const results = await scanReceipt(base64Image);
+      if (results.length === 0) {
+        setError('No items detected in receipt. Try a clearer image.');
+      } else {
+        setScanResults(results);
+      }
+    } catch (err) {
+      console.error('Scan failed:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Failed to scan receipt';
+      setError(`Scan failed: ${errorMsg}`);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!scanResults || scanResults.length === 0) return;
+
+    setIsAdding(true);
+    try {
+      await onAddItems(scanResults);
+    } catch (err) {
+      setError('Failed to add items to inventory');
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedImage(null);
+    setBase64Image(null);
+    setScanResults(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onCancel}
+          className="text-slate-400 hover:text-slate-600 text-sm flex items-center gap-1"
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
+
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Scan Receipt</h2>
+        <p className="text-slate-500">Upload a receipt photo and we'll extract your grocery items</p>
+      </div>
+
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm flex justify-between items-center">
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="px-3 py-1 bg-rose-100 rounded-lg hover:bg-rose-200 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Image Selection Area */}
+      {!selectedImage && (
+        <div className="border-2 border-dashed border-slate-300 rounded-3xl p-12 bg-white hover:border-emerald-400 transition-colors">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">📷</div>
+            <p className="text-slate-500">Take a photo or upload a receipt image</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="receipt-file-input"
+            />
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <label
+                htmlFor="receipt-file-input"
+                className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+              >
+                <span>📷</span> Take Photo
+              </label>
+              <label
+                htmlFor="receipt-file-input"
+                className="bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 active:bg-slate-300 transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+              >
+                <span>📁</span> Choose File
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview */}
+      {selectedImage && !scanResults && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <img
+              src={selectedImage}
+              alt="Receipt preview"
+              className="w-full h-auto max-h-96 object-contain"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleScan}
+              disabled={isScanning}
+              className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isScanning ? (
+                <>
+                  <span className="animate-spin">⚙️</span>
+                  Scanning with AI...
+                </>
+              ) : (
+                <>
+                  <span>🧠</span> Scan Receipt
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleReset}
+              disabled={isScanning}
+              className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              Change Image
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Scan Results */}
+      {scanResults && (
+        <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+            <p className="text-emerald-800 font-semibold">
+              🎉 Found {scanResults.length} item{scanResults.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <h3 className="font-bold text-slate-700">Extracted Items</h3>
+            </div>
+            <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+              {scanResults.map((item, index) => (
+                <div key={index} className="px-6 py-4 flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-slate-800">{item.name}</p>
+                    <p className="text-xs text-slate-400 capitalize">{item.category || 'other'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-emerald-600">
+                      +{item.quantity} {item.unit || 'units'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleConfirm}
+              disabled={isAdding}
+              className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isAdding ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Adding to Inventory...
+                </>
+              ) : (
+                <>
+                  <span>✅</span> Confirm & Add All
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleReset}
+              disabled={isAdding}
+              className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Inventory Item Row Component
 const InventoryItemRow: React.FC<{
   item: PantryItem;
@@ -524,7 +779,7 @@ const VoiceAssistant: React.FC<{
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
       const adjustStockTool: FunctionDeclaration = {
         name: 'adjustStock',
@@ -901,36 +1156,47 @@ const App: React.FC = () => {
     [inventory]
   );
 
-  const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    mode: 'receipt' | 'usage'
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsProcessing(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = (reader.result as string).split(',')[1];
+  // Handle adding scanned items to inventory
+  const handleAddScannedItems = async (items: ScanResult[]) => {
+    const addedItems: string[] = [];
+    const failedItems: string[] = [];
+
+    for (const item of items) {
       try {
-        if (mode === 'receipt') {
-          const results = await scanReceipt(base64);
-          for (const r of results) {
-            await adjustStock(r.name, r.quantity);
-          }
+        // Check if item already exists
+        const existing = inventory.find(
+          (i) => i.name.toLowerCase() === item.name.toLowerCase()
+        );
+
+        if (existing) {
+          // Update existing item quantity
+          await handleAdjustQuantity(existing.id, item.quantity);
+          addedItems.push(`${item.name} (+${item.quantity})`);
         } else {
-          const results = await analyzeUsage(base64);
-          for (const r of results) {
-            await adjustStock(r.name, -r.quantityUsed);
-          }
+          // Create new item
+          await handleCreateItem({
+            name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
+            quantity: item.quantity,
+            unit: item.unit || 'units',
+            category: item.category || 'pantry',
+          });
+          addedItems.push(`${item.name} (new +${item.quantity})`);
         }
-        setView('inventory');
       } catch (err) {
-        alert('Error processing image.');
-      } finally {
-        setIsProcessing(false);
+        console.error(`Failed to add item ${item.name}:`, err);
+        failedItems.push(item.name);
       }
-    };
-    reader.readAsDataURL(file);
+    }
+
+    // Navigate to inventory after successful add
+    setView('inventory');
+
+    // Show summary
+    if (failedItems.length === 0) {
+      alert(`Successfully added ${addedItems.length} item(s) to inventory!`);
+    } else {
+      alert(`Added ${addedItems.length} item(s), but failed to add: ${failedItems.join(', ')}`);
+    }
   };
 
   return (
@@ -1172,11 +1438,24 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {(view === 'scan-receipt' || view === 'scan-usage') && (
-          <div className="max-w-md mx-auto space-y-8 text-center">
-            <h2 className="text-2xl font-bold">
-              {view === 'scan-receipt' ? 'Scan Receipt' : 'Scan Usage'}
-            </h2>
+        {view === 'scan-receipt' && (
+          <ReceiptScanner
+            onAddItems={handleAddScannedItems}
+            onCancel={() => setView('dashboard')}
+          />
+        )}
+
+        {view === 'scan-usage' && (
+          <div className="max-w-md mx-auto space-y-8 text-center animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setView('dashboard')}
+                className="text-slate-400 hover:text-slate-600 text-sm flex items-center gap-1"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+            <h2 className="text-2xl font-bold">Scan Usage</h2>
             <div
               className={`border-2 border-dashed border-slate-300 rounded-3xl p-12 ${
                 isProcessing ? 'bg-slate-50' : 'bg-white'
@@ -1185,27 +1464,44 @@ const App: React.FC = () => {
               {isProcessing ? (
                 <div className="animate-pulse space-y-4">
                   <div className="text-4xl">🌀</div>
-                  <p className="text-emerald-600 font-bold">AI Analyzing...</p>
+                  <p className="text-amber-600 font-bold">AI Analyzing...</p>
                 </div>
               ) : (
                 <label className="cursor-pointer">
-                  <div className="text-6xl mb-4">{view === 'scan-receipt' ? '🧾' : '🥕'}</div>
+                  <div className="text-6xl mb-4">🥕</div>
                   <input
                     type="file"
                     accept="image/*"
                     capture="environment"
-                    onChange={(e) => handleFileUpload(e, view === 'scan-receipt' ? 'receipt' : 'usage')}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsProcessing(true);
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        const base64 = (reader.result as string).split(',')[1];
+                        try {
+                          const results = await analyzeUsage(base64);
+                          for (const r of results) {
+                            await adjustStock(r.name, -r.quantityUsed);
+                          }
+                          setView('inventory');
+                        } catch (err) {
+                          alert('Error processing image.');
+                        } finally {
+                          setIsProcessing(false);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }}
                     className="hidden"
                   />
-                  <span className="bg-emerald-600 text-white px-6 py-2 rounded-full font-bold">
+                  <span className="bg-amber-500 text-white px-6 py-2 rounded-full font-bold">
                     Take Photo
                   </span>
                 </label>
               )}
             </div>
-            <button onClick={() => setView('dashboard')} className="text-slate-500">
-              Go Back
-            </button>
           </div>
         )}
       </main>
