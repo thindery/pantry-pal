@@ -20,47 +20,47 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 // Pantry Items API
 export const getItems = (): Promise<PantryItem[]> => 
-  fetchApi<PantryItem[]>('/items');
+  fetchApi<PantryItem[]>('/api/items');
 
 export const getItem = (id: string): Promise<PantryItem> => 
-  fetchApi<PantryItem>(`/items/${id}`);
+  fetchApi<PantryItem>(`/api/items/${id}`);
 
 export const createItem = (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<PantryItem> => 
-  fetchApi<PantryItem>('/items', {
+  fetchApi<PantryItem>('/api/items', {
     method: 'POST',
     body: JSON.stringify(item),
   });
 
 export const updateItem = (id: string, item: Partial<PantryItem>): Promise<PantryItem> => 
-  fetchApi<PantryItem>(`/items/${id}`, {
+  fetchApi<PantryItem>(`/api/items/${id}`, {
     method: 'PUT',
     body: JSON.stringify(item),
   });
 
 export const deleteItem = (id: string): Promise<void> => 
-  fetchApi<void>(`/items/${id}`, {
+  fetchApi<void>(`/api/items/${id}`, {
     method: 'DELETE',
   });
 
 // Activities API
 export const getActivities = (): Promise<Activity[]> => 
-  fetchApi<Activity[]>('/activities');
+  fetchApi<Activity[]>('/api/activities');
 
 export const logActivity = (activity: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity> => 
-  fetchApi<Activity>('/activities', {
+  fetchApi<Activity>('/api/activities', {
     method: 'POST',
     body: JSON.stringify(activity),
   });
 
 // Scan/Usage API
 export const processScan = (scanData: any) => 
-  fetchApi('/scan-receipt', {
+  fetchApi('/api/scan-receipt', {
     method: 'POST',
     body: JSON.stringify(scanData),
   });
 
 export const processUsage = (usageData: any) => 
-  fetchApi('/visual-usage', {
+  fetchApi('/api/visual-usage', {
     method: 'POST',
     body: JSON.stringify(usageData),
   });
