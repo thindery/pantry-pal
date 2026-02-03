@@ -779,7 +779,7 @@ const VoiceAssistant: React.FC<{
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
       const adjustStockTool: FunctionDeclaration = {
         name: 'adjustStock',
