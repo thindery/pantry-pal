@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { CATEGORIES } from '../App';;
+import { CATEGORIES } from '../App';
 
 interface ProductInfo {
   barcode: string;
