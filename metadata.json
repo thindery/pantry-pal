@@ -1,0 +1,8 @@
+{
+  "name": "PantryPal: Smart Inventory & Ledger",
+  "description": "An AI-powered pantry manager that updates inventory via receipt photos and deducts stock by scanning items you're cooking with, featuring a detailed activity ledger.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
