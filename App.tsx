@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, BarcodeProduct } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
+import BarcodeScanner from './components/BarcodeScanner';
 import {
   getItems,
   createItem,
@@ -86,7 +87,7 @@ const CATEGORIES = [
 ];
 
 // --- Components ---
-type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item';
+type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode';
 
 const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ activeView, setView }) => {
   const links: { id: View; label: string; icon: string }[] = [
@@ -686,8 +687,13 @@ const InventoryItemRow: React.FC<{
         <div className={`font-medium ${isOutOfStock ? 'text-slate-400' : 'text-slate-800'}`}>
           {item.name}
         </div>
-        <div className="text-xs text-slate-400 capitalize">
-          {item.category}
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="capitalize">{item.category}</span>
+          {item.barcode && (
+            <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
+              📱 {item.barcode.slice(-6)}
+            </span>
+          )}
         </div>
       </td>
       <td className="px-3 py-3 md:px-6 md:py-4">
@@ -1247,6 +1253,17 @@ const App: React.FC = () => {
               </button>
 
               <button
+                onClick={() => setView('scan-barcode')}
+                className="bg-rose-500 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
+              >
+                <div className="bg-white/20 p-3 rounded-xl text-2xl">📱</div>
+                <div className="text-left">
+                  <h3 className="text-xl font-bold">Scan Barcode</h3>
+                  <p className="text-rose-100 text-sm">Quick add items</p>
+                </div>
+              </button>
+
+              <button
                 onClick={() => setIsVoiceActive(true)}
                 className="bg-indigo-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
               >
@@ -1259,7 +1276,7 @@ const App: React.FC = () => {
 
               <button
                 onClick={() => setView('add-item')}
-                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-3"
+                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-4"
               >
                 <div className="bg-white/20 p-3 rounded-xl text-2xl">➕</div>
                 <div className="text-left">
@@ -1300,12 +1317,20 @@ const App: React.FC = () => {
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
-              <button
-                onClick={() => setView('add-item')}
-                className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-              >
-                <span>➕</span> Add Item
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setView('scan-barcode')}
+                  className="bg-sky-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-sky-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <span>📱</span> Scan Barcode
+                </button>
+                <button
+                  onClick={() => setView('add-item')}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <span>➕</span> Add Item
+                </button>
+              </div>
             </div>
 
             {inventoryError && (
@@ -1503,6 +1528,40 @@ const App: React.FC = () => {
               )}
             </div>
           </div>
+        )}
+
+        {view === 'scan-barcode' && (
+          <BarcodeScanner
+            onBarcodeDetected={async (product) => {
+              try {
+                // Check if item with this barcode already exists
+                const existing = inventory.find(
+                  (i) => i.barcode === product.barcode || 
+                         i.name.toLowerCase() === product.name.toLowerCase()
+                );
+
+                if (existing) {
+                  // Update existing item
+                  await handleAdjustQuantity(existing.id, 1);
+                  alert(`Added 1 ${existing.unit} to ${existing.name}`);
+                } else {
+                  // Create new item with barcode
+                  await handleCreateItem({
+                    name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
+                    quantity: 1,
+                    unit: 'units',
+                    category: product.category || 'other',
+                    barcode: product.barcode,
+                  } as Omit<PantryItem, 'id' | 'lastUpdated'>);
+                  alert(`Added ${product.name} to inventory!`);
+                }
+                setView('inventory');
+              } catch (err) {
+                alert('Failed to add item to inventory. Please try again.');
+              }
+            }}
+            onCancel={() => setView('inventory')}
+          />
         )}
       </main>
 
