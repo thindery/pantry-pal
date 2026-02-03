@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
+import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, BarcodeProduct } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
@@ -9,6 +10,7 @@ import {
   updateItem,
   logActivity,
   getActivities,
+  useSetupAuthToken,
 } from './services/apiService';
 
 // --- Audio Utilities ---
@@ -111,6 +113,9 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ ac
           <span className="text-xs md:text-sm">{link.label}</span>
         </button>
       ))}
+      <div className="ml-auto flex items-center">
+        <UserButton afterSignOutUrl="/" />
+      </div>
     </nav>
   );
 };
@@ -924,8 +929,37 @@ const VoiceAssistant: React.FC<{
   );
 };
 
-// Main App Component
-const App: React.FC = () => {
+// Sign In Page Component
+const SignInPage: React.FC = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-emerald-600 mb-2">PantryPal</h1>
+          <p className="text-slate-600">Smart inventory & ledger for your home</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <SignIn
+            routing="path"
+            path="/sign-in"
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'shadow-none',
+              }
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main App Content Component
+const AppContent: React.FC = () => {
+  // Set up auth token for API calls
+  useSetupAuthToken();
+
   const [view, setView] = useState<View>('dashboard');
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -1574,6 +1608,20 @@ const App: React.FC = () => {
         </button>
       )}
     </div>
+  );
+};
+
+// Main App Component with Auth Wrapper
+const App: React.FC = () => {
+  return (
+    <>
+      <SignedOut>
+        <SignInPage />
+      </SignedOut>
+      <SignedIn>
+        <AppContent />
+      </SignedIn>
+    </>
   );
 };
 
