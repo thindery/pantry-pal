@@ -6,6 +6,7 @@ export interface PantryItem {
   unit: string;
   category: string;
   lastUpdated: string;
+  barcode?: string;
 }
 
 export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';

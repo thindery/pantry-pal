@@ -77,7 +77,7 @@ const UNITS = [
   'other',
 ];
 
-const CATEGORIES = [
+export const CATEGORIES = [
   'produce',
   'pantry',
   'dairy',
@@ -1035,6 +1035,8 @@ const AppContent: React.FC = () => {
     const totalUsed = itemActivities.reduce((sum, a) => sum + a.amount, 0);
     const avgUsage = totalUsed / itemActivities.length;
     
+    if (avgUsage === 0) return Math.max(getThreshold(item.category) * 2, 1);
+    
     const daysOfHistory = Math.max(
       1,
       (Date.now() - new Date(itemActivities[itemActivities.length - 1].timestamp).getTime()) / (1000 * 60 * 60 * 24)
@@ -1094,7 +1096,7 @@ const AppContent: React.FC = () => {
           isManual: false,
           isChecked: false,
           addedAt: new Date().toISOString(),
-          reason: (isOutOfStock(item) ? 'low_stock' : 'low_stock') as 'low_stock' | 'manual' | 'recommendation',
+          reason: 'low_stock' as 'low_stock' | 'manual' | 'recommendation',
         })),
         ...recommendationItems.map((item) => ({
           id: `rec-${item.id}-${Date.now()}`,
@@ -1126,9 +1128,21 @@ const AppContent: React.FC = () => {
 
   // Add manual item to shopping list
   const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string) => {
+    const trimmedName = name.trim();
+    
+    // Check if item already exists in shopping list
+    const existingItem = shoppingList.find(
+      (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    
+    if (existingItem) {
+      alert(`"${trimmedName}" is already in your shopping list!`);
+      return;
+    }
+    
     const newItem: ShoppingListItem = {
       id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      name: name.trim(),
+      name: trimmedName,
       category,
       currentQuantity: 0,
       suggestedQuantity: quantity,
@@ -1140,7 +1154,7 @@ const AppContent: React.FC = () => {
     };
     
     setShoppingList((prev) => [...prev, newItem].sort((a, b) => a.category.localeCompare(b.category)));
-  }, []);
+  }, [shoppingList]);
 
   // Toggle item checked status
   const toggleItemChecked = useCallback((id: string) => {
@@ -1410,19 +1424,26 @@ const AppContent: React.FC = () => {
       (i) => i.name.toLowerCase() === item.name.toLowerCase()
     );
     
-    if (existingItem) {
-      await handleAdjustQuantity(existingItem.id, item.suggestedQuantity);
-    } else {
-      await handleCreateItem({
-        name: item.name,
-        quantity: item.suggestedQuantity,
-        unit: item.unit,
-        category: item.category,
-      });
+    try {
+      // First, update the inventory via API
+      if (existingItem) {
+        await handleAdjustQuantity(existingItem.id, item.suggestedQuantity);
+      } else {
+        await handleCreateItem({
+          name: item.name,
+          quantity: item.suggestedQuantity,
+          unit: item.unit,
+          category: item.category,
+        });
+      }
+      
+      // Only remove from shopping list after successful inventory update
+      setShoppingList((prev) => prev.filter((i) => i.id !== item.id));
+    } catch (err) {
+      console.error('Failed to mark item as bought:', err);
+      alert(`Failed to add "${item.name}" to inventory. Please try again.`);
+      // Item remains in shopping list (rollback behavior)
     }
-    
-    // Remove from shopping list
-    setShoppingList((prev) => prev.filter((i) => i.id !== item.id));
   }, [inventory, handleAdjustQuantity, handleCreateItem]);
 
   const handleEditItem = async (id: string, updates: Partial<PantryItem>) => {

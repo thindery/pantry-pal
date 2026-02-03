@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { CATEGORIES } from '../App';;
 
 interface ProductInfo {
   barcode: string;
@@ -103,7 +104,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
             onChange={(e) => setCategory(e.target.value)}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white"
           >
-            {['produce', 'pantry', 'dairy', 'frozen', 'meat', 'beverages', 'snacks', 'other'].map((c) => (
+            {CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {c.charAt(0).toUpperCase() + c.slice(1)}
               </option>
