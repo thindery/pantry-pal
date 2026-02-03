@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult } from './types';
+import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
+import BarcodeScanner from './components/BarcodeScanner';
 import {
   getItems,
   createItem,
   updateItem,
   logActivity,
   getActivities,
+  useSetupAuthToken,
 } from './services/apiService';
 
 // --- Audio Utilities ---
@@ -85,13 +88,26 @@ const CATEGORIES = [
   'other',
 ];
 
+// Default low stock thresholds per category
+const DEFAULT_THRESHOLDS: ThresholdConfig = {
+  produce: 3,
+  pantry: 2,
+  dairy: 2,
+  frozen: 1,
+  meat: 1,
+  beverages: 2,
+  snacks: 2,
+  other: 2,
+};
+
 // --- Components ---
-type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item';
+type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings';
 
 const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ activeView, setView }) => {
   const links: { id: View; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
     { id: 'inventory', label: 'Inventory', icon: '📦' },
+    { id: 'shopping-list', label: 'Shopping', icon: '🛒' },
     { id: 'ledger', label: 'Ledger', icon: '📜' },
   ];
 
@@ -110,6 +126,9 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ ac
           <span className="text-xs md:text-sm">{link.label}</span>
         </button>
       ))}
+      <div className="ml-auto flex items-center">
+        <UserButton afterSignOutUrl="/" />
+      </div>
     </nav>
   );
 };
@@ -918,8 +937,34 @@ const VoiceAssistant: React.FC<{
   );
 };
 
-// Main App Component
-const App: React.FC = () => {
+// Sign In Page Component
+const SignInPage: React.FC = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-emerald-600 mb-2">PantryPal</h1>
+          <p className="text-slate-600">Smart inventory & ledger for your home</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <SignIn 
+            routing="path" 
+            path="/sign-in"
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'shadow-none',
+              }
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main App Content Component
+const AppContent: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -934,6 +979,263 @@ const App: React.FC = () => {
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Shopping List State
+  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
+  const [showThresholdSettings, setShowThresholdSettings] = useState(false);
+  const [isGeneratingList, setIsGeneratingList] = useState(false);
+
+  // Load shopping list from localStorage on mount
+  useEffect(() => {
+    const savedList = localStorage.getItem('pantry_shopping_list');
+    const savedThresholds = localStorage.getItem('pantry_threshold_config');
+    
+    if (savedList) {
+      try {
+        setShoppingList(JSON.parse(savedList));
+      } catch (e) {
+        console.error('Failed to parse shopping list:', e);
+      }
+    }
+    
+    if (savedThresholds) {
+      try {
+        setThresholdConfig(JSON.parse(savedThresholds));
+      } catch (e) {
+        console.error('Failed to parse threshold config:', e);
+      }
+    }
+  }, []);
+
+  // Save shopping list to localStorage
+  useEffect(() => {
+    localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
+  }, [shoppingList]);
+
+  // Save threshold config to localStorage
+  useEffect(() => {
+    localStorage.setItem('pantry_threshold_config', JSON.stringify(thresholdConfig));
+  }, [thresholdConfig]);
+
+  // Get threshold for a category (with fallback to default)
+  const getThreshold = (category: string): number => {
+    return thresholdConfig[category] ?? DEFAULT_THRESHOLDS[category] ?? 2;
+  };
+
+  // Calculate suggested quantity based on past consumption
+  const calculateSuggestedQuantity = useCallback((item: PantryItem): number => {
+    const itemActivities = activities.filter(
+      (a) => a.itemId === item.id && (a.type === 'REMOVE' || a.type === 'ADJUST')
+    );
+    
+    if (itemActivities.length === 0) {
+      return Math.max(getThreshold(item.category) * 2, 1);
+    }
+    
+    const totalUsed = itemActivities.reduce((sum, a) => sum + a.amount, 0);
+    const avgUsage = totalUsed / itemActivities.length;
+    
+    const daysOfHistory = Math.max(
+      1,
+      (Date.now() - new Date(itemActivities[itemActivities.length - 1].timestamp).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const dailyUsage = totalUsed / daysOfHistory;
+    const suggested = Math.ceil(dailyUsage * 14 / avgUsage) * Math.ceil(avgUsage);
+    
+    return Math.max(suggested, 1);
+  }, [activities, thresholdConfig]);
+
+  // Check if item is low stock
+  const isLowStock = useCallback((item: PantryItem): boolean => {
+    const threshold = getThreshold(item.category);
+    return item.quantity <= threshold && item.quantity >= 0;
+  }, [thresholdConfig]);
+
+  // Check if item is out of stock
+  const isOutOfStock = useCallback((item: PantryItem): boolean => {
+    return item.quantity === 0;
+  }, []);
+
+  // Generate shopping list from low stock items
+  const generateShoppingList = useCallback(async () => {
+    setIsGeneratingList(true);
+    
+    try {
+      const lowStockItems = inventory.filter(
+        (item) => isLowStock(item) || isOutOfStock(item)
+      );
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const recommendationItems = inventory.filter((item) => {
+        if (lowStockItems.includes(item)) return false;
+        
+        const lastAdd = activities.find(
+          (a) => a.itemId === item.id && a.type === 'ADD'
+        );
+        
+        if (!lastAdd) return false;
+        
+        const lastAddDate = new Date(lastAdd.timestamp);
+        return lastAddDate < thirtyDaysAgo && item.quantity > 0 && item.quantity <= getThreshold(item.category) * 2;
+      });
+      
+      const newItems: ShoppingListItem[] = [
+        ...lowStockItems.map((item) => ({
+          id: `low-${item.id}-${Date.now()}`,
+          name: item.name,
+          category: item.category,
+          currentQuantity: item.quantity,
+          suggestedQuantity: isOutOfStock(item) 
+            ? calculateSuggestedQuantity(item) 
+            : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1),
+          unit: item.unit,
+          isManual: false,
+          isChecked: false,
+          addedAt: new Date().toISOString(),
+          reason: (isOutOfStock(item) ? 'low_stock' : 'low_stock') as 'low_stock' | 'manual' | 'recommendation',
+        })),
+        ...recommendationItems.map((item) => ({
+          id: `rec-${item.id}-${Date.now()}`,
+          name: item.name,
+          category: item.category,
+          currentQuantity: item.quantity,
+          suggestedQuantity: calculateSuggestedQuantity(item),
+          unit: item.unit,
+          isManual: false,
+          isChecked: false,
+          addedAt: new Date().toISOString(),
+          reason: 'recommendation' as 'low_stock' | 'manual' | 'recommendation',
+        })),
+      ];
+      
+      const existingManualItems = shoppingList.filter((item) => item.isManual);
+      const existingItemNames = new Set(newItems.map((i) => i.name.toLowerCase()));
+      
+      const mergedItems = [
+        ...newItems,
+        ...existingManualItems.filter((item) => !existingItemNames.has(item.name.toLowerCase())),
+      ];
+      
+      setShoppingList(mergedItems.sort((a, b) => a.category.localeCompare(b.category)));
+    } finally {
+      setIsGeneratingList(false);
+    }
+  }, [inventory, activities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold]);
+
+  // Add manual item to shopping list
+  const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string) => {
+    const newItem: ShoppingListItem = {
+      id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      name: name.trim(),
+      category,
+      currentQuantity: 0,
+      suggestedQuantity: quantity,
+      unit,
+      isManual: true,
+      isChecked: false,
+      addedAt: new Date().toISOString(),
+      reason: 'manual',
+    };
+    
+    setShoppingList((prev) => [...prev, newItem].sort((a, b) => a.category.localeCompare(b.category)));
+  }, []);
+
+  // Toggle item checked status
+  const toggleItemChecked = useCallback((id: string) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isChecked: !item.isChecked } : item
+      )
+    );
+  }, []);
+
+  // Remove item from shopping list
+  const removeShoppingItem = useCallback((id: string) => {
+    setShoppingList((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  // Clear entire shopping list
+  const clearShoppingList = useCallback(() => {
+    if (confirm('Are you sure you want to clear the entire shopping list?')) {
+      setShoppingList([]);
+    }
+  }, []);
+
+  // Export shopping list as formatted text
+  const exportShoppingList = useCallback((): string => {
+    if (shoppingList.length === 0) return '';
+    
+    const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, ShoppingListItem[]>);
+    
+    const lines: string[] = ['🛒 Shopping List', ''];
+    
+    Object.entries(grouped).forEach(([category, items]) => {
+      lines.push(`${category.toUpperCase()}:`);
+      items.forEach((item: ShoppingListItem) => {
+        const check = item.isChecked ? '✓' : '☐';
+        lines.push(`  ${check} ${item.name} (${item.suggestedQuantity} ${item.unit})`);
+      });
+      lines.push('');
+    });
+    
+    return lines.join('\n');
+  }, [shoppingList]);
+
+  // Copy to clipboard
+  const copyToClipboard = useCallback(async () => {
+    const text = exportShoppingList();
+    if (!text) {
+      alert('Shopping list is empty!');
+      return;
+    }
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Shopping list copied to clipboard!');
+    } catch (err) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('Shopping list copied to clipboard!');
+    }
+  }, [exportShoppingList]);
+
+  // Share shopping list using Web Share API
+  const shareShoppingList = useCallback(async () => {
+    const text = exportShoppingList();
+    if (!text) {
+      alert('Shopping list is empty!');
+      return;
+    }
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'My Shopping List',
+          text: text,
+        });
+      } catch (err) {
+        console.log('Share cancelled or failed:', err);
+      }
+    } else {
+      copyToClipboard();
+    }
+  }, [exportShoppingList, copyToClipboard]);
+
+  // Set up auth token for API calls
+  useSetupAuthToken();
+
   // Load inventory from API
   const loadInventory = async () => {
     setIsLoadingInventory(true);
@@ -944,7 +1246,6 @@ const App: React.FC = () => {
     } catch (err) {
       console.error('Failed to load inventory:', err);
       setInventoryError(err instanceof Error ? err.message : 'Failed to load inventory');
-      // Fallback to localStorage if API fails
       const savedInv = localStorage.getItem('pantry_inventory');
       if (savedInv) {
         setInventory(JSON.parse(savedInv));
@@ -1007,7 +1308,6 @@ const App: React.FC = () => {
       });
       setActivities((prev) => [activity, ...prev].slice(0, 100));
     } catch (err) {
-      // Fallback: add activity locally
       const newActivity: Activity = {
         id: Math.random().toString(36).substr(2, 9),
         itemId: item.id,
@@ -1021,7 +1321,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Create new item
   const handleCreateItem = async (itemData: Omit<PantryItem, 'id' | 'lastUpdated'>) => {
     setIsAddingItem(true);
     try {
@@ -1041,7 +1340,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Adjust item quantity
   const handleAdjustQuantity = async (id: string, delta: number) => {
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
@@ -1075,7 +1373,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Set item quantity to 0 (soft delete)
   const handleSetToZero = async (id: string) => {
     const item = inventory.find((i) => i.id === id);
     if (!item) return;
@@ -1107,7 +1404,27 @@ const App: React.FC = () => {
     }
   };
 
-  // Edit item details
+  // Mark item as bought (remove from list and add to inventory)
+  const markItemAsBought = useCallback(async (item: ShoppingListItem) => {
+    const existingItem = inventory.find(
+      (i) => i.name.toLowerCase() === item.name.toLowerCase()
+    );
+    
+    if (existingItem) {
+      await handleAdjustQuantity(existingItem.id, item.suggestedQuantity);
+    } else {
+      await handleCreateItem({
+        name: item.name,
+        quantity: item.suggestedQuantity,
+        unit: item.unit,
+        category: item.category,
+      });
+    }
+    
+    // Remove from shopping list
+    setShoppingList((prev) => prev.filter((i) => i.id !== item.id));
+  }, [inventory, handleAdjustQuantity, handleCreateItem]);
+
   const handleEditItem = async (id: string, updates: Partial<PantryItem>) => {
     setIsEditing(true);
     try {
@@ -1138,7 +1455,6 @@ const App: React.FC = () => {
         handleAdjustQuantity(existing.id, amount);
         resultMessage = `Successfully updated ${name}.`;
       } else if (amount > 0) {
-        // Create new item via API
         handleCreateItem({
           name: name.charAt(0).toUpperCase() + name.slice(1),
           quantity: amount,
@@ -1156,24 +1472,20 @@ const App: React.FC = () => {
     [inventory]
   );
 
-  // Handle adding scanned items to inventory
   const handleAddScannedItems = async (items: ScanResult[]) => {
     const addedItems: string[] = [];
     const failedItems: string[] = [];
 
     for (const item of items) {
       try {
-        // Check if item already exists
         const existing = inventory.find(
           (i) => i.name.toLowerCase() === item.name.toLowerCase()
         );
 
         if (existing) {
-          // Update existing item quantity
           await handleAdjustQuantity(existing.id, item.quantity);
           addedItems.push(`${item.name} (+${item.quantity})`);
         } else {
-          // Create new item
           await handleCreateItem({
             name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
             quantity: item.quantity,
@@ -1188,10 +1500,8 @@ const App: React.FC = () => {
       }
     }
 
-    // Navigate to inventory after successful add
     setView('inventory');
 
-    // Show summary
     if (failedItems.length === 0) {
       alert(`Successfully added ${addedItems.length} item(s) to inventory!`);
     } else {
@@ -1247,6 +1557,17 @@ const App: React.FC = () => {
               </button>
 
               <button
+                onClick={() => setView('scan-barcode')}
+                className="bg-rose-500 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
+              >
+                <div className="bg-white/20 p-3 rounded-xl text-2xl">📱</div>
+                <div className="text-left">
+                  <h3 className="text-xl font-bold">Scan Barcode</h3>
+                  <p className="text-rose-100 text-sm">Quick add items</p>
+                </div>
+              </button>
+
+              <button
                 onClick={() => setIsVoiceActive(true)}
                 className="bg-indigo-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
               >
@@ -1259,7 +1580,7 @@ const App: React.FC = () => {
 
               <button
                 onClick={() => setView('add-item')}
-                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-3"
+                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-4"
               >
                 <div className="bg-white/20 p-3 rounded-xl text-2xl">➕</div>
                 <div className="text-left">
@@ -1300,12 +1621,20 @@ const App: React.FC = () => {
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
-              <button
-                onClick={() => setView('add-item')}
-                className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-              >
-                <span>➕</span> Add Item
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setView('scan-barcode')}
+                  className="bg-sky-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-sky-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <span>📱</span> Scan Barcode
+                </button>
+                <button
+                  onClick={() => setView('add-item')}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <span>➕</span> Add Item
+                </button>
+              </div>
             </div>
 
             {inventoryError && (
@@ -1504,6 +1833,339 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {view === 'scan-barcode' && (
+          <BarcodeScanner
+            onBarcodeDetected={async (product) => {
+              try {
+                const existing = inventory.find(
+                  (i) => i.barcode === product.barcode || 
+                         i.name.toLowerCase() === product.name.toLowerCase()
+                );
+
+                if (existing) {
+                  await handleAdjustQuantity(existing.id, 1);
+                  alert(`Added 1 ${existing.unit} to ${existing.name}`);
+                } else {
+                  await handleCreateItem({
+                    name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
+                    quantity: 1,
+                    unit: 'units',
+                    category: product.category || 'other',
+                    barcode: product.barcode,
+                  } as Omit<PantryItem, 'id' | 'lastUpdated'>);
+                  alert(`Added ${product.name} to inventory!`);
+                }
+                setView('inventory');
+              } catch (err) {
+                alert('Failed to add item to inventory. Please try again.');
+              }
+            }}
+            onCancel={() => setView('inventory')}
+          />
+        )}
+
+        {view === 'shopping-list' && (
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">🛒 Shopping List</h2>
+                <p className="text-slate-500 text-sm mt-1">
+                  {shoppingList.length === 0 
+                    ? 'Generate a list from low stock items'
+                    : `${shoppingList.filter(i => i.isChecked).length}/${shoppingList.length} items checked`}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setShowThresholdSettings(true)}
+                  className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200 transition-colors text-sm"
+                  title="Configure low stock thresholds"
+                >
+                  ⚙️ Thresholds
+                </button>
+                <button
+                  onClick={generateShoppingList}
+                  disabled={isGeneratingList}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                >
+                  {isGeneratingList ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <span>🔄</span> Generate List
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {shoppingList.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                <p className="text-4xl mb-4">🛒</p>
+                <p className="text-slate-500 mb-4">No items in your shopping list yet</p>
+                <button
+                  onClick={generateShoppingList}
+                  disabled={isGeneratingList}
+                  className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                >
+                  Generate from Inventory
+                </button>
+                <p className="text-slate-400 text-sm mt-4">
+                  We'll scan your inventory for low stock items
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={copyToClipboard}
+                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
+                  >
+                    📋 Copy to Clipboard
+                  </button>
+                  <button
+                    onClick={shareShoppingList}
+                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
+                  >
+                    📤 Share
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm print:hidden"
+                  >
+                    🖨️ Print
+                  </button>
+                  <button
+                    onClick={clearShoppingList}
+                    className="bg-rose-50 text-rose-600 border border-rose-200 px-4 py-2 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2 text-sm ml-auto"
+                  >
+                    🗑️ Clear List
+                  </button>
+                </div>
+
+                {/* Shopping List Items by Category */}
+                {(() => {
+                  const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
+                    if (!acc[item.category]) acc[item.category] = [];
+                    acc[item.category].push(item);
+                    return acc;
+                  }, {} as Record<string, ShoppingListItem[]>);
+                  
+                  return Object.entries(grouped)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([category, items]: [string, ShoppingListItem[]]) => (
+                  <div key={category} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm print:border-gray-400">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 print:bg-gray-100">
+                      <h3 className="font-bold text-slate-700 capitalize flex items-center gap-2">
+                        {category === 'produce' && '🥬'}
+                        {category === 'dairy' && '🥛'}
+                        {category === 'pantry' && '🥫'}
+                        {category === 'frozen' && '🧊'}
+                        {category === 'meat' && '🥩'}
+                        {category === 'beverages' && '🥤'}
+                        {category === 'snacks' && '🍿'}
+                        {category === 'other' && '📦'}
+                        {category}
+                        <span className="text-xs font-normal text-slate-400">
+                          ({items.length} items)
+                        </span>
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`px-4 py-3 flex items-center gap-3 transition-colors ${
+                            item.isChecked ? 'bg-slate-50' : 'hover:bg-slate-50'
+                          }`}
+                        >
+                          <button
+                            onClick={() => toggleItemChecked(item.id)}
+                            className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                              item.isChecked
+                                ? 'bg-emerald-500 border-emerald-500 text-white'
+                                : 'border-slate-300 hover:border-emerald-400'
+                            }`}
+                          >
+                            {item.isChecked && '✓'}
+                          </button>
+                          <div className="flex-1">
+                            <p className={`font-medium ${item.isChecked ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                              {item.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {item.isManual ? 'Manual add' : item.reason === 'recommendation' ? '🤖 Recommendation' : `Current: ${item.currentQuantity}`}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-bold ${item.isChecked ? 'text-slate-400' : 'text-emerald-600'}`}>
+                              {item.suggestedQuantity} {item.unit}
+                            </p>
+                            {item.reason === 'recommendation' && (
+                              <span className="text-xs text-amber-500 font-medium">Buy soon</span>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => markItemAsBought(item)}
+                              disabled={item.isChecked}
+                              className="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 disabled:opacity-30 transition-colors"
+                              title="Mark as bought and add to inventory"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => removeShoppingItem(item.id)}
+                              className="p-2 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              title="Remove from list"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              );
+            })()}
+
+                {/* Add Manual Item Form */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                  <h3 className="font-bold text-slate-700 mb-4">➕ Add Item Manually</h3>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const formData = new FormData(form);
+                      addManualShoppingItem(
+                        formData.get('name') as string,
+                        formData.get('category') as string,
+                        parseFloat(formData.get('quantity') as string) || 1,
+                        formData.get('unit') as string
+                      );
+                      form.reset();
+                    }}
+                    className="grid grid-cols-1 sm:grid-cols-5 gap-3"
+                  >
+                    <input
+                      name="name"
+                      type="text"
+                      placeholder="Item name"
+                      required
+                      className="sm:col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    />
+                    <select
+                      name="category"
+                      className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                    >
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        name="quantity"
+                        type="number"
+                        min="1"
+                        step="0.5"
+                        placeholder="Qty"
+                        className="w-20 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                      />
+                      <select
+                        name="unit"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                      >
+                        {UNITS.map((u) => (
+                          <option key={u} value={u}>{u}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+                    >
+                      Add
+                    </button>
+                  </form>
+                </div>
+              </>
+            )}
+
+            {/* Threshold Settings Modal */}
+            {showThresholdSettings && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-slate-800">⚙️ Low Stock Thresholds</h2>
+                    <button
+                      onClick={() => setShowThresholdSettings(false)}
+                      className="text-slate-400 hover:text-slate-600 text-2xl leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="text-slate-500 text-sm mb-4">
+                    Items at or below these thresholds will be flagged for shopping.
+                  </p>
+                  <div className="space-y-3 mb-6">
+                    {CATEGORIES.map((category) => (
+                      <div key={category} className="flex items-center justify-between">
+                        <label className="capitalize text-slate-700 font-medium flex items-center gap-2">
+                          {category === 'produce' && '🥬'}
+                          {category === 'dairy' && '🥛'}
+                          {category === 'pantry' && '🥫'}
+                          {category === 'frozen' && '🧊'}
+                          {category === 'meat' && '🥩'}
+                          {category === 'beverages' && '🥤'}
+                          {category === 'snacks' && '🍿'}
+                          {category === 'other' && '📦'}
+                          {category}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={thresholdConfig[category] ?? DEFAULT_THRESHOLDS[category]}
+                          onChange={(e) => {
+                            setThresholdConfig((prev) => ({
+                              ...prev,
+                              [category]: parseInt(e.target.value) || 0,
+                            }));
+                          }}
+                          className="w-20 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-center"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setThresholdConfig(DEFAULT_THRESHOLDS)}
+                      className="px-4 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+                    >
+                      Reset to Default
+                    </button>
+                    <button
+                      onClick={() => setShowThresholdSettings(false)}
+                      className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {view !== 'add-item' && (
@@ -1515,6 +2177,20 @@ const App: React.FC = () => {
         </button>
       )}
     </div>
+  );
+};
+
+// Main App Component with Auth Wrapper
+const App: React.FC = () => {
+  return (
+    <>
+      <SignedOut>
+        <SignInPage />
+      </SignedOut>
+      <SignedIn>
+        <AppContent />
+      </SignedIn>
+    </>
   );
 };
 

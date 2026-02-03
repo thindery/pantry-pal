@@ -31,3 +31,26 @@ export interface UsageResult {
   name: string;
   quantityUsed: number;
 }
+
+export interface ThresholdConfig {
+  [category: string]: number;
+}
+
+export interface ShoppingListItem {
+  id: string;
+  name: string;
+  category: string;
+  currentQuantity: number;
+  suggestedQuantity: number;
+  unit: string;
+  isManual: boolean;
+  isChecked: boolean;
+  addedAt: string;
+  reason: 'low_stock' | 'manual' | 'recommendation';
+}
+
+export interface ShoppingList {
+  items: ShoppingListItem[];
+  generatedAt: string;
+  thresholdConfig: ThresholdConfig;
+}
