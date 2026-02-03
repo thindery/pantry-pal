@@ -1,10 +1,11 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { ScanResult, UsageResult } from "../types";
+import { processScan, processUsage } from "./apiService";
 
-// Always use new GoogleGenAI({ apiKey: process.env.API_KEY })
+// Always use new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY })
 const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 };
 
 export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> => {
@@ -46,7 +47,10 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
 
   try {
     // Access response.text property directly
-    return JSON.parse(response.text || "[]");
+    const results = JSON.parse(response.text || "[]");
+    // Send scan results to backend
+    await processScan(results);
+    return results;
   } catch (e) {
     console.error("Failed to parse receipt JSON", e);
     return [];
@@ -90,7 +94,10 @@ export const analyzeUsage = async (base64Image: string): Promise<UsageResult[]> 
 
   try {
     // Access response.text property directly
-    return JSON.parse(response.text || "[]");
+    const results = JSON.parse(response.text || "[]");
+    // Send usage results to backend
+    await processUsage(results);
+    return results;
   } catch (e) {
     console.error("Failed to parse usage JSON", e);
     return [];
