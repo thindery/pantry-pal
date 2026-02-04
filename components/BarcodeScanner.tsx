@@ -84,6 +84,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
         if (result && result.getText()) {
           const barcode = result.getText();
+          console.log('Camera scan detected barcode:', barcode);
           handleBarcodeDetected(barcode);
         }
       });
@@ -98,6 +99,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     // Prevent multiple scans of the same barcode
     if (scannedBarcode === barcode || isLoading) return;
 
+    console.log('Processing barcode:', barcode);
     setScannedBarcode(barcode);
     setIsLoading(true);
     setError(null);
@@ -107,6 +109,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
     try {
       const result = await lookupBarcode(barcode);
+      console.log('Barcode lookup result:', result);
 
       if (result.success && result.product) {
         setDetectedProduct(result.product);
@@ -119,7 +122,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         });
       }
     } catch (err) {
-      setError('Failed to look up product information');
+      console.error('Error looking up barcode:', err);
+      setError('Failed to look up product information. Please check your connection and try again.');
       // Still allow manual entry with the barcode
       setDetectedProduct({
         barcode,
@@ -135,6 +139,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log('Processing image upload:', file.name, file.type, file.size);
     setError(null);
     setIsLoading(true);
     setScannedBarcode(null);
@@ -142,6 +147,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
     try {
       const result = await scanBarcodeFromImage(file);
+      console.log('Image scan result:', result);
 
       if (result.success && result.product) {
         setDetectedProduct(result.product);
@@ -153,12 +159,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
           category: 'other',
         });
       } else {
-        setError(result.error || 'No barcode found in image');
+        setError(result.error || 'No barcode found in image. Try a clearer image with better lighting.');
       }
     } catch (err) {
-      setError('Failed to scan barcode from image');
+      console.error('Error processing image upload:', err);
+      setError('Failed to process image. Please try again with a different image.');
     } finally {
       setIsLoading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -221,22 +232,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
-          {error}
+          <div className="flex items-start gap-2">
+            <span className="text-lg">⚠️</span>
+            <div>
+              <p className="font-semibold">{error}</p>
+              {hasCameraPermission === false && (
+                <p className="mt-2 text-sm">You can also try uploading a barcode image or typing the barcode number manually.</p>
+              )}
+            </div>
+          </div>
           {hasCameraPermission === false && (
-            <div className="mt-3">
+            <div className="mt-3 flex gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+                className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
               >
-                📁 Upload Barcode Image
+                📁 Upload Image
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
+              <button
+                onClick={() => setShowManualEntry(true)}
+                className="flex-1 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+              >
+                ⌨️ Type Barcode
+              </button>
             </div>
           )}
         </div>
