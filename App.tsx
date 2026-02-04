@@ -953,8 +953,6 @@ const SignInPage: React.FC = () => {
         </div>
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <SignIn
-            routing="path"
-            path="/sign-in"
             appearance={{
               elements: {
                 rootBox: 'w-full',
