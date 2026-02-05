@@ -62,3 +62,25 @@ export interface ShoppingList {
   generatedAt: string;
   thresholdConfig: ThresholdConfig;
 }
+
+// Subscription types
+export type UserTier = 'free' | 'pro' | 'family';
+
+export interface TierInfo {
+  tier: UserTier;
+  limits: {
+    maxItems: number;
+    receiptScansPerMonth: number;
+    aiCallsPerMonth: number;
+    voiceAssistant: boolean;
+    multiDevice: boolean;
+    sharedInventory: boolean;
+    maxFamilyMembers: number;
+  };
+  usage: {
+    currentItems: number;
+    receiptScansThisMonth: number;
+    aiCallsThisMonth: number;
+    voiceSessionsThisMonth: number;
+  };
+}

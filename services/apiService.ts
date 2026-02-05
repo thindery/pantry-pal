@@ -1,4 +1,4 @@
-import { PantryItem, Activity, ActivityType } from '../types';
+import { PantryItem, Activity, ActivityType, TierInfo } from '../types';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
 
@@ -78,6 +78,21 @@ export const processUsage = (usageData: any) =>
   fetchApi('/api/visual-usage', {
     method: 'POST',
     body: JSON.stringify(usageData),
+  });
+
+// Subscription API
+export const getTierInfo = (): Promise<TierInfo> =>
+  fetchApi<TierInfo>('/api/subscription/tier');
+
+export const createCheckoutSession = (data: {
+  tier: 'pro' | 'family';
+  billingInterval: 'month' | 'year';
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<{ sessionId: string; url: string }> =>
+  fetchApi<{ sessionId: string; url: string }>('/api/subscription/checkout', {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
 
 // Auth token setup hook using Clerk
