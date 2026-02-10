@@ -1396,8 +1396,8 @@ const AppContent: React.FC = () => {
     setIsAddingItem(true);
     try {
       const response = await createItem(itemData);
-      // Handle both direct response and wrapped response ({ item: {...} })
-      const newItem = (response as any).item || response;
+      // Backend returns { data: {...}, success: true, meta: {...} }
+      const newItem = (response as any).data || response;
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
