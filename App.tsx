@@ -1395,12 +1395,14 @@ const AppContent: React.FC = () => {
 
     setIsAddingItem(true);
     try {
-      const newItem = await createItem(itemData);
+      const response = await createItem(itemData);
+      // Handle both direct response and wrapped response ({ item: {...} })
+      const newItem = (response as any).item || response;
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
         'ADD',
-        newItem.quantity,
+        Number(newItem.quantity ?? itemData.quantity),
         'MANUAL'
       );
       return Promise.resolve();
