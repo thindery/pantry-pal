@@ -1084,14 +1084,15 @@ const AppContent: React.FC = () => {
     setIsGeneratingList(true);
     
     try {
-      const lowStockItems = inventory.filter(
+      const inventoryArray = Array.isArray(inventory) ? inventory : [];
+      const lowStockItems = inventoryArray.filter(
         (item) => isLowStock(item) || isOutOfStock(item)
       );
       
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const recommendationItems = inventory.filter((item) => {
+      const recommendationItems = inventoryArray.filter((item) => {
         if (lowStockItems.includes(item)) return false;
         
         const lastAdd = activities.find(
@@ -1274,13 +1275,22 @@ const AppContent: React.FC = () => {
     setInventoryError(null);
     try {
       const items = await getItems();
-      setInventory(items);
+      // Ensure items is always an array (handle {items: [...]} vs [...] response)
+      const itemsArray = Array.isArray(items) ? items : items?.items || [];
+      setInventory(itemsArray);
     } catch (err) {
       console.error('Failed to load inventory:', err);
       setInventoryError(err instanceof Error ? err.message : 'Failed to load inventory');
       const savedInv = localStorage.getItem('pantry_inventory');
       if (savedInv) {
-        setInventory(JSON.parse(savedInv));
+        try {
+          const parsed = JSON.parse(savedInv);
+          // Ensure parsed data is an array
+          setInventory(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error('Failed to parse saved inventory:', e);
+          setInventory([]);
+        }
       }
     } finally {
       setIsLoadingInventory(false);
@@ -1293,13 +1303,20 @@ const AppContent: React.FC = () => {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      setActivities(acts);
+      const actsArray = Array.isArray(acts) ? acts : acts?.activities || [];
+      setActivities(actsArray);
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
       const savedAct = localStorage.getItem('pantry_activities');
       if (savedAct) {
-        setActivities(JSON.parse(savedAct));
+        try {
+          const parsed = JSON.parse(savedAct);
+          setActivities(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error('Failed to parse saved activities:', e);
+          setActivities([]);
+        }
       }
     } finally {
       setIsLoadingActivities(false);
@@ -1676,19 +1693,19 @@ const AppContent: React.FC = () => {
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">In Stock</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {inventory.filter((i) => i.quantity > 0).length}
+                  {(inventory || []).filter((i) => i.quantity > 0).length}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">Low Stock</p>
                 <p className="text-2xl font-bold text-amber-500">
-                  {inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length}
+                  {(inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">Out of Stock</p>
                 <p className="text-2xl font-bold text-slate-400">
-                  {inventory.filter((i) => i.quantity === 0).length}
+                  {(inventory || []).filter((i) => i.quantity === 0).length}
                 </p>
               </div>
             </div>
