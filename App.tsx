@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
+import PricingPage from './components/PricingPage';
+import CheckoutResult from './components/CheckoutResult';
+import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
+import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
   createItem,
@@ -101,9 +105,9 @@ const DEFAULT_THRESHOLDS: ThresholdConfig = {
 };
 
 // --- Components ---
-type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings';
+type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel';
 
-const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ activeView, setView }) => {
+const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: boolean }> = ({ activeView, setView, isPaid }) => {
   const links: { id: View; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
     { id: 'inventory', label: 'Inventory', icon: '📦' },
@@ -126,7 +130,18 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void }> = ({ ac
           <span className="text-xs md:text-sm">{link.label}</span>
         </button>
       ))}
-      <div className="ml-auto flex items-center">
+      <div className="ml-auto flex items-center gap-3">
+        {!isPaid && (
+          <button
+            onClick={() => setView('pricing')}
+            className="hidden md:flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-sm font-bold rounded-full hover:from-amber-500 hover:to-amber-600 transition-all"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            Upgrade
+          </button>
+        )}
         <UserButton afterSignOutUrl="/" />
       </div>
     </nav>
@@ -1069,14 +1084,15 @@ const AppContent: React.FC = () => {
     setIsGeneratingList(true);
     
     try {
-      const lowStockItems = inventory.filter(
+      const inventoryArray = Array.isArray(inventory) ? inventory : [];
+      const lowStockItems = inventoryArray.filter(
         (item) => isLowStock(item) || isOutOfStock(item)
       );
       
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const recommendationItems = inventory.filter((item) => {
+      const recommendationItems = inventoryArray.filter((item) => {
         if (lowStockItems.includes(item)) return false;
         
         const lastAdd = activities.find(
@@ -1259,13 +1275,22 @@ const AppContent: React.FC = () => {
     setInventoryError(null);
     try {
       const items = await getItems();
-      setInventory(items);
+      // Ensure items is always an array (handle {items: [...]} vs [...] response)
+      const itemsArray = Array.isArray(items) ? items : items?.items || [];
+      setInventory(itemsArray);
     } catch (err) {
       console.error('Failed to load inventory:', err);
       setInventoryError(err instanceof Error ? err.message : 'Failed to load inventory');
       const savedInv = localStorage.getItem('pantry_inventory');
       if (savedInv) {
-        setInventory(JSON.parse(savedInv));
+        try {
+          const parsed = JSON.parse(savedInv);
+          // Ensure parsed data is an array
+          setInventory(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error('Failed to parse saved inventory:', e);
+          setInventory([]);
+        }
       }
     } finally {
       setIsLoadingInventory(false);
@@ -1278,13 +1303,20 @@ const AppContent: React.FC = () => {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      setActivities(acts);
+      const actsArray = Array.isArray(acts) ? acts : acts?.activities || [];
+      setActivities(actsArray);
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
       const savedAct = localStorage.getItem('pantry_activities');
       if (savedAct) {
-        setActivities(JSON.parse(savedAct));
+        try {
+          const parsed = JSON.parse(savedAct);
+          setActivities(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error('Failed to parse saved activities:', e);
+          setActivities([]);
+        }
       }
     } finally {
       setIsLoadingActivities(false);
@@ -1338,7 +1370,29 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // Subscription state
+  const { isPaid, isPro, isFree, itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
+  const [showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
+  const [showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
+  const [showVoiceLock, setShowVoiceLock] = useState(false);
+
+  // Check URL for checkout success/cancel
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/checkout/success') {
+      setView('checkout-success');
+    } else if (path === '/checkout/cancel') {
+      setView('checkout-cancel');
+    }
+  }, []);
+
   const handleCreateItem = async (itemData: Omit<PantryItem, 'id' | 'lastUpdated'>) => {
+    // Check item limit before creating
+    if (inventory.length >= 50 && !isPaid) {
+      setShowItemLimitPrompt(true);
+      return;
+    }
+
     setIsAddingItem(true);
     try {
       const newItem = await createItem(itemData);
@@ -1466,6 +1520,23 @@ const AppContent: React.FC = () => {
       setIsEditing(false);
     }
   };
+
+  const handleVoiceAssistantClick = useCallback(() => {
+    if (!isFeatureAvailable('voice')) {
+      setShowVoiceLock(true);
+    } else {
+      setIsVoiceActive(true);
+    }
+  }, [isFeatureAvailable]);
+
+  const handleScanReceiptClick = useCallback(() => {
+    // Check receipt scan limit
+    if (receiptScansRemaining !== Infinity && receiptScansRemaining <= 0) {
+      setShowReceiptLimitPrompt(true);
+    } else {
+      setView('scan-receipt');
+    }
+  }, [receiptScansRemaining]);
 
   const adjustStock = useCallback(
     (name: string, amount: number) => {
@@ -1622,19 +1693,19 @@ const AppContent: React.FC = () => {
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">In Stock</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {inventory.filter((i) => i.quantity > 0).length}
+                  {(inventory || []).filter((i) => i.quantity > 0).length}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">Low Stock</p>
                 <p className="text-2xl font-bold text-amber-500">
-                  {inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length}
+                  {(inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-xs text-slate-500 uppercase font-semibold">Out of Stock</p>
                 <p className="text-2xl font-bold text-slate-400">
-                  {inventory.filter((i) => i.quantity === 0).length}
+                  {(inventory || []).filter((i) => i.quantity === 0).length}
                 </p>
               </div>
             </div>
