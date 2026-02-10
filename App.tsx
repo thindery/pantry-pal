@@ -6,6 +6,7 @@ import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
 import PricingPage from './components/PricingPage';
 import CheckoutResult from './components/CheckoutResult';
+import LandingPage from './components/LandingPage';
 import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
@@ -105,7 +106,7 @@ const DEFAULT_THRESHOLDS: ThresholdConfig = {
 };
 
 // --- Components ---
-type View = 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel';
+type View = 'landing' | 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel';
 
 const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: boolean }> = ({ activeView, setView, isPaid }) => {
   const links: { id: View; label: string; icon: string }[] = [
@@ -2280,12 +2281,28 @@ const AppContent: React.FC = () => {
   );
 };
 
+// Landing Page with Login Handler
+const LandingPageWithAuth: React.FC = () => {
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  if (showSignIn) {
+    return <SignInPage />;
+  }
+
+  return (
+    <LandingPage
+      onGetStarted={() => setShowSignIn(true)}
+      onLogin={() => setShowSignIn(true)}
+    />
+  );
+};
+
 // Main App Component with Auth Wrapper
 const App: React.FC = () => {
   return (
     <>
       <SignedOut>
-        <SignInPage />
+        <LandingPageWithAuth />
       </SignedOut>
       <SignedIn>
         <AppContent />
