@@ -8,6 +8,7 @@ import PricingPage from './components/PricingPage';
 import CheckoutResult from './components/CheckoutResult';
 import LandingPage from './components/LandingPage';
 import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
+import { ToastContainer, useToast } from './components/Toast';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
@@ -987,6 +988,9 @@ const AppContent: React.FC = () => {
   // Set up auth token for API calls
   useSetupAuthToken();
 
+  // Toast notifications
+  const { toasts, success, error, removeToast } = useToast();
+
   const [view, setView] = useState<View>('dashboard');
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -1406,8 +1410,10 @@ const AppContent: React.FC = () => {
         Number(newItem.quantity ?? itemData.quantity),
         'MANUAL'
       );
+      success(`Added ${newItem.name} to inventory`);
       return Promise.resolve();
     } catch (err) {
+      error('Failed to add item');
       throw err;
     } finally {
       setIsAddingItem(false);
@@ -1609,6 +1615,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
       <Navbar activeView={view} setView={setView} />
 
       {isVoiceActive && (
