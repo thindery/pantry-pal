@@ -32,14 +32,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   }, []);
 
   const stopScanning = useCallback(() => {
-    if (readerRef.current) {
-      readerRef.current.reset();
-      readerRef.current = null;
-    }
+    // Stop the media stream (ZXing reader stops automatically when stream ends)
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    // Clear the reader reference (ZXing BrowserMultiFormatReader has no stop/reset method)
+    readerRef.current = null;
     setIsScanning(false);
   }, []);
 
@@ -82,6 +81,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
       // Start continuous scanning
       reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+        // Ignore results if we're no longer scanning or already processing
+        if (!isScanning || isLoading) return;
+
         if (result && result.getText()) {
           const barcode = result.getText();
           console.log('Camera scan detected barcode:', barcode);
