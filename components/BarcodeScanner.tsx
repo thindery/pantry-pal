@@ -23,6 +23,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isScanningRef = useRef(false);
+  const isLoadingRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -30,6 +32,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       stopScanning();
     };
   }, []);
+
+  // Sync refs with state for use in callbacks
+  useEffect(() => {
+    isScanningRef.current = isScanning;
+  }, [isScanning]);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   const stopScanning = useCallback(() => {
     // Stop the media stream (ZXing reader stops automatically when stream ends)
@@ -82,7 +93,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       // Start continuous scanning
       reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
         // Ignore results if we're no longer scanning or already processing
-        if (!isScanning || isLoading) return;
+        // Use refs here to avoid stale closure issues
+        if (!isScanningRef.current || isLoadingRef.current) return;
 
         if (result && result.getText()) {
           const barcode = result.getText();
