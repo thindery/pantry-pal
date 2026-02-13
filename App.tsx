@@ -10,6 +10,8 @@ import LandingPage from './components/LandingPage';
 import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
 import { ToastContainer, useToast } from './components/Toast';
 import ProductInfoModal from './components/ProductInfoModal';
+import LinkBarcodeModal from './components/LinkBarcodeModal';
+import InventoryCard from './components/InventoryCard';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
@@ -108,7 +110,9 @@ const DEFAULT_THRESHOLDS: ThresholdConfig = {
 };
 
 // --- Components ---
-type View = 'landing' | 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel';
+import AdminDashboard from './components/AdminDashboard';
+
+type View = 'landing' | 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel' | 'admin';
 
 const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: boolean }> = ({ activeView, setView, isPaid }) => {
   const links: { id: View; label: string; icon: string }[] = [
@@ -134,6 +138,19 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: 
         </button>
       ))}
       <div className="ml-auto flex items-center gap-3">
+        <button
+          onClick={() => setView('admin')}
+          className={`hidden md:flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
+            activeView === 'admin' 
+              ? 'bg-slate-800 text-white' 
+              : 'text-slate-500 hover:bg-slate-100'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+          </svg>
+          Admin
+        </button>
         {!isPaid && (
           <button
             onClick={() => setView('pricing')}
@@ -707,8 +724,9 @@ const InventoryItemRow: React.FC<{
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
   onInfo: () => void;
+  onLinkBarcode: () => void;
   isUpdating: boolean;
-}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, onInfo, isUpdating }) => {
+}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, onInfo, onLinkBarcode, isUpdating }) => {
   const isOutOfStock = item.quantity <= 0;
   const getStep = (unit: string) => {
     if (['lbs', 'kg', 'grams', 'oz'].includes(unit)) return 0.5;
@@ -806,6 +824,22 @@ const InventoryItemRow: React.FC<{
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
             </svg>
+          </button>
+          <button
+            onClick={onLinkBarcode}
+            disabled={isUpdating}
+            className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-30 transition-colors"
+            title={item.barcode ? 'Edit barcode' : 'Link barcode'}
+          >
+            {item.barcode ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
+              </svg>
+            )}
           </button>
         </div>
       </td>
@@ -1016,6 +1050,16 @@ const AppContent: React.FC = () => {
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
+  const [linkingBarcodeItem, setLinkingBarcodeItem] = useState<PantryItem | null>(null);
+  const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
+
+  // View Mode State (table | cards) - default to cards on mobile
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640 ? 'cards' : 'table';
+    }
+    return 'table';
+  });
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -1558,6 +1602,25 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleLinkBarcode = async (id: string, barcode: string, updates?: Partial<PantryItem>) => {
+    setIsLinkingBarcode(true);
+    try {
+      const updateData: Partial<PantryItem> = { barcode, ...updates };
+      const response = await updateItem(id, updateData);
+      const updatedItem = (response as any).data || response;
+      setInventory((prev) =>
+        prev.map((item) => (item.id === id ? updatedItem : item))
+      );
+      success('Barcode linked successfully!');
+    } catch (err) {
+      error('Failed to link barcode');
+      console.error('Link barcode error:', err);
+    } finally {
+      setIsLinkingBarcode(false);
+      setLinkingBarcodeItem(null);
+    }
+  };
+
   const handleVoiceAssistantClick = useCallback(() => {
     if (!isFeatureAvailable('voice')) {
       setShowVoiceLock(true);
@@ -1665,6 +1728,14 @@ const AppContent: React.FC = () => {
         onClose={() => setInfoItem(null)}
       />
 
+      <LinkBarcodeModal
+        item={linkingBarcodeItem}
+        isOpen={!!linkingBarcodeItem}
+        onClose={() => setLinkingBarcodeItem(null)}
+        onSave={handleLinkBarcode}
+        isLoading={isLinkingBarcode}
+      />
+
       <main className="py-8">
         {view === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -1759,9 +1830,34 @@ const AppContent: React.FC = () => {
 
         {view === 'inventory' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-slate-100 rounded-xl p-1 mr-2">
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                      viewMode === 'table'
+                        ? 'bg-white text-slate-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                    title="Table View"
+                  >
+                    <span>📋</span> Table
+                  </button>
+                  <button
+                    onClick={() => setViewMode('cards')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                      viewMode === 'cards'
+                        ? 'bg-white text-slate-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                    title="Card View"
+                  >
+                    <span>🃏</span> Cards
+                  </button>
+                </div>
                 <button
                   onClick={() => setView('scan-barcode')}
                   className="bg-sky-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-sky-700 transition-colors flex items-center gap-2 text-sm"
@@ -1804,7 +1900,7 @@ const AppContent: React.FC = () => {
                   Add Your First Item
                 </button>
               </div>
-            ) : (
+            ) : viewMode === 'table' ? (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
@@ -1825,12 +1921,28 @@ const AppContent: React.FC = () => {
                           onSetToZero={handleSetToZero}
                           onEdit={() => setEditingItem(item)}
                           onInfo={() => setInfoItem(item)}
+                          onLinkBarcode={() => setLinkingBarcodeItem(item)}
                           isUpdating={updatingItemIds.has(item.id)}
                         />
                       ))}
                     </tbody>
                   </table>
                 </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {inventory.map((item) => (
+                  <InventoryCard
+                    key={item.id}
+                    item={item}
+                    onAdjustQuantity={handleAdjustQuantity}
+                    onSetToZero={handleSetToZero}
+                    onEdit={() => setEditingItem(item)}
+                    onInfo={() => setInfoItem(item)}
+                    onLinkBarcode={() => setLinkingBarcodeItem(item)}
+                    isUpdating={updatingItemIds.has(item.id)}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -1986,18 +2098,39 @@ const AppContent: React.FC = () => {
                 );
 
                 if (existing) {
-                  // Update existing item
+                  // If item exists but doesn't have a barcode, update it with the barcode
+                  if (!existing.barcode && product.barcode) {
+                    await updateItem(existing.id, { barcode: product.barcode });
+                    // Update local state with the new barcode
+                    setInventory((prev) =>
+                      prev.map((i) =>
+                        i.id === existing.id ? { ...i, barcode: product.barcode } : i
+                      )
+                    );
+                  }
+                  // Update existing item quantity
                   await handleAdjustQuantity(existing.id, 1);
                   alert(`Added 1 ${existing.unit} to ${existing.name}`);
                 } else {
-                  // Create new item with barcode
+                  // Create new item with barcode and product info
                   await handleCreateItem({
                     name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
                     quantity: 1,
                     unit: 'units',
                     category: product.category || 'other',
                     barcode: product.barcode,
-                  } as Omit<PantryItem, 'id' | 'lastUpdated'>);
+                    productInfo: {
+                      barcode: product.barcode,
+                      name: product.name,
+                      brand: product.brand,
+                      category: product.category,
+                      imageUrl: product.image,
+                      ingredients: product.ingredients,
+                      nutrition: product.nutrition,
+                      source: (product.source || 'openfoodfacts') as 'openfoodfacts' | 'manual',
+                      infoLastSynced: product.infoLastSynced || new Date().toISOString(),
+                    },
+                  });
                   alert(`Added ${product.name} to inventory!`);
                 }
                 setView('inventory');
@@ -2303,9 +2436,13 @@ const AppContent: React.FC = () => {
             )}
           </div>
         )}
+        {/* Admin Dashboard */}
+        {view === 'admin' && (
+          <AdminDashboard onBack={() => setView('dashboard')} />
+        )}
       </main>
 
-      {view !== 'add-item' && (
+      {view !== 'add-item' && view !== 'admin' && (  
         <button
           onClick={() => setIsVoiceActive(true)}
           className="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all z-40"
