@@ -84,10 +84,33 @@ export const processUsage = (usageData: any) =>
 export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
   const result = await fetchApi<{ product: any; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
   
+  if (!result.product) {
+    return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+  }
+  
   // Transform backend response to match BarcodeProduct type
-  // Backend returns 'image_url' but type expects 'image'
-  if (result.product && result.product.image_url && !result.product.image) {
-    result.product.image = result.product.image_url;
+  const p = result.product;
+  
+  // Handle image_url -> image mapping
+  if (p.image_url && !p.image) {
+    p.image = p.image_url;
+  }
+  
+  // Handle ingredients: string -> string[] if needed
+  if (typeof p.ingredients === 'string') {
+    p.ingredients = p.ingredients.split(/,|\n/).map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+  }
+  
+  // Handle source/stale mapping
+  if (result.fromCache && !p.source) {
+    p.source = result.cachedAt ? 'stale' : 'cache';
+  } else if (!p.source) {
+    p.source = 'live';
+  }
+  
+  // Handle updatedAt mapping
+  if (p.info_last_synced && !p.updatedAt) {
+    p.updatedAt = p.info_last_synced;
   }
   
   return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };

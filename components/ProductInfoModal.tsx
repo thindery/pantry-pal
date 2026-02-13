@@ -200,41 +200,91 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
 
                 {activeTab === 'nutrition' && (
                   <div className="space-y-4">
-                    <p className="text-slate-500 text-sm text-center py-8">
-                      🍎 Nutrition information will be displayed here when available in the product database.
-                    </p>
-                    {/* Placeholder for future nutrition data */}
-                    <div className="grid grid-cols-2 gap-3 opacity-50">
-                      <div className="p-3 bg-slate-50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-slate-400">—</p>
-                        <p className="text-xs text-slate-500">Calories</p>
+                    {product?.nutrition ? (
+                      <>
+                        {/* Serving Info */}
+                        {(product.nutrition.servingSize || product.nutrition.servingUnit) && (
+                          <div className="p-3 bg-slate-50 rounded-lg text-center border border-slate-200">
+                            <p className="text-sm text-slate-500">Serving Size</p>
+                            <p className="font-medium text-slate-700">
+                              {product.nutrition.servingSize || product.nutrition.servingUnit}
+                            </p>
+                          </div>
+                        )}
+                        {/* Nutrition Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.calories !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.calories !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.calories !== undefined ? Math.round(product.nutrition.calories) : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Calories</p>
+                          </div>
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.protein !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.protein !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.protein !== undefined ? Math.round(product.nutrition.protein * 10) / 10 : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Protein (g)</p>
+                          </div>
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.carbs !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.carbs !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.carbs !== undefined ? Math.round(product.nutrition.carbs * 10) / 10 : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Carbs (g)</p>
+                          </div>
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.fat !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.fat !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.fat !== undefined ? Math.round(product.nutrition.fat * 10) / 10 : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Fat (g)</p>
+                          </div>
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.fiber !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.fiber !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.fiber !== undefined ? Math.round(product.nutrition.fiber * 10) / 10 : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Fiber (g)</p>
+                          </div>
+                          <div className={`p-3 rounded-lg text-center ${product.nutrition.sodium !== undefined ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50'}`}>
+                            <p className={`text-2xl font-bold ${product.nutrition.sodium !== undefined ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {product.nutrition.sodium !== undefined ? Math.round(product.nutrition.sodium * 10) / 10 : '—'}
+                            </p>
+                            <p className="text-xs text-slate-500">Sodium (mg)</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-400 text-center">Values per 100g</p>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-slate-500 text-sm">
+                          🍎 No nutrition information available for this product.
+                        </p>
                       </div>
-                      <div className="p-3 bg-slate-50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-slate-400">—</p>
-                        <p className="text-xs text-slate-500">Protein (g)</p>
-                      </div>
-                      <div className="p-3 bg-slate-50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-slate-400">—</p>
-                        <p className="text-xs text-slate-500">Carbs (g)</p>
-                      </div>
-                      <div className="p-3 bg-slate-50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-slate-400">—</p>
-                        <p className="text-xs text-slate-500">Fat (g)</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
                 {activeTab === 'ingredients' && (
                   <div className="space-y-4">
-                    <p className="text-slate-500 text-sm text-center py-8">
-                      📝 Ingredient list will be displayed here when available in the product database.
-                    </p>
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <p className="text-xs text-slate-400 italic">
-                        Ingredient data not yet loaded. This requires connection to a food database API.
-                      </p>
-                    </div>
+                    {product?.ingredients && product.ingredients.length > 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Ingredients</p>
+                        <ul className="space-y-2">
+                          {product.ingredients.map((ingredient: string, index: number) => (
+                            <li
+                              key={index}
+                              className="text-sm text-slate-700 border-b border-slate-200 pb-2 last:border-0 last:pb-0 leading-relaxed"
+                            >
+                              {ingredient}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-slate-500 text-sm">
+                          📝 No ingredient information available for this product.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
