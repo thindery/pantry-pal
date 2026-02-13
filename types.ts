@@ -16,6 +16,26 @@ export interface BarcodeProduct {
   image?: string;
 }
 
+export interface BarcodeScanRecord {
+  id: string;
+  barcode: string;
+  name: string;
+  category?: string;
+  scannedAt: string;
+  action: 'add' | 'lookup' | 'error';
+  quantityAdded?: number;
+  errorMessage?: string;
+  itemId?: string;
+}
+
+export interface BarcodeScanStats {
+  totalScans: number;
+  successfulScans: number;
+  failedScans: number;
+  mostScannedItems: { name: string; barcode: string; count: number }[];
+  scanHistoryByDate: { date: string; count: number }[];
+}
+
 export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';
 
 export interface Activity {
@@ -25,7 +45,7 @@ export interface Activity {
   type: ActivityType;
   amount: number;
   timestamp: string;
-  source: 'MANUAL' | 'RECEIPT_SCAN' | 'VISUAL_USAGE';
+  source: 'MANUAL' | 'RECEIPT_SCAN' | 'VISUAL_USAGE' | 'BARCODE_SCAN';
 }
 
 export interface ScanResult {
