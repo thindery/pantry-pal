@@ -9,6 +9,7 @@ import CheckoutResult from './components/CheckoutResult';
 import LandingPage from './components/LandingPage';
 import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
 import { ToastContainer, useToast } from './components/Toast';
+import ProductInfoModal from './components/ProductInfoModal';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
@@ -705,8 +706,9 @@ const InventoryItemRow: React.FC<{
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
+  onInfo: () => void;
   isUpdating: boolean;
-}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, isUpdating }) => {
+}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, onInfo, isUpdating }) => {
   const isOutOfStock = item.quantity <= 0;
   const getStep = (unit: string) => {
     if (['lbs', 'kg', 'grams', 'oz'].includes(unit)) return 0.5;
@@ -725,9 +727,18 @@ const InventoryItemRow: React.FC<{
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="capitalize">{item.category}</span>
           {item.barcode && (
-            <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
-              📱 {item.barcode.slice(-6)}
-            </span>
+            <>
+              <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
+                📱 {item.barcode.slice(-6)}
+              </span>
+              <button
+                onClick={onInfo}
+                className="text-slate-400 hover:text-emerald-600 transition-colors"
+                title="View product details"
+              >
+                ℹ️
+              </button>
+            </>
           )}
         </div>
       </td>
@@ -1004,6 +1015,7 @@ const AppContent: React.FC = () => {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -1640,6 +1652,12 @@ const AppContent: React.FC = () => {
         isLoading={isEditing}
       />
 
+      <ProductInfoModal
+        item={infoItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={!!infoItem}
+        onClose={() => setInfoItem(null)}
+      />
+
       <main className="py-8">
         {view === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -1799,6 +1817,7 @@ const AppContent: React.FC = () => {
                           onAdjustQuantity={handleAdjustQuantity}
                           onSetToZero={handleSetToZero}
                           onEdit={() => setEditingItem(item)}
+                          onInfo={() => setInfoItem(item)}
                           isUpdating={updatingItemIds.has(item.id)}
                         />
                       ))}
