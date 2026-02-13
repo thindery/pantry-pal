@@ -72,13 +72,24 @@ export const InventoryCard: React.FC<Props> = ({
       {/* Header: Name + Category */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3
-            className={`font-semibold text-slate-800 truncate ${
-              isOutOfStock ? 'text-slate-400' : ''
-            }`}
-          >
-            {item.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3
+              className={`font-semibold text-slate-800 truncate ${
+                isOutOfStock ? 'text-slate-400' : ''
+              }`}
+            >
+              {item.name}
+            </h3>
+            {item.barcode && (
+              <button
+                onClick={onInfo}
+                className="text-slate-400 hover:text-emerald-600 transition-colors flex-shrink-0"
+                title="View product details"
+              >
+                ℹ️
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-lg">{categoryIcons[item.category] || '📦'}</span>
             <span className="text-xs text-slate-500 capitalize">{item.category}</span>
@@ -121,12 +132,9 @@ export const InventoryCard: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Barcode (if present) */}
+      {/* Info button (if barcode present) */}
       {item.barcode && (
         <div className="flex items-center gap-2 mb-3 text-xs">
-          <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-500 font-mono">
-            📱 {item.barcode.slice(-6)}
-          </span>
           <button
             onClick={onInfo}
             className="text-slate-400 hover:text-emerald-600 transition-colors"

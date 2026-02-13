@@ -749,25 +749,20 @@ const InventoryItemRow: React.FC<{
   return (
     <tr className={`border-b border-slate-100 transition-colors ${isOutOfStock ? 'bg-slate-50' : 'hover:bg-slate-50'}`}>
       <td className="px-3 py-3 md:px-6 md:py-4">
-        <div className={`font-medium ${isOutOfStock ? 'text-slate-400' : 'text-slate-800'}`}>
-          {item.name}
+        <div className={`flex items-center gap-2 font-medium ${isOutOfStock ? 'text-slate-400' : 'text-slate-800'}`}>
+          <span>{item.name}</span>
+          {item.barcode && (
+            <button
+              onClick={onInfo}
+              className="text-slate-400 hover:text-emerald-600 transition-colors"
+              title="View product details"
+            >
+              ℹ️
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="capitalize">{item.category}</span>
-          {item.barcode && (
-            <>
-              <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
-                📱 {item.barcode.slice(-6)}
-              </span>
-              <button
-                onClick={onInfo}
-                className="text-slate-400 hover:text-emerald-600 transition-colors"
-                title="View product details"
-              >
-                ℹ️
-              </button>
-            </>
-          )}
         </div>
       </td>
       <td className="px-3 py-3 md:px-6 md:py-4">
