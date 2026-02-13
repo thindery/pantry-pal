@@ -1740,17 +1740,17 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
-
-      {/* Barcode Toast notification */}
-      {toast && toast.visible && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
-          {toast.message}
-        </div>
-      )}
-
+    <>
       <Navbar activeView={view} setView={setView} />
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+        {/* Barcode Toast notification */}
+        {toast && toast.visible && (
+          <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
+            {toast.message}
+          </div>
+        )}
 
       {isVoiceActive && (
         <VoiceAssistant onAdjustStock={adjustStock} onClose={() => setIsVoiceActive(false)} />
@@ -2464,6 +2464,7 @@ const AppContent: React.FC = () => {
         </button>
       )}
     </div>
+  </>
   );
 };
 
