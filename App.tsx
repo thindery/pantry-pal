@@ -3,6 +3,7 @@ import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } f
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';
 import PricingPage from './components/PricingPage';
 import CheckoutResult from './components/CheckoutResult';
@@ -2499,7 +2500,9 @@ const App: React.FC = () => {
         <LandingPageWithAuth />
       </SignedOut>
       <SignedIn>
-        <AppContent />
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
       </SignedIn>
     </>
   );
