@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier, BarcodeScanRecord, BarcodeScanStats } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
 import PricingPage from './components/PricingPage';
@@ -1007,10 +1007,15 @@ const AppContent: React.FC = () => {
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
 
+  // Barcode Scan History State
+  const [barcodeScanHistory, setBarcodeScanHistory] = useState<BarcodeScanRecord[]>([]);
+  const [showBarcodeHistory, setShowBarcodeHistory] = useState(false);
+
   // Load shopping list from localStorage on mount
   useEffect(() => {
     const savedList = localStorage.getItem('pantry_shopping_list');
     const savedThresholds = localStorage.getItem('pantry_threshold_config');
+    const savedBarcodeHistory = localStorage.getItem('pantry_barcode_history');
     
     if (savedList) {
       try {
@@ -1027,6 +1032,16 @@ const AppContent: React.FC = () => {
         console.error('Failed to parse threshold config:', e);
       }
     }
+
+    if (savedBarcodeHistory) {
+      try {
+        const parsed = JSON.parse(savedBarcodeHistory);
+        // Keep only last 100 scans
+        setBarcodeScanHistory(parsed.slice(-100));
+      } catch (e) {
+        console.error('Failed to parse barcode history:', e);
+      }
+    }
   }, []);
 
   // Save shopping list to localStorage
@@ -1038,6 +1053,11 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('pantry_threshold_config', JSON.stringify(thresholdConfig));
   }, [thresholdConfig]);
+
+  // Save barcode scan history to localStorage
+  useEffect(() => {
+    localStorage.setItem('pantry_barcode_history', JSON.stringify(barcodeScanHistory));
+  }, [barcodeScanHistory]);
 
   // Get threshold for a category (with fallback to default)
   const getThreshold = (category: string): number => {
@@ -1370,6 +1390,42 @@ const AppContent: React.FC = () => {
       setActivities((prev) => [newActivity, ...prev].slice(0, 100));
     }
   };
+
+  // Add barcode scan record to history
+  const addBarcodeScanRecord = useCallback((record: Omit<BarcodeScanRecord, 'id' | 'scannedAt'>) => {
+    const newRecord: BarcodeScanRecord = {
+      ...record,
+      id: `scan-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      scannedAt: new Date().toISOString(),
+    };
+    
+    setBarcodeScanHistory(prev => {
+      const updated = [...prev, newRecord].slice(-100); // Keep only last 100 scans
+      return updated;
+    });
+  }, []);
+
+  // Get barcode scan statistics
+  const getBarcodeScanStats = useCallback((): BarcodeScanStats => {
+    const totalScans = barcodeScanHistory.length;
+    const successfulScans = barcodeScanHistory.filter(s => s.action === 'add').length;
+    const failedScans = barcodeScanHistory.filter(s => s.action === 'error').length;
+    
+    // Count most scanned items
+    const itemCounts: Record<string, { name: string; barcode: string; count: number }> = {};
+    barcodeScanHistory.forEach(scan => {
+      if (!itemCounts[scan.barcode]) {
+        itemCounts[scan.barcode] = { name: scan.name, barcode: scan.barcode, count: 0 };
+      }
+      itemCounts[scan.barcode].count++;
+    });
+    
+    const mostScannedItems = Object.values(itemCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    return { totalScans, successfulScans, failedScans, mostScannedItems, scanHistoryByDate: [] };
+  }, [barcodeScanHistory]);
 
   // Subscription state
   const { isPaid, isPro, isFree, itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
@@ -1945,20 +2001,42 @@ const AppContent: React.FC = () => {
                 if (existing) {
                   // Update existing item
                   await handleAdjustQuantity(existing.id, 1);
+                  addBarcodeScanRecord({
+                    barcode: product.barcode,
+                    name: product.name,
+                    category: existing.category,
+                    action: 'add',
+                    quantityAdded: 1,
+                    itemId: existing.id,
+                  });
                   alert(`Added 1 ${existing.unit} to ${existing.name}`);
                 } else {
                   // Create new item with barcode
-                  await handleCreateItem({
+                  const newItem = await handleCreateItem({
                     name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
                     quantity: 1,
                     unit: 'units',
                     category: product.category || 'other',
                     barcode: product.barcode,
                   } as Omit<PantryItem, 'id' | 'lastUpdated'>);
+                  addBarcodeScanRecord({
+                    barcode: product.barcode,
+                    name: product.name,
+                    category: product.category,
+                    action: 'add',
+                    quantityAdded: 1,
+                    itemId: newItem?.id,
+                  });
                   alert(`Added ${product.name} to inventory!`);
                 }
                 setView('inventory');
               } catch (err) {
+                addBarcodeScanRecord({
+                  barcode: product.barcode,
+                  name: product.name,
+                  action: 'error',
+                  errorMessage: err instanceof Error ? err.message : 'Failed to add item',
+                });
                 alert('Failed to add item to inventory. Please try again.');
               }
             }}
