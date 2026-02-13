@@ -8,12 +8,28 @@ export interface PantryItem {
   barcode?: string;
 }
 
+export interface NutritionData {
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  sodium?: number;
+  sugar?: number;
+  servingSize?: string;
+  servingUnit?: string;
+}
+
 export interface BarcodeProduct {
   barcode: string;
   name: string;
   brand?: string;
   category?: string;
   image?: string;
+  source?: 'cache' | 'live' | 'stale';
+  updatedAt?: string;
+  nutrition?: NutritionData;
+  ingredients?: string[];
 }
 
 export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';

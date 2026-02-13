@@ -101,6 +101,29 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
       category = 'pantry';
     }
 
+    // Extract nutrition data from Open Food Facts
+    const nutriments = product.nutriments || {};
+    const nutrition = nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined
+      ? {
+          calories: nutriments['energy-kcal_100g'],
+          protein: nutriments.proteins_100g,
+          carbs: nutriments.carbohydrates_100g,
+          fat: nutriments.fat_100g,
+          fiber: nutriments.fiber_100g,
+          sodium: nutriments.sodium_100g,
+          sugar: nutriments.sugars_100g,
+          servingSize: product.serving_size,
+          servingUnit: product.serving_quantity,
+        }
+      : undefined;
+
+    // Extract ingredients
+    const ingredients = product.ingredients_text
+      ? product.ingredients_text.split(/,|\n/).map((i: string) => i.trim()).filter(Boolean)
+      : product.ingredients
+      ? product.ingredients.map((i: any) => i.text || i.id || String(i)).filter(Boolean)
+      : undefined;
+
     return {
       success: true,
       product: {
@@ -109,6 +132,10 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
         brand: product.brands?.split(',')[0]?.trim(),
         category,
         image: product.image_url,
+        source: 'live',
+        updatedAt: new Date().toISOString(),
+        nutrition,
+        ingredients,
       },
     };
   } catch (err) {
@@ -180,6 +207,8 @@ async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
         brand: item.brand,
         category,
         image: item.images?.[0],
+        source: 'live',
+        updatedAt: new Date().toISOString(),
       },
     };
   } catch (err) {
@@ -188,6 +217,30 @@ async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
     }
     throw err;
   }
+}
+
+/**
+ * Format a timestamp to relative time (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) return `${diffYears} year${diffYears === 1 ? '' : 's'} ago`;
+  if (diffMonths > 0) return `${diffMonths} month${diffMonths === 1 ? '' : 's'} ago`;
+  if (diffWeeks > 0) return `${diffWeeks} week${diffWeeks === 1 ? '' : 's'} ago`;
+  if (diffDays > 0) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  if (diffHours > 0) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  if (diffMins > 0) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+  return 'Just now';
 }
 
 /**

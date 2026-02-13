@@ -1,4 +1,4 @@
-import { PantryItem, Activity, ActivityType, TierInfo } from '../types';
+import { PantryItem, Activity, ActivityType, TierInfo, BarcodeProduct } from '../types';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
 
@@ -79,6 +79,19 @@ export const processUsage = (usageData: any) =>
     method: 'POST',
     body: JSON.stringify(usageData),
   });
+
+// Product Lookup API (includes cache status)
+export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
+  const result = await fetchApi<{ product: any; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
+  
+  // Transform backend response to match BarcodeProduct type
+  // Backend returns 'image_url' but type expects 'image'
+  if (result.product && result.product.image_url && !result.product.image) {
+    result.product.image = result.product.image_url;
+  }
+  
+  return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+};
 
 // Subscription API
 export const getTierInfo = (): Promise<TierInfo> =>

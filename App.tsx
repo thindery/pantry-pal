@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
@@ -12,6 +12,7 @@ import { ToastContainer, useToast } from './components/Toast';
 import ProductInfoModal from './components/ProductInfoModal';
 import LinkBarcodeModal from './components/LinkBarcodeModal';
 import InventoryCard from './components/InventoryCard';
+import ActivityLedger from './components/ActivityLedger';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
@@ -21,6 +22,15 @@ import {
   getActivities,
   useSetupAuthToken,
 } from './services/apiService';
+import {
+  QuickActionBar,
+  StatCardMini,
+  LowStockPreview,
+  ShoppingListPreview,
+  CategoryPills,
+  InlineQuickAdd,
+  RecentActivityPreview,
+} from './components/DashboardComponents';
 
 // --- Audio Utilities ---
 function decode(base64: string) {
@@ -1036,6 +1046,13 @@ const AppContent: React.FC = () => {
   // Toast notifications
   const { toasts, success, error, removeToast } = useToast();
 
+  // Local toast state for barcode scan notifications
+  const [toast, setToast] = useState<{message: string; type: 'success' | 'error'; visible: boolean} | null>(null);
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({message, type, visible: true});
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const [view, setView] = useState<View>('dashboard');
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -1060,6 +1077,24 @@ const AppContent: React.FC = () => {
     }
     return 'table';
   });
+
+  // Sort state
+  const [sortBy, setSortBy] = useState<'recent' | 'quantity' | 'alphabetical'>('recent');
+
+  // Sorted inventory
+  const sortedInventory = useMemo(() => {
+    const items = [...inventory];
+    switch (sortBy) {
+      case 'recent':
+        return items.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime());
+      case 'quantity':
+        return items.sort((a, b) => b.quantity - a.quantity);
+      case 'alphabetical':
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+      default:
+        return items;
+    }
+  }, [inventory, sortBy]);
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -1708,6 +1743,13 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
+      {/* Barcode Toast notification */}
+      {toast && toast.visible && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
+          {toast.message}
+        </div>
+      )}
+
       <Navbar activeView={view} setView={setView} />
 
       {isVoiceActive && (
@@ -1738,93 +1780,82 @@ const AppContent: React.FC = () => {
 
       <main className="py-8">
         {view === 'dashboard' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <header className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold text-slate-900">Welcome Home!</h1>
-              <p className="text-slate-500">How would you like to update your pantry?</p>
-            </header>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => setView('scan-receipt')}
-                className="bg-emerald-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🧾</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Log Groceries</h3>
-                  <p className="text-emerald-100 text-sm">Scan a receipt</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setView('scan-usage')}
-                className="bg-amber-500 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🍳</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Log Cooking</h3>
-                  <p className="text-amber-100 text-sm">Scan counter items</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setView('scan-barcode')}
-                className="bg-rose-500 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">📱</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Scan Barcode</h3>
-                  <p className="text-rose-100 text-sm">Quick add items</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setIsVoiceActive(true)}
-                className="bg-indigo-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🎙️</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Voice Assistant</h3>
-                  <p className="text-indigo-100 text-sm">"I used 2 apples"</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setView('add-item')}
-                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-4"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">➕</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Add Item Manually</h3>
-                  <p className="text-sky-100 text-sm">Enter item details by hand</p>
-                </div>
-              </button>
+          <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header with Quick Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">Your Pantry</h1>
+                <p className="text-slate-500 text-sm">Quick overview of your inventory</p>
+              </div>
+              <QuickActionBar
+                actions={[
+                  { id: 'add', icon: '➕', label: 'Add', onClick: () => setView('add-item'), variant: 'primary' },
+                  { id: 'scan-barcode', icon: '📱', label: 'Scan', onClick: () => setView('scan-barcode'), variant: 'secondary' },
+                  { id: 'scan-receipt', icon: '🧾', label: 'Receipt', onClick: handleScanReceiptClick, variant: 'secondary' },
+                  { id: 'voice', icon: '🎙️', label: 'Voice', onClick: handleVoiceAssistantClick, variant: 'accent' },
+                  { id: 'shopping', icon: '🛒', label: 'List', onClick: () => setView('shopping-list'), variant: 'secondary' },
+                ]}
+              />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p className="text-xs text-slate-500 uppercase font-semibold">Total Items</p>
-                <p className="text-2xl font-bold text-slate-800">{inventory.length}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p className="text-xs text-slate-500 uppercase font-semibold">In Stock</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  {(inventory || []).filter((i) => i.quantity > 0).length}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p className="text-xs text-slate-500 uppercase font-semibold">Low Stock</p>
-                <p className="text-2xl font-bold text-amber-500">
-                  {(inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p className="text-xs text-slate-500 uppercase font-semibold">Out of Stock</p>
-                <p className="text-2xl font-bold text-slate-400">
-                  {(inventory || []).filter((i) => i.quantity === 0).length}
-                </p>
-              </div>
+            {/* Stats Row */}
+            <StatCardMini
+              stats={[
+                { label: 'Total', value: inventory.length, color: 'sky' },
+                { label: 'In Stock', value: (inventory || []).filter((i) => i.quantity > 0).length, color: 'emerald' },
+                { label: 'Low Stock', value: (inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
+                { label: 'Out of Stock', value: (inventory || []).filter((i) => i.quantity === 0).length, color: 'slate' },
+              ]}
+            />
+
+            {/* Two Column Layout: Low Stock + Shopping List */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <LowStockPreview
+                items={inventory}
+                onAdjustQuantity={handleAdjustQuantity}
+                onViewAll={() => setView('inventory')}
+              />
+              <ShoppingListPreview
+                items={shoppingList}
+                onToggleItem={toggleItemChecked}
+                onViewAll={() => setView('shopping-list')}
+              />
             </div>
+
+            {/* Category Pills */}
+            <CategoryPills
+              categories={CATEGORIES.map((cat) => {
+                const count = inventory.filter((i) => i.category === cat).length;
+                const lowStockCount = inventory.filter((i) => i.category === cat && i.quantity > 0 && i.quantity < 3).length;
+                const icons: Record<string, string> = {
+                  produce: '🥬',
+                  pantry: '🥫',
+                  dairy: '🥛',
+                  frozen: '🧊',
+                  meat: '🥩',
+                  beverages: '🥤',
+                  snacks: '🍿',
+                  other: '📦',
+                };
+                return {
+                  id: cat,
+                  name: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  icon: icons[cat] || '📦',
+                  count,
+                  lowStockCount,
+                };
+              })}
+              onCategoryClick={(catId) => setView('inventory')}
+            />
+
+            {/* Recent Activity */}
+            <RecentActivityPreview activities={activities} maxItems={5} />
+
+            {/* Quick Add Bar */}
+            <InlineQuickAdd
+              onAdd={(item) => handleCreateItem({ ...item, unit: 'units' })}
+              categories={CATEGORIES}
+            />
           </div>
         )}
 
@@ -1832,7 +1863,34 @@ const AppContent: React.FC = () => {
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
+                {/* Sort Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSortBy('recent')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      sortBy === 'recent' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Recent
+                  </button>
+                  <button
+                    onClick={() => setSortBy('quantity')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      sortBy === 'quantity' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Quantity
+                  </button>
+                  <button
+                    onClick={() => setSortBy('alphabetical')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      sortBy === 'alphabetical' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Name
+                  </button>
+                </div>
                 {/* View Mode Toggle */}
                 <div className="flex items-center bg-slate-100 rounded-xl p-1 mr-2">
                   <button
@@ -1913,7 +1971,7 @@ const AppContent: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {inventory.map((item) => (
+                      {sortedInventory.map((item) => (
                         <InventoryItemRow
                           key={item.id}
                           item={item}
@@ -1931,7 +1989,7 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {inventory.map((item) => (
+                {sortedInventory.map((item) => (
                   <InventoryCard
                     key={item.id}
                     item={item}
@@ -1967,57 +2025,12 @@ const AppContent: React.FC = () => {
         )}
 
         {view === 'ledger' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800">Activity Ledger</h2>
-
-            {activitiesError && (
-              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm flex justify-between items-center">
-                <span>Error loading activities: {activitiesError}</span>
-                <button
-                  onClick={loadActivities}
-                  className="px-3 py-1 bg-rose-100 rounded-lg hover:bg-rose-200 transition-colors"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {isLoadingActivities ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin text-4xl">⏳</div>
-              </div>
-            ) : activities.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-                <p className="text-4xl mb-4">📜</p>
-                <p className="text-slate-500">No activities yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-bold text-slate-800">{activity.itemName}</p>
-                      <p className="text-xs text-slate-400">
-                        {new Date(activity.timestamp).toLocaleString()} •{' '}
-                        {activity.source.replace('_', ' ')}
-                      </p>
-                    </div>
-                    <p
-                      className={`font-bold ${
-                        activity.type === 'ADD' ? 'text-emerald-600' : 'text-rose-600'
-                      }`}
-                    >
-                      {activity.type === 'ADD' ? '+' : '-'}
-                      {activity.amount}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ActivityLedger
+            activities={activities}
+            isLoading={isLoadingActivities}
+            error={activitiesError}
+            onRetry={loadActivities}
+          />
         )}
 
         {view === 'scan-receipt' && (
@@ -2110,7 +2123,7 @@ const AppContent: React.FC = () => {
                   }
                   // Update existing item quantity
                   await handleAdjustQuantity(existing.id, 1);
-                  alert(`Added 1 ${existing.unit} to ${existing.name}`);
+                  success(`Added 1 ${existing.unit} to ${existing.name}`);
                 } else {
                   // Create new item with barcode and product info
                   await handleCreateItem({
@@ -2131,11 +2144,11 @@ const AppContent: React.FC = () => {
                       infoLastSynced: product.infoLastSynced || new Date().toISOString(),
                     },
                   });
-                  alert(`Added ${product.name} to inventory!`);
+                  showToast(`${product.name} added to inventory`, 'success');
                 }
                 setView('inventory');
               } catch (err) {
-                alert('Failed to add item to inventory. Please try again.');
+                showToast('Failed to add item to inventory. Please try again.', 'error');
               }
             }}
             onCancel={() => setView('inventory')}

@@ -410,12 +410,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
               </div>
             )}
             <div className="flex-1">
-              <h3 className="font-bold text-lg text-slate-800">
-                {detectedProduct.name || 'Unknown Product'}
-              </h3>
-              {detectedProduct.brand && (
-                <p className="text-slate-500 text-sm">{detectedProduct.brand}</p>
-              )}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-800">
+                    {detectedProduct.name || 'Unknown Product'}
+                  </h3>
+                  {detectedProduct.brand && (
+                    <p className="text-slate-500 text-sm">{detectedProduct.brand}</p>
+                  )}
+                </div>
+                {detectedProduct.source && (
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${detectedProduct.source === 'cache' ? 'bg-blue-100 text-blue-700' : detectedProduct.source === 'stale' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {detectedProduct.source === 'cache' ? '🟡 Cached' : detectedProduct.source === 'stale' ? '🟠 Stale' : '🟢 Live'}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400 mt-1">Barcode: {detectedProduct.barcode}</p>
               <span className="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full uppercase">
                 {detectedProduct.category || 'other'}

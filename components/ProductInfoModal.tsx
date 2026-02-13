@@ -1,5 +1,6 @@
-import React from 'react';
-import { PantryItem } from '../types';
+import React, { useState, useEffect } from 'react';
+import { PantryItem, BarcodeProduct } from '../types';
+import { getProductByBarcode } from '../services/apiService';
 
 interface ProductInfoModalProps {
   item: PantryItem;
@@ -8,66 +9,248 @@ interface ProductInfoModalProps {
 }
 
 const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClose }) => {
+  const [product, setProduct] = useState<BarcodeProduct | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [fromCache, setFromCache] = useState(false);
+  const [cachedAt, setCachedAt] = useState<string | undefined>();
+  const [activeTab, setActiveTab] = useState<'overview' | 'nutrition' | 'ingredients'>('overview');
+
+  useEffect(() => {
+    if (isOpen && item.barcode) {
+      fetchProductInfo();
+    }
+  }, [isOpen, item.barcode]);
+
+  const fetchProductInfo = async () => {
+    if (!item.barcode) return;
+    
+    setLoading(true);
+    try {
+      const result = await getProductByBarcode(item.barcode);
+      if (result.product) {
+        setProduct(result.product);
+        setFromCache(result.fromCache || false);
+        setCachedAt(result.cachedAt);
+      } else {
+        // Fallback to pantry item data if no barcode product found
+        setProduct({
+          barcode: item.barcode,
+          name: item.name,
+          category: item.category,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch product info:', err);
+      // Fallback to pantry item data
+      setProduct({
+        barcode: item.barcode,
+        name: item.name,
+        category: item.category,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get cache status display
+  const getCacheStatus = () => {
+    if (product?.source === 'live') {
+      return { label: '🟢 Live', className: 'bg-emerald-100 text-emerald-700' };
+    } else if (product?.source === 'stale') {
+      return { label: '🟠 Stale', className: 'bg-orange-100 text-orange-700' };
+    } else if (fromCache || product?.source === 'cache') {
+      return { label: '🟡 Cached', className: 'bg-blue-100 text-blue-700' };
+    }
+    return { label: '—', className: 'bg-slate-100 text-slate-600' };
+  };
+
+  const cacheStatus = getCacheStatus();
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return '—';
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center mb-6">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex justify-between items-center z-10">
           <h2 className="text-xl font-bold text-slate-800">Product Details</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-2xl leading-none"
+            className="text-slate-400 hover:text-slate-600 text-2xl leading-none p-1 hover:bg-slate-100 rounded-lg transition-colors"
           >
             ×
           </button>
         </div>
 
-        <div className="flex items-start gap-4 mb-6">
-          {/* Placeholder image - in a real app, would fetch from barcode lookup */}
-          <div className="w-24 h-24 bg-slate-100 rounded-xl flex items-center justify-center text-4xl flex-shrink-0">
-            📦
+        {loading ? (
+          <div className="p-8 flex flex-col items-center justify-center">
+            <div className="animate-spin text-4xl mb-3">⏳</div>
+            <p className="text-slate-600">Loading product info...</p>
           </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-lg text-slate-800">{item.name}</h3>
-            <p className="text-slate-500 text-sm capitalize">{item.category}</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            {/* Product Image & Core Info */}
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-6">
+                {product?.image ? (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-24 h-24 object-contain bg-slate-50 rounded-xl flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-slate-100 rounded-xl flex items-center justify-center text-4xl flex-shrink-0">
+                    📦
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg text-slate-800 leading-tight">{product?.name || item.name}</h3>
+                  {product?.brand && (
+                    <p className="text-slate-500 text-sm mt-1">{product.brand}</p>
+                  )}
+                  <span className="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full uppercase">
+                    {product?.category || item.category}
+                  </span>
+                </div>
+              </div>
 
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
-            <span className="text-slate-500">Barcode</span>
-            <span className="font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded text-sm">
-              {item.barcode}
-            </span>
-          </div>
+              {/* Data Source Badge */}
+              <div className="mb-6 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Data Source</span>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${cacheStatus.className}`}>
+                    {cacheStatus.label}
+                  </span>
+                </div>
+                {(cachedAt || product?.updatedAt) && (
+                  <p className="text-xs text-slate-500 mt-2">
+                    Updated {formatDate(cachedAt || product?.updatedAt)}
+                  </p>
+                )}
+              </div>
 
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
-            <span className="text-slate-500">Brand</span>
-            <span className="text-slate-700">—</span>
-          </div>
+              {/* Tab Navigation */}
+              <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-4">
+                {(['overview', 'nutrition', 'ingredients'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize transition-all ${
+                      activeTab === tab
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-800'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
 
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
-            <span className="text-slate-500">Quantity in Stock</span>
-            <span className="font-semibold text-emerald-600">
-              {item.quantity} {item.unit}
-            </span>
-          </div>
+              {/* Tab Content */}
+              <div className="min-h-[200px]">
+                {activeTab === 'overview' && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-slate-500">Barcode</span>
+                      <span className="font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded text-sm">
+                        {item.barcode}
+                      </span>
+                    </div>
 
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
-            <span className="text-slate-500">Last Updated</span>
-            <span className="text-slate-700 text-sm">
-              {new Date(item.lastUpdated).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-slate-500">Brand</span>
+                      <span className="text-slate-700">{product?.brand || '—'}</span>
+                    </div>
 
-        <button
-          onClick={onClose}
-          className="w-full mt-6 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-        >
-          Close
-        </button>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-slate-500">Category</span>
+                      <span className="text-slate-700 capitalize">{item.category}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-slate-500">Quantity in Stock</span>
+                      <span className="font-semibold text-emerald-600">
+                        {item.quantity} {item.unit}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-slate-500">Last Updated</span>
+                      <span className="text-slate-700 text-sm">
+                        {formatDate(item.lastUpdated)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'nutrition' && (
+                  <div className="space-y-4">
+                    <p className="text-slate-500 text-sm text-center py-8">
+                      🍎 Nutrition information will be displayed here when available in the product database.
+                    </p>
+                    {/* Placeholder for future nutrition data */}
+                    <div className="grid grid-cols-2 gap-3 opacity-50">
+                      <div className="p-3 bg-slate-50 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-slate-400">—</p>
+                        <p className="text-xs text-slate-500">Calories</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-slate-400">—</p>
+                        <p className="text-xs text-slate-500">Protein (g)</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-slate-400">—</p>
+                        <p className="text-xs text-slate-500">Carbs (g)</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-slate-400">—</p>
+                        <p className="text-xs text-slate-500">Fat (g)</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'ingredients' && (
+                  <div className="space-y-4">
+                    <p className="text-slate-500 text-sm text-center py-8">
+                      📝 Ingredient list will be displayed here when available in the product database.
+                    </p>
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-xs text-slate-400 italic">
+                        Ingredient data not yet loaded. This requires connection to a food database API.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-200">
+              <button
+                onClick={onClose}
+                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
