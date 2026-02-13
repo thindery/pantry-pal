@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, Users, Package, CreditCard, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Package, CreditCard, Settings, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
-type AdminView = 'dashboard' | 'users' | 'products' | 'stripe';
+type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe';
 
 interface SidebarProps {
   activeView: AdminView;
@@ -18,6 +18,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { id: 'errors', label: 'Errors', icon: <AlertTriangle className="w-5 h-5" /> },
   { id: 'users', label: 'Users', icon: <Users className="w-5 h-5" /> },
   { id: 'products', label: 'Products', icon: <Package className="w-5 h-5" /> },
   { id: 'stripe', label: 'Stripe', icon: <CreditCard className="w-5 h-5" /> },

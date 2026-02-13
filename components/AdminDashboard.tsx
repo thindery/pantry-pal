@@ -3,9 +3,22 @@ import { Sidebar, KPICard, ChartCard, TransactionsList } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import { Period, DashboardMetrics } from '../types/admin';
 import { getMockDashboardMetrics } from '../services/adminService';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 
-type AdminView = 'dashboard' | 'users' | 'products' | 'stripe';
+type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe';
+
+interface ClientError {
+  id: string;
+  user_id: string | null;
+  error_type: string;
+  error_message: string;
+  error_stack: string | null;
+  component: string | null;
+  url: string | null;
+  user_agent: string | null;
+  resolved: boolean;
+  created_at: string;
+}
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -17,6 +30,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [period, setPeriod] = useState<Period>('7d');
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errors, setErrors] = useState<ClientError[]>([]);
+  const [loadingErrors, setLoadingErrors] = useState(false);
 
   useEffect(() => {
     // Simulate API call
@@ -26,6 +41,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       setIsLoading(false);
     }, 500);
   }, [period]);
+
+  // Fetch errors when viewing errors tab
+  useEffect(() => {
+    if (activeView === 'errors') {
+      setLoadingErrors(true);
+      fetch('/api/client-errors?resolved=false')
+        .then(r => r.json())
+        .then(data => setErrors(data.errors || []))
+        .catch(console.error)
+        .finally(() => setLoadingErrors(false));
+    }
+  }, [activeView]);
+
+  // Handle resolve error
+  const resolveError = async (id: string) => {
+    try {
+      const res = await fetch(`/api/client-errors/${id}/resolve`, {
+        method: 'PATCH',
+      });
+      if (res.ok) {
+        setErrors(errors.filter(e => e.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to resolve error:', err);
+    }
+  };
 
   // Handle window resize for sidebar
   useEffect(() => {
@@ -124,6 +165,71 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               transactions={metrics.transactions}
               failedCount={metrics.alerts.failedPayments}
             />
+          </div>
+        )}
+
+        {activeView === 'errors' && (
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <AlertTriangle className="w-8 h-8 text-rose-500" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Client Errors</h1>
+                <p className="text-slate-500">Errors reported from client applications</p>
+              </div>
+            </div>
+            
+            {loadingErrors ? (
+              <div className="flex items-center gap-3 text-slate-500">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Loading errors...</span>
+              </div>
+            ) : errors.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+                <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                <p className="text-slate-500">No unresolved errors! 🎉</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Time</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Type</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Message</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Component</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {errors.map(err => (
+                      <tr key={err.id} className="border-t border-slate-100 hover:bg-slate-50">
+                        <td className="px-4 py-3 text-sm text-slate-600">
+                          {new Date(err.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-rose-600">
+                          {err.error_type}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-700 max-w-xs truncate" title={err.error_message}>
+                          {err.error_message}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600">
+                          {err.component || 'Unknown'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => resolveError(err.id)}
+                            className="flex items-center gap-2 text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-200 transition-colors"
+                          >
+                            <CheckCircle className="w-3 h-3" />
+                            Resolve
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

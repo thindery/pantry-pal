@@ -30,24 +30,26 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, errorInfo });
     
     // Send error to backend for logging
-    this.logErrorToBackend(error, errorInfo);
+    this.reportError(error, errorInfo);
   }
   
-  // Log error to backend for admin dashboard
-  private logErrorToBackend(error: Error, errorInfo: React.ErrorInfo) {
+  // Report error to backend for admin dashboard
+  private reportError(error: Error, errorInfo: React.ErrorInfo) {
     try {
-      fetch('/api/errors', {
+      const errorData = {
+        type: error.name,
+        message: error.message,
+        stack: error.stack,
+        component: errorInfo.componentStack?.split('\n')[1]?.trim(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      };
+      
+      fetch('/api/client-errors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: error?.name,
-          message: error?.message,
-          component: errorInfo?.componentStack?.split('\n')[1]?.trim(),
-          url: window.location.href,
-          userAgent: navigator.userAgent,
-          stack: errorInfo?.componentStack?.slice(0, 1000),
-        }),
-      }).catch(console.error);
+        body: JSON.stringify(errorData),
+      }).catch(console.error); // Silent fail - don't crash error reporting
     } catch (err) {
       console.error('Failed to log error to backend:', err);
     }
