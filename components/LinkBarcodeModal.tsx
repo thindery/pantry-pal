@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { BarcodeProduct, PantryItem, CacheStatus, CacheStatusInfo } from '../types';
 import { lookupBarcode, BarcodeLookupResult, formatRelativeTime } from '../services/barcodeService';
