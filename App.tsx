@@ -1426,20 +1426,27 @@ const AppContent: React.FC = () => {
       const item = inventory.find((i) => i.id === id);
       if (!item) return;
 
+      // Calculate new quantity and adjustment amount
       const newQuantity = Math.max(0, item.quantity + delta);
-      const updatedItem = await updateItem(id, { quantity: newQuantity });
+      const actualDelta = newQuantity - item.quantity;
 
+      // Skip if no actual change
+      if (actualDelta === 0) return;
+
+      // Call activities endpoint which updates quantity AND logs activity
+      await logActivity({
+        itemId: item.id,
+        itemName: item.name,
+        type: actualDelta > 0 ? 'ADD' : 'REMOVE',
+        amount: Math.abs(actualDelta),
+        source: 'MANUAL',
+      });
+
+      // Update local state optimistically
       setInventory((prev) =>
         prev.map((i) =>
-          i.id === id ? { ...i, quantity: newQuantity, lastUpdated: updatedItem.lastUpdated } : i
+          i.id === id ? { ...i, quantity: newQuantity, lastUpdated: new Date().toISOString() } : i
         )
-      );
-
-      await addActivityLog(
-        { id: item.id, name: item.name },
-        delta >= 0 ? 'ADD' : 'REMOVE',
-        delta,
-        'MANUAL'
       );
     } catch (err) {
       console.error('Failed to adjust quantity:', err);
@@ -1455,22 +1462,24 @@ const AppContent: React.FC = () => {
 
   const handleSetToZero = async (id: string) => {
     const item = inventory.find((i) => i.id === id);
-    if (!item) return;
+    if (!item || item.quantity === 0) return;
 
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
-      const updatedItem = await updateItem(id, { quantity: 0 });
+      // Call activities endpoint which updates quantity AND logs activity
+      await logActivity({
+        itemId: item.id,
+        itemName: item.name,
+        type: 'REMOVE',
+        amount: item.quantity,
+        source: 'MANUAL',
+      });
+
+      // Update local state optimistically
       setInventory((prev) =>
         prev.map((i) =>
-          i.id === id ? { ...i, quantity: 0, lastUpdated: updatedItem.lastUpdated } : i
+          i.id === id ? { ...i, quantity: 0, lastUpdated: new Date().toISOString() } : i
         )
-      );
-
-      await addActivityLog(
-        { id: item.id, name: item.name },
-        'ADJUST',
-        item.quantity,
-        'MANUAL'
       );
     } catch (err) {
       console.error('Failed to set quantity to 0:', err);
