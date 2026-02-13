@@ -9,6 +9,7 @@ import CheckoutResult from './components/CheckoutResult';
 import LandingPage from './components/LandingPage';
 import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
 import { ToastContainer, useToast } from './components/Toast';
+import ProductInfoModal from './components/ProductInfoModal';
 import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
 import {
   getItems,
@@ -705,8 +706,9 @@ const InventoryItemRow: React.FC<{
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
+  onInfo: () => void;
   isUpdating: boolean;
-}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, isUpdating }) => {
+}> = ({ item, onAdjustQuantity, onSetToZero, onEdit, onInfo, isUpdating }) => {
   const isOutOfStock = item.quantity <= 0;
   const getStep = (unit: string) => {
     if (['lbs', 'kg', 'grams', 'oz'].includes(unit)) return 0.5;
@@ -725,9 +727,18 @@ const InventoryItemRow: React.FC<{
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="capitalize">{item.category}</span>
           {item.barcode && (
-            <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
-              📱 {item.barcode.slice(-6)}
-            </span>
+            <>
+              <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[10px] font-mono" title={`Barcode: ${item.barcode}`}>
+                📱 {item.barcode.slice(-6)}
+              </span>
+              <button
+                onClick={onInfo}
+                className="text-slate-400 hover:text-emerald-600 transition-colors"
+                title="View product details"
+              >
+                ℹ️
+              </button>
+            </>
           )}
         </div>
       </td>
@@ -1004,6 +1015,7 @@ const AppContent: React.FC = () => {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -1037,6 +1049,13 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
   }, [shoppingList]);
+
+  // Auto-generate shopping list when inventory changes
+  useEffect(() => {
+    if (inventory.length > 0) {
+      generateShoppingList();
+    }
+  }, [inventory]);
 
   // Save threshold config to localStorage
   useEffect(() => {
@@ -1640,6 +1659,12 @@ const AppContent: React.FC = () => {
         isLoading={isEditing}
       />
 
+      <ProductInfoModal
+        item={infoItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={!!infoItem}
+        onClose={() => setInfoItem(null)}
+      />
+
       <main className="py-8">
         {view === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -1799,6 +1824,7 @@ const AppContent: React.FC = () => {
                           onAdjustQuantity={handleAdjustQuantity}
                           onSetToZero={handleSetToZero}
                           onEdit={() => setEditingItem(item)}
+                          onInfo={() => setInfoItem(item)}
                           isUpdating={updatingItemIds.has(item.id)}
                         />
                       ))}
@@ -1990,7 +2016,7 @@ const AppContent: React.FC = () => {
                 <h2 className="text-2xl font-bold text-slate-800">🛒 Shopping List</h2>
                 <p className="text-slate-500 text-sm mt-1">
                   {shoppingList.length === 0 
-                    ? 'Generate a list from low stock items'
+                    ? 'Auto-generated from low stock items'
                     : `${shoppingList.filter(i => i.isChecked).length}/${shoppingList.length} items checked`}
                 </p>
               </div>
@@ -2010,11 +2036,11 @@ const AppContent: React.FC = () => {
                   {isGeneratingList ? (
                     <>
                       <span className="animate-spin">⏳</span>
-                      Generating...
+                      Refreshing...
                     </>
                   ) : (
                     <>
-                      <span>🔄</span> Generate List
+                      <span>🔄</span> Refresh List
                     </>
                   )}
                 </button>
@@ -2023,17 +2049,10 @@ const AppContent: React.FC = () => {
 
             {shoppingList.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-                <p className="text-4xl mb-4">🛒</p>
-                <p className="text-slate-500 mb-4">No items in your shopping list yet</p>
-                <button
-                  onClick={generateShoppingList}
-                  disabled={isGeneratingList}
-                  className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                >
-                  Generate from Inventory
-                </button>
-                <p className="text-slate-400 text-sm mt-4">
-                  We'll scan your inventory for low stock items
+                <p className="text-4xl mb-4">✅</p>
+                <p className="text-slate-600 font-semibold mb-2">You're all stocked!</p>
+                <p className="text-slate-400 text-sm">
+                  No low stock items found in your inventory
                 </p>
               </div>
             ) : (
