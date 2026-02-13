@@ -132,19 +132,6 @@ export const InventoryCard: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Info button (if barcode present) */}
-      {item.barcode && (
-        <div className="flex items-center gap-2 mb-3 text-xs">
-          <button
-            onClick={onInfo}
-            className="text-slate-400 hover:text-emerald-600 transition-colors"
-            title="View product details"
-          >
-            ℹ️
-          </button>
-        </div>
-      )}
-
       {/* Actions Row */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         <div className="flex items-center gap-1">
