@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier, ShoppingListConfig, ShoppingListExportFormat, ShoppingListExportOptions, ShoppingItemPriority } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import BarcodeScanner from './components/BarcodeScanner';
 import PricingPage from './components/PricingPage';
@@ -103,6 +103,16 @@ const DEFAULT_THRESHOLDS: ThresholdConfig = {
   beverages: 2,
   snacks: 2,
   other: 2,
+};
+
+// Default shopping list auto-configuration
+const DEFAULT_SHOPPING_CONFIG: ShoppingListConfig = {
+  autoRefresh: true,
+  autoRefreshInterval: 30, // 30 minutes
+  autoArchiveChecked: false,
+  archiveAfterDays: 7,
+  defaultPriority: 'medium',
+  enableNotifications: true,
 };
 
 // --- Components ---
@@ -1006,15 +1016,26 @@ const AppContent: React.FC = () => {
   const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
+  const [shoppingConfig, setShoppingConfig] = useState<ShoppingListConfig>(DEFAULT_SHOPPING_CONFIG);
+  const [showShoppingConfig, setShowShoppingConfig] = useState(false);
+  const [lastAutoRefresh, setLastAutoRefresh] = useState<Date | null>(null);
 
   // Load shopping list from localStorage on mount
   useEffect(() => {
     const savedList = localStorage.getItem('pantry_shopping_list');
     const savedThresholds = localStorage.getItem('pantry_threshold_config');
+    const savedShoppingConfig = localStorage.getItem('pantry_shopping_config');
     
     if (savedList) {
       try {
-        setShoppingList(JSON.parse(savedList));
+        const parsed = JSON.parse(savedList);
+        // Ensure backward compatibility - add missing fields
+        const migratedList = parsed.map((item: ShoppingListItem) => ({
+          ...item,
+          priority: item.priority ?? 'medium',
+          isArchived: item.isArchived ?? false,
+        }));
+        setShoppingList(migratedList);
       } catch (e) {
         console.error('Failed to parse shopping list:', e);
       }
@@ -1025,6 +1046,14 @@ const AppContent: React.FC = () => {
         setThresholdConfig(JSON.parse(savedThresholds));
       } catch (e) {
         console.error('Failed to parse threshold config:', e);
+      }
+    }
+
+    if (savedShoppingConfig) {
+      try {
+        setShoppingConfig({ ...DEFAULT_SHOPPING_CONFIG, ...JSON.parse(savedShoppingConfig) });
+      } catch (e) {
+        console.error('Failed to parse shopping config:', e);
       }
     }
   }, []);
@@ -1038,6 +1067,74 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('pantry_threshold_config', JSON.stringify(thresholdConfig));
   }, [thresholdConfig]);
+
+  // Save shopping config to localStorage
+  useEffect(() => {
+    localStorage.setItem('pantry_shopping_config', JSON.stringify(shoppingConfig));
+  }, [shoppingConfig]);
+
+  // Auto-refresh shopping list based on inventory changes
+  useEffect(() => {
+    if (!shoppingConfig.autoRefresh || shoppingList.length === 0) return;
+    
+    const minutesSinceLastRefresh = lastAutoRefresh 
+      ? (Date.now() - lastAutoRefresh.getTime()) / 60000 
+      : Infinity;
+    
+    if (minutesSinceLastRefresh >= shoppingConfig.autoRefreshInterval) {
+      // Check if any inventory items dropped below threshold
+      const currentLowStockItems = new Set(
+        inventory
+          .filter(item => item.quantity <= getThreshold(item.category))
+          .map(item => item.name.toLowerCase())
+      );
+      
+      // Add any missing low stock items to shopping list
+      const itemsToAdd = inventory.filter(item => 
+        item.quantity <= getThreshold(item.category) &&
+        !shoppingList.some(listItem => listItem.name.toLowerCase() === item.name.toLowerCase())
+      );
+      
+      if (itemsToAdd.length > 0) {
+        const newItems: ShoppingListItem[] = itemsToAdd.map(item => ({
+          id: `auto-${item.id}-${Date.now()}`,
+          name: item.name,
+          category: item.category,
+          currentQuantity: item.quantity,
+          suggestedQuantity: calculateSuggestedQuantity(item),
+          unit: item.unit,
+          isManual: false,
+          isChecked: false,
+          isArchived: false,
+          addedAt: new Date().toISOString(),
+          reason: 'low_stock',
+          priority: shoppingConfig.defaultPriority,
+          autoAddedAt: new Date().toISOString(),
+        }));
+        
+        setShoppingList(prev => [...prev, ...newItems].sort((a, b) => a.category.localeCompare(b.category)));
+        setLastAutoRefresh(new Date());
+      }
+    }
+  }, [inventory, shoppingConfig.autoRefresh, shoppingConfig.autoRefreshInterval, shoppingConfig.defaultPriority, lastAutoRefresh, shoppingList, getThreshold, calculateSuggestedQuantity]);
+
+  // Auto-archive checked items after configured days
+  useEffect(() => {
+    if (!shoppingConfig.autoArchiveChecked) return;
+    
+    const archiveThreshold = shoppingConfig.archiveAfterDays * 24 * 60 * 60 * 1000; // convert to ms
+    const now = Date.now();
+    
+    setShoppingList(prev => prev.map(item => {
+      if (item.isChecked && !item.isArchived && item.addedAt) {
+        const addedTime = new Date(item.addedAt).getTime();
+        if (now - addedTime > archiveThreshold) {
+          return { ...item, isArchived: true };
+        }
+      }
+      return item;
+    }));
+  }, [shoppingList, shoppingConfig.autoArchiveChecked, shoppingConfig.archiveAfterDays]);
 
   // Get threshold for a category (with fallback to default)
   const getThreshold = (category: string): number => {
@@ -1080,6 +1177,15 @@ const AppContent: React.FC = () => {
     return item.quantity === 0;
   }, []);
 
+  // Determine priority based on stock level
+  const getItemPriority = useCallback((item: PantryItem): ShoppingItemPriority => {
+    const threshold = getThreshold(item.category);
+    if (item.quantity === 0) return 'high';
+    if (item.quantity <= threshold * 0.5) return 'high';
+    if (item.quantity <= threshold) return 'medium';
+    return 'low';
+  }, [getThreshold]);
+
   // Generate shopping list from low stock items
   const generateShoppingList = useCallback(async () => {
     setIsGeneratingList(true);
@@ -1118,8 +1224,11 @@ const AppContent: React.FC = () => {
           unit: item.unit,
           isManual: false,
           isChecked: false,
+          isArchived: false,
           addedAt: new Date().toISOString(),
           reason: 'low_stock' as 'low_stock' | 'manual' | 'recommendation',
+          priority: getItemPriority(item),
+          autoAddedAt: new Date().toISOString(),
         })),
         ...recommendationItems.map((item) => ({
           id: `rec-${item.id}-${Date.now()}`,
@@ -1130,8 +1239,11 @@ const AppContent: React.FC = () => {
           unit: item.unit,
           isManual: false,
           isChecked: false,
+          isArchived: false,
           addedAt: new Date().toISOString(),
           reason: 'recommendation' as 'low_stock' | 'manual' | 'recommendation',
+          priority: 'low' as ShoppingItemPriority,
+          autoAddedAt: new Date().toISOString(),
         })),
       ];
       
@@ -1143,19 +1255,26 @@ const AppContent: React.FC = () => {
         ...existingManualItems.filter((item) => !existingItemNames.has(item.name.toLowerCase())),
       ];
       
-      setShoppingList(mergedItems.sort((a, b) => a.category.localeCompare(b.category)));
+      setShoppingList(mergedItems.sort((a, b) => {
+        // Sort by priority first (high -> medium -> low), then by category
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.category.localeCompare(b.category);
+      }));
+      setLastAutoRefresh(new Date());
     } finally {
       setIsGeneratingList(false);
     }
-  }, [inventory, activities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold]);
+  }, [inventory, activities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold, getItemPriority]);
 
   // Add manual item to shopping list
-  const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string) => {
+  const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string, priority?: ShoppingItemPriority) => {
     const trimmedName = name.trim();
     
     // Check if item already exists in shopping list
     const existingItem = shoppingList.find(
-      (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
+      (item) => item.name.toLowerCase() === trimmedName.toLowerCase() && !item.isArchived
     );
     
     if (existingItem) {
@@ -1172,12 +1291,42 @@ const AppContent: React.FC = () => {
       unit,
       isManual: true,
       isChecked: false,
+      isArchived: false,
       addedAt: new Date().toISOString(),
       reason: 'manual',
+      priority: priority ?? shoppingConfig.defaultPriority,
     };
     
-    setShoppingList((prev) => [...prev, newItem].sort((a, b) => a.category.localeCompare(b.category)));
-  }, [shoppingList]);
+    setShoppingList((prev) => [...prev, newItem].sort((a, b) => {
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.category.localeCompare(b.category);
+    }));
+  }, [shoppingList, shoppingConfig.defaultPriority]);
+
+  // Set item priority
+  const setItemPriority = useCallback((id: string, priority: ShoppingItemPriority) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, priority } : item
+      ).sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.category.localeCompare(b.category);
+      })
+    );
+  }, []);
+
+  // Toggle item archive status
+  const toggleItemArchive = useCallback((id: string) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isArchived: !item.isArchived } : item
+      )
+    );
+  }, []);
 
   // Toggle item checked status
   const toggleItemChecked = useCallback((id: string) => {
@@ -1201,10 +1350,51 @@ const AppContent: React.FC = () => {
   }, []);
 
   // Export shopping list as formatted text
-  const exportShoppingList = useCallback((): string => {
-    if (shoppingList.length === 0) return '';
+  const exportShoppingList = useCallback((options?: Partial<ShoppingListExportOptions>): string => {
+    const exportOptions: ShoppingListExportOptions = {
+      format: 'text',
+      includeChecked: true,
+      includeArchived: false,
+      ...options,
+    };
     
-    const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
+    let filteredList = shoppingList;
+    
+    if (!exportOptions.includeChecked) {
+      filteredList = filteredList.filter(item => !item.isChecked);
+    }
+    if (!exportOptions.includeArchived) {
+      filteredList = filteredList.filter(item => !item.isArchived);
+    }
+    if (exportOptions.categoryFilter) {
+      filteredList = filteredList.filter(item => exportOptions.categoryFilter!.includes(item.category));
+    }
+    if (exportOptions.priorityFilter) {
+      filteredList = filteredList.filter(item => exportOptions.priorityFilter!.includes(item.priority));
+    }
+    
+    if (filteredList.length === 0) return '';
+    
+    if (exportOptions.format === 'csv') {
+      const headers = ['Name', 'Category', 'Quantity', 'Unit', 'Priority', 'Checked', 'Reason'];
+      const rows = filteredList.map(item => [
+        item.name,
+        item.category,
+        item.suggestedQuantity,
+        item.unit,
+        item.priority,
+        item.isChecked ? 'Yes' : 'No',
+        item.reason,
+      ]);
+      return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    }
+    
+    if (exportOptions.format === 'json') {
+      return JSON.stringify(filteredList, null, 2);
+    }
+    
+    // Default text format
+    const grouped: Record<string, ShoppingListItem[]> = filteredList.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);
       return acc;
@@ -1216,7 +1406,8 @@ const AppContent: React.FC = () => {
       lines.push(`${category.toUpperCase()}:`);
       items.forEach((item: ShoppingListItem) => {
         const check = item.isChecked ? '✓' : '☐';
-        lines.push(`  ${check} ${item.name} (${item.suggestedQuantity} ${item.unit})`);
+        const priority = item.priority === 'high' ? '🔴' : item.priority === 'medium' ? '🟡' : '🟢';
+        lines.push(`  ${check} ${priority} ${item.name} (${item.suggestedQuantity} ${item.unit})`);
       });
       lines.push('');
     });
@@ -1225,8 +1416,8 @@ const AppContent: React.FC = () => {
   }, [shoppingList]);
 
   // Copy to clipboard
-  const copyToClipboard = useCallback(async () => {
-    const text = exportShoppingList();
+  const copyToClipboard = useCallback(async (format: ShoppingListExportFormat = 'text') => {
+    const text = exportShoppingList({ format });
     if (!text) {
       alert('Shopping list is empty!');
       return;
@@ -1234,7 +1425,7 @@ const AppContent: React.FC = () => {
     
     try {
       await navigator.clipboard.writeText(text);
-      alert('Shopping list copied to clipboard!');
+      alert(`Shopping list copied as ${format.toUpperCase()}!`);
     } catch (err) {
       const textarea = document.createElement('textarea');
       textarea.value = text;
@@ -1244,8 +1435,39 @@ const AppContent: React.FC = () => {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      alert('Shopping list copied to clipboard!');
+      alert(`Shopping list copied as ${format.toUpperCase()}!`);
     }
+  }, [exportShoppingList]);
+
+  // Download shopping list as file
+  const downloadShoppingList = useCallback((format: ShoppingListExportFormat) => {
+    const content = exportShoppingList({ format });
+    if (!content) {
+      alert('Shopping list is empty!');
+      return;
+    }
+    
+    const mimeTypes: Record<ShoppingListExportFormat, string> = {
+      text: 'text/plain',
+      csv: 'text/csv',
+      json: 'application/json',
+    };
+    
+    const extensions: Record<ShoppingListExportFormat, string> = {
+      text: 'txt',
+      csv: 'csv',
+      json: 'json',
+    };
+    
+    const blob = new Blob([content], { type: mimeTypes[format] });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `shopping-list-${new Date().toISOString().split('T')[0]}.${extensions[format]}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }, [exportShoppingList]);
 
   // Share shopping list using Web Share API

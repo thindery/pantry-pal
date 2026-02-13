@@ -44,6 +44,8 @@ export interface ThresholdConfig {
   [category: string]: number;
 }
 
+export type ShoppingItemPriority = 'high' | 'medium' | 'low';
+
 export interface ShoppingListItem {
   id: string;
   name: string;
@@ -53,14 +55,36 @@ export interface ShoppingListItem {
   unit: string;
   isManual: boolean;
   isChecked: boolean;
+  isArchived: boolean;
   addedAt: string;
   reason: 'low_stock' | 'manual' | 'recommendation';
+  priority: ShoppingItemPriority;
+  autoAddedAt?: string;
 }
 
 export interface ShoppingList {
   items: ShoppingListItem[];
   generatedAt: string;
   thresholdConfig: ThresholdConfig;
+}
+
+export interface ShoppingListConfig {
+  autoRefresh: boolean;
+  autoRefreshInterval: number; // in minutes
+  autoArchiveChecked: boolean;
+  archiveAfterDays: number;
+  defaultPriority: ShoppingItemPriority;
+  enableNotifications: boolean;
+}
+
+export type ShoppingListExportFormat = 'text' | 'csv' | 'json';
+
+export interface ShoppingListExportOptions {
+  format: ShoppingListExportFormat;
+  includeChecked: boolean;
+  includeArchived: boolean;
+  categoryFilter?: string[];
+  priorityFilter?: ShoppingItemPriority[];
 }
 
 // Subscription types
