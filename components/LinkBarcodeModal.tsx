@@ -229,6 +229,12 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       return;
     }
 
+    // Don't allow saving if item already has a barcode
+    if (item.barcode) {
+      setError('Barcode already linked. Unlink to change.');
+      return;
+    }
+
     try {
       const updates: Partial<PantryItem> = {};
       
@@ -250,7 +256,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
     }
   };
 
-  const handleRemove = async () => {
+  const handleUnlink = async () => {
     if (!item) {
       setError('No item selected');
       return;
@@ -260,7 +266,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       await onSave(item.id, '', { productInfo: undefined });
       onClose();
     } catch (err) {
-      setError('Failed to remove barcode');
+      setError('Failed to unlink barcode');
     }
   };
 
@@ -274,7 +280,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-slate-800">
-            {item?.barcode ? 'Edit Barcode' : 'Link Barcode'}
+            {item?.barcode ? 'Barcode Linked' : 'Link Barcode'}
           </h2>
           <button
             onClick={onClose}
@@ -342,16 +348,19 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
             <input
               type="text"
               value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              placeholder="e.g., 012345678905"
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none font-mono text-sm"
+              readOnly
+              placeholder={item?.barcode ? 'No barcode linked' : 'Scan or upload to set barcode'}
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none font-mono text-sm bg-slate-100 cursor-not-allowed"
               disabled={isLoading || isLookingUp}
             />
+            <p className="text-xs text-slate-500 mt-1">
+              {item?.barcode ? 'Barcode cannot be edited. Unlink to change.' : 'Use scan, upload, or lookup to set the barcode.'}
+            </p>
           </div>
         )}
 
-        {/* Scan Options */}
-        {!isScanning && (
+        {/* Scan Options - only show if no barcode linked */}
+        {!isScanning && !item?.barcode && (
           <div className="flex gap-2 mb-4">
             <button
               onClick={startScanning}
@@ -384,8 +393,8 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
           </div>
         )}
 
-        {/* Lookup Result */}
-        {lookupResult && (
+        {/* Lookup Result - only show when linking new barcode */}
+        {!item?.barcode && lookupResult && (
           <div className={`mb-4 p-4 rounded-lg ${lookupResult.success ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
             {lookupResult.success && lookupResult.product ? (
               <>
@@ -461,7 +470,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
           </div>
         )}
 
-        {isLookingUp && (
+        {!item?.barcode && isLookingUp && (
           <div className="mb-4 p-3 bg-slate-50 rounded-lg text-center">
             <span className="animate-spin inline-block mr-2">⏳</span>
             <span className="text-slate-600 text-sm">Looking up product...</span>
@@ -469,33 +478,43 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={handleSave}
-            disabled={isLoading || !barcode.trim() || isLookingUp}
-            className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-          >
-            {isLoading ? 'Saving...' : (item?.barcode ? 'Update' : 'Link Barcode')}
-          </button>
-          
-          {item?.barcode && (
+        {item?.barcode ? (
+          <div className="flex gap-3">
             <button
-              onClick={handleRemove}
+              onClick={handleUnlink}
               disabled={isLoading}
-              className="px-4 py-3 border border-rose-300 text-rose-600 rounded-xl font-semibold hover:bg-rose-50 disabled:opacity-50 transition-colors"
+              className="flex-1 bg-rose-600 text-white py-3 rounded-xl font-semibold hover:bg-rose-700 disabled:opacity-50 transition-colors"
             >
-              Remove
+              {isLoading ? 'Unlinking...' : 'Unlink Barcode'}
             </button>
-          )}
-          
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 disabled:opacity-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+            
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-4 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-3">
+            <button
+              onClick={handleSave}
+              disabled={isLoading || !barcode.trim() || isLookingUp}
+              className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {isLoading ? 'Linking...' : 'Link Barcode'}
+            </button>
+            
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-4 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
