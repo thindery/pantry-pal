@@ -55,13 +55,25 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
   // Get cache status display
   const getCacheStatus = () => {
     if (product?.source === 'live') {
-      return { label: '🟢 Live', className: 'bg-emerald-100 text-emerald-700' };
+      return { 
+        label: '🟢 Live', 
+        description: 'From OpenFoodFacts',
+        className: 'bg-emerald-100 text-emerald-700' 
+      };
     } else if (product?.source === 'stale') {
-      return { label: '🟠 Stale', className: 'bg-orange-100 text-orange-700' };
+      return { 
+        label: '🟠 Stale', 
+        description: 'Cache expired',
+        className: 'bg-orange-100 text-orange-700' 
+      };
     } else if (fromCache || product?.source === 'cache') {
-      return { label: '🟡 Cached', className: 'bg-blue-100 text-blue-700' };
+      return { 
+        label: '🟡 Cached', 
+        description: 'Local cache',
+        className: 'bg-blue-100 text-blue-700' 
+      };
     }
-    return { label: '—', className: 'bg-slate-100 text-slate-600' };
+    return { label: '—', description: '', className: 'bg-slate-100 text-slate-600' };
   };
 
   const cacheStatus = getCacheStatus();
@@ -133,9 +145,14 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
               <div className="mb-6 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Data Source</span>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${cacheStatus.className}`}>
-                    {cacheStatus.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {cacheStatus.description && (
+                      <span className="text-xs text-slate-500">{cacheStatus.description}</span>
+                    )}
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${cacheStatus.className}`}>
+                      {cacheStatus.label}
+                    </span>
+                  </div>
                 </div>
                 {(cachedAt || product?.updatedAt) && (
                   <p className="text-xs text-slate-500 mt-2">
