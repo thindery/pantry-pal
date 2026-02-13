@@ -1280,8 +1280,8 @@ const AppContent: React.FC = () => {
     setInventoryError(null);
     try {
       const items = await getItems();
-      // Ensure items is always an array (handle {items: [...]} vs [...] response)
-      const itemsArray = Array.isArray(items) ? items : items?.items || [];
+      // Ensure items is always an array (handle {data: [...]} vs [...] response)
+      const itemsArray = Array.isArray(items) ? items : items?.data || [];
       setInventory(itemsArray);
     } catch (err) {
       console.error('Failed to load inventory:', err);
@@ -1308,7 +1308,7 @@ const AppContent: React.FC = () => {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      const actsArray = Array.isArray(acts) ? acts : acts?.activities || [];
+      const actsArray = Array.isArray(acts) ? acts : acts?.data || [];
       setActivities(actsArray);
     } catch (err) {
       console.error('Failed to load activities:', err);
