@@ -350,6 +350,17 @@ const EditItemModal: React.FC<{
   const [category, setCategory] = useState(item.category);
   const [error, setError] = useState<string | null>(null);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       setName(item.name);

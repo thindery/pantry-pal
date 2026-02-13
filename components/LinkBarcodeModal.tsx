@@ -63,12 +63,23 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
   const [lookupData, setLookupData] = useState<Partial<PantryItem> | null>(null);
   const [updateName, setUpdateName] = useState(false);
   const [updateCategory, setUpdateCategory] = useState(false);
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isScanningRef = useRef(false);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   // Reset state when modal opens
   React.useEffect(() => {

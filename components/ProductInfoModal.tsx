@@ -15,6 +15,17 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
   const [cachedAt, setCachedAt] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<'overview' | 'nutrition' | 'ingredients'>('overview');
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen && item.barcode) {
       fetchProductInfo();
