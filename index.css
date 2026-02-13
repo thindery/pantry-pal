@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent content from being obscured by fixed nav - use dynamic viewport height */
+html, body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Ensure fixed nav stays fixed on mobile browsers */
+.fixed-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 9999;
+  /* Prevent touch events from being intercepted */
+  touch-action: manipulation;
+  /* Promote to composite layer for better rendering */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* Prevent iOS rubber-banding from affecting fixed position */
+  will-change: transform;
+  /* Ensure nav stays above keyboard on iOS */
+  max-height: 100px;
+}
+
 /* Custom animations */
 @keyframes scan {
   0%, 100% {

@@ -133,7 +133,7 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: 
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 pb-[env(safe-area-inset-bottom)] md:pb-4 flex justify-around items-center md:top-0 md:bottom-auto md:border-t-0 md:border-b md:justify-start md:gap-8 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-slate-200 px-4 py-2 pb-[env(safe-area-inset-bottom)] md:pb-4 flex justify-around items-center md:top-0 md:bottom-auto md:border-t-0 md:border-b md:justify-start md:gap-8 z-[9999]">
       <div className="hidden md:block font-bold text-xl text-emerald-600 mr-4">PantryPal</div>
       {links.map((link) => (
         <button
@@ -1742,7 +1742,7 @@ const AppContent: React.FC = () => {
   return (
     <>
       <Navbar activeView={view} setView={setView} />
-      <div className="min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Barcode Toast notification */}
