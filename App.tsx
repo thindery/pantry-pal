@@ -133,7 +133,7 @@ const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: 
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-around items-center md:top-0 md:bottom-auto md:border-t-0 md:border-b md:justify-start md:gap-8 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 pb-[env(safe-area-inset-bottom)] md:pb-4 flex justify-around items-center md:top-0 md:bottom-auto md:border-t-0 md:border-b md:justify-start md:gap-8 z-50">
       <div className="hidden md:block font-bold text-xl text-emerald-600 mr-4">PantryPal</div>
       {links.map((link) => (
         <button
