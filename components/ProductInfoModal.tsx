@@ -307,15 +307,6 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-slate-200">
-              <button
-                onClick={onClose}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </>
         )}
       </div>
