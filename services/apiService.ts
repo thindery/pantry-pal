@@ -91,9 +91,9 @@ export const getProductByBarcode = async (barcode: string): Promise<{ product: B
   // Transform backend response to match BarcodeProduct type
   const p = result.product;
   
-  // Handle image_url -> image mapping
-  if (p.image_url && !p.image) {
-    p.image = p.image_url;
+  // Handle image_url or imageUrl -> image mapping
+  if (!p.image) {
+    p.image = p.image_url || p.imageUrl || p.imageurl;
   }
   
   // Handle ingredients: string -> string[] if needed
