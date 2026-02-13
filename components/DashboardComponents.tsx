@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import Fuse, { FuseResult, FuseResultMatch } from 'fuse.js';
 import { PantryItem, Activity, ShoppingListItem } from '../types';
 
 // --- Types ---
@@ -306,31 +307,215 @@ export const CategoryPills: React.FC<CategoryPillsProps> = ({
   );
 };
 
-// --- Component: InlineQuickAdd ---
-// Single-row quick entry form
-interface InlineQuickAddProps {
-  onAdd: (item: { name: string; quantity: number; category: string }) => void;
-  categories: string[];
+// --- Fuse.js Configuration ---
+const fuseOptions = {
+  keys: ['name', 'barcode'],
+  includeMatches: true,
+  threshold: 0.4,
+  minMatchCharLength: 2,
+};
+
+// Highlight matched text from Fuse.js results
+function highlightMatch(
+  text: string,
+  matches: FuseResultMatch[] | undefined,
+  key: 'name' | 'barcode'
+): React.ReactNode {
+  if (!matches || matches.length === 0) {
+    return text;
+  }
+
+  const keyMatches = matches.filter((m) => m.key === key);
+  if (keyMatches.length === 0) {
+    return text;
+  }
+
+  const allIndices: Array<[number, number]> = [];
+  keyMatches.forEach((m) => {
+    if (m.indices) {
+      allIndices.push(...m.indices);
+    }
+  });
+
+  if (allIndices.length === 0) {
+    return text;
+  }
+
+  const sortedIndices = allIndices.sort((a, b) => a[0] - b[0]);
+  const mergedIndices: Array<[number, number]> = [];
+
+  let current = [...sortedIndices[0]] as [number, number];
+  for (let i = 1; i < sortedIndices.length; i++) {
+    if (current[1] >= sortedIndices[i][0] - 1) {
+      current[1] = Math.max(current[1], sortedIndices[i][1]);
+    } else {
+      mergedIndices.push([...current]);
+      current = [...sortedIndices[i]] as [number, number];
+    }
+  }
+  mergedIndices.push(current);
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  mergedIndices.forEach(([start, end], i) => {
+    if (start > lastIndex) {
+      parts.push(
+        <span key={`text-${i}`}>{text.slice(lastIndex, start)}</span>
+      );
+    }
+
+    parts.push(
+      <span
+        key={`highlight-${i}`}
+        className="font-bold bg-yellow-200 text-slate-900 rounded px-0.5"
+      >
+        {text.slice(start, end + 1)}
+      </span>
+    );
+
+    lastIndex = end + 1;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push(<span key="text-end">{text.slice(lastIndex)}</span>);
+  }
+
+  return parts;
 }
 
-export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({ onAdd, categories }) => {
-  const [name, setName] = React.useState('');
-  const [quantity, setQuantity] = React.useState('1');
-  const [category, setCategory] = React.useState(categories[0] || 'pantry');
+// --- Component: InlineQuickAdd ---
+// Single-row quick entry form with fuzzy autocomplete
+interface InlineQuickAddProps {
+  onAdd: (item: { name: string; quantity: number; category: string; barcode?: string }) => void;
+  categories: string[];
+  inventory?: PantryItem[];
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
+  onAdd,
+  categories,
+  inventory = [],
+}) => {
+  const [searchText, setSearchText] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [quantity, setQuantity] = useState('1');
+  const [selectedCategory, setSelectedCategory] = useState(categories[0] || 'pantry');
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const quantityRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const fuse = useMemo(() => {
+    return new Fuse(inventory || [], fuseOptions);
+  }, [inventory]);
+
+  const suggestions = useMemo<FuseResult<PantryItem>[]>(() => {
+    if (!searchText.trim() || searchText.trim().length < 2) {
+      return [];
+    }
+    return fuse.search(searchText.trim());
+  }, [fuse, searchText]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    setShowSuggestions(value.trim().length >= 2);
+    setSelectedIndex(-1);
+  }, []);
+
+  const selectProduct = useCallback((result: FuseResult<PantryItem>) => {
+    const product = result.item;
+    setSearchText(product.name);
+    setShowSuggestions(false);
+
+    if (product.category) {
+      setSelectedCategory(product.category);
+    }
+
+    setTimeout(() => {
+      quantityRef.current?.focus();
+      quantityRef.current?.select();
+    }, 0);
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!searchText.trim()) return;
+
+    const exactMatch = suggestions.find(
+      (s) => s.item.name.toLowerCase() === searchText.trim().toLowerCase()
+    )?.item;
 
     onAdd({
-      name: name.trim(),
+      name: searchText.trim(),
       quantity: parseFloat(quantity) || 1,
-      category,
+      category: selectedCategory,
+      barcode: exactMatch?.barcode,
     });
 
-    setName('');
+    setSearchText('');
     setQuantity('1');
-  };
+    setSelectedCategory(categories[0] || 'pantry');
+    setShowSuggestions(false);
+
+    inputRef.current?.focus();
+  }, [searchText, quantity, selectedCategory, suggestions, onAdd, categories]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === 'Enter' && searchText.trim()) {
+        e.preventDefault();
+        handleSubmit(e as unknown as React.FormEvent);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0) {
+          selectProduct(suggestions[selectedIndex]);
+        } else if (searchText.trim()) {
+          handleSubmit(e as unknown as React.FormEvent);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  }, [showSuggestions, suggestions, selectedIndex, selectProduct, handleSubmit, searchText]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && showSuggestions) {
+      const element = document.getElementById(`suggestion-${selectedIndex}`);
+      element?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selectedIndex, showSuggestions]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
@@ -338,14 +523,65 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({ onAdd, categorie
         ⚡ Quick Add
       </h3>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        <div ref={containerRef} className="flex-1 relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchText}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (searchText.trim().length >= 2) {
+                setShowSuggestions(true);
+              }
+            }}
+            placeholder="Type to search products..."
+            className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm"
+            autoComplete="off"
+          />
+
+          {/* Dropdown suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="absolute z-50 w-full bg-white border border-slate-200 shadow-lg rounded-xl mt-1 max-h-60 overflow-y-auto">
+              {suggestions.slice(0, 8).map((result, index) => (
+                <li
+                  key={result.item.id || result.item.barcode || `suggestion-${index}`}
+                  id={`suggestion-${index}`}
+                  onClick={() => selectProduct(result)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  className={`px-4 py-2 cursor-pointer transition-colors ${
+                    index === selectedIndex
+                      ? 'bg-emerald-50'
+                      : 'hover:bg-slate-50'
+                  }`}
+                >
+                  {/* Product name with highlighted matches */}
+                  <div className="font-medium text-slate-800">
+                    {highlightMatch(result.item.name, result.matches, 'name')}
+                  </div>
+
+                  {/* Barcode shown underneath if available */}
+                  {result.item.barcode && (
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Barcode: {' '}
+                      {highlightMatch(result.item.barcode, result.matches, 'barcode')}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* No results message */}
+          {showSuggestions && searchText.trim().length >= 2 && suggestions.length === 0 && (
+            <div className="absolute z-50 w-full bg-white border border-slate-200 shadow-lg rounded-xl mt-1 px-4 py-3 text-sm text-slate-500">
+              No matching products found
+            </div>
+          )}
+        </div>
+
         <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Item name..."
-          className="flex-1 px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm"
-        />
-        <input
+          ref={quantityRef}
           type="number"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
@@ -353,9 +589,10 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({ onAdd, categorie
           step="0.5"
           className="w-20 px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm text-center"
         />
+
         <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
           className="px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white"
         >
           {categories.map((c) => (
@@ -364,9 +601,10 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({ onAdd, categorie
             </option>
           ))}
         </select>
+
         <button
           type="submit"
-          disabled={!name.trim()}
+          disabled={!searchText.trim()}
           className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1"
         >
           <span>+</span>

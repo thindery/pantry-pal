@@ -1861,6 +1861,7 @@ const AppContent: React.FC = () => {
             <InlineQuickAdd
               onAdd={(item) => handleCreateItem({ ...item, unit: 'units' })}
               categories={CATEGORIES}
+              inventory={inventory}
             />
           </div>
         )}
