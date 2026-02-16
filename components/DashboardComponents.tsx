@@ -3,82 +3,60 @@ import Fuse, { FuseResult, FuseResultMatch } from 'fuse.js';
 import { PantryItem, Activity, ShoppingListItem } from '../types';
 
 // --- Types ---
-interface QuickAction {
-  id: string;
-  icon: string;
-  label: string;
-  onClick: () => void;
-  variant?: 'primary' | 'secondary' | 'accent';
-}
-
-interface StatData {
+export interface DashboardStatData {
   label: string;
   value: number;
   color: 'emerald' | 'amber' | 'slate' | 'sky';
   icon?: string;
 }
 
-// --- Component: QuickActionBar ---
-// Horizontal row of compact icon buttons replacing giant colored cards
-interface QuickActionBarProps {
-  actions: QuickAction[];
-}
-
-export const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions }) => {
-  const variantStyles = {
-    primary: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200',
-    secondary: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
-    accent: 'bg-sky-100 text-sky-700 hover:bg-sky-200',
-  };
-
-  return (
-    <div className="flex items-center gap-3">
-      {actions.map((action) => (
-        <button
-          key={action.id}
-          onClick={action.onClick}
-          title={action.label}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
-            variantStyles[action.variant || 'secondary']
-          }`}
-        >
-          <span className="text-lg">{action.icon}</span>
-          <span className="text-sm">{action.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
-
 // --- Component: StatCardMini ---
 // Compact stat cards in a row (moved to top of dashboard)
 interface StatCardMiniProps {
-  stats: StatData[];
+  stats: DashboardStatData[];
   onStatClick?: (label: string) => void;
+  activeFilter?: string | null;
 }
 
-export const StatCardMini: React.FC<StatCardMiniProps> = ({ stats, onStatClick }) => {
+export const StatCardMini: React.FC<StatCardMiniProps> = ({ stats, onStatClick, activeFilter }) => {
   const colorStyles = {
-    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    amber: 'text-amber-600 bg-amber-50 border-amber-100',
-    slate: 'text-slate-500 bg-slate-50 border-slate-200',
-    sky: 'text-sky-600 bg-sky-50 border-sky-100',
+    emerald: {
+      base: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+      active: 'ring-2 ring-emerald-500 ring-offset-2 bg-emerald-100 border-emerald-300 shadow-md',
+    },
+    amber: {
+      base: 'text-amber-600 bg-amber-50 border-amber-100',
+      active: 'ring-2 ring-amber-500 ring-offset-2 bg-amber-100 border-amber-300 shadow-md',
+    },
+    slate: {
+      base: 'text-slate-500 bg-slate-50 border-slate-200',
+      active: 'ring-2 ring-slate-500 ring-offset-2 bg-slate-100 border-slate-300 shadow-md',
+    },
+    sky: {
+      base: 'text-sky-600 bg-sky-50 border-sky-100',
+      active: 'ring-2 ring-sky-500 ring-offset-2 bg-sky-100 border-sky-300 shadow-md',
+    },
   };
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {stats.map((stat) => (
-        <button
-          key={stat.label}
-          onClick={() => onStatClick?.(stat.label)}
-          className={`p-4 rounded-xl border text-left transition-all hover:shadow-sm ${colorStyles[stat.color]}`}
-        >
-          <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-1">
-            {stat.label}
-          </p>
-          <p className="text-2xl font-bold">{stat.value}</p>
-        </button>
-      ))}
+      {stats.map((stat) => {
+        const isActive = activeFilter === stat.label;
+        return (
+          <button
+            key={stat.label}
+            onClick={() => onStatClick?.(stat.label)}
+            className={`p-4 rounded-xl border text-left transition-all hover:shadow-sm ${
+              colorStyles[stat.color].base
+            } ${isActive ? colorStyles[stat.color].active : ''}`}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-1">
+              {stat.label}
+            </p>
+            <p className="text-2xl font-bold">{stat.value}</p>
+          </button>
+        );
+      })}
     </div>
   );
 };

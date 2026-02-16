@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
@@ -8,13 +8,13 @@ import BarcodeScanner from './components/BarcodeScanner';
 import PricingPage from './components/PricingPage';
 import CheckoutResult from './components/CheckoutResult';
 import LandingPage from './components/LandingPage';
-import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, VoiceAssistantLock, ProBadge } from './components/UpgradePrompt';
+import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, ProBadge } from './components/UpgradePrompt';
 import { ToastContainer, useToast } from './components/Toast';
 import ProductInfoModal from './components/ProductInfoModal';
 import LinkBarcodeModal from './components/LinkBarcodeModal';
 import InventoryCard from './components/InventoryCard';
 import ActivityLedger from './components/ActivityLedger';
-import { useSubscription, getItemLimitStatus, canScanReceipt, canUseVoiceAssistant } from './services/subscription';
+import { useSubscription, getItemLimitStatus, canScanReceipt } from './services/subscription';
 import {
   getItems,
   createItem,
@@ -22,9 +22,10 @@ import {
   logActivity,
   getActivities,
   useSetupAuthToken,
+  scanReceiptBackend,
 } from './services/apiService';
+import { QuickActionBar, createQuickActions } from './components/QuickActionBar';
 import {
-  QuickActionBar,
   StatCardMini,
   LowStockPreview,
   ShoppingListPreview,
@@ -32,56 +33,6 @@ import {
   InlineQuickAdd,
   RecentActivityPreview,
 } from './components/DashboardComponents';
-
-// --- Audio Utilities ---
-function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-function encode(bytes: Uint8Array) {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
-}
-
-function createBlob(data: Float32Array): { data: string; mimeType: string } {
-  const l = data.length;
-  const int16 = new Int16Array(l);
-  for (let i = 0; i < l; i++) {
-    int16[i] = data[i] * 32768;
-  }
-  return {
-    data: encode(new Uint8Array(int16.buffer)),
-    mimeType: 'audio/pcm;rate=16000',
-  };
-}
 
 // --- Constants ---
 const UNITS = [
@@ -540,7 +491,9 @@ const ReceiptScanner: React.FC<{
     setError(null);
 
     try {
-      const results = await scanReceipt(base64Image);
+      // Use backend Tesseract.js OCR, not browser Gemini
+      const response = await scanReceiptBackend(base64Image);
+      const results = response.items || [];
       if (results.length === 0) {
         setError('No items detected in receipt. Try a clearer image.');
       } else {
@@ -616,7 +569,6 @@ const ReceiptScanner: React.FC<{
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={handleFileSelect}
               className="hidden"
               id="receipt-file-input"
@@ -659,11 +611,11 @@ const ReceiptScanner: React.FC<{
               {isScanning ? (
                 <>
                   <span className="animate-spin">⚙️</span>
-                  Scanning with AI...
+                  Scanning...
                 </>
               ) : (
                 <>
-                  <span>🧠</span> Scan Receipt
+                  <span>🧾</span> Scan Receipt
                 </>
               )}
             </button>
@@ -1064,7 +1016,6 @@ const AppContent: React.FC = () => {
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
@@ -1076,6 +1027,8 @@ const AppContent: React.FC = () => {
   const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
   const [linkingBarcodeItem, setLinkingBarcodeItem] = useState<PantryItem | null>(null);
   const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [showVoiceLock, setShowVoiceLock] = useState(false);
 
   // View Mode State (table | cards) - default to cards on mobile
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
@@ -1088,9 +1041,48 @@ const AppContent: React.FC = () => {
   // Sort state
   const [sortBy, setSortBy] = useState<'recent' | 'quantity' | 'alphabetical'>('recent');
 
-  // Sorted inventory
-  const sortedInventory = useMemo(() => {
-    const items = [...inventory];
+  // Stat card filter state
+  const [statCardFilter, setStatCardFilter] = useState<string | null>(null);
+
+  // Clear stat card filter
+  const clearStatCardFilter = useCallback(() => {
+    setStatCardFilter(null);
+  }, []);
+
+  // Handle stat card click - navigate to inventory with filter
+  const handleStatCardClick = useCallback((label: string) => {
+    setStatCardFilter(label);
+    setView('inventory');
+  }, []);
+
+  // Filtered and sorted inventory
+  const filteredInventory = useMemo(() => {
+    let items = [...inventory];
+
+    // Apply stat card filter
+    if (statCardFilter) {
+      switch (statCardFilter) {
+        case 'In Stock':
+          items = items.filter((i) => i.quantity > 0);
+          break;
+        case 'Low Stock':
+          items = items.filter((i) => i.quantity > 0 && i.quantity < 3);
+          break;
+        case 'Out of Stock':
+          items = items.filter((i) => i.quantity === 0);
+          break;
+        case 'Expiring Soon':
+          // For now, filter to items with quantity > 0 (placeholder for expiry logic)
+          items = items.filter((i) => i.quantity > 0);
+          break;
+        case 'Total':
+        default:
+          // No filtering for Total
+          break;
+      }
+    }
+
+    // Apply sorting
     switch (sortBy) {
       case 'recent':
         return items.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime());
@@ -1101,7 +1093,7 @@ const AppContent: React.FC = () => {
       default:
         return items;
     }
-  }, [inventory, sortBy]);
+  }, [inventory, sortBy, statCardFilter]);
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -1484,7 +1476,6 @@ const AppContent: React.FC = () => {
   const { isPaid, isPro, isFree, itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
   const [showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
   const [showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
-  const [showVoiceLock, setShowVoiceLock] = useState(false);
 
   // Check URL for checkout success/cancel
   useEffect(() => {
@@ -1795,13 +1786,12 @@ const AppContent: React.FC = () => {
                 <p className="text-slate-500 text-sm">Quick overview of your inventory</p>
               </div>
               <QuickActionBar
-                actions={[
-                  { id: 'add', icon: '➕', label: 'Add', onClick: () => setView('add-item'), variant: 'primary' },
-                  { id: 'scan-barcode', icon: '📱', label: 'Scan', onClick: () => setView('scan-barcode'), variant: 'secondary' },
-                  { id: 'scan-receipt', icon: '🧾', label: 'Receipt', onClick: handleScanReceiptClick, variant: 'secondary' },
-                  { id: 'voice', icon: '🎙️', label: 'Voice', onClick: handleVoiceAssistantClick, variant: 'accent' },
-                  { id: 'shopping', icon: '🛒', label: 'List', onClick: () => setView('shopping-list'), variant: 'secondary' },
-                ]}
+                actions={createQuickActions(
+                  () => setView('add-item'),
+                  () => setView('scan-barcode'),
+                  handleScanReceiptClick,
+                  handleVoiceAssistantClick
+                )}
               />
             </div>
 
@@ -1813,6 +1803,7 @@ const AppContent: React.FC = () => {
                 { label: 'Low Stock', value: (inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
                 { label: 'Out of Stock', value: (inventory || []).filter((i) => i.quantity === 0).length, color: 'slate' },
               ]}
+              onStatClick={handleStatCardClick}
             />
 
             {/* Two Column Layout: Low Stock + Shopping List */}
@@ -1870,7 +1861,22 @@ const AppContent: React.FC = () => {
         {view === 'inventory' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
+                {statCardFilter && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">
+                      Filtered by: <span className="font-semibold text-emerald-600">{statCardFilter}</span>
+                    </span>
+                    <button
+                      onClick={clearStatCardFilter}
+                      className="text-xs px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                    >
+                      Clear filter
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2 items-center">
                 {/* Sort Buttons */}
                 <div className="flex gap-2">
@@ -1931,6 +1937,12 @@ const AppContent: React.FC = () => {
                   <span>📱</span> Scan Barcode
                 </button>
                 <button
+                  onClick={() => setView('scan-receipt')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  <span>📷</span> Scan Receipt
+                </button>
+                <button
                   onClick={() => setView('add-item')}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
                 >
@@ -1966,6 +1978,17 @@ const AppContent: React.FC = () => {
                   Add Your First Item
                 </button>
               </div>
+            ) : filteredInventory.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                <p className="text-4xl mb-4">🔍</p>
+                <p className="text-slate-500 mb-4">No items match the "{statCardFilter}" filter</p>
+                <button
+                  onClick={clearStatCardFilter}
+                  className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Clear Filter
+                </button>
+              </div>
             ) : viewMode === 'table' ? (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
@@ -1979,7 +2002,7 @@ const AppContent: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {sortedInventory.map((item) => (
+                      {filteredInventory.map((item) => (
                         <InventoryItemRow
                           key={item.id}
                           item={item}
@@ -1997,7 +2020,7 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sortedInventory.map((item) => (
+                {filteredInventory.map((item) => (
                   <InventoryCard
                     key={item.id}
                     item={item}
@@ -2462,15 +2485,6 @@ const AppContent: React.FC = () => {
           <AdminDashboard onBack={() => setView('dashboard')} />
         )}
       </main>
-
-      {view !== 'add-item' && view !== 'admin' && (  
-        <button
-          onClick={() => setIsVoiceActive(true)}
-          className="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all z-40"
-        >
-          🎙️
-        </button>
-      )}
     </div>
   </>
   );
