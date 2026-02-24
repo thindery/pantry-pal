@@ -61,7 +61,7 @@ export const DataTable: React.FC<DataTableProps> = ({ fetchUrl = '/api/activitie
   };
 
   if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">Error: {error}</button>;
+  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <table className="data-table">

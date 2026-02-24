@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 // TASK-043/007: Activity dashboard with null safety fixes
 export const ActivityDashboard: React.FC = () => {
@@ -44,7 +45,8 @@ export const ActivityDashboard: React.FC = () => {
 // localStorage persistence helper
 export const STORAGE_KEY = 'activity_dashboard_state';
 
-export const loadStoredState = <T>(defaultValue: T): T => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const loadStoredState = (defaultValue: any): any => {
   if (typeof window === 'undefined') return defaultValue;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -54,7 +56,8 @@ export const loadStoredState = <T>(defaultValue: T): T => {
   }
 };
 
-export const saveState = <T>(state: T): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const saveState = (state: any): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
