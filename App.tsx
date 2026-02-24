@@ -1909,26 +1909,15 @@ const AppContent: React.FC = () => {
               <p className="text-slate-500">How would you like to update your pantry?</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <button
-                onClick={() => setView('scan-receipt')}
-                className="bg-emerald-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
+                onClick={() => setView('add-item')}
+                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
               >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🧾</div>
+                <div className="bg-white/20 p-3 rounded-xl text-2xl">➕</div>
                 <div className="text-left">
-                  <h3 className="text-xl font-bold">Log Groceries</h3>
-                  <p className="text-emerald-100 text-sm">Scan a receipt</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setView('scan-usage')}
-                className="bg-amber-500 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
-              >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🍳</div>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">Log Cooking</h3>
-                  <p className="text-amber-100 text-sm">Scan counter items</p>
+                  <h3 className="text-xl font-bold">Add</h3>
+                  <p className="text-sky-100 text-sm">Add manually</p>
                 </div>
               </button>
 
@@ -1938,30 +1927,30 @@ const AppContent: React.FC = () => {
               >
                 <div className="bg-white/20 p-3 rounded-xl text-2xl">📱</div>
                 <div className="text-left">
-                  <h3 className="text-xl font-bold">Scan Barcode</h3>
+                  <h3 className="text-xl font-bold">Barcode</h3>
                   <p className="text-rose-100 text-sm">Quick add items</p>
                 </div>
               </button>
 
               <button
-                onClick={() => setIsVoiceActive(true)}
-                className="bg-indigo-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
+                onClick={() => setView('scan-receipt')}
+                className="bg-emerald-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
               >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">🎙️</div>
+                <div className="bg-white/20 p-3 rounded-xl text-2xl">🧾</div>
                 <div className="text-left">
-                  <h3 className="text-xl font-bold">Voice Assistant</h3>
-                  <p className="text-indigo-100 text-sm">"I used 2 apples"</p>
+                  <h3 className="text-xl font-bold">Receipt</h3>
+                  <p className="text-emerald-100 text-sm">Scan receipt</p>
                 </div>
               </button>
 
               <button
-                onClick={() => setView('add-item')}
-                className="bg-sky-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg md:col-span-4"
+                onClick={() => setIsVoiceActive(true)}
+                className="bg-slate-600 text-white p-6 rounded-2xl flex flex-col items-start gap-4 hover:shadow-xl transition-all shadow-lg"
               >
-                <div className="bg-white/20 p-3 rounded-xl text-2xl">➕</div>
+                <div className="bg-white/20 p-3 rounded-xl text-2xl">🎙️</div>
                 <div className="text-left">
-                  <h3 className="text-xl font-bold">Add Item Manually</h3>
-                  <p className="text-sky-100 text-sm">Enter item details by hand</p>
+                  <h3 className="text-xl font-bold">Voice</h3>
+                  <p className="text-slate-200 text-sm">"I used 2 apples"</p>
                 </div>
               </button>
             </div>
@@ -2568,15 +2557,6 @@ const AppContent: React.FC = () => {
           </div>
         )}
       </main>
-
-      {view !== 'add-item' && (
-        <button
-          onClick={() => setIsVoiceActive(true)}
-          className="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all z-40"
-        >
-          🎙️
-        </button>
-      )}
     </div>
   );
 };
