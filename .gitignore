@@ -17,6 +17,20 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# Environment and secrets
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Testing
+/coverage
+.nyc_output
+
+# Build artifacts
+/build
+*.tsbuildinfo
 *.suo
 *.ntvs*
 *.njsproj
