@@ -1,8 +1,8 @@
-# PantryPal - AGENTS.md
+# PantryPal Frontend - AGENTS.md
 
 ## Project Overview
 
-**PantryPal** is a smart inventory and ledger application for tracking pantry items, managing shopping lists, and monitoring usage through AI-powered receipt scanning and visual analysis.
+**PantryPal Frontend** is a React SPA for the PantryPal inventory tracking system. This repo contains the user-facing web application for managing pantry items, shopping lists, and AI-powered receipt scanning. The backend API lives in a separate repo (`pantry-pal-api`).
 
 ## Tech Stack
 
@@ -11,11 +11,17 @@
 - **Build Tool**: Vite 6.x
 - **Styling**: Tailwind CSS (via CDN)
 - **Authentication**: Clerk (@clerk/clerk-react)
-- **AI Integration**: Google Gemini API (@google/genai)
+- **AI Integration**: Google Gemini API (@google/genai) - for receipt/usage image processing
 - **Charts**: Recharts
 - **Barcode Scanning**: @zxing/browser, @zxing/library
-- **Search**: Fuse.js
+- **Search**: Fuse.js (client-side fuzzy search)
 - **Icons**: lucide-react
+
+### What This Repo Does NOT Do
+- ❌ Database storage (handled by `pantry-pal-api`)
+- ❌ User authentication (delegated to Clerk)
+- ❌ Payment processing (Stripe integration via backend)
+- ❌ Server-side logic (all API calls go to backend)
 
 ### Development Tools
 - **Testing**: Vitest + React Testing Library + jsdom

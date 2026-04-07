@@ -1,35 +1,26 @@
-# PantryPal - DESIGN.md
+# PantryPal Frontend - DESIGN.md
 
 ## Architecture Overview
 
-PantryPal is a **React SPA** with a clear separation between the frontend (this repo) and a backend API (`pantry-pal-api`). The architecture follows a **feature-based component organization** with centralized state management.
+PantryPal Frontend is a **React SPA** that communicates with the `pantry-pal-api` backend. This document covers frontend-specific architecture. Backend design lives in `pantry-pal-api/`.
 
-## System Architecture
+## Frontend-Only Responsibilities
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        PantryPal                            │
-│                    (React + TypeScript)                     │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTPS/WSS
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Backend API                             │
-│              (Express + SQLite/PostgreSQL)                  │
-│                                                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  Inventory   │  │  Activity    │  │ Subscription │      │
-│  │   Service    │  │   Ledger     │  │   (Stripe)   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-   ┌─────────┐   ┌──────────┐   ┌──────────┐
-   │  Clerk  │   │  Gemini  │   │  Stripe  │
-   │  Auth   │   │   AI     │   │ Payments │
-   └─────────┘   └──────────┘   └──────────┘
-```
+This repo handles:
+- ✅ UI rendering and component composition
+- ✅ Client-side state management (useState, useMemo)
+- ✅ User interactions and form handling
+- ✅ Camera access for barcode scanning
+- ✅ Image processing before sending to APIs
+- ✅ Clerk authentication integration
+- ✅ Responsive design (mobile-first)
+
+Delegated to backend (`pantry-pal-api`):
+- ❌ Database operations
+- ❌ Business logic validation
+- ❌ Subscription tier enforcement
+- ❌ Webhook handling (Stripe)
+- ❌ User session management
 
 ## Frontend Architecture
 
