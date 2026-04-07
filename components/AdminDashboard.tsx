@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar, KPICard, ChartCard, TransactionsList } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import { Period, DashboardMetrics } from '../types/admin';
-import { getMockDashboardMetrics } from '../services/adminService';
-import { ArrowLeft, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { getDashboardMetrics } from '../services/adminService';
+import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 
 type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe';
 
@@ -30,16 +30,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [period, setPeriod] = useState<Period>('7d');
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<ClientError[]>([]);
   const [loadingErrors, setLoadingErrors] = useState(false);
 
+  // Fetch dashboard metrics from real API
   useEffect(() => {
-    // Simulate API call
-    setIsLoading(true);
-    setTimeout(() => {
-      setMetrics(getMockDashboardMetrics(period));
-      setIsLoading(false);
-    }, 500);
+    const fetchMetrics = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const data = await getDashboardMetrics(period);
+        setMetrics(data);
+      } catch (err) {
+        console.error('Failed to fetch dashboard metrics:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMetrics();
   }, [period]);
 
   // Fetch errors when viewing errors tab
@@ -68,6 +80,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     }
   };
 
+  // Handle retry for failed dashboard load
+  const handleRetry = () => {
+    setPeriod(prev => prev); // Trigger re-fetch by resetting period
+  };
+
   // Handle window resize for sidebar
   useEffect(() => {
     const handleResize = () => {
@@ -83,12 +100,59 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (isLoading || !metrics) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex items-center gap-3 text-slate-500">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span className="font-medium">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-md mx-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-rose-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-900">Failed to Load Dashboard</h2>
+          </div>
+          <p className="text-slate-500 mb-6">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state (no metrics data)
+  if (!metrics) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-md mx-4 text-center">
+          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-5 h-5 text-slate-500" />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">No Data Available</h2>
+          <p className="text-slate-500 mb-6">Dashboard data is currently unavailable. Please try again later.</p>
+          <button
+            onClick={handleRetry}
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium mx-auto"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
         </div>
       </div>
     );

@@ -67,6 +67,13 @@ export const logActivity = (activity: Omit<Activity, 'id' | 'timestamp'>): Promi
     body: JSON.stringify(activity),
   });
 
+// Receipt OCR API (Tesseract.js backend)
+export const scanReceiptBackend = async (base64Image: string): Promise<{ items: Array<{ name: string; quantity: number; unit?: string; category?: string }> }> =>
+  fetchApi<{ items: Array<{ name: string; quantity: number; unit?: string; category?: string }> }>('/api/receipts/scan', {
+    method: 'POST',
+    body: JSON.stringify({ image: base64Image }),
+  });
+
 // Scan/Usage API
 export const processScan = (scanData: any) =>
   fetchApi('/api/scan-receipt', {

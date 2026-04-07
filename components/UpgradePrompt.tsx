@@ -3,7 +3,7 @@ import React from 'react';
 interface UpgradePromptProps {
   title: string;
   message: string;
-  feature: 'items' | 'receipts' | 'voice';
+  feature: 'items' | 'receipts';
   onClose: () => void;
   onUpgrade: () => void;
 }

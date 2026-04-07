@@ -6,7 +6,7 @@ import { PantryItem, Activity, ShoppingListItem } from '../types';
 export interface DashboardStatData {
   label: string;
   value: number;
-  color: 'emerald' | 'amber' | 'slate' | 'sky';
+  color: 'emerald' | 'amber' | 'slate' | 'sky' | 'rose';
   icon?: string;
 }
 
@@ -36,10 +36,14 @@ export const StatCardMini: React.FC<StatCardMiniProps> = ({ stats, onStatClick, 
       base: 'text-sky-600 bg-sky-50 border-sky-100',
       active: 'ring-2 ring-sky-500 ring-offset-2 bg-sky-100 border-sky-300 shadow-md',
     },
+    rose: {
+      base: 'text-rose-600 bg-rose-50 border-rose-100',
+      active: 'ring-2 ring-rose-500 ring-offset-2 bg-rose-100 border-rose-300 shadow-md',
+    },
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
       {stats.map((stat) => {
         const isActive = activeFilter === stat.label;
         return (

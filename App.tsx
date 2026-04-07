@@ -1041,18 +1041,44 @@ const AppContent: React.FC = () => {
   // Sort state
   const [sortBy, setSortBy] = useState<'recent' | 'quantity' | 'alphabetical'>('recent');
 
-  // Stat card filter state
+  // Stat card filter state (for inventory view)
   const [statCardFilter, setStatCardFilter] = useState<string | null>(null);
 
-  // Clear stat card filter
+  // Dashboard inline filter state
+  type DashboardInlineFilter = 'low-stock' | 'out-of-stock' | 'expiring-soon' | 'expired' | 'all-items' | null;
+  const [dashboardInlineFilter, setDashboardInlineFilter] = useState<DashboardInlineFilter>(null);
+
+  // Clear stat card filter (inventory view)
   const clearStatCardFilter = useCallback(() => {
     setStatCardFilter(null);
   }, []);
 
-  // Handle stat card click - navigate to inventory with filter
+  // Clear dashboard inline filter
+  const clearDashboardInlineFilter = useCallback(() => {
+    setDashboardInlineFilter(null);
+  }, []);
+
+  // Handle stat card click - set inline filter on dashboard instead of navigating
   const handleStatCardClick = useCallback((label: string) => {
-    setStatCardFilter(label);
-    setView('inventory');
+    switch(label) {
+      case 'Low Stock':
+        setDashboardInlineFilter('low-stock');
+        break;
+      case 'Out of Stock':
+        setDashboardInlineFilter('out-of-stock');
+        break;
+      case 'Expiring Soon':
+        setDashboardInlineFilter('expiring-soon');
+        break;
+      case 'Expired':
+        setDashboardInlineFilter('expired');
+        break;
+      case 'All Items':
+      case 'Total':
+      default:
+        setDashboardInlineFilter('all-items');
+        break;
+    }
   }, []);
 
   // Filtered and sorted inventory
@@ -1798,13 +1824,152 @@ const AppContent: React.FC = () => {
             {/* Stats Row */}
             <StatCardMini
               stats={[
-                { label: 'Total', value: inventory.length, color: 'sky' },
-                { label: 'In Stock', value: (inventory || []).filter((i) => i.quantity > 0).length, color: 'emerald' },
+                { label: 'All Items', value: inventory.length, color: 'sky' },
                 { label: 'Low Stock', value: (inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
                 { label: 'Out of Stock', value: (inventory || []).filter((i) => i.quantity === 0).length, color: 'slate' },
+                { label: 'Expiring Soon', value: 0, color: 'emerald' },
+                { label: 'Expired', value: 0, color: 'rose' },
               ]}
               onStatClick={handleStatCardClick}
+              activeFilter={dashboardInlineFilter === 'all-items' ? 'All Items' : dashboardInlineFilter === 'low-stock' ? 'Low Stock' : dashboardInlineFilter === 'out-of-stock' ? 'Out of Stock' : dashboardInlineFilter === 'expiring-soon' ? 'Expiring Soon' : dashboardInlineFilter === 'expired' ? 'Expired' : null}
             />
+
+            {/* Inline Filtered Table */}
+            {dashboardInlineFilter && dashboardInlineFilter !== 'all-items' && (
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                {/* Filter Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-slate-100 bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {dashboardInlineFilter === 'low-stock' && '⚠️'}
+                      {dashboardInlineFilter === 'out-of-stock' && '📭'}
+                      {dashboardInlineFilter === 'expiring-soon' && '⏰'}
+                      {dashboardInlineFilter === 'expired' && '❌'}
+                    </span>
+                    <span className="text-sm text-slate-600">
+                      Showing: <span className="font-semibold text-slate-800 capitalize">{dashboardInlineFilter.replace(/-/g, ' ')} Items</span>
+                      <span className="text-slate-400 ml-2">
+                        ({(() => {
+                          switch(dashboardInlineFilter) {
+                            case 'low-stock':
+                              return inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length;
+                            case 'out-of-stock':
+                              return inventory.filter((i) => i.quantity === 0).length;
+                            default:
+                              return 0;
+                          }
+                        })()} items)
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setView('inventory')}
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
+                    >
+                      View All →
+                    </button>
+                    <button
+                      onClick={clearDashboardInlineFilter}
+                      className="text-sm text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 transition-colors"
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filtered Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                      <tr>
+                        <th className="px-3 py-3 md:px-6 md:py-4">Item</th>
+                        <th className="px-3 py-3 md:px-6 md:py-4">Quantity</th>
+                        <th className="px-3 py-3 md:px-6 md:py-4">Status</th>
+                        <th className="px-3 py-3 md:px-6 md:py-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const filteredItems = (() => {
+                          switch(dashboardInlineFilter) {
+                            case 'low-stock':
+                              return inventory.filter((i) => i.quantity > 0 && i.quantity < 3);
+                            case 'out-of-stock':
+                              return inventory.filter((i) => i.quantity === 0);
+                            case 'expiring-soon':
+                              return [];
+                            case 'expired':
+                              return [];
+                            default:
+                              return [];
+                          }
+                        })().slice(0, 10);
+
+                        if (filteredItems.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                                <p className="text-2xl mb-2">{dashboardInlineFilter === 'expiring-soon' || dashboardInlineFilter === 'expired' ? '📅' : '✅'}</p>
+                                <p>No {dashboardInlineFilter.replace(/-/g, ' ')} items found</p>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return filteredItems.map((item) => (
+                          <InventoryItemRow
+                            key={item.id}
+                            item={item}
+                            onAdjustQuantity={handleAdjustQuantity}
+                            onSetToZero={handleSetToZero}
+                            onEdit={() => setEditingItem(item)}
+                            onInfo={() => setInfoItem(item)}
+                            onLinkBarcode={() => setLinkingBarcodeItem(item)}
+                            isUpdating={updatingItemIds.has(item.id)}
+                          />
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* View More Link (if more than 10 items) */}
+                {(() => {
+                  const totalCount = (() => {
+                    switch(dashboardInlineFilter) {
+                      case 'low-stock':
+                        return inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length;
+                      case 'out-of-stock':
+                        return inventory.filter((i) => i.quantity === 0).length;
+                      default:
+                        return 0;
+                    }
+                  })();
+                  if (totalCount > 10) {
+                    return (
+                      <div className="p-3 border-t border-slate-100 text-center">
+                        <button
+                          onClick={() => {
+                            setStatCardFilter(
+                              dashboardInlineFilter === 'low-stock' ? 'Low Stock' :
+                              dashboardInlineFilter === 'out-of-stock' ? 'Out of Stock' :
+                              dashboardInlineFilter === 'expiring-soon' ? 'Expiring Soon' :
+                              'Expired'
+                            );
+                            setView('inventory');
+                          }}
+                          className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                        >
+                          View all {totalCount} items →
+                        </button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
 
             {/* Two Column Layout: Low Stock + Shopping List */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

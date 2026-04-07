@@ -17,7 +17,7 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       contents: [
         {
           parts: [
@@ -91,7 +91,7 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
 export const analyzeUsage = async (base64Image: string): Promise<UsageResult[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-2.0-flash',
     contents: [
       {
         parts: [
