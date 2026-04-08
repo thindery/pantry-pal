@@ -196,15 +196,15 @@ npm run dev       # Vite dev server with HTTPS (port 5173)
 ### Ticket Workflow (via remy-tracker)
 All tickets are tracked in the remy-tracker repo. Development follows Ralph workflow:
 
-1. **Get ticket**: Check remy-tracker for assigned tickets
+1. **Get ticket**: `remy list --status="Dev Backlog"` (check for assigned work)
 2. **Branch**: `git checkout -b feature/REMY-XXX-brief-desc`
 3. **Develop**: Implement changes in this repo
 4. **Commit**: `git commit -m "REMY-XXX: Description"`
 5. **PR**: Create PR, link to remy-tracker ticket
 6. **Merge**: After review, merge to main
-7. **Update ticket**: In remy-tracker, advance Ralph phases and close ticket
+7. **Update ticket**: `remy move REMY-XXX --to="Closed/Done"`
 
-**Important**: Code changes here → ticket updates in remy-tracker.
+**Important**: Code changes here → ticket updates via `remy` command (works from any directory).
 
 ## Architecture Notes
 
