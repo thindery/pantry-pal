@@ -4,8 +4,9 @@ import { RevenueCard } from './admin/RevenueCard';
 import { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import FeatureFlagsPanel from '../src/components/FeatureFlagsPanel';
 
-type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe';
+type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe' | 'features';
 
 interface ClientError {
   id: string;
@@ -322,6 +323,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
               <p className="text-slate-500">Stripe event logs coming in Phase 2</p>
             </div>
+          </div>
+        )}
+
+        {activeView === 'features' && (
+          <div className="p-6 max-w-2xl">
+            <h1 className="text-2xl font-bold text-slate-900 mb-6">Feature Management</h1>
+            <FeatureFlagsPanel />
           </div>
         )}
       </main>

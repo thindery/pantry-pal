@@ -25,6 +25,7 @@ import {
   scanReceiptBackend,
 } from './services/apiService';
 import { QuickActionBar, createQuickActions } from './components/QuickActionBar';
+import { useFeatureFlags } from './src/hooks/useFeatureFlags';
 import {
   StatCardMini,
   LowStockPreview,
@@ -1018,6 +1019,9 @@ const AppContent: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+
+  // Feature flags
+  const { flags: featureFlags } = useFeatureFlags();
   const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const [updatingItemIds, setUpdatingItemIds] = useState<Set<string>>(new Set());
@@ -1811,14 +1815,16 @@ const AppContent: React.FC = () => {
                 <h1 className="text-2xl font-bold text-slate-800">Your Pantry</h1>
                 <p className="text-slate-500 text-sm">Quick overview of your inventory</p>
               </div>
-              <QuickActionBar
-                actions={createQuickActions(
-                  () => setView('add-item'),
-                  () => setView('scan-barcode'),
-                  handleScanReceiptClick,
-                  handleVoiceAssistantClick
-                )}
-              />
+              {featureFlags.fabEnabled && (
+                <QuickActionBar
+                  actions={createQuickActions(
+                    () => setView('add-item'),
+                    () => setView('scan-barcode'),
+                    handleScanReceiptClick,
+                    handleVoiceAssistantClick
+                  )}
+                />
+              )}
             </div>
 
             {/* Stats Row */}
