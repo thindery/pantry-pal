@@ -4,6 +4,59 @@
 
 **PantryPal Frontend** is a React SPA for the PantryPal inventory tracking system. This repo contains the user-facing web application for managing pantry items, shopping lists, and AI-powered receipt scanning. The backend API lives in a separate repo (`pantry-pal-api`).
 
+## Architecture Overview (from DESIGN.md)
+
+PantryPal Frontend is a **React SPA** that communicates with the `pantry-pal-api` backend.
+
+### Frontend-Only Responsibilities
+- ✅ UI rendering and component composition
+- ✅ Client-side state management (useState, useMemo)
+- ✅ User interactions and form handling
+- ✅ Camera access for barcode scanning
+- ✅ Image processing before sending to APIs
+- ✅ Clerk authentication integration
+- ✅ Responsive design (mobile-first)
+
+Delegated to backend (`pantry-pal-api`):
+- ❌ Database operations
+- ❌ Business logic validation
+- ❌ Subscription tier enforcement
+- ❌ Webhook handling (Stripe)
+- ❌ User session management
+
+### State Management
+**Local State** (useState): Form inputs, UI state, routing.
+**Global State** (Clerk + API): Auth, items, activities, subscription tier.
+**Derived State** (useMemo): Filtered lists, stock calculations, stats.
+
+### Component Hierarchy
+```
+App (Main container, view routing)
+├── ClerkProvider (Auth wrapper)
+    ├── SignedOut
+    │   └── LandingPage
+    └── SignedIn
+        ├── Navbar (Navigation)
+        ├── ToastContainer (Notifications)
+        └── View Components:
+            ├── DashboardView
+            ├── InventoryCard
+            ├── ActivityLedger
+            ├── BarcodeScanner
+            ├── PricingPage
+            ├── AdminDashboard
+            └── Modals
+```
+
+### Data Flow
+- **Inventory Operations**: User → App State → API Call → Backend → DB (Optimistic updates).
+- **Receipt Scanning**: Upload → Gemini API → JSON Extraction → Confirm → Batch Create.
+- **Barcode Scanning**: Camera → ZXing → Product API Lookup → Confirm.
+
+### Authentication & Subscriptions
+- **Auth**: Clerk JWT tokens on all API calls.
+- **Stripe**: Frontend creates checkout session → Stripe UI → Success redirect → Webhook update.
+
 ## Tech Stack
 
 ### Core Technologies
