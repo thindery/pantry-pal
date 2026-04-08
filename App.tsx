@@ -2030,9 +2030,10 @@ const AppContent: React.FC = () => {
         )}
 
         {view === 'inventory' && (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+            {/* Header Row */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
                 <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
                 {statCardFilter && (
                   <div className="flex items-center gap-2">
@@ -2048,77 +2049,82 @@ const AppContent: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2 items-center">
-                {/* Sort Buttons */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSortBy('recent')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      sortBy === 'recent' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    Recent
-                  </button>
-                  <button
-                    onClick={() => setSortBy('quantity')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      sortBy === 'quantity' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    Quantity
-                  </button>
-                  <button
-                    onClick={() => setSortBy('alphabetical')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      sortBy === 'alphabetical' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    Name
-                  </button>
+              {/* Compact Action Buttons Toolbar */}
+              <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+                <button
+                  onClick={() => setView('scan-barcode')}
+                  className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Scan Barcode"
+                >
+                  <span className="text-base">📱</span>
+                  <span className="hidden sm:inline">Barcode</span>
+                </button>
+                <button
+                  onClick={() => setView('scan-receipt')}
+                  className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Scan Receipt"
+                >
+                  <span className="text-base">📷</span>
+                  <span className="hidden sm:inline">Receipt</span>
+                </button>
+                <button
+                  onClick={() => setView('add-item')}
+                  className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Add Item"
+                >
+                  <span className="text-base">➕</span>
+                  <span className="hidden sm:inline">Add</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Controls Toolbar - Sort + View Toggle */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200">
+              {/* Sort By */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500">Sort by:</span>
+                <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+                  {(['recent', 'quantity', 'alphabetical'] as const).map((sort) => (
+                    <button
+                      key={sort}
+                      onClick={() => setSortBy(sort)}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        sortBy === sort
+                          ? 'bg-white text-slate-800 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                    >
+                      {sort === 'recent' ? 'Recent' : sort === 'quantity' ? 'Quantity' : 'Name'}
+                    </button>
+                  ))}
                 </div>
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-slate-100 rounded-xl p-1 mr-2">
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500">View:</span>
+                <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
                   <button
                     onClick={() => setViewMode('table')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
                       viewMode === 'table'
-                        ? 'bg-white text-slate-700 shadow-sm'
+                        ? 'bg-white text-slate-800 shadow-sm'
                         : 'text-slate-500 hover:text-slate-700'
                     }`}
-                    title="Table View"
                   >
                     <span>📋</span> Table
                   </button>
                   <button
                     onClick={() => setViewMode('cards')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
                       viewMode === 'cards'
-                        ? 'bg-white text-slate-700 shadow-sm'
+                        ? 'bg-white text-slate-800 shadow-sm'
                         : 'text-slate-500 hover:text-slate-700'
                     }`}
-                    title="Card View"
                   >
                     <span>🃏</span> Cards
                   </button>
                 </div>
-                <button
-                  onClick={() => setView('scan-barcode')}
-                  className="bg-sky-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-sky-700 transition-colors flex items-center gap-2 text-sm"
-                >
-                  <span>📱</span> Scan Barcode
-                </button>
-                <button
-                  onClick={() => setView('scan-receipt')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
-                >
-                  <span>📷</span> Scan Receipt
-                </button>
-                <button
-                  onClick={() => setView('add-item')}
-                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-                >
-                  <span>➕</span> Add Item
-                </button>
               </div>
             </div>
 
