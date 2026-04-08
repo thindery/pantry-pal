@@ -193,6 +193,19 @@ npm run preview   # Preview production build
 npm run dev       # Vite dev server with HTTPS (port 5173)
 ```
 
+### Ticket Workflow (via remy-tracker)
+All tickets are tracked in the remy-tracker repo. Development follows Ralph workflow:
+
+1. **Get ticket**: Check remy-tracker for assigned tickets
+2. **Branch**: `git checkout -b feature/REMY-XXX-brief-desc`
+3. **Develop**: Implement changes in this repo
+4. **Commit**: `git commit -m "REMY-XXX: Description"`
+5. **PR**: Create PR, link to remy-tracker ticket
+6. **Merge**: After review, merge to main
+7. **Update ticket**: In remy-tracker, advance Ralph phases and close ticket
+
+**Important**: Code changes here → ticket updates in remy-tracker.
+
 ## Architecture Notes
 
 - **Single-Page App**: React Router via view state (`View` type)
