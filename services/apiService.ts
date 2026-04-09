@@ -209,3 +209,12 @@ export const getShoppingSessions = (params?: { page?: number; limit?: number; st
   const endpoint = `/api/shopping-sessions${queryString ? `?${queryString}` : ''}`;
   return fetchApi<ApiResponse<ShoppingSession[]>>(endpoint);
 };
+
+export const uploadSessionReceipt = (
+  sessionId: string,
+  receiptUrl: string
+): Promise<ApiResponse<ShoppingSession>> =>
+  fetchApi<ApiResponse<ShoppingSession>>(`/api/shopping-sessions/${sessionId}/receipt`, {
+    method: 'POST',
+    body: JSON.stringify({ receiptUrl }),
+  });
