@@ -42,22 +42,38 @@ export const StatCardMini: React.FC<StatCardMiniProps> = ({ stats, onStatClick, 
     },
   };
 
+  // Filter out zero values to save space
+  const visibleStats = stats.filter((stat) => stat.value > 0);
+
+  // If all stats are zero, show a minimal "All clear" state
+  if (visibleStats.length === 0) {
+    return (
+      <div className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 text-sm">
+        <span className="text-lg">✅</span>
+        <span>All caught up — nothing to worry about</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-      {stats.map((stat) => {
+    <div className="flex flex-wrap gap-2">
+      {visibleStats.map((stat) => {
         const isActive = activeFilter === stat.label;
         return (
           <button
             key={stat.label}
             onClick={() => onStatClick?.(stat.label)}
-            className={`p-4 rounded-xl border text-left transition-all hover:shadow-sm ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-all hover:shadow-sm ${
               colorStyles[stat.color].base
             } ${isActive ? colorStyles[stat.color].active : ''}`}
           >
-            <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-1">
-              {stat.label}
-            </p>
-            <p className="text-2xl font-bold">{stat.value}</p>
+            {stat.icon && <span className="text-lg">{stat.icon}</span>}
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider opacity-70">
+                {stat.label}
+              </p>
+              <p className="text-lg font-bold leading-tight">{stat.value}</p>
+            </div>
           </button>
         );
       })}
