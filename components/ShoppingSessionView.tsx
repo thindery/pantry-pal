@@ -39,6 +39,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   const [justAddedItem, setJustAddedItem] = useState<string | null>(null);
   const [addToInventory, setAddToInventory] = useState(false);
   const [inventoryAdded, setInventoryAdded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsEndRef = useRef<HTMLDivElement>(null);
 
@@ -201,55 +202,45 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     });
   };
 
-  // No active session - show start screen
-  if (!sessionData || sessionData.status !== 'active') {
-    return (
-      <div className="max-w-lg mx-auto space-y-8 animate-in fade-in duration-300">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-            <span className="text-4xl">🛒</span>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800">Shopping Session</h2>
-          <p className="text-slate-500">
-            Start a new shopping session to track your cart and save receipts.
-          </p>
+  // Render Header
+  const renderHeader = () => (
+    <div className="bg-gray-50 border-b border-slate-200 px-4 py-4 mb-4">
+      <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`pb-1 text-sm font-bold transition-colors border-b-2 ${
+              activeTab === 'active'
+                ? 'text-emerald-600 border-emerald-600'
+                : 'text-slate-400 border-transparent hover:text-slate-600'
+            }`}
+          >
+            Active Session
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`pb-1 text-sm font-bold transition-colors border-b-2 ${
+              activeTab === 'history'
+                ? 'text-emerald-600 border-emerald-600'
+                : 'text-slate-400 border-transparent hover:text-slate-600'
+            }`}
+          >
+            History
+          </button>
         </div>
 
-        {error && (
-          <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
-            ⚠️ {error}
-          </div>
-        )}
-
-        <div className="space-y-3">
+        {activeTab === 'active' && (!sessionData || sessionData.status !== 'active') && (
           <button
             onClick={handleStartSession}
             disabled={isLoading}
-            className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-emerald-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-all flex items-center gap-2"
           >
-            {isLoading ? (
-              <>
-                <span className="animate-spin">⏳</span>
-                Starting...
-              </>
-            ) : (
-              <>
-                <span>▶</span>
-                Start Shopping
-              </>
-            )}
+            {isLoading ? '...' : 'Start Session'}
           </button>
-
-          <button
-            onClick={onCancel}
-            className="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
-          >
-            ← Back to Shopping List
-          </button>
-        </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 
   // Show barcode scanner
   if (showScanner) {
@@ -259,6 +250,56 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           onBarcodeDetected={handleBarcodeDetected}
           onCancel={() => setShowScanner(false)}
         />
+      </div>
+    );
+  }
+
+  // History view
+  if (activeTab === 'history') {
+    return (
+      <div className="min-h-screen bg-white">
+        {renderHeader()}
+        <div className="max-w-lg mx-auto px-4 py-8 text-center text-slate-500">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">📋</span>
+          </div>
+          <p>History view coming soon.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No active session - show start screen
+  if (!sessionData || sessionData.status !== 'active') {
+    return (
+      <div className="min-h-screen bg-white">
+        {renderHeader()}
+        <div className="max-w-lg mx-auto px-4 space-y-8 animate-in fade-in duration-300">
+          <div className="text-center space-y-4 py-8">
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-4xl">🛒</span>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800">Shopping Session</h2>
+            <p className="text-slate-500">
+              Start a new shopping session to track your cart and save receipts.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <button
+              onClick={onCancel}
+              className="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+            >
+              ← Back to Shopping List
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -411,21 +452,23 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
 
   // Active session view
   return (
-    <div className="max-w-lg mx-auto space-y-4 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onCancel}
-            className="text-slate-400 hover:text-slate-600 text-sm flex items-center gap-1"
-          >
-            ← Back
-          </button>
+    <div className="min-h-screen bg-white">
+      {renderHeader()}
+      <div className="max-w-lg mx-auto px-4 space-y-4 animate-in fade-in duration-300 pb-20">
+        {/* Header - Legacy status, kept for context but could be simplified */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onCancel}
+              className="text-slate-400 hover:text-slate-600 text-sm flex items-center gap-1"
+            >
+              ← Back
+            </button>
+          </div>
+          <span className="text-xs font-medium px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full">
+            ● Active Session
+          </span>
         </div>
-        <span className="text-xs font-medium px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full">
-          ● Active Session
-        </span>
-      </div>
 
       {/* Running Total Card */}
       <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
@@ -540,6 +583,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         </button>
       )}
     </div>
+  </div>
   );
 };
 
