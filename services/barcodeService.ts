@@ -1,20 +1,19 @@
 import { BarcodeProduct } from '../types';
+import { fetchApi, ApiResponse } from './apiService';
 
-// Open Food Facts API - free, open source, no API key required
-const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
-
-// Alternative: UPC Item Database as fallback
-const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
+// Use PantryPal backend API which has caching
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface BarcodeLookupResult {
   success: boolean;
   product?: BarcodeProduct;
   error?: string;
+  rateLimited?: boolean;
 }
 
 /**
- * Look up product information by barcode using Open Food Facts API
- * Falls back to UPC Item Database if OFF fails
+ * Look up product information by barcode using PantryPal backend API
+ * Backend handles caching and rate limiting
  */
 export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResult> {
   // Validate barcode
@@ -29,23 +28,45 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
     return { success: false, error: 'Invalid barcode format' };
   }
 
-  // Try Open Food Facts first (free, no API key)
   try {
-    const result = await lookupOpenFoodFacts(cleanBarcode);
-    if (result.success) {
-      return result;
-    }
-  } catch (err) {
-    console.log('Open Food Facts lookup failed, trying fallback...');
-  }
+    const response = await fetchApi<ApiResponse<{
+      success: boolean;
+      cached: boolean;
+      product?: BarcodeProduct;
+      rateLimited?: boolean;
+      error?: string;
+    }>>(`/api/barcode/${cleanBarcode}`);
 
-  // Fallback to UPC Item Database
-  try {
-    return await lookupUPCItemDB(cleanBarcode);
+    if (!response.success) {
+      return {
+        success: false,
+        error: response.error || 'Failed to lookup barcode',
+      };
+    }
+
+    const data = response.data;
+
+    if (!data?.success || !data?.product) {
+      return {
+        success: false,
+        error: data?.error || 'Product not found',
+        rateLimited: data?.rateLimited,
+      };
+    }
+
+    return {
+      success: true,
+      product: {
+        ...data.product,
+        barcode: cleanBarcode,
+      },
+      rateLimited: data.rateLimited,
+    };
   } catch (err) {
+    console.error('Barcode lookup error:', err);
     return {
       success: false,
-      error: 'Could not find product information for this barcode',
+      error: 'Failed to lookup barcode. Please try again.',
     };
   }
 }
