@@ -7,6 +7,7 @@ import {
   addItemToShoppingSession,
   removeItemFromShoppingSession,
   completeShoppingSession,
+  addSessionToInventory,
 } from '../services/apiService';
 
 interface ShoppingSessionViewProps {
@@ -32,9 +33,12 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   const [showScanner, setShowScanner] = useState(false);
   const [sessionData, setSessionData] = useState<ShoppingSession | null>(session);
   const [showReceiptCapture, setShowReceiptCapture] = useState(false);
+  const [showInventoryConfirm, setShowInventoryConfirm] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [justAddedItem, setJustAddedItem] = useState<string | null>(null);
+  const [addToInventory, setAddToInventory] = useState(false);
+  const [inventoryAdded, setInventoryAdded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsEndRef = useRef<HTMLDivElement>(null);
 
@@ -142,7 +146,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const handleCompleteSession = async () => {
+  const handleCompleteSession = async (shouldAddToInventory = false) => {
     if (!sessionData?.id) return;
 
     setIsLoading(true);
@@ -155,6 +159,18 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       });
 
       if (response.success && response.data) {
+        // If user chose to add to inventory, call the API
+        if (shouldAddToInventory) {
+          try {
+            const inventoryResponse = await addSessionToInventory(sessionData.id);
+            if (inventoryResponse.success) {
+              setInventoryAdded(true);
+            }
+          } catch (inventoryErr) {
+            console.error('Failed to add to inventory:', inventoryErr);
+            // Still complete the session even if inventory add fails
+          }
+        }
         onSessionCompleted(response.data);
       } else {
         setError('Failed to complete session');
@@ -351,24 +367,44 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </div>
         )}
 
-        {/* Complete Button */}
-        <button
-          onClick={handleCompleteSession}
-          disabled={isLoading}
-          className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-emerald-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-        >
-          {isLoading ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              Completing...
-            </>
-          ) : (
-            <>
-              <span>✓</span>
-              Complete Session
-            </>
-          )}
-        </button>
+        {/* Complete Buttons */}
+        <div className="space-y-3">
+          <button
+            onClick={() => handleCompleteSession(false)}
+            disabled={isLoading}
+            className="w-full bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                Completing...
+              </>
+            ) : (
+              <>
+                <span>✓</span>
+                Complete Session
+              </>
+            )}
+          </button>
+          
+          <button
+            onClick={() => handleCompleteSession(true)}
+            disabled={isLoading}
+            className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-emerald-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                Completing...
+              </>
+            ) : (
+              <>
+                <span>🛒</span>
+                Complete & Add to Inventory
+              </>
+            )}
+          </button>
+        </div>
       </div>
     );
   }

@@ -218,3 +218,11 @@ export const uploadSessionReceipt = (
     method: 'POST',
     body: JSON.stringify({ receiptUrl }),
   });
+
+// Add session items to inventory
+export const addSessionToInventory = (
+  sessionId: string
+): Promise<ApiResponse<{ itemsAdded: number; items: PantryItem[] }>> =>
+  fetchApi<ApiResponse<{ itemsAdded: number; items: PantryItem[] }>>(`/api/shopping-sessions/${sessionId}/add-to-inventory`, {
+    method: 'POST',
+  });
