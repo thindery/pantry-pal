@@ -29,13 +29,18 @@ jobs:
         working-directory: ./pantry-pal
         run: npm ci
       
+      - name: Type Check Frontend
+        working-directory: ./pantry-pal
+        run: npx tsc --noEmit
+      
+      - name: Build Frontend
+        working-directory: ./pantry-pal
+        run: npm run build:frontend
+      
       - name: Lint Frontend
         working-directory: ./pantry-pal
-        run: npm run lint || echo "No lint script"
-      
-      - name: Test Frontend
-        working-directory: ./pantry-pal
-        run: npm run test:run || echo "Tests skipped"
+        run: npm run lint
+        continue-on-error: false
       
       # Test Backend
       - name: Install Backend Dependencies
