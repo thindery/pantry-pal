@@ -123,6 +123,42 @@ export interface ShoppingListExportOptions {
   priorityFilter?: ShoppingItemPriority[];
 }
 
+// Shopping Session types
+export interface ShoppingSessionItem {
+  id: string;
+  name: string;
+  barcode?: string;
+  quantity: number;
+  price?: number;
+  category?: string;
+  addedAt: string;
+}
+
+export interface ShoppingSession {
+  id: string;
+  userId: string;
+  status: 'active' | 'completed' | 'cancelled';
+  totalAmount: number;
+  itemCount: number;
+  items: ShoppingSessionItem[];
+  startedAt: string;
+  completedAt?: string;
+  cancelledAt?: string;
+  receiptUrl?: string;
+  notes?: string;
+}
+
+export interface ShoppingSessionListResponse {
+  data: ShoppingSession[];
+  meta: {
+    timestamp: string;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 // Subscription types
 export type UserTier = 'free' | 'pro' | 'family';
 

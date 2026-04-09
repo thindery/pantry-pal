@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier } from './types';
+import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier, ShoppingSession } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';
@@ -74,8 +74,10 @@ const DEFAULT_THRESHOLDS: ThresholdConfig = {
 
 // --- Components ---
 import AdminDashboard from './components/AdminDashboard';
+import ShoppingSessionView from './components/ShoppingSessionView';
+import SessionHistory from './components/SessionHistory';
 
-type View = 'landing' | 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel' | 'admin';
+type View = 'landing' | 'dashboard' | 'inventory' | 'ledger' | 'scan-receipt' | 'scan-usage' | 'add-item' | 'scan-barcode' | 'shopping-list' | 'shopping-session' | 'session-history' | 'threshold-settings' | 'pricing' | 'checkout-success' | 'checkout-cancel' | 'admin';
 
 const Navbar: React.FC<{ activeView: View; setView: (v: View) => void; isPaid?: boolean }> = ({ activeView, setView, isPaid }) => {
   const links: { id: View; label: string; icon: string }[] = [
@@ -1033,6 +1035,9 @@ const AppContent: React.FC = () => {
   const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [showVoiceLock, setShowVoiceLock] = useState(false);
+
+  // Shopping Session State
+  const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
 
   // View Mode State (table | cards) - default to cards on mobile
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
@@ -2383,6 +2388,20 @@ const AppContent: React.FC = () => {
                   ⚙️ Thresholds
                 </button>
                 <button
+                  onClick={() => setView('shopping-session')}
+                  className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg font-medium hover:bg-emerald-200 transition-colors text-sm flex items-center gap-2"
+                  title="Start a shopping session"
+                >
+                  <span>🛒</span> Live Session
+                </button>
+                <button
+                  onClick={() => setView('session-history')}
+                  className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
+                  title="View session history"
+                >
+                  <span>📜</span> History
+                </button>
+                <button
                   onClick={generateShoppingList}
                   disabled={isGeneratingList}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
@@ -2660,6 +2679,31 @@ const AppContent: React.FC = () => {
         {/* Admin Dashboard */}
         {view === 'admin' && (
           <AdminDashboard onBack={() => setView('dashboard')} />
+        )}
+
+        {/* Shopping Session */}
+        {view === 'shopping-session' && (
+          <div className="animate-in fade-in duration-300">
+            <ShoppingSessionView
+              session={activeShoppingSession}
+              onSessionCreated={(session) => {
+                setActiveShoppingSession(session);
+              }}
+              onSessionCompleted={(session) => {
+                setActiveShoppingSession(null);
+                setView('shopping-list');
+                success('Shopping session completed!');
+              }}
+              onCancel={() => setView('shopping-list')}
+            />
+          </div>
+        )}
+
+        {/* Session History */}
+        {view === 'session-history' && (
+          <div className="animate-in fade-in duration-300">
+            <SessionHistory onBack={() => setView('shopping-list')} />
+          </div>
         )}
       </main>
     </div>

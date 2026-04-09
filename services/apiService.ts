@@ -1,4 +1,4 @@
-import { PantryItem, Activity, ActivityType, TierInfo, BarcodeProduct } from '../types';
+import { PantryItem, Activity, ActivityType, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem, ShoppingSessionListResponse } from '../types';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
 
@@ -158,3 +158,54 @@ export function useSetupAuthToken() {
     };
   }, [getToken]);
 }
+
+// Shopping Session API
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  meta?: { timestamp: string; page?: number; limit?: number; total?: number; totalPages?: number; };
+}
+
+export const createShoppingSession = (): Promise<ApiResponse<ShoppingSession>> =>
+  fetchApi<ApiResponse<ShoppingSession>>('/api/shopping-sessions', {
+    method: 'POST',
+  });
+
+export const getShoppingSession = (id: string): Promise<ApiResponse<ShoppingSession>> =>
+  fetchApi<ApiResponse<ShoppingSession>>(`/api/shopping-sessions/${id}`);
+
+export const addItemToShoppingSession = (
+  sessionId: string,
+  item: { barcode?: string; name: string; quantity?: number; price?: number; category?: string }
+): Promise<ApiResponse<ShoppingSessionItem>> =>
+  fetchApi<ApiResponse<ShoppingSessionItem>>(`/api/shopping-sessions/${sessionId}/items`, {
+    method: 'POST',
+    body: JSON.stringify(item),
+  });
+
+export const removeItemFromShoppingSession = (
+  sessionId: string,
+  itemId: string
+): Promise<ApiResponse<{ deleted: boolean; itemId: string }>> =>
+  fetchApi<ApiResponse<{ deleted: boolean; itemId: string }>>(`/api/shopping-sessions/${sessionId}/items/${itemId}`, {
+    method: 'DELETE',
+  });
+
+export const completeShoppingSession = (
+  sessionId: string,
+  data: { receiptUrl?: string; notes?: string } = {}
+): Promise<ApiResponse<ShoppingSession>> =>
+  fetchApi<ApiResponse<ShoppingSession>>(`/api/shopping-sessions/${sessionId}/complete`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const getShoppingSessions = (params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<ShoppingSession[]>> => {
+  const queryParams = new URLSearchParams();
+  if (params?.page) queryParams.append('page', params.page.toString());
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  if (params?.status) queryParams.append('status', params.status);
+  const queryString = queryParams.toString();
+  const endpoint = `/api/shopping-sessions${queryString ? `?${queryString}` : ''}`;
+  return fetchApi<ApiResponse<ShoppingSession[]>>(endpoint);
+};
