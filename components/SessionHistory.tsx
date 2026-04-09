@@ -237,7 +237,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ onBack }) => {
           <div className="animate-spin text-4xl mb-4">⏳</div>
           <p className="text-slate-500">Loading sessions...</p>
         </div>
-      ) : sessions.length === 0 ? (
+      ) : sessions?.length === 0 ? (
         <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
           <span className="text-4xl mb-3 block">📋</span>
           <p className="text-slate-500 font-medium">No sessions found</p>
@@ -249,7 +249,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ onBack }) => {
         </div>
       ) : (
         <div className="space-y-3">
-          {sessions.map((session) => (
+          {(sessions || []).map((session) => (
             <button
               key={session.id}
               onClick={() => setSelectedSession(session)}

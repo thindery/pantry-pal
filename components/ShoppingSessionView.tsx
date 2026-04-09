@@ -446,7 +446,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto pb-2">
-            {sessionData.items.map((item, index) => (
+            {(sessionData.items || []).map((item, index) => (
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
