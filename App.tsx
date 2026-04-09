@@ -2370,53 +2370,95 @@ const AppContent: React.FC = () => {
 
         {view === 'shopping-list' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">🛒 Shopping List</h2>
-                <p className="text-slate-500 text-sm mt-1">
-                  {shoppingList.length === 0 
-                    ? 'Auto-generated from low stock items'
-                    : `${shoppingList.filter(i => i.isChecked).length}/${shoppingList.length} items checked`}
-                </p>
+            {/* Clean Toolbar - 40% height reduction */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-3 rounded-xl shadow-sm">
+              {/* Title Row */}
+              <div className="flex items-center gap-2">
+                <div className="bg-emerald-100 p-2 rounded-lg">
+                  <span className="text-xl">🛒</span>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">Shopping List</h2>
+                  <p className="text-slate-500 text-xs">
+                    {shoppingList.length === 0 
+                      ? 'Auto-generated from low stock'
+                      : `${shoppingList.filter(i => i.isChecked).length}/${shoppingList.length} items checked`}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setShowThresholdSettings(true)}
-                  className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200 transition-colors text-sm"
-                  title="Configure low stock thresholds"
-                >
-                  ⚙️ Thresholds
-                </button>
+
+              {/* Toolbar Actions */}
+              <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                {/* Primary: Live Session */}
                 <button
                   onClick={() => setView('shopping-session')}
-                  className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg font-medium hover:bg-emerald-200 transition-colors text-sm flex items-center gap-2"
-                  title="Start a shopping session"
+                  className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center justify-center gap-1.5 text-sm whitespace-nowrap"
+                  title="Start Live Shopping Session"
                 >
-                  <span>🛒</span> Live Session
+                  <span>▶️</span>
+                  <span className="hidden sm:inline">Live Session</span>
                 </button>
-                <button
-                  onClick={() => setView('session-history')}
-                  className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-medium hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
-                  title="View session history"
-                >
-                  <span>📜</span> History
-                </button>
+                
+                {/* Icon-only: Refresh */}
                 <button
                   onClick={generateShoppingList}
                   disabled={isGeneratingList}
-                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  className="p-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+                  title={isGeneratingList ? 'Refreshing...' : 'Refresh List'}
                 >
-                  {isGeneratingList ? (
-                    <>
-                      <span className="animate-spin">⏳</span>
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <span>🔄</span> Refresh List
-                    </>
-                  )}
+                  <span className={`text-base ${isGeneratingList ? 'animate-spin' : ''}`}>🔄</span>
                 </button>
+
+                {/* More Dropdown */}
+                <div className="relative group">
+                  <button 
+                    className="px-2 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-0.5 text-sm"
+                    title="More actions"
+                  >
+                    <span className="hidden sm:inline">More</span>
+                    <span>▾</span>
+                  </button>
+                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1">
+                    <button
+                      onClick={() => setView('session-history')}
+                      className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span>📜</span> View History
+                    </button>
+                    <button
+                      onClick={() => setShowThresholdSettings(true)}
+                      className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span>⚙️</span> Thresholds
+                    </button>
+                    <div className="border-t border-slate-100 my-1"></div>
+                    <button
+                      onClick={copyToClipboard}
+                      className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span>📋</span> Copy Text
+                    </button>
+                    <button
+                      onClick={shareShoppingList}
+                      className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span>📤</span> Share List
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span>🖨️</span> Print PDF
+                    </button>
+                    <div className="border-t border-slate-100 my-1"></div>
+                    <button
+                      onClick={clearShoppingList}
+                      className="w-full text-left px-3 py-1.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                    >
+                      <span>🗑️</span> Clear All
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2430,34 +2472,6 @@ const AppContent: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Action buttons */}
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={copyToClipboard}
-                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    📋 Copy to Clipboard
-                  </button>
-                  <button
-                    onClick={shareShoppingList}
-                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    📤 Share
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm print:hidden"
-                  >
-                    🖨️ Print
-                  </button>
-                  <button
-                    onClick={clearShoppingList}
-                    className="bg-rose-50 text-rose-600 border border-rose-200 px-4 py-2 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2 text-sm ml-auto"
-                  >
-                    🗑️ Clear List
-                  </button>
-                </div>
-
                 {/* Shopping List Items by Category */}
                 {(() => {
                   const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
