@@ -819,7 +819,7 @@ const InventoryItemRow: React.FC<{
   );
 };
 
-function createBlob(data: Float32Array): Blob {
+function createBlob(data: Float32Array): any {
   return new Blob([new Uint8Array(data.buffer)]);
 }
 
