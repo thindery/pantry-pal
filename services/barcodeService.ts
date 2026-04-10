@@ -1,6 +1,9 @@
 import { BarcodeProduct } from '../types';
 import { fetchApi } from './apiService';
 
+const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
+const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
+
 // Use PantryPal backend API which has caching
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
