@@ -9,7 +9,6 @@ export interface PantryItem {
   createdAt?: string;
   barcode?: string;
   productInfo?: ProductInfo;
-}
 
 export interface NutritionData {
   calories?: number;
@@ -36,6 +35,15 @@ export interface BarcodeProduct {
   infoLastSynced?: string;
   nutrition?: NutritionData;
   ingredients?: string[];
+}
+
+export type CacheStatus = 'live' | 'cached' | 'stale';
+
+export interface CacheStatusInfo {
+  status: CacheStatus;
+  label: string;
+  color: string;
+  icon: string;
 }
 
 export interface BarcodeScanRecord {
