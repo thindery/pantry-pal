@@ -177,15 +177,6 @@ export interface ShoppingSessionListResponse {
 // Subscription types
 export type UserTier = 'free' | 'pro' | 'family';
 
-export type CacheStatus = 'live' | 'stale' | 'cached';
-
-export interface CacheStatusInfo {
-  status: CacheStatus;
-  label: string;
-  color: string;
-  icon: string;
-}
-
 export interface ProductInfo {
   barcode: string;
   name: string;
