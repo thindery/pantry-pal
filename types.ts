@@ -8,19 +8,7 @@ export interface PantryItem {
   updatedAt?: string;
   createdAt?: string;
   barcode?: string;
-  productInfo?: {
-    barcode: string;
-    name?: string;
-    brand?: string;
-    category?: string;
-    imageUrl?: string;
-    ingredients?: string[];
-    nutrition?: Record<string, any>;
-    source?: 'openfoodfacts' | 'manual';
-    infoLastSynced?: string;
-    cached?: boolean;
-  };
-}
+  productInfo?: ProductInfo;
 
 export interface NutritionData {
   calories?: number;
@@ -187,6 +175,28 @@ export interface ShoppingSessionListResponse {
 
 // Subscription types
 export type UserTier = 'free' | 'pro' | 'family';
+
+export type CacheStatus = 'live' | 'stale' | 'cached';
+
+export interface CacheStatusInfo {
+  status: CacheStatus;
+  label: string;
+  color: string;
+  icon: string;
+}
+
+export interface ProductInfo {
+  barcode: string;
+  name: string;
+  brand?: string;
+  category?: string;
+  imageUrl?: string;
+  ingredients?: string[];
+  nutrition?: NutritionData;
+  source: string;
+  infoLastSynced: string;
+  cached?: boolean;
+}
 
 export interface TierInfo {
   tier: UserTier;
