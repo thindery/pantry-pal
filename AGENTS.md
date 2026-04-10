@@ -1,5 +1,7 @@
 # PantryPal Frontend - AGENTS.md
 
+**⚠️ IMPORTANT:** When working on REMY-XXX tickets, read `~/projects/remy-tracker/REMY-AGENT.md` first for ticket workflow guidelines.
+
 ## Project Overview
 
 **PantryPal Frontend** is a React SPA for the PantryPal inventory tracking system. This repo contains the user-facing web application for managing pantry items, shopping lists, and AI-powered receipt scanning. The backend API lives in a separate repo (`pantry-pal-api`).
