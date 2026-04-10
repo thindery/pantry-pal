@@ -25,11 +25,14 @@ export interface NutritionData {
 export interface BarcodeProduct {
   barcode: string;
   name: string;
+  productName?: string;
   brand?: string;
   category?: string;
   image?: string;
+  imageUrl?: string;
   source?: 'cache' | 'live' | 'stale';
   updatedAt?: string;
+  infoLastSynced?: string;
   nutrition?: NutritionData;
   ingredients?: string[];
 }
