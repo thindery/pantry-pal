@@ -145,7 +145,7 @@ describe('AdminDashboard', () => {
     
     // Setup fetch mock for errors endpoint
     fetchMock = vi.fn();
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof global.fetch;
   });
 
   afterEach(() => {

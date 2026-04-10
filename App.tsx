@@ -1430,9 +1430,7 @@ const AppContent: React.FC = () => {
     setInventoryError(null);
     try {
       const items = await getItems();
-      // Ensure items is always an array (handle {data: [...]} vs [...] response)
-      const itemsArray = Array.isArray(items) ? items : items?.data || [];
-      setInventory(itemsArray);
+      setInventory(items);
     } catch (err) {
       console.error('Failed to load inventory:', err);
       setInventoryError(err instanceof Error ? err.message : 'Failed to load inventory');
@@ -1458,8 +1456,7 @@ const AppContent: React.FC = () => {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      const actsArray = Array.isArray(acts) ? acts : acts?.data || [];
-      setActivities(actsArray);
+      setActivities(acts);
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
@@ -1840,12 +1837,20 @@ const AppContent: React.FC = () => {
               </div>
               {featureFlags.fabEnabled && (
                 <QuickActionBar
-                  actions={createQuickActions(
-                    () => setView('add-item'),
-                    () => setView('scan-barcode'),
-                    handleScanReceiptClick,
-                    handleVoiceAssistantClick
-                  )}
+                  actions={[
+                    ...createQuickActions(
+                      () => setView('add-item'),
+                      () => setView('scan-barcode'),
+                      handleScanReceiptClick
+                    ),
+                    {
+                      id: 'voice',
+                      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.9 2 10 2.9 10 4V12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12V4C14 2.9 13.1 2 12 2Z" fill="currentColor"/><path d="M17 11C17 13.76 14.76 16 12 16C9.24 16 7 13.76 7 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M12 19V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M8 22H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+                      label: 'Voice Assistant',
+                      onClick: handleVoiceAssistantClick,
+                      shortcut: 'v',
+                    },
+                  ]}
                 />
               )}
             </div>
