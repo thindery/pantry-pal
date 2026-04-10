@@ -46,11 +46,18 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
 
     const data = response.data;
 
-    if (!data?.success || !data?.product) {
+    if (!data?.success) {
       return {
         success: false,
         error: data?.error || 'Product not found',
         rateLimited: data?.rateLimited,
+      };
+    }
+
+    if (!data?.product) {
+      return {
+        success: false,
+        error: 'Product data missing from response',
       };
     }
 
