@@ -8,6 +8,18 @@ export interface PantryItem {
   updatedAt?: string;
   createdAt?: string;
   barcode?: string;
+  productInfo?: {
+    barcode: string;
+    name?: string;
+    brand?: string;
+    category?: string;
+    imageUrl?: string;
+    ingredients?: string[];
+    nutrition?: Record<string, any>;
+    source?: 'openfoodfacts' | 'manual';
+    infoLastSynced?: string;
+    cached?: boolean;
+  };
 }
 
 export interface NutritionData {
@@ -35,6 +47,15 @@ export interface BarcodeProduct {
   infoLastSynced?: string;
   nutrition?: NutritionData;
   ingredients?: string[];
+}
+
+export type CacheStatus = 'live' | 'cached' | 'stale';
+
+export interface CacheStatusInfo {
+  status: CacheStatus;
+  label: string;
+  color: string;
+  icon: string;
 }
 
 export interface BarcodeScanRecord {
