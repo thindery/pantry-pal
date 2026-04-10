@@ -2396,7 +2396,7 @@ const AppContent: React.FC = () => {
                   title="Start Live Shopping Session"
                 >
                   <span>▶️</span>
-                  <span className="hidden sm:inline">Live Session</span>
+                  <span className="hidden sm:inline">Scan & Shop</span>
                 </button>
                 
                 {/* Icon-only: Refresh */}
@@ -2415,7 +2415,7 @@ const AppContent: React.FC = () => {
                     className="px-2 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-0.5 text-sm"
                     title="More actions"
                   >
-                    <span className="hidden sm:inline">More</span>
+                    <span className="inline">More..</span>
                     <span>▾</span>
                   </button>
                   <div className="absolute right-0 top-full mt-1.5 w-44 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1">
