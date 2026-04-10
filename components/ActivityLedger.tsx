@@ -41,6 +41,7 @@ const sourceIcons: Record<string, string> = {
   MANUAL: '👤',
   RECEIPT_SCAN: '📷',
   VISUAL_USAGE: '📸',
+  BARCODE_SCAN: '🏷️',
 };
 
 const formatRelativeDate = (timestamp: string): string => {
@@ -232,7 +233,14 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
               {/* Activity Cards */}
               <div className="space-y-2">
                 {items.map((activity, index) => {
-                  const config = typeConfig[activity.type];
+                  const config = typeConfig[activity.type] || {
+                    icon: '❓',
+                    label: 'Unknown',
+                    bg: 'bg-slate-50',
+                    border: 'border-slate-100',
+                    text: 'text-slate-600',
+                    badgeBg: 'bg-slate-100',
+                  };
                   const sign = activity.type === 'ADD' ? '+' : 
                                activity.type === 'REMOVE' ? '-' : '±';
                   
