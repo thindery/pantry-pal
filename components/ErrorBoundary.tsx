@@ -1,39 +1,45 @@
-import React, { Component, ReactNode } from 'react';
+import React from 'react';
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
-  copied: boolean;
+  error?: Error;
+  errorInfo?: React.ErrorInfo;
+  copied?: boolean;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null, copied: false };
+    this.state = { 
+      hasError: false, 
+      error: undefined, 
+      errorInfo: undefined, 
+      copied: false 
+    };
     
-    // Bind methods
     this.formatErrorForBot = this.formatErrorForBot.bind(this);
     this.handleCopy = this.handleCopy.bind(this);
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error, errorInfo: null };
+  static getDerivedStateFromError(error: Error): State {
+    return { 
+      hasError: true, 
+      error, 
+      errorInfo: null, 
+      copied: false 
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo);
     this.setState({ error, errorInfo });
-    
-    // Send error to backend for logging
     this.reportError(error, errorInfo);
   }
   
-  // Report error to backend for admin dashboard
   private reportError(error: Error, errorInfo: React.ErrorInfo) {
     try {
       const errorData = {
@@ -49,13 +55,12 @@ export class ErrorBoundary extends Component<Props, State> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(errorData),
-      }).catch(console.error); // Silent fail - don't crash error reporting
+      }).catch(console.error);
     } catch (err) {
       console.error('Failed to log error to backend:', err);
     }
   }
 
-  // Format error for bot debugging
   private formatErrorForBot(): string {
     const { error, errorInfo } = this.state;
     const errorData = {
@@ -84,7 +89,6 @@ ${errorInfo?.componentStack?.slice(0, 500)}
     `.trim();
   }
 
-  // Copy to clipboard
   private async handleCopy(): Promise<void> {
     const text = this.formatErrorForBot();
     try {
@@ -115,8 +119,6 @@ ${errorInfo?.componentStack?.slice(0, 500)}
                 </pre>
               )}
             </div>
-            
-            {/* Button row with Copy and Reload */}
             <div className="flex gap-3 mt-4">
               <button
                 onClick={this.handleCopy}
