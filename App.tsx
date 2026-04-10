@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, FunctionDeclaration, Type, LiveServerMessage, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier, ShoppingSession } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
@@ -818,6 +818,24 @@ const InventoryItemRow: React.FC<{
     </tr>
   );
 };
+
+function createBlob(data: Float32Array): Blob {
+  return new Blob([new Uint8Array(data.buffer)]);
+}
+
+async function decodeAudioData(base64: string, ctx: AudioContext, sampleRate: number, channels: number): Promise<AudioBuffer> {
+  const audioData = atob(base64);
+  const arrayBuffer = new ArrayBuffer(audioData.length);
+  const view = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < audioData.length; i++) {
+    view[i] = audioData.charCodeAt(i);
+  }
+  return ctx.decodeAudioData(arrayBuffer);
+}
+
+function decode(base64: string): string {
+  return atob(base64);
+}
 
 const VoiceAssistant: React.FC<{
   onAdjustStock: (name: string, amount: number) => string;
