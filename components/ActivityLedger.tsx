@@ -11,6 +11,30 @@ const typeConfig: Record<ActivityType, {
   text: string;
   badgeBg: string;
 }> = {
+  CREATE: {
+    icon: '📥',
+    label: 'Created',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-100',
+    text: 'text-emerald-600',
+    badgeBg: 'bg-emerald-100',
+  },
+  UPDATE: {
+    icon: '📝',
+    label: 'Updated',
+    bg: 'bg-blue-50',
+    border: 'border-blue-100',
+    text: 'text-blue-600',
+    badgeBg: 'bg-blue-100',
+  },
+  DELETE: {
+    icon: '🗑️',
+    label: 'Deleted',
+    bg: 'bg-rose-50',
+    border: 'border-rose-100',
+    text: 'text-rose-600',
+    badgeBg: 'bg-rose-100',
+  },
   ADD: {
     icon: '📥',
     label: 'Added',

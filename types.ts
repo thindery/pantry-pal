@@ -9,6 +9,7 @@ export interface PantryItem {
   createdAt?: string;
   barcode?: string;
   productInfo?: ProductInfo;
+}
 
 export interface NutritionData {
   calories?: number;
@@ -66,7 +67,7 @@ export interface BarcodeScanStats {
   scanHistoryByDate: { date: string; count: number }[];
 }
 
-export type ActivityType = 'ADD' | 'REMOVE' | 'ADJUST';
+export type ActivityType = 'CREATE' | 'UPDATE' | 'DELETE' | 'ADD' | 'REMOVE' | 'ADJUST';
 
 export interface Activity {
   id: string;
