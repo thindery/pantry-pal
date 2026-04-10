@@ -72,7 +72,7 @@ describe('apiService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fetchMock = vi.fn();
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof global.fetch;
     consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Mock import.meta.env

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // --- Types ---
 export interface QuickAction {
-  id: 'add' | 'barcode' | 'receipt';
+  id: string;
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
