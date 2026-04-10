@@ -9,6 +9,9 @@ export interface BarcodeLookupResult {
   product?: BarcodeProduct;
   error?: string;
   rateLimited?: boolean;
+  cached?: boolean;
+  stale?: boolean;
+  infoLastSynced?: string;
 }
 
 /**
