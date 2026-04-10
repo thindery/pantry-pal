@@ -1,5 +1,5 @@
 import { BarcodeProduct } from '../types';
-import { fetchApi, ApiResponse } from './apiService';
+import { fetchApi } from './apiService';
 
 // Use PantryPal backend API which has caching
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -29,32 +29,23 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
   }
 
   try {
-    const response = await fetchApi<ApiResponse<{
+    const response = await fetchApi<{
       success: boolean;
       cached: boolean;
       product?: BarcodeProduct;
       rateLimited?: boolean;
       error?: string;
-    }>>(`/api/barcode/${cleanBarcode}`);
+    }>(`/api/barcode/${cleanBarcode}`);
 
     if (!response.success) {
       return {
         success: false,
-        error: response.error || 'Failed to lookup barcode',
+        error: response.error || 'Product not found',
+        rateLimited: response.rateLimited,
       };
     }
 
-    const data = response.data;
-
-    if (!data?.success) {
-      return {
-        success: false,
-        error: data?.error || 'Product not found',
-        rateLimited: data?.rateLimited,
-      };
-    }
-
-    if (!data?.product) {
+    if (!response.product) {
       return {
         success: false,
         error: 'Product data missing from response',
@@ -64,10 +55,12 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
     return {
       success: true,
       product: {
-        ...data.product,
+        ...response.product,
         barcode: cleanBarcode,
+        name: response.product.productName || response.product.name,
+        image: response.product.imageUrl,
       },
-      rateLimited: data.rateLimited,
+      rateLimited: response.rateLimited,
     };
   } catch (err) {
     console.error('Barcode lookup error:', err);
