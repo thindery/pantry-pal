@@ -91,10 +91,10 @@ export interface ShoppingListItem {
   unit: string;
   isManual: boolean;
   isChecked: boolean;
-  isArchived: boolean;
+  isArchived?: boolean;
   addedAt: string;
   reason: 'low_stock' | 'manual' | 'recommendation';
-  priority: ShoppingItemPriority;
+  priority?: ShoppingItemPriority;
   autoAddedAt?: string;
 }
 
