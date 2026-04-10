@@ -5,6 +5,8 @@ export interface PantryItem {
   unit: string;
   category: string;
   lastUpdated: string;
+  updatedAt?: string;
+  createdAt?: string;
   barcode?: string;
 }
 
