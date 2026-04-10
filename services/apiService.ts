@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 let getTokenRef: (() => Promise<string | null>) | null = null;
 
 // Helper for API calls
-async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -160,7 +160,7 @@ export function useSetupAuthToken() {
 }
 
 // Shopping Session API
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   success: boolean;
   data: T;
   meta?: { timestamp: string; page?: number; limit?: number; total?: number; totalPages?: number; };
