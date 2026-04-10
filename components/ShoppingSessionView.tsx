@@ -489,6 +489,8 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         </p>
       </div>
 
+      <p className="text-center text-slate-500 text-sm mb-3">Scan barcode items as you add to your cart</p>
+
       {/* Scan Button */}
       <button
         onClick={() => setShowScanner(true)}
