@@ -555,14 +555,14 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
                 >
                   {/* Product name with highlighted matches */}
                   <div className="font-medium text-slate-800">
-                    {highlightMatch(result.item.name, result.matches, 'name')}
+                    {highlightMatch(result.item.name, result.matches ? [...result.matches] : undefined, 'name')}
                   </div>
 
                   {/* Barcode shown underneath if available */}
                   {result.item.barcode && (
                     <div className="text-xs text-slate-500 mt-0.5">
                       Barcode: {' '}
-                      {highlightMatch(result.item.barcode, result.matches, 'barcode')}
+                      {highlightMatch(result.item.barcode, result.matches ? [...result.matches] : undefined, 'barcode')}
                     </div>
                   )}
                 </li>
