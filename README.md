@@ -227,3 +227,4 @@ MIT
 ## Type Safety
 - All TypeScript errors resolved (49 → 0)
 - Husky pre-commit hooks enabled
+
