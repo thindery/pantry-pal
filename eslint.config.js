@@ -12,6 +12,10 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: process.cwd(),
+      },
     },
     plugins: {
       'react-hooks': reactHooks,
@@ -31,6 +35,9 @@ export default tseslint.config(
       }],
       // Catch missing imports
       '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/strict-boolean-expressions': 'warn',
+      'no-unsafe-optional-chaining': 'warn',
     },
   }
 );
