@@ -1112,7 +1112,7 @@ const AppContent: React.FC = () => {
 
   // Filtered and sorted inventory
   const filteredInventory = useMemo(() => {
-    let items = [...inventory];
+    let items = Array.isArray(inventory) ? [...inventory] : [];
 
     // Apply stat card filter
     if (statCardFilter) {
@@ -1888,9 +1888,9 @@ const AppContent: React.FC = () => {
                         ({(() => {
                           switch(dashboardInlineFilter) {
                             case 'low-stock':
-                              return inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length;
+                              return (inventory ?? []).filter((i) => i.quantity > 0 && i.quantity < 3).length;
                             case 'out-of-stock':
-                              return inventory.filter((i) => i.quantity === 0).length;
+                              return (inventory ?? []).filter((i) => i.quantity === 0).length;
                             default:
                               return 0;
                           }
@@ -2024,8 +2024,8 @@ const AppContent: React.FC = () => {
             {/* Category Pills */}
             <CategoryPills
               categories={CATEGORIES.map((cat) => {
-                const count = inventory.filter((i) => i.category === cat).length;
-                const lowStockCount = inventory.filter((i) => i.category === cat && i.quantity > 0 && i.quantity < 3).length;
+                const count = (inventory ?? []).filter((i) => i.category === cat).length;
+                const lowStockCount = (inventory ?? []).filter((i) => i.category === cat && i.quantity > 0 && i.quantity < 3).length;
                 const icons: Record<string, string> = {
                   produce: '🥬',
                   pantry: '🥫',
