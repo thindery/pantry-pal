@@ -1432,7 +1432,7 @@ const AppContent: React.FC = () => {
     setInventoryError(null);
     try {
       const items = await getItems();
-      setInventory(items);
+      setInventory(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error('Failed to load inventory:', err);
       setInventoryError(err instanceof Error ? err.message : 'Failed to load inventory');

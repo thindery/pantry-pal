@@ -35,8 +35,17 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
 }
 
 // Pantry Items API
-export const getItems = (): Promise<PantryItem[]> =>
-  fetchApi<PantryItem[]>('/api/items');
+export const getItems = async (): Promise<PantryItem[]> => {
+  const data = await fetchApi<unknown>('/api/items');
+  // Handle both direct array and wrapped responses (e.g., { items: [...] }, { data: [...] })
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>;
+    if (Array.isArray(obj.items)) return obj.items as PantryItem[];
+    if (Array.isArray(obj.data)) return obj.data as PantryItem[];
+  }
+  return [];
+};
 
 export const getItem = (id: string): Promise<PantryItem> =>
   fetchApi<PantryItem>(`/api/items/${id}`);
