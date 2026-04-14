@@ -519,7 +519,7 @@ const ReceiptScanner: React.FC<{
     setIsAdding(true);
     try {
       await onAddItems(scanResults);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to add items to inventory');
     } finally {
       setIsAdding(false);
