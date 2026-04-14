@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Activity, ActivityType } from '../types';
+import type { Activity, ActivityType } from '../types';
 
 type TimeFilter = 'all' | '7d' | '30d' | '90d';
 

@@ -2,16 +2,17 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type {
+  DashboardStatData} from '../components/DashboardComponents';
 import {
   StatCardMini,
   LowStockPreview,
   ShoppingListPreview,
   CategoryPills,
   InlineQuickAdd,
-  RecentActivityPreview,
-  DashboardStatData,
+  RecentActivityPreview
 } from '../components/DashboardComponents';
-import { PantryItem, Activity, ShoppingListItem } from '../types';
+import type { PantryItem, Activity, ShoppingListItem } from '../types';
 
 // Mock Fuse.js
 vi.mock('fuse.js', () => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ShoppingSession, ShoppingSessionItem, BarcodeProduct } from '../types';
+import type { ShoppingSession, ShoppingSessionItem, BarcodeProduct } from '../types';
 import BarcodeScanner from './BarcodeScanner';
 import {
   createShoppingSession,

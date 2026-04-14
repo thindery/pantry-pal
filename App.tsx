@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { GoogleGenAI, FunctionDeclaration, Type, LiveServerMessage, Modality } from '@google/genai';
+import type { FunctionDeclaration, LiveServerMessage} from '@google/genai';
+import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import { PantryItem, Activity, ActivityType, ScanResult, UsageResult, ShoppingListItem, ThresholdConfig, BarcodeProduct, UserTier, ShoppingSession } from './types';
+import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession } from './types';
+import { UsageResult, BarcodeProduct, UserTier } from './types';
 import { scanReceipt, analyzeUsage } from './services/geminiService';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';

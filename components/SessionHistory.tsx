@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingSession, ShoppingSessionItem } from '../types';
+import type { ShoppingSession} from '../types';
+import { ShoppingSessionItem } from '../types';
 import { getShoppingSessions, uploadSessionReceipt } from '../services/apiService';
 
 interface SessionHistoryProps {

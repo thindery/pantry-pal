@@ -1,4 +1,4 @@
-import { BarcodeProduct } from '../types';
+import type { BarcodeProduct } from '../types';
 import { fetchApi } from './apiService';
 
 const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';

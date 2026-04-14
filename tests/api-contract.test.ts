@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { PantryItem, Activity, ActivityType, TierInfo, ScanResult } from '../types';
+import type { PantryItem, Activity, ActivityType, TierInfo, ScanResult } from '../types';
 
 const mockFetch = vi.fn();
 const API_URL = 'http://localhost:3001';

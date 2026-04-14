@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { ScanResult, UsageResult } from "../types";
+import type { ScanResult, UsageResult } from "../types";
 import { processScan, processUsage } from "./apiService";
 
 // Always use new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY })

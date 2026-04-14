@@ -1,4 +1,5 @@
-import { PantryItem, Activity, ActivityType, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem, ShoppingSessionListResponse } from '../types';
+import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
+import { ActivityType, ShoppingSessionListResponse } from '../types';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
 

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import Fuse, { FuseResult, FuseResultMatch } from 'fuse.js';
-import { PantryItem, Activity, ShoppingListItem } from '../types';
+import type { FuseResult, FuseResultMatch } from 'fuse.js';
+import Fuse from 'fuse.js';
+import type { PantryItem, Activity, ShoppingListItem } from '../types';
 
 // --- Types ---
 export interface DashboardStatData {

@@ -1,23 +1,23 @@
-import React from 'react';
+import React, { Component, ReactNode } from 'react';
 
 interface Props {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 interface State {
   hasError: boolean;
-  error?: Error;
-  errorInfo?: React.ErrorInfo;
-  copied?: boolean;
+  error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+  copied: boolean;
 }
 
-export class ErrorBoundary extends React.Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { 
       hasError: false, 
-      error: undefined, 
-      errorInfo: undefined, 
+      error: null, 
+      errorInfo: null, 
       copied: false 
     };
     
@@ -25,12 +25,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
     this.handleCopy = this.handleCopy.bind(this);
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { 
       hasError: true, 
-      error, 
-      errorInfo: null, 
-      copied: false 
+      error: error, 
+      errorInfo: null 
     };
   }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar, KPICard, ChartCard, TransactionsList } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
-import { Period, DashboardMetrics } from '../types/admin';
+import type { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import FeatureFlagsPanel from '../src/components/FeatureFlagsPanel';

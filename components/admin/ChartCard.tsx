@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Period } from '../../types/admin';
+import type { Period } from '../../types/admin';
 
 interface ChartCardProps {
   title: string;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
-import { BarcodeProduct } from '../types';
+import type { BarcodeProduct } from '../types';
 import { BarcodeLookupResult, lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
 
 interface BarcodeScannerProps {

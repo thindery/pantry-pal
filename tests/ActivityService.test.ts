@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Activity, ActivityType } from '../types';
+import type { Activity, ActivityType } from '../types';
 
 // Mock the global fetch
 const mockFetch = vi.fn();

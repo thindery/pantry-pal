@@ -1,5 +1,5 @@
 import React from 'react';
-import { PantryItem } from '../types';
+import type { PantryItem } from '../types';
 
 interface Props {
   item: PantryItem;

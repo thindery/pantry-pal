@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle2, XCircle, Clock, ArrowRight } from 'lucide-react';
-import { Transaction } from '../../types/admin';
+import type { Transaction } from '../../types/admin';
 
 interface TransactionsListProps {
   transactions: Transaction[];

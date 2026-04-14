@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import AdminDashboard from '../components/AdminDashboard';
 import * as adminService from '../services/adminService';
-import { DashboardMetrics, Period } from '../types/admin';
+import type { DashboardMetrics, Period } from '../types/admin';
 
 // Mock the admin service
 vi.mock('../services/adminService', () => ({

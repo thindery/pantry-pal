@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PantryItem } from '../types';
+import type { PantryItem } from '../types';
 
 // Inventory Item Row Component (extracted from App.tsx)
 interface InventoryItemRowProps {

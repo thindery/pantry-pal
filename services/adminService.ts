@@ -1,4 +1,4 @@
-import { DashboardMetrics, Period, Transaction, AnalyticsEvent } from '../types/admin';
+import type { DashboardMetrics, Period, Transaction, AnalyticsEvent } from '../types/admin';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 

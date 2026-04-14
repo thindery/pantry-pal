@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PantryItem, BarcodeProduct } from '../types';
+import type { PantryItem, BarcodeProduct } from '../types';
 import { getProductByBarcode } from '../services/apiService';
 
 interface ProductInfoModalProps {

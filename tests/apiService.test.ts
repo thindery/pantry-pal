@@ -15,7 +15,7 @@ import {
   createCheckoutSession,
   useSetupAuthToken,
 } from '../services/apiService';
-import { PantryItem, Activity, TierInfo } from '../types';
+import type { PantryItem, Activity, TierInfo } from '../types';
 
 // Mock Clerk's useAuth hook
 vi.mock('@clerk/clerk-react', () => ({
