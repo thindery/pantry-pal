@@ -3,20 +3,16 @@ import type { FunctionDeclaration, LiveServerMessage} from '@google/genai';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession } from './types';
-import { UsageResult, BarcodeProduct, UserTier } from './types';
-import { scanReceipt, analyzeUsage } from './services/geminiService';
+import { analyzeUsage } from './services/geminiService';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';
-import PricingPage from './components/PricingPage';
-import CheckoutResult from './components/CheckoutResult';
 import LandingPage from './components/LandingPage';
-import UpgradePrompt, { ItemLimitWarning, ReceiptScanLimit, ProBadge } from './components/UpgradePrompt';
 import { ToastContainer, useToast } from './components/Toast';
 import ProductInfoModal from './components/ProductInfoModal';
 import LinkBarcodeModal from './components/LinkBarcodeModal';
 import InventoryCard from './components/InventoryCard';
 import ActivityLedger from './components/ActivityLedger';
-import { useSubscription, getItemLimitStatus, canScanReceipt } from './services/subscription';
+import { useSubscription } from './services/subscription';
 import {
   getItems,
   createItem,
