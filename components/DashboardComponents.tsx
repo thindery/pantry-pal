@@ -625,7 +625,7 @@ export const RecentActivityPreview: React.FC<RecentActivityPreviewProps> = ({
   activities,
   maxItems = 5,
 }) => {
-  const recentActivities = activities.slice(0, maxItems);
+  const recentActivities = (activities ?? []).slice(0, maxItems);
 
   const activityIcons: Record<string, string> = {
     ADD: '➕',
