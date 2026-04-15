@@ -68,7 +68,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
       },
       rateLimited: response.rateLimited,
     };
-  } catch (_err) {
+  } catch (err) {
     console.error('Barcode lookup error:', err);
     return {
       success: false,
@@ -168,12 +168,12 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
         ingredients,
       },
     };
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error) {
       if (err.name === 'AbortError') {
-        throw new Error('Request timed out');
+        throw new Error('Request timed out', { cause: err });
       }
-      throw new Error(`Failed to fetch: ${err.message}`);
+      throw new Error(`Failed to fetch: ${err.message}`, { cause: err });
     }
     throw err;
   }
@@ -241,9 +241,9 @@ async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
         updatedAt: new Date().toISOString(),
       },
     };
-  } catch (_err) {
+  } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error('Request timed out');
+      throw new Error('Request timed out', { cause: err });
     }
     throw err;
   }
@@ -329,7 +329,7 @@ export async function scanBarcodeFromImage(imageFile: File): Promise<BarcodeLook
     }
 
     return { success: false, error: 'No barcode found in image' };
-  } catch (_err) {
+  } catch (err) {
     console.error('Error scanning barcode from image:', err);
 
     // Provide more specific error messages

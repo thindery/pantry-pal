@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(errorData),
       }).catch(console.error);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to log error to backend:', err);
     }
   }
@@ -95,7 +95,7 @@ ${errorInfo?.componentStack?.slice(0, 500)}
       await navigator.clipboard.writeText(text);
       this.setState({ copied: true });
       setTimeout(() => this.setState({ copied: false }), 2000);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to copy:', err);
     }
   }

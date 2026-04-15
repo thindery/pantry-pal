@@ -61,7 +61,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to create shopping session');
       }
-    } catch (_err) {
+    } catch (err) {
       setError('Failed to create shopping session. Please try again.');
       console.error('Start session error:', err);
     } finally {
@@ -76,7 +76,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       if (response.success && response.data) {
         setSessionData(response.data);
       }
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to refresh session:', err);
     }
   };
@@ -102,7 +102,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to add item to session');
       }
-    } catch (_err) {
+    } catch (err) {
       setError('Failed to add item. Please try again.');
       console.error('Add item error:', err);
     } finally {
@@ -123,7 +123,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to remove item');
       }
-    } catch (_err) {
+    } catch (err) {
       setError('Failed to remove item. Please try again.');
       console.error('Remove item error:', err);
     } finally {
@@ -160,7 +160,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           try {
             const inventoryResponse = await addSessionToInventory(sessionData.id);
             if (inventoryResponse.success) {
-              setInventoryAdded(true);
+              _setInventoryAdded(true);
             }
           } catch (inventoryErr) {
             console.error('Failed to add to inventory:', inventoryErr);
@@ -171,7 +171,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to complete session');
       }
-    } catch (_err) {
+    } catch (err) {
       setError('Failed to complete session. Please try again.');
       console.error('Complete session error:', err);
     } finally {

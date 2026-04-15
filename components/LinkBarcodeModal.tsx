@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { PantryItem, CacheStatus, CacheStatusInfo } from '../types';
 import { lookupBarcode, formatRelativeTime } from '../services/barcodeService';
+import type { BarcodeLookupResult } from '../services/barcodeService';
 
 interface LinkBarcodeModalProps {
   item: PantryItem;
@@ -194,7 +195,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
         
         setLookupData(updates);
       }
-    } catch (_err) {
+    } catch (err) {
       console.error('Lookup error:', err);
       setError('Failed to look up product info, but you can still save the barcode.');
     } finally {
