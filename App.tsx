@@ -808,7 +808,7 @@ const InventoryItemRow: React.FC<{
   );
 };
 
-function createBlob(data: Float32Array): any {
+function createBlob(data: Float32Array): Blob {
   return new Blob([new Uint8Array(data.buffer)]);
 }
 
@@ -832,7 +832,7 @@ const VoiceAssistant: React.FC<{
 }> = ({ onAdjustStock, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [transcription, setTranscription] = useState('');
-  const sessionRef = useRef<any>(null);
+  const sessionRef = useRef<unknown>(null);
   const audioContextsRef = useRef<{ input: AudioContext; output: AudioContext } | null>(null);
   const nextStartTimeRef = useRef(0);
   const sourcesRef = useRef(new Set<AudioBufferSourceNode>());
@@ -840,8 +840,8 @@ const VoiceAssistant: React.FC<{
   const startSession = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const inputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 16000 });
+      const outputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
