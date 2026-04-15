@@ -99,7 +99,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isSignedIn } = useAuth();
-  const { tierInfo, isFree, isPro, isFamily } = useSubscription();
+  const { tierInfo: _tierInfo, isFree, isPro, isFamily } = useSubscription();
 
   const handleUpgrade = async (tier: 'pro' | 'family') => {
     if (!isSignedIn) {

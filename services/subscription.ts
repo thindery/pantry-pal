@@ -159,7 +159,7 @@ export function useSubscription() {
       const info = await getTierInfo();
       setTierInfo(info);
       setError(null);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to fetch tier info:', err);
       setError(err instanceof Error ? err.message : 'Failed to load subscription info');
     } finally {

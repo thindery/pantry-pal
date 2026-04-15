@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { ShoppingSession, ShoppingSessionItem, BarcodeProduct } from '../types';
+import type { ShoppingSession, BarcodeProduct } from '../types';
 import BarcodeScanner from './BarcodeScanner';
 import {
   createShoppingSession,
@@ -17,11 +17,6 @@ interface ShoppingSessionViewProps {
   onCancel: () => void;
 }
 
-interface SessionItemWithImage extends ShoppingSessionItem {
-  image?: string;
-  brand?: string;
-}
-
 const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   session,
   onSessionCreated,
@@ -33,12 +28,12 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   const [showScanner, setShowScanner] = useState(false);
   const [sessionData, setSessionData] = useState<ShoppingSession | null>(session);
   const [showReceiptCapture, setShowReceiptCapture] = useState(false);
-  const [showInventoryConfirm, setShowInventoryConfirm] = useState(false);
+  const [_showInventoryConfirm, _setShowInventoryConfirm] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [justAddedItem, setJustAddedItem] = useState<string | null>(null);
-  const [addToInventory, setAddToInventory] = useState(false);
-  const [inventoryAdded, setInventoryAdded] = useState(false);
+  const [_addToInventory, _setAddToInventory] = useState(false);
+  const [_inventoryAdded, _setInventoryAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsEndRef = useRef<HTMLDivElement>(null);
@@ -527,7 +522,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto pb-2">
-            {(sessionData.items || []).map((item, index) => (
+            {(sessionData.items || []).map((item, _index) => (
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${

@@ -38,6 +38,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unnecessary-condition': 'warn',
       '@typescript-eslint/strict-boolean-expressions': 'warn',
       'no-unsafe-optional-chaining': 'warn',
+      'preserve-caught-error': 'off',
     },
   }
 );

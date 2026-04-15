@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { BarcodeProduct } from '../types';
-import { BarcodeLookupResult, lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
+import { lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
 
 interface BarcodeScannerProps {
   onBarcodeDetected: (product: BarcodeProduct) => void;
@@ -102,8 +102,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
           handleBarcodeDetected(barcode);
         }
       });
-    } catch (err) {
-      console.error('Camera access error:', err);
+    } catch {
+      console.error('Camera access error');
       setHasCameraPermission(false);
       setError('Camera access denied. You can upload a barcode image instead.');
     }

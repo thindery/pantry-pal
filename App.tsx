@@ -1667,8 +1667,6 @@ const AppContent: React.FC = () => {
             : i
         )
       );
-    } catch (err) {
-      throw err;
     } finally {
       setIsEditing(false);
     }

@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { PantryItem, CacheStatus, CacheStatusInfo } from '../types';
 import { BarcodeProduct } from '../types';
-import type { BarcodeLookupResult} from '../services/barcodeService';
 import { lookupBarcode, formatRelativeTime } from '../services/barcodeService';
 
 interface LinkBarcodeModalProps {
