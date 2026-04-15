@@ -17,8 +17,8 @@ export const ActivityDashboard: React.FC = () => {
           active: data?.active ?? 0,
           completed: data?.completed ?? 0
         });
-      } catch {
-        console.error('Failed to load stats:', err);
+      } catch (_err) {
+        console.error('Failed to load stats:', _err);
         setStats({ total: 0, active: 0, completed: 0 });
         setError('Unable to load statistics');
       }

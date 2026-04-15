@@ -55,12 +55,12 @@ export const artifactsApi = {
     return { ...artifact, id: crypto.randomUUID() };
   },
   
-  async list(userId: string): Promise<Artifact[]> {
+  async list(_userId: string): Promise<Artifact[]> {
     // Implementation with authorization check
     return [];
   },
   
-  async delete(id: string, userId: string): Promise<void> {
+  async delete(_id: string, _userId: string): Promise<void> {
     // Implementation with ownership check
   }
 };

@@ -1,7 +1,6 @@
 import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
-import { ActivityType, ShoppingSessionListResponse } from '../types';
 import { useAuth } from '@clerk/clerk-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 

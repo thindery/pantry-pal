@@ -91,7 +91,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       readerRef.current = reader;
 
       // Start continuous scanning
-      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, err: unknown) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
         // Ignore results if we're no longer scanning or already processing
         // Use refs here to avoid stale closure issues
         if (!isScanningRef.current || isLoadingRef.current) return;

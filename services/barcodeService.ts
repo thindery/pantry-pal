@@ -5,7 +5,7 @@ const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
 const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
 
 // Use PantryPal backend API which has caching
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const _API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface BarcodeLookupResult {
   success: boolean;
@@ -81,7 +81,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
  * Open Food Facts API lookup
  * https://world.openfoodfacts.org/api/v0/product/{barcode}.json
  */
-async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult> {
+async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -183,7 +183,7 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
  * UPC Item Database API lookup (fallback)
  * Note: Free tier has rate limits
  */
-async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
+async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -315,7 +315,7 @@ export async function scanBarcodeFromImage(imageFile: File): Promise<BarcodeLook
     let result;
     try {
       result = await reader.decodeFromImageUrl(imageUrl);
-    } catch (decodeErr) {
+    } catch (_decodeErr) {
       // If decodeFromImageUrl fails, try again with a small delay
       // This helps with race conditions where the image isn't fully processed
       await new Promise(resolve => setTimeout(resolve, 100));

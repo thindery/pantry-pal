@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { PantryItem, CacheStatus, CacheStatusInfo } from '../types';
-import { BarcodeProduct } from '../types';
 import { lookupBarcode, formatRelativeTime } from '../services/barcodeService';
 
 interface LinkBarcodeModalProps {
@@ -135,7 +134,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
 
-      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, err: unknown) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
         if (!isScanningRef.current) return;
 
         if (result && (result as { getText(): string }).getText()) {
@@ -147,7 +146,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
         }
       });
     } catch (_err) {
-      console.error('Camera access error:', err);
+      console.error('Camera access error:', _err);
       setError('Camera access denied. You can type the barcode manually.');
     }
   };
