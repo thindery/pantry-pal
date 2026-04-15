@@ -645,8 +645,8 @@ const ReceiptScanner: React.FC<{
               <h3 className="font-bold text-slate-700">Extracted Items</h3>
             </div>
             <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-              {scanResults.map((item, index) => (
-                <div key={index} className="px-6 py-4 flex justify-between items-center">
+              {scanResults.map((item, _index) => (
+                <div key={_index} className="px-6 py-4 flex justify-between items-center">
                   <div>
                     <p className="font-medium text-slate-800">{item.name}</p>
                     <p className="text-xs text-slate-400 capitalize">{item.category || 'other'}</p>
@@ -821,7 +821,7 @@ function createBlob(data: Float32Array): any {
   return new Blob([new Uint8Array(data.buffer)]);
 }
 
-async function decodeAudioData(base64: string, ctx: AudioContext, sampleRate: number, channels: number): Promise<AudioBuffer> {
+async function decodeAudioData(base64: string, ctx: AudioContext, _sampleRate: number, _channels: number): Promise<AudioBuffer> {
   const audioData = atob(base64);
   const arrayBuffer = new ArrayBuffer(audioData.length);
   const view = new Uint8Array(arrayBuffer);
@@ -1050,7 +1050,7 @@ const AppContent: React.FC = () => {
   const [linkingBarcodeItem, setLinkingBarcodeItem] = useState<PantryItem | null>(null);
   const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [showVoiceLock, setShowVoiceLock] = useState(false);
+  const [_showVoiceLock, setShowVoiceLock] = useState(false);
 
   // Shopping Session State
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
@@ -1387,7 +1387,7 @@ const AppContent: React.FC = () => {
     try {
       await navigator.clipboard.writeText(text);
       alert('Shopping list copied to clipboard!');
-    } catch (err) {
+    } catch (_err) {
       const textarea = document.createElement('textarea');
       textarea.value = text;
       textarea.style.position = 'fixed';
@@ -1506,7 +1506,7 @@ const AppContent: React.FC = () => {
         source,
       });
       setActivities((prev) => [activity, ...prev].slice(0, 100));
-    } catch (err) {
+    } catch (_err) {
       const newActivity: Activity = {
         id: Math.random().toString(36).substr(2, 9),
         itemId: item.id,
@@ -1521,9 +1521,9 @@ const AppContent: React.FC = () => {
   };
 
   // Subscription state
-  const { isPaid, isPro, isFree, itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
-  const [showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
-  const [showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
+  const { isPaid, isPro: _isPro, isFree: _isFree, itemsRemaining: _itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
+  const [_showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
+  const [_showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
 
   // Check URL for checkout success/cancel
   useEffect(() => {
@@ -2040,7 +2040,7 @@ const AppContent: React.FC = () => {
                   lowStockCount,
                 };
               })}
-              onCategoryClick={(catId) => setView('inventory')}
+              onCategoryClick={(_catId) => setView('inventory')}
             />
 
             {/* Recent Activity */}
@@ -2315,7 +2315,7 @@ const AppContent: React.FC = () => {
                             await adjustStock(r.name, -r.quantityUsed);
                           }
                           setView('inventory');
-                        } catch (err) {
+                        } catch (_err) {
                           alert('Error processing image.');
                         } finally {
                           setIsProcessing(false);
@@ -2381,7 +2381,7 @@ const AppContent: React.FC = () => {
                   showToast(`${product.name} added to inventory`, 'success');
                 }
                 setView('inventory');
-              } catch (err) {
+              } catch (_err) {
                 showToast('Failed to add item to inventory. Please try again.', 'error');
               }
             }}
@@ -2724,7 +2724,7 @@ const AppContent: React.FC = () => {
               onSessionCreated={(session) => {
                 setActiveShoppingSession(session);
               }}
-              onSessionCompleted={(session) => {
+              onSessionCompleted={(_session) => {
                 setActiveShoppingSession(null);
                 setView('shopping-list');
                 success('Shopping session completed!');
