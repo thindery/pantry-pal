@@ -219,7 +219,7 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
             <div className="text-lg font-bold text-slate-700 truncate">
-              {stats.mostActive?.[0] || '-'}
+              {stats.mostActive[0] || '-'}
             </div>
             <div className="text-xs text-slate-500 uppercase tracking-wide font-medium mt-1">
               Most Active

@@ -150,7 +150,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     console.log('Processing image upload:', file.name, file.type, file.size);
@@ -165,7 +165,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
       if (result.success && result.product) {
         setDetectedProduct(result.product);
-      } else if (result.product?.barcode) {
+      } else if (result.product.barcode) {
         // Barcode found but lookup failed
         setDetectedProduct({
           barcode: result.product.barcode,

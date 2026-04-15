@@ -875,7 +875,7 @@ const VoiceAssistant: React.FC<{
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = message.serverContent!.modelTurn!.parts[0].inlineData?.data;
             if (base64Audio) {
               const outCtx = audioContextsRef.current!.output;
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outCtx.currentTime);
@@ -890,7 +890,7 @@ const VoiceAssistant: React.FC<{
             }
 
             if (message.serverContent?.outputTranscription) {
-              setTranscription((prev) => prev + message.serverContent!.outputTranscription!.text);
+              setTranscription((prev) => prev + message.serverContent!.outputTranscription.text);
             }
             if (message.serverContent?.turnComplete) {
               setTranscription('');
