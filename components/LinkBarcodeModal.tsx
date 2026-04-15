@@ -147,7 +147,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
           handleLookup(scannedBarcode);
         }
       });
-    } catch (err) {
+    } catch (_err) {
       console.error('Camera access error:', err);
       setError('Camera access denied. You can type the barcode manually.');
     }
@@ -196,7 +196,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
         
         setLookupData(updates);
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('Lookup error:', err);
       setError('Failed to look up product info, but you can still save the barcode.');
     } finally {
@@ -221,7 +221,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       } else {
         setError(result.error || 'No barcode found in image');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to process image');
     } finally {
       setIsLookingUp(false);
@@ -264,7 +264,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       
       await onSave(item.id, barcode.trim(), updates);
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save barcode');
     }
   };
@@ -278,7 +278,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
     try {
       await onSave(item.id, '', { productInfo: undefined });
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to unlink barcode');
     }
   };

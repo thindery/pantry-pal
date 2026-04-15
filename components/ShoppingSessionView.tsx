@@ -66,7 +66,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to create shopping session');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to create shopping session. Please try again.');
       console.error('Start session error:', err);
     } finally {
@@ -81,7 +81,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       if (response.success && response.data) {
         setSessionData(response.data);
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('Failed to refresh session:', err);
     }
   };
@@ -107,7 +107,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to add item to session');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to add item. Please try again.');
       console.error('Add item error:', err);
     } finally {
@@ -128,7 +128,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to remove item');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to remove item. Please try again.');
       console.error('Remove item error:', err);
     } finally {
@@ -176,7 +176,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
       } else {
         setError('Failed to complete session');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to complete session. Please try again.');
       console.error('Complete session error:', err);
     } finally {
