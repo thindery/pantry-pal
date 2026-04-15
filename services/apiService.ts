@@ -1,4 +1,4 @@
-import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
+import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem, ScanResult, UsageResult} from '../types';
 import { ActivityType, ShoppingSessionListResponse } from '../types';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
@@ -85,13 +85,13 @@ export const scanReceiptBackend = async (base64Image: string): Promise<{ items: 
   });
 
 // Scan/Usage API
-export const processScan = (scanData: any) =>
+export const processScan = (scanData: ScanResult[]): Promise<{ items: ScanResult[] }> =>
   fetchApi('/api/scan-receipt', {
     method: 'POST',
     body: JSON.stringify(scanData),
   });
 
-export const processUsage = (usageData: any) =>
+export const processUsage = (usageData: { image: string }): Promise<UsageResult[]> =>
   fetchApi('/api/visual-usage', {
     method: 'POST',
     body: JSON.stringify(usageData),
@@ -99,10 +99,10 @@ export const processUsage = (usageData: any) =>
 
 // Product Lookup API (includes cache status)
 export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
-  const result = await fetchApi<{ product: any; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
+  const result = await fetchApi<{ product: Record<string, unknown> | null; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
   
   if (!result.product) {
-    return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+    return result as unknown as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
   }
   
   // Transform backend response to match BarcodeProduct type
@@ -130,7 +130,7 @@ export const getProductByBarcode = async (barcode: string): Promise<{ product: B
     p.updatedAt = p.info_last_synced;
   }
   
-  return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+  return result as unknown as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
 };
 
 // Subscription API

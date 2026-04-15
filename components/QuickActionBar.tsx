@@ -41,20 +41,18 @@ const LONG_PRESS_DURATION = 600; // ms before long press triggers
 
 // --- Hook: First-time usage detection ---
 const useFirstTimeDetection = () => {
-  const [isFirstTime, setIsFirstTime] = useState(false);
-
-  useEffect(() => {
+  const [isFirstTime] = useState(() => {
     try {
       const hasUsedBefore = localStorage.getItem(FIRST_USE_KEY);
       if (!hasUsedBefore) {
-        setIsFirstTime(true);
         localStorage.setItem(FIRST_USE_KEY, 'true');
+        return true;
       }
+      return false;
     } catch {
-      // localStorage not available (private mode, etc)
-      setIsFirstTime(false);
+      return false;
     }
-  }, []);
+  });
 
   return isFirstTime;
 };
@@ -96,18 +94,19 @@ interface DesktopActionButtonProps {
 }
 
 const DesktopActionButton: React.FC<DesktopActionButtonProps> = ({ action, isFirstTime }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [hasShownFirstLabel, setHasShownFirstLabel] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(isFirstTime);
+  const hasShownFirstLabelRef = useRef(isFirstTime);
 
-  // Show label on first use, then auto-hide after 2 seconds
+  // Auto-hide tooltip after 2 seconds on first use
   useEffect(() => {
-    if (isFirstTime && !hasShownFirstLabel) {
-      setShowTooltip(true);
-      setHasShownFirstLabel(true);
+    if (showTooltip) {
       const timer = setTimeout(() => setShowTooltip(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [isFirstTime, hasShownFirstLabel]);
+  }, []);
+
+  const handleMouseEnter = () => setShowTooltip(true);
+  const handleMouseLeave = () => setShowTooltip(false);
 
   return (
     <div className="relative">
@@ -183,8 +182,12 @@ const MobileActionBubble: React.FC<MobileActionBubbleProps> = ({ action, index, 
         clearTimeout(hideTimer);
       };
     } else {
-      setIsExpandedLabel(false);
-      setShowLabel(false);
+      // Schedule state updates outside of synchronous execution
+      const timer = setTimeout(() => {
+        setIsExpandedLabel(false);
+        setShowLabel(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, index]);
 

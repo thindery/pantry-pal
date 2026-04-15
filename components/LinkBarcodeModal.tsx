@@ -136,7 +136,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
 
-      reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: { getText: () => string } | null, err: Error | null) => {
         if (!isScanningRef.current) return;
 
         if (result && result.getText()) {

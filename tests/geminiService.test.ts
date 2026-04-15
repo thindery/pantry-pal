@@ -62,7 +62,7 @@ describe('geminiService', () => {
     mockGenerateContent = vi.fn();
     
     // Reset GoogleGenAI mock implementation
-    (GoogleGenAI as any).mockImplementation(() => ({
+    (GoogleGenAI as unknown as { mockImplementation: (impl: () => { models: { generateContent: typeof mockGenerateContent } }) => void }).mockImplementation(() => ({
       models: {
         generateContent: mockGenerateContent,
       },

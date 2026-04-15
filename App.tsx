@@ -314,15 +314,6 @@ const EditItemModal: React.FC<{
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setName(item.name);
-      setUnit(item.unit);
-      setCategory(item.category);
-      setError(null);
-    }
-  }, [isOpen, item]);
-
   if (!isOpen) return null;
 
   const handleSave = async () => {
@@ -817,7 +808,7 @@ const InventoryItemRow: React.FC<{
   );
 };
 
-function createBlob(data: Float32Array): any {
+function createBlob(data: Float32Array): unknown {
   return new Blob([new Uint8Array(data.buffer)]);
 }
 
@@ -841,7 +832,7 @@ const VoiceAssistant: React.FC<{
 }> = ({ onAdjustStock, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [transcription, setTranscription] = useState('');
-  const sessionRef = useRef<any>(null);
+  const sessionRef = useRef<unknown>(null);
   const audioContextsRef = useRef<{ input: AudioContext; output: AudioContext } | null>(null);
   const nextStartTimeRef = useRef(0);
   const sourcesRef = useRef(new Set<AudioBufferSourceNode>());
@@ -849,8 +840,8 @@ const VoiceAssistant: React.FC<{
   const startSession = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const inputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 16000 });
+      const outputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -1546,7 +1537,7 @@ const AppContent: React.FC = () => {
     try {
       const response = await createItem(itemData);
       // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem = (response as any).data || response;
+      const newItem = (response as { data?: PantryItem }).data || response as PantryItem;
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -1688,7 +1679,7 @@ const AppContent: React.FC = () => {
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
       const response = await updateItem(id, updateData);
-      const updatedItem = (response as any).data || response;
+      const updatedItem = (response as { data?: PantryItem }).data || response as PantryItem;
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );
@@ -1803,6 +1794,7 @@ const AppContent: React.FC = () => {
       )}
 
       <EditItemModal
+        key={editingItem?.id}
         item={editingItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}

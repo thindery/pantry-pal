@@ -70,7 +70,7 @@ describe('API Contract Tests', () => {
       });
 
       it('should handle wrapped response from backend', async () => {
-        const createItem = async (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<any> => {
+        const createItem = async (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<unknown> => {
           const response = await fetch(`${API_URL}/api/items`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -651,7 +651,7 @@ describe('API Contract Tests', () => {
   describe('Scan API', () => {
     describe('processScan', () => {
       it('should send scan data with correct payload', async () => {
-        const processScan = async (scanData: any): Promise<{ items: ScanResult[] }> => {
+        const processScan = async (scanData: { image: string }): Promise<{ items: ScanResult[] }> => {
           const response = await fetch(`${API_URL}/api/scan-receipt`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -699,7 +699,7 @@ describe('API Contract Tests', () => {
         statusText: 'Unprocessable Entity',
       });
 
-      const fetchApi = async (): Promise<any> => {
+      const fetchApi = async (): Promise<unknown> => {
         const response = await fetch(`${API_URL}/api/items`);
         if (!response.ok) {
           throw new Error(`API error: ${response.status} ${response.statusText}`);

@@ -18,32 +18,27 @@ const STORAGE_KEY = 'pantry-pal-feature-flags';
  * All flags default to disabled for safety, must be explicitly enabled
  */
 export function useFeatureFlags() {
-  const [flags, setFlags] = useState<FeatureFlags>(DEFAULT_FLAGS);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load flags from localStorage on mount
-  useEffect(() => {
+  const [flags, setFlags] = useState<FeatureFlags>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setFlags({ ...DEFAULT_FLAGS, ...parsed });
+        return { ...DEFAULT_FLAGS, ...parsed };
       }
     } catch {
       // localStorage unavailable or corrupted, use defaults
     }
-    setIsLoaded(true);
-  }, []);
+    return DEFAULT_FLAGS;
+  });
 
   // Persist flags to localStorage
   useEffect(() => {
-    if (!isLoaded) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(flags));
     } catch {
       // localStorage unavailable
     }
-  }, [flags, isLoaded]);
+  }, [flags]);
 
   /**
    * Enable a feature flag
@@ -82,7 +77,7 @@ export function useFeatureFlags() {
 
   return {
     flags,
-    isLoaded,
+    isLoaded: true,
     enable,
     disable,
     toggle,

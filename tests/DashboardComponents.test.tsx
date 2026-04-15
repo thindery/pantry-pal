@@ -18,8 +18,8 @@ import type { PantryItem, Activity, ShoppingListItem } from '../types';
 vi.mock('fuse.js', () => {
   return {
     default: class Fuse {
-      private items: any[];
-      constructor(items: any[]) {
+      private items: unknown[];
+      constructor(items: unknown[]) {
         this.items = items;
       }
       search(query: string) {

@@ -220,7 +220,7 @@ describe('AdminDashboard', () => {
 
   describe('Empty State', () => {
     it('displays no data message when metrics is null', async () => {
-      vi.mocked(adminService.getDashboardMetrics).mockResolvedValue(null as any);
+      vi.mocked(adminService.getDashboardMetrics).mockResolvedValue(null as unknown as DashboardMetrics);
 
       render(<AdminDashboard onBack={mockOnBack} />);
 
