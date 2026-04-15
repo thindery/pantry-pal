@@ -122,6 +122,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
       );
 
       // Redirect to Stripe checkout
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = checkout.url;
     } catch (err) {
       console.error('Checkout failed:', err);
