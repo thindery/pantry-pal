@@ -41,20 +41,19 @@ const LONG_PRESS_DURATION = 600; // ms before long press triggers
 
 // --- Hook: First-time usage detection ---
 const useFirstTimeDetection = () => {
-  const [isFirstTime, setIsFirstTime] = useState(false);
-
-  useEffect(() => {
+  const [isFirstTime] = useState(() => {
     try {
       const hasUsedBefore = localStorage.getItem(FIRST_USE_KEY);
       if (!hasUsedBefore) {
-        setIsFirstTime(true);
         localStorage.setItem(FIRST_USE_KEY, 'true');
+        return true;
       }
+      return false;
     } catch {
       // localStorage not available (private mode, etc)
-      setIsFirstTime(false);
+      return false;
     }
-  }, []);
+  });
 
   return isFirstTime;
 };
@@ -96,18 +95,16 @@ interface DesktopActionButtonProps {
 }
 
 const DesktopActionButton: React.FC<DesktopActionButtonProps> = ({ action, isFirstTime }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [hasShownFirstLabel, setHasShownFirstLabel] = useState(false);
+  // Compute initial showTooltip from isFirstTime
+  const [showTooltip, setShowTooltip] = useState(isFirstTime);
 
-  // Show label on first use, then auto-hide after 2 seconds
+  // Auto-hide tooltip after 2 seconds on first use
   useEffect(() => {
-    if (isFirstTime && !hasShownFirstLabel) {
-      setShowTooltip(true);
-      setHasShownFirstLabel(true);
+    if (showTooltip) {
       const timer = setTimeout(() => setShowTooltip(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [isFirstTime, hasShownFirstLabel]);
+  }, [showTooltip]);
 
   return (
     <div className="relative">
@@ -174,18 +171,26 @@ const MobileActionBubble: React.FC<MobileActionBubbleProps> = ({ action, index, 
   };
 
   // When menu opens, show labels briefly on first use items
+  // Using setTimeout to avoid synchronous setState during render
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    let hideTimer: NodeJS.Timeout | null = null;
+    
     if (isOpen) {
-      const timer = setTimeout(() => setIsExpandedLabel(true), 100 + index * 80);
-      const hideTimer = setTimeout(() => setIsExpandedLabel(false), 1500 + index * 100);
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(hideTimer);
-      };
+      timer = setTimeout(() => setIsExpandedLabel(true), 100 + index * 80);
+      hideTimer = setTimeout(() => setIsExpandedLabel(false), 1500 + index * 100);
     } else {
-      setIsExpandedLabel(false);
-      setShowLabel(false);
+      // Schedule state updates outside of synchronous execution
+      timer = setTimeout(() => {
+        setIsExpandedLabel(false);
+        setShowLabel(false);
+      }, 0);
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
   }, [isOpen, index]);
 
   // Calculate position in arc pattern

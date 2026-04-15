@@ -314,15 +314,6 @@ const EditItemModal: React.FC<{
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setName(item.name);
-      setUnit(item.unit);
-      setCategory(item.category);
-      setError(null);
-    }
-  }, [isOpen, item]);
-
   if (!isOpen) return null;
 
   const handleSave = async () => {
@@ -1803,6 +1794,7 @@ const AppContent: React.FC = () => {
       )}
 
       <EditItemModal
+        key={editingItem?.id}
         item={editingItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
