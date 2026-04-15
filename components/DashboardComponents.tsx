@@ -625,7 +625,7 @@ export const RecentActivityPreview: React.FC<RecentActivityPreviewProps> = ({
   activities,
   maxItems = 5,
 }) => {
-  const recentActivities = (Array.isArray(activities) ? activities : []).slice(0, maxItems);
+  const recentActivities = (activities ?? []).slice(0, maxItems);
 
   const activityIcons: Record<string, string> = {
     ADD: '➕',
@@ -668,7 +668,7 @@ export const RecentActivityPreview: React.FC<RecentActivityPreviewProps> = ({
         📜 Recent Activity
       </h3>
       <div className="space-y-2">
-        {recentActivities.filter(Boolean).map((activity) => (
+        {recentActivities.map((activity) => (
           <div key={activity.id} className="flex items-center gap-3 py-1">
             <span className="text-lg">{activityIcons[activity.type] || '📝'}</span>
             <div className="flex-1 min-w-0">
