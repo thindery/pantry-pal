@@ -43,7 +43,7 @@ export interface CheckoutResponse {
 
 // Helper for API calls with auth
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = await (window as any).__clerkGetToken?.();
+  const token = await (window as unknown as { __clerkGetToken?: () => Promise<string | null> }).__clerkGetToken?.();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export function useSubscription() {
   const [error, setError] = useState<string | null>(null);
 
   // Store getToken globally for API calls
-  (window as any).__clerkGetToken = getToken;
+  (window as unknown as { __clerkGetToken: () => Promise<string | null> }).__clerkGetToken = getToken;
 
   const fetchTierInfo = useCallback(async () => {
     try {

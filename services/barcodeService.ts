@@ -148,7 +148,10 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
     const ingredients = product.ingredients_text
       ? product.ingredients_text.split(/,|\n/).map((i: string) => i.trim()).filter(Boolean)
       : product.ingredients
-      ? product.ingredients.map((i: any) => i.text || i.id || String(i)).filter(Boolean)
+      ? product.ingredients.map((i: unknown) => {
+          const item = i as Record<string, unknown>;
+          return (item.text as string) || (item.id as string) || String(i);
+        }).filter(Boolean)
       : undefined;
 
     return {

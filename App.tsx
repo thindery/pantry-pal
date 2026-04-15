@@ -1537,7 +1537,7 @@ const AppContent: React.FC = () => {
     try {
       const response = await createItem(itemData);
       // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem = (response as any).data || response;
+      const newItem = (response as unknown as { data: PantryItem }).data || (response as unknown as PantryItem);
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -1679,7 +1679,7 @@ const AppContent: React.FC = () => {
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
       const response = await updateItem(id, updateData);
-      const updatedItem = (response as any).data || response;
+      const updatedItem = (response as unknown as { data: PantryItem }).data || (response as unknown as PantryItem);
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );

@@ -136,11 +136,11 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
 
-      reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, err: unknown) => {
         if (!isScanningRef.current) return;
 
-        if (result && result.getText()) {
-          const scannedBarcode = result.getText();
+        if (result && (result as { getText(): string }).getText()) {
+          const scannedBarcode = (result as { getText(): string }).getText();
           console.log('Scanned barcode:', scannedBarcode);
           stopScanning();
           setBarcode(scannedBarcode);

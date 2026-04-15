@@ -91,13 +91,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       readerRef.current = reader;
 
       // Start continuous scanning
-      reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, err: unknown) => {
         // Ignore results if we're no longer scanning or already processing
         // Use refs here to avoid stale closure issues
         if (!isScanningRef.current || isLoadingRef.current) return;
 
-        if (result && result.getText()) {
-          const barcode = result.getText();
+        if (result && (result as { getText(): string }).getText()) {
+          const barcode = (result as { getText(): string }).getText();
           console.log('Camera scan detected barcode:', barcode);
           handleBarcodeDetected(barcode);
         }
@@ -214,10 +214,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     if (!track) return;
 
     try {
-      const capabilities = track.getCapabilities() as any;
+      const capabilities = track.getCapabilities() as unknown as { torch?: boolean };
       if (capabilities.torch) {
         await track.applyConstraints({
-          advanced: [{ torch: !torchOn }] as any,
+          advanced: [{ torch: !torchOn }] as unknown as MediaTrackConstraints['advanced'],
         });
         setTorchOn(!torchOn);
       }
