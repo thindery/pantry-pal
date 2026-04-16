@@ -441,7 +441,7 @@ const ReceiptScanner: React.FC<{
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     setError(null);
@@ -501,7 +501,7 @@ const ReceiptScanner: React.FC<{
   };
 
   const handleConfirm = async () => {
-    if (!scanResults || scanResults.length === 0) return;
+    if (scanResults && scanResults.length === 0) return;
 
     setIsAdding(true);
     try {
