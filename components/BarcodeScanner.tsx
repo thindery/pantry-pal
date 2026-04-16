@@ -44,8 +44,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
   const stopScanning = useCallback(() => {
     // Stop the media stream (ZXing reader stops automatically when stream ends)
-    streamRef.current.getTracks().forEach(track => track.stop());
-    streamRef.current = null;
+    if (streamRef.current != null) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
     // Clear the reader reference (ZXing BrowserMultiFormatReader has no stop/reset method)
     readerRef.current = null;
     setIsScanning(false);
