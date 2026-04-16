@@ -441,6 +441,7 @@ const ReceiptScanner: React.FC<{
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file == null) return;
 
     setError(null);
@@ -483,6 +484,7 @@ const ReceiptScanner: React.FC<{
 
     try {
       // Use backend Tesseract.js OCR, not browser Gemini
+      const response = await scanReceiptBackend(base64Image);
       const results = response.items ?? [];
       if (results.length === 0) {
         setError('No items detected in receipt. Try a clearer image.');
@@ -498,6 +500,7 @@ const ReceiptScanner: React.FC<{
     }
   };
 
+      const handleConfirm = async () => {
     if (scanResults != null && scanResults.length === 0) return;
 
     setIsAdding(true);
@@ -516,6 +519,7 @@ const ReceiptScanner: React.FC<{
     setScanResults(null);
     setError(null);
     if (fileInputRef.current != null) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -580,7 +584,7 @@ const ReceiptScanner: React.FC<{
       )}
 
       {/* Image Preview */}
-      {selectedImage && !scanResults && (
+      {Boolean(selectedImage) && scanResults == null && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <img
@@ -619,7 +623,7 @@ const ReceiptScanner: React.FC<{
       )}
 
       {/* Scan Results */}
-      {scanResults && (
+      {scanResults != null && (
         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
             <p className="text-emerald-800 font-semibold">
@@ -804,7 +808,7 @@ const InventoryItemRow: React.FC<{
   );
 };
 
-function createBlob(data: Float32Array): Blob {
+function createBlob(data: Float32Array): any {
   return new Blob([new Uint8Array(data.buffer)]);
 }
 
@@ -836,8 +840,8 @@ const VoiceAssistant: React.FC<{
   const startSession = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const inputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 24000 });
+      const inputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      const outputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -885,14 +889,14 @@ const VoiceAssistant: React.FC<{
               sourcesRef.current.add(source);
             }
 
-            if (message.serverContent?.outputTranscription) {
+            if (Boolean(message.serverContent?.outputTranscription)) {
               setTranscription((prev) => prev + message.serverContent!.outputTranscription!.text);
             }
             if (message.serverContent?.turnComplete) {
               setTranscription('');
             }
 
-            if (message.toolCall) {
+            if (message.toolCall != null) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'adjustStock') {
                   const result = onAdjustStock(fc.args.itemName as string, fc.args.amount as number);
@@ -935,8 +939,8 @@ const VoiceAssistant: React.FC<{
   useEffect(() => {
     startSession();
     return () => {
-      if (sessionRef.current) sessionRef.current.close();
-      if (audioContextsRef.current) {
+      if (sessionRef.current != null) (sessionRef.current as any).close();
+      if (audioContextsRef.current != null) {
         audioContextsRef.current.input.close();
         audioContextsRef.current.output.close();
       }
@@ -1239,7 +1243,7 @@ const AppContent: React.FC = () => {
           (a) => a.itemId === item.id && a.type === 'ADD'
         );
         
-        if (!lastAdd) return false;
+        if (lastAdd == null) return false;
         
         const lastAddDate = new Date(lastAdd.timestamp);
         return lastAddDate < thirtyDaysAgo && item.quantity > 0 && item.quantity <= getThreshold(item.category) * 2;
@@ -1297,7 +1301,7 @@ const AppContent: React.FC = () => {
       (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
     );
     
-    if (existingItem) {
+    if (existingItem != null) {
       alert(`"${trimmedName}" is already in your shopping list!`);
       return;
     }
@@ -1344,7 +1348,7 @@ const AppContent: React.FC = () => {
     if (shoppingList.length === 0) return '';
     
     const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
-      if (!acc[item.category]) acc[item.category] = [];
+      if (acc[item.category] == null) acc[item.category] = [];
       acc[item.category].push(item);
       return acc;
     }, {} as Record<string, ShoppingListItem[]>);
@@ -1395,7 +1399,7 @@ const AppContent: React.FC = () => {
       return;
     }
     
-    if (navigator.share) {
+    if (navigator.share != null) {
       try {
         await navigator.share({
           title: 'My Shopping List',
@@ -1533,7 +1537,7 @@ const AppContent: React.FC = () => {
     try {
       const response = await createItem(itemData);
       // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem = (response as unknown as { data: PantryItem }).data || (response as unknown as PantryItem);
+      const newItem = (response as any).data ?? response;
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -1555,7 +1559,7 @@ const AppContent: React.FC = () => {
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
       const item = inventory.find((i) => i.id === id);
-      if (!item) return;
+      if (item == null) return;
 
       // Calculate new quantity and adjustment amount
       const newQuantity = Math.max(0, item.quantity + delta);
@@ -1632,7 +1636,7 @@ const AppContent: React.FC = () => {
     
     try {
       // First, update the inventory via API
-      if (existingItem) {
+      if (existingItem != null) {
         await handleAdjustQuantity(existingItem.id, item.suggestedQuantity);
       } else {
         await handleCreateItem({
@@ -1673,7 +1677,7 @@ const AppContent: React.FC = () => {
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
       const response = await updateItem(id, updateData);
-      const updatedItem = (response as unknown as { data: PantryItem }).data || (response as unknown as PantryItem);
+      const updatedItem = (response as any).data ?? response;
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );
@@ -1712,7 +1716,7 @@ const AppContent: React.FC = () => {
         (i) => i.name.toLowerCase() === name.toLowerCase()
       );
 
-      if (existing) {
+      if (existing != null) {
         handleAdjustQuantity(existing.id, amount);
         resultMessage = `Successfully updated ${name}.`;
       } else if (amount > 0) {
@@ -1743,7 +1747,7 @@ const AppContent: React.FC = () => {
           (i) => i.name.toLowerCase() === item.name.toLowerCase()
         );
 
-        if (existing) {
+        if (existing != null) {
           await handleAdjustQuantity(existing.id, item.quantity);
           addedItems.push(`${item.name} (+${item.quantity})`);
         } else {
@@ -1777,7 +1781,7 @@ const AppContent: React.FC = () => {
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Barcode Toast notification */}
-        {toast && toast.visible && (
+        {toast != null && toast.visible && (
           <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
             {toast.message}
           </div>
@@ -1789,22 +1793,22 @@ const AppContent: React.FC = () => {
 
       <EditItemModal
         key={editingItem?.id}
-        item={editingItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
-        isOpen={!!editingItem}
+        item={editingItem ?? { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={editingItem != null}
         onClose={() => setEditingItem(null)}
         onSave={handleEditItem}
         isLoading={isEditing}
       />
 
       <ProductInfoModal
-        item={infoItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
-        isOpen={!!infoItem}
+        item={infoItem ?? { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={infoItem != null}
         onClose={() => setInfoItem(null)}
       />
 
       <LinkBarcodeModal
         item={linkingBarcodeItem}
-        isOpen={!!linkingBarcodeItem}
+        isOpen={linkingBarcodeItem != null}
         onClose={() => setLinkingBarcodeItem(null)}
         onSave={handleLinkBarcode}
         isLoading={isLinkingBarcode}
@@ -1843,8 +1847,8 @@ const AppContent: React.FC = () => {
             <StatCardMini
               stats={[
                 { label: 'All Items', value: inventory.length, color: 'sky' },
-                { label: 'Low Stock', value: (inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
-                { label: 'Out of Stock', value: (inventory || []).filter((i) => i.quantity === 0).length, color: 'slate' },
+                { label: 'Low Stock', value: (inventory ?? []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
+                { label: 'Out of Stock', value: (inventory ?? []).filter((i) => i.quantity === 0).length, color: 'slate' },
                 { label: 'Expiring Soon', value: 0, color: 'emerald' },
                 { label: 'Expired', value: 0, color: 'rose' },
               ]}
@@ -2290,7 +2294,7 @@ const AppContent: React.FC = () => {
                     capture="environment"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (!file) return;
+                      if (file == null) return;
                       setIsProcessing(true);
                       const reader = new FileReader();
                       reader.onload = async () => {
@@ -2330,7 +2334,7 @@ const AppContent: React.FC = () => {
                          i.name.toLowerCase() === product.name.toLowerCase()
                 );
 
-                if (existing) {
+                if (existing != null) {
                   // If item exists but doesn't have a barcode, update it with the barcode
                   if (!existing.barcode && product.barcode) {
                     await updateItem(existing.id, { barcode: product.barcode });
@@ -2482,7 +2486,7 @@ const AppContent: React.FC = () => {
                 {/* Shopping List Items by Category */}
                 {(() => {
                   const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
-                    if (!acc[item.category]) acc[item.category] = [];
+                    if (acc[item.category] == null) acc[item.category] = [];
                     acc[item.category].push(item);
                     return acc;
                   }, {} as Record<string, ShoppingListItem[]>);

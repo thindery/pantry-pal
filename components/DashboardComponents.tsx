@@ -320,7 +320,7 @@ function highlightMatch(
   matches: FuseResultMatch[] | undefined,
   key: 'name' | 'barcode'
 ): React.ReactNode {
-  if (!matches || matches.length === 0) {
+  if (matches == null || matches.length === 0) {
     return text;
   }
 
@@ -331,7 +331,7 @@ function highlightMatch(
 
   const allIndices: Array<[number, number]> = [];
   keyMatches.forEach((m) => {
-    if (m.indices) {
+    if (m.indices != null) {
       allIndices.push(...m.indices);
     }
   });
@@ -407,7 +407,7 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fuse = useMemo(() => {
-    return new Fuse(inventory || [], fuseOptions);
+    return new Fuse(inventory ?? [], fuseOptions);
   }, [inventory]);
 
   const suggestions = useMemo<FuseResult<PantryItem>[]>(() => {
@@ -499,7 +499,7 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (containerRef.current != null && !containerRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
         setSelectedIndex(-1);
       }
@@ -556,14 +556,14 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
                 >
                   {/* Product name with highlighted matches */}
                   <div className="font-medium text-slate-800">
-                    {highlightMatch(result.item.name, result.matches ? [...result.matches] : undefined, 'name')}
+                    {highlightMatch(result.item.name, result.matches != null ? [...result.matches] : undefined, 'name')}
                   </div>
 
                   {/* Barcode shown underneath if available */}
                   {result.item.barcode && (
                     <div className="text-xs text-slate-500 mt-0.5">
                       Barcode: {' '}
-                      {highlightMatch(result.item.barcode, result.matches ? [...result.matches] : undefined, 'barcode')}
+                      {highlightMatch(result.item.barcode, result.matches != null ? [...result.matches] : undefined, 'barcode')}
                     </div>
                   )}
                 </li>

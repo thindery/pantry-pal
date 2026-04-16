@@ -51,7 +51,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
       };
     }
 
-    if (!response.product) {
+    if (response.product == null) {
       return {
         success: false,
         error: 'Product data missing from response',
@@ -99,7 +99,7 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Record<string, any> = await response.json();
 
     if (data.status !== 1 || data.product == null) {
       return { success: false, error: 'Product not found in Open Food Facts' };
@@ -198,17 +198,17 @@ async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Record<string, any> = await response.json();
 
     if (data.items == null || data.items.length === 0) {
       return { success: false, error: 'Product not found' };
     }
 
-    const item = data.items[0];
+    const item: Record<string, any> = data.items[0];
 
     // Try to determine category from description
     let category = 'other';
-    const description = (item.description + ' ' + item.category).toLowerCase();
+    const description = (String(item.description) + ' ' + String(item.category)).toLowerCase();
 
     if (description.includes('produce') || description.includes('fruit') || description.includes('vegetable')) {
       category = 'produce';
@@ -230,7 +230,7 @@ async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
       success: true,
       product: {
         barcode,
-        name: item.title || item.brand || 'Unknown Product',
+        name: item.title ?? item.brand ?? 'Unknown Product',
         brand: item.brand,
         category,
         image: item.images?.[0],
@@ -319,7 +319,7 @@ export async function scanBarcodeFromImage(imageFile: File): Promise<BarcodeLook
       result = await reader.decodeFromImageUrl(imageUrl);
     }
 
-    if (result && result.getText()) {
+    if (result != null && result.getText() != null) {
       const barcode = result.getText();
       console.log('Barcode detected from image:', barcode);
       return await lookupBarcode(barcode);

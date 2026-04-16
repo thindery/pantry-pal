@@ -49,7 +49,7 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     'Content-Type': 'application/json',
   };
 
-  if (token) {
+  if (token != null) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -60,7 +60,7 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error?.error?.message || `API error: ${response.status}`);
+    throw new Error(error?.error?.message ?? `API error: ${response.status}`);
   }
 
   return response.json();
@@ -173,7 +173,7 @@ export function useSubscription() {
 
   const isFeatureAvailable = useCallback(
     (feature: 'voice' | 'unlimitedItems' | 'aiScanning' | 'sharedInventory') => {
-      if (!tierInfo) return false;
+      if (tierInfo == null) return false;
 
       switch (feature) {
         case 'voice':
@@ -192,13 +192,13 @@ export function useSubscription() {
   );
 
   const getItemsRemaining = useCallback(() => {
-    if (!tierInfo) return 0;
+    if (tierInfo == null) return 0;
     if (tierInfo.limits.maxItems === -1) return Infinity;
     return tierInfo.limits.maxItems - tierInfo.usage.currentItems;
   }, [tierInfo]);
 
   const getReceiptScansRemaining = useCallback(() => {
-    if (!tierInfo) return 0;
+    if (tierInfo == null) return 0;
     if (tierInfo.limits.receiptScansPerMonth === -1) return Infinity;
     return tierInfo.limits.receiptScansPerMonth - tierInfo.usage.receiptScansThisMonth;
   }, [tierInfo]);

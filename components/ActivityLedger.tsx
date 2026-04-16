@@ -129,7 +129,7 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
     const groups: Record<string, Activity[]> = {};
     filteredActivities.forEach(activity => {
       const date = formatRelativeDate(activity.timestamp);
-      if (!groups[date]) groups[date] = [];
+      if (groups[date] == null) groups[date] = [];
       groups[date].push(activity);
     });
     return groups;
@@ -257,7 +257,7 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
               {/* Activity Cards */}
               <div className="space-y-2">
                 {items.map((activity, index) => {
-                  const config = typeConfig[activity.type] || {
+                  const config = typeConfig[activity.type] ?? {
                     icon: '❓',
                     label: 'Unknown',
                     bg: 'bg-slate-50',

@@ -38,7 +38,7 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
     setLoading(true);
     try {
       const result = await getProductByBarcode(item.barcode);
-      if (result.product) {
+      if (result.product != null) {
         setProduct(result.product);
         setFromCache(result.fromCache || false);
         setCachedAt(result.cachedAt);
@@ -228,7 +228,7 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
 
                 {activeTab === 'nutrition' && (
                   <div className="space-y-4">
-                    {product?.nutrition ? (
+                    {product?.nutrition != null ? (
                       <>
                         {/* Serving Info */}
                         {(product.nutrition.servingSize || product.nutrition.servingUnit) && (
@@ -292,7 +292,7 @@ const ProductInfoModal: React.FC<ProductInfoModalProps> = ({ item, isOpen, onClo
 
                 {activeTab === 'ingredients' && (
                   <div className="space-y-4">
-                    {product?.ingredients && product.ingredients.length > 0 ? (
+                    {product?.ingredients != null && product.ingredients.length > 0 ? (
                       <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Ingredients</p>
                         <ul className="space-y-2">

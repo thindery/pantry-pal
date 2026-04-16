@@ -45,7 +45,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
 
   // Scroll to bottom when new items are added
   useEffect(() => {
-    if (justAddedItem && itemsEndRef.current) {
+    if (justAddedItem != null && itemsEndRef.current != null) {
       itemsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [sessionData?.items?.length, justAddedItem]);
@@ -55,7 +55,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     setError(null);
     try {
       const response = await createShoppingSession();
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setSessionData(response.data);
         onSessionCreated(response.data);
       } else {
@@ -73,7 +73,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     if (!sessionData?.id) return;
     try {
       const response = await getShoppingSession(sessionData.id);
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setSessionData(response.data);
       }
     } catch (err) {
@@ -96,7 +96,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         quantity: 1,
       });
 
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setJustAddedItem(response.data.id);
         await refreshSession();
       } else {
@@ -133,7 +133,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
 
   const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -154,7 +154,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         notes: notes || undefined,
       });
 
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         // If user chose to add to inventory, call the API
         if (shouldAddToInventory) {
           try {
@@ -224,7 +224,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </button>
         </div>
 
-        {activeTab === 'active' && (!sessionData || sessionData.status !== 'active') && (
+        ({activeTab === 'active' && (sessionData == null || sessionData.status !== 'active') && (
           <button
             onClick={handleStartSession}
             disabled={isLoading}
@@ -265,7 +265,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   }
 
   // No active session - show start screen
-  if (!sessionData || sessionData.status !== 'active') {
+  if (sessionData == null || sessionData.status !== 'active') {
     return (
       <div className="min-h-screen bg-white">
         {renderHeader()}
@@ -280,7 +280,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
             </p>
           </div>
 
-          {error && (
+          {error != null && (
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
               ⚠️ {error}
             </div>
@@ -397,7 +397,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           />
         </div>
 
-        {error && (
+        {error != null && (
           <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
             ⚠️ {error}
           </div>
@@ -495,7 +495,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         Scan Barcode
       </button>
 
-      {error && (
+      {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
           ⚠️ {error}
         </div>
