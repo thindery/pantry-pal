@@ -187,7 +187,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
-    if (element) {
+    if (element != null) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };

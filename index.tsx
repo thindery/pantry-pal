@@ -11,7 +11,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 const rootElement = document.getElementById('root');
-if (!rootElement) {
+if (rootElement == null) {
   throw new Error("Could not find root element to mount to");
 }
 

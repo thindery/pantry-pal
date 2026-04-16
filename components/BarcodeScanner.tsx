@@ -58,7 +58,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
     try {
       // Check for camera support
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (navigator.mediaDevices == null || navigator.mediaDevices.getUserMedia == null) {
         setHasCameraPermission(false);
         setError('Camera not supported on this device');
         return;
@@ -76,7 +76,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      if (videoRef.current) {
+      if (videoRef.current != null) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
@@ -94,7 +94,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         // Use refs here to avoid stale closure issues
         if (!isScanningRef.current || isLoadingRef.current) return;
 
-        if (result && (result as { getText(): string }).getText()) {
+        if (result != null && (result as { getText(): string }).getText() != null) {
           const barcode = (result as { getText(): string }).getText();
           console.log('Camera scan detected barcode:', barcode);
           handleBarcodeDetected(barcode);
@@ -123,7 +123,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const result = await lookupBarcode(barcode);
       console.log('Barcode lookup result:', result);
 
-      if (result.success && result.product) {
+      if (Boolean(result.success) && result.product != null) {
         setDetectedProduct(result.product);
       } else {
         // Unknown barcode - allow manual entry
@@ -149,7 +149,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     console.log('Processing image upload:', file.name, file.type, file.size);
     setError(null);
@@ -161,7 +161,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const result = await scanBarcodeFromImage(file);
       console.log('Image scan result:', result);
 
-      if (result.success && result.product) {
+      if (Boolean(result.success) && result.product != null) {
         setDetectedProduct(result.product);
       } else if (result.product?.barcode) {
         // Barcode found but lookup failed
@@ -179,7 +179,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     } finally {
       setIsLoading(false);
       // Reset file input
-      if (fileInputRef.current) {
+      if (fileInputRef.current != null) {
         fileInputRef.current.value = '';
       }
     }
@@ -193,7 +193,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleConfirmProduct = () => {
-    if (detectedProduct) {
+    if (detectedProduct != null) {
       onBarcodeDetected(detectedProduct);
     }
   };
@@ -206,14 +206,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const toggleTorch = async () => {
-    if (!streamRef.current) return;
+    if (streamRef.current == null) return;
 
     const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
+    if (track == null) return;
 
     try {
-      const capabilities = track.getCapabilities() as unknown as { torch?: boolean };
-      if (capabilities.torch) {
+      const capabilities = track.getCapabilities() as any;
+      if (Boolean(capabilities.torch)) {
         await track.applyConstraints({
           advanced: [{ torch: !torchOn }] as unknown as MediaTrackConstraints['advanced'],
         });
@@ -242,7 +242,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         </p>
       </div>
 
-      {error && (
+      {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
           <div className="flex items-start gap-2">
             <span className="text-lg">⚠️</span>
@@ -273,7 +273,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       )}
 
       {/* Camera View */}
-      {!detectedProduct && hasCameraPermission !== false && (
+      {detectedProduct == null && hasCameraPermission !== false && (
         <div className="relative bg-black rounded-2xl overflow-hidden aspect-square">
           <video
             ref={videoRef}
@@ -335,7 +335,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       )}
 
       {/* Fallback Options */}
-      {!detectedProduct && (
+      {detectedProduct == null && (
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -393,7 +393,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       )}
 
       {/* Product Preview */}
-      {detectedProduct && (
+      {detectedProduct != null && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-start gap-4 mb-4">
             {detectedProduct.image ? (

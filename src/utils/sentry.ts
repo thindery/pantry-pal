@@ -9,7 +9,7 @@ import * as Sentry from '@sentry/react';
 export function initSentry(): void {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   
-  if (!dsn || import.meta.env.DEV) {
+  if (dsn == null || import.meta.env.DEV) {
     console.log('[Sentry] Skipping initialization (no DSN or dev mode)');
     return;
   }
@@ -25,18 +25,18 @@ export function initSentry(): void {
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: parseFloat(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE || '0.1'),
+    tracesSampleRate: parseFloat(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
     // Session Replay
-    replaysSessionSampleRate: parseFloat(import.meta.env.VITE_SENTRY_REPLAY_SAMPLE_RATE || '0.01'),
+    replaysSessionSampleRate: parseFloat(import.meta.env.VITE_SENTRY_REPLAY_SAMPLE_RATE ?? '0.01'),
     replaysOnErrorSampleRate: 1.0, // Always replay on errors
     // Environment
-    environment: import.meta.env.VITE_ENVIRONMENT || 'production',
+    environment: import.meta.env.VITE_ENVIRONMENT ?? 'production',
     // Release tracking
-    release: import.meta.env.VITE_APP_VERSION || 'unknown',
+    release: import.meta.env.VITE_APP_VERSION ?? 'unknown',
     // Before sending, sanitize sensitive data
     beforeSend(event) {
       // Remove sensitive data from console breadcrumbs
-      if (event.breadcrumbs) {
+      if (event.breadcrumbs != null) {
         event.breadcrumbs = event.breadcrumbs.map((crumb) => {
           if (crumb.category === 'console' && crumb.message) {
             // Redact potential API keys or tokens

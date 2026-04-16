@@ -72,7 +72,7 @@ const useLongPress = (onLongPress: () => void, duration = LONG_PRESS_DURATION) =
   }, [onLongPress, duration]);
 
   const end = useCallback(() => {
-    if (timerRef.current) {
+    if (timerRef.current != null) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
@@ -81,7 +81,7 @@ const useLongPress = (onLongPress: () => void, duration = LONG_PRESS_DURATION) =
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current != null) clearTimeout(timerRef.current);
     };
   }, []);
 
@@ -188,8 +188,8 @@ const MobileActionBubble: React.FC<MobileActionBubbleProps> = ({ action, index, 
     }
     
     return () => {
-      if (timer) clearTimeout(timer);
-      if (hideTimer) clearTimeout(hideTimer);
+      if (timer != null) clearTimeout(timer);
+      if (hideTimer != null) clearTimeout(hideTimer);
     };
   }, [isOpen, index]);
 
@@ -302,7 +302,7 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         const action = actions.find(a => a.shortcut?.toLowerCase() === e.key.toLowerCase());
-        if (action) {
+        if (action != null) {
           e.preventDefault();
           action.onClick();
         }
