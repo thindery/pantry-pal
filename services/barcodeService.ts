@@ -101,16 +101,16 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
 
     const data = await response.json();
 
-    if (data.status !== 1 || !data.product) {
+    if (data.status !== 1 || data.product == null) {
       return { success: false, error: 'Product not found in Open Food Facts' };
     }
 
-    const product = data.product;
+    const product: Record<string, any> = data.product;
 
     // Map Open Food Facts categories to our categories
     let category = 'other';
-    const categories = product.categories?.toLowerCase() || '';
-    const pnnsGroups = product.pnns_groups_1?.toLowerCase() || '';
+    const categories = String(product.categories?.toLowerCase() ?? '');
+    const pnnsGroups = String(product.pnns_groups_1?.toLowerCase() ?? '');
 
     if (categories.includes('produce') || categories.includes('fruit') || categories.includes('vegetable') || pnnsGroups.includes('fruits') || pnnsGroups.includes('vegetables')) {
       category = 'produce';
@@ -129,8 +129,8 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
     }
 
     // Extract nutrition data from Open Food Facts
-    const nutriments = product.nutriments || {};
-    const nutrition = nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined
+    const nutriments: Record<string, any> = product.nutriments ?? {};
+    const nutrition = (nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined)
       ? {
           calories: nutriments['energy-kcal_100g'],
           protein: nutriments.proteins_100g,
@@ -139,26 +139,23 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
           fiber: nutriments.fiber_100g,
           sodium: nutriments.sodium_100g,
           sugar: nutriments.sugars_100g,
-          servingSize: product.serving_size,
-          servingUnit: product.serving_quantity,
+          servingSize: product.serving_size as string | undefined,
+          servingUnit: product.serving_quantity as string | undefined,
         }
       : undefined;
 
     // Extract ingredients
-    const ingredients = product.ingredients_text
-      ? product.ingredients_text.split(/,|\n/).map((i: string) => i.trim()).filter(Boolean)
-      : product.ingredients
-      ? product.ingredients.map((i: unknown) => {
-          const item = i as Record<string, unknown>;
-          return (item.text as string) || (item.id as string) || String(i);
-        }).filter(Boolean)
+    const ingredients = product.ingredients_text != null
+      ? String(product.ingredients_text).split(/,|\n/).map((i: string) => i.trim()).filter((i: string) => i.length > 0)
+      : Array.isArray(product.ingredients)
+      ? product.ingredients.map((i: any) => i.text ?? i.id ?? String(i)).filter((i: string) => i.length > 0)
       : undefined;
 
     return {
       success: true,
       product: {
         barcode,
-        name: product.product_name || product.generic_name || 'Unknown Product',
+        name: product.product_name ?? product.generic_name ?? 'Unknown Product',
         brand: product.brands?.split(',')[0]?.trim(),
         category,
         image: product.image_url,
@@ -203,7 +200,7 @@ async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
 
     const data = await response.json();
 
-    if (!data.items || data.items.length === 0) {
+    if (data.items == null || data.items.length === 0) {
       return { success: false, error: 'Product not found' };
     }
 

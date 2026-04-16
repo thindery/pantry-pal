@@ -441,8 +441,7 @@ const ReceiptScanner: React.FC<{
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    if (file == null) return;
 
     setError(null);
     setScanResults(null);
@@ -484,8 +483,7 @@ const ReceiptScanner: React.FC<{
 
     try {
       // Use backend Tesseract.js OCR, not browser Gemini
-      const response = await scanReceiptBackend(base64Image);
-      const results = response.items || [];
+      const results = response.items ?? [];
       if (results.length === 0) {
         setError('No items detected in receipt. Try a clearer image.');
       } else {
@@ -500,8 +498,7 @@ const ReceiptScanner: React.FC<{
     }
   };
 
-  const handleConfirm = async () => {
-    if (scanResults && scanResults.length === 0) return;
+    if (scanResults != null && scanResults.length === 0) return;
 
     setIsAdding(true);
     try {
@@ -518,8 +515,7 @@ const ReceiptScanner: React.FC<{
     setBase64Image(null);
     setScanResults(null);
     setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (fileInputRef.current != null) {
     }
   };
 
