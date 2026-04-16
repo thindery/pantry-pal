@@ -421,7 +421,7 @@ describe('apiService', () => {
         const result = await getProductByBarcode('123456789');
 
         expect(fetchMock).toHaveBeenCalledWith(
-          `${API_URL}/api/products/barcode/123456789`,
+          `${API_URL}/api/barcode/123456789`,
           expect.any(Object)
         );
         expect(result.product).toEqual(expect.objectContaining({

@@ -98,7 +98,7 @@ export const processUsage = (usageData: unknown) =>
 
 // Product Lookup API (includes cache status)
 export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
-  const result = await fetchApi<{ product: Record<string, unknown>; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
+  const result = await fetchApi<{ product: Record<string, unknown>; fromCache?: boolean; cachedAt?: string }>(`/api/barcode/${barcode}`);
   
   if (result.product == null) {
     return { product: null, fromCache: result.fromCache, cachedAt: result.cachedAt };
