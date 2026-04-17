@@ -1368,6 +1368,15 @@ const AppContent: React.FC = () => {
     setShoppingList((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  // Update shopping list item quantity
+  const updateShoppingItemQuantity = useCallback((id: string, newQuantity: number) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, suggestedQuantity: newQuantity } : item
+      )
+    );
+  }, []);
+
   // Clear entire shopping list
   const clearShoppingList = useCallback(() => {
     if (confirm('Are you sure you want to clear the entire shopping list?')) {
@@ -2731,9 +2740,25 @@ const AppContent: React.FC = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className={`font-bold ${item.isChecked ? 'text-slate-400' : 'text-emerald-600'}`}>
-                              {item.suggestedQuantity} {item.unit}
-                            </p>
+                            <div className="flex items-center gap-1 justify-end">
+                              <button
+                                onClick={() => updateShoppingItemQuantity(item.id, Math.max(1, item.suggestedQuantity - 1))}
+                                className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold transition-colors"
+                                title="Decrease quantity"
+                              >
+                                −
+                              </button>
+                              <p className={`font-bold ${item.isChecked ? 'text-slate-400' : 'text-emerald-600'}`}>
+                                {item.suggestedQuantity} {item.unit}
+                              </p>
+                              <button
+                                onClick={() => updateShoppingItemQuantity(item.id, item.suggestedQuantity + 1)}
+                                className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold transition-colors"
+                                title="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
                             {item.reason === 'recommendation' && (
                               <span className="text-xs text-amber-500 font-medium">Buy soon</span>
                             )}
