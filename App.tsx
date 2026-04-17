@@ -1045,6 +1045,7 @@ const AppContent: React.FC = () => {
 
   // Shopping Session State
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
+  const [sessionExpanded, setSessionExpanded] = useState(false);
 
   // View Mode State (table | cards) - default to cards on mobile
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
@@ -2382,19 +2383,57 @@ const AppContent: React.FC = () => {
         {view === 'shopping-list' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             {activeShoppingSession && (
-              <div 
-                onClick={() => setView('shopping-session')}
-                className="cursor-pointer bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🛒</span>
-                  <span className="text-sm font-medium text-emerald-800">
-                    Shopping session in progress ({activeShoppingSession.items?.length || 0} items)
-                  </span>
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div 
+                  onClick={() => setSessionExpanded(!sessionExpanded)}
+                  className="cursor-pointer bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🛒</span>
+                    <span className="text-sm font-medium text-emerald-800">
+                      Shopping session in progress ({activeShoppingSession.items?.length || 0} items)
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                    {sessionExpanded ? 'Collapse ▴' : 'Continue Session ▾'}
+                  </div>
                 </div>
-                <div className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-                  Continue Session →
-                </div>
+                
+                {sessionExpanded && (
+                  <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {activeShoppingSession.items?.length === 0 ? (
+                        <p className="text-sm text-slate-500 text-center py-4">No items scanned yet</p>
+                      ) : (
+                        activeShoppingSession.items?.map((item) => (
+                          <div key={item.id} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                            <span className="text-slate-700 font-medium">{item.name}</span>
+                            <span className="text-slate-500">{item.quantity}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <button 
+                        onClick={() => setView('scan-barcode')}
+                        className="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"
+                      >
+                        Scan Barcode
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setActiveShoppingSession(null);
+                          setSessionExpanded(false);
+                          success('Shopping session completed!');
+                        }}
+                        className="flex-1 px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors"
+                      >
+                        Complete Session
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
