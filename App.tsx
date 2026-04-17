@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import type { FunctionDeclaration, LiveServerMessage} from '@google/genai';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession } from './types';
+import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession, BarcodeProduct } from './types';
 import { analyzeUsage } from './services/geminiService';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';
@@ -1048,6 +1048,11 @@ const AppContent: React.FC = () => {
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
   const [sessionExpanded, setSessionExpanded] = useState(false);
   const [startingSession, setStartingSession] = useState(false);
+
+  // Barcode Scan Quantity Adjustment State
+  const [scannedProduct, setScannedProduct] = useState<BarcodeProduct | null>(null);
+  const [scanQuantity, setScanQuantity] = useState<number>(1);
+  const [isConfirmingScan, setIsConfirmingScan] = useState(false);
 
   const handleStartSessionInline = async () => {
     setStartingSession(true);
@@ -2355,86 +2360,159 @@ const AppContent: React.FC = () => {
           <BarcodeScanner
             autoStart
             onBarcodeDetected={async (product) => {
-              // Check if there's an active shopping session
-              if (activeShoppingSession != null) {
-                // Scanning from a session — try to match with shopping list
-                const matchedItem = shoppingList.find(
-                  (item) => 
-                    (item.name.toLowerCase() === product.name.toLowerCase()) ||
-                    (product.barcode && inventory.some(i => 
-                      i.barcode === product.barcode && i.name.toLowerCase() === item.name.toLowerCase()
-                    ))
-                );
-
-                if (matchedItem != null) {
-                  // Auto-check the shopping list item (only if not already checked)
-                  if (!matchedItem.isChecked) {
-                    toggleItemChecked(matchedItem.id);
-                  }
-                  
-                  // Always increment bought quantity for display (even if already checked)
-                  setShoppingListBoughtQuantities(prev => ({
-                    ...prev,
-                    [matchedItem.id]: (prev[matchedItem.id] || 0) + 1
-                  }));
-                  
-                  success(`Found ${product.name} in your shopping list!`);
-                  setView('shopping-list');
-                  return;
-                }
-              }
-
-              // Standard inventory scan flow
-              try {
-                // Check if item with this barcode already exists
-                const existing = inventory.find(
-                  (i) => i.barcode === product.barcode || 
-                         i.name.toLowerCase() === product.name.toLowerCase()
-                );
-
-                if (existing != null) {
-                  // If item exists but doesn't have a barcode, update it with the barcode
-                  if (!existing.barcode && product.barcode) {
-                    await updateItem(existing.id, { barcode: product.barcode });
-                    // Update local state with the new barcode
-                    setInventory((prev) =>
-                      prev.map((i) =>
-                        i.id === existing.id ? { ...i, barcode: product.barcode } : i
-                      )
-                    );
-                  }
-                  // Update existing item quantity
-                  await handleAdjustQuantity(existing.id, 1);
-                  success(`Added 1 ${existing.unit} to ${existing.name}`);
-                } else {
-                  // Create new item with barcode and product info
-                  await handleCreateItem({
-                    name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
-                    quantity: 1,
-                    unit: 'units',
-                    category: product.category || 'other',
-                    barcode: product.barcode,
-                    productInfo: {
-                      barcode: product.barcode,
-                      name: product.name,
-                      brand: product.brand,
-                      category: product.category,
-                      imageUrl: product.image,
-                      ingredients: product.ingredients,
-                      nutrition: product.nutrition,
-                      source: (product.source || 'openfoodfacts') as 'openfoodfacts' | 'manual',
-                      infoLastSynced: product.infoLastSynced || new Date().toISOString(),
-                    },
-                  });
-                  showToast(`${product.name} added to inventory`, 'success');
-                }
-                setView('inventory');
-              } catch (_err) {
-                showToast('Failed to add item to inventory. Please try again.', 'error');
-              }
+              // Store the scanned product and show quantity confirmation
+              setScannedProduct(product);
+              setScanQuantity(1);
+              setIsConfirmingScan(true);
             }}
             onCancel={() => setView('inventory')}
           />
+        )}
+
+        {/* Barcode Scan Quantity Confirmation Modal */}
+        {isConfirmingScan && scannedProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in fade-in zoom-in duration-200">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">Add to Inventory</h3>
+              
+              <div className="flex items-start gap-4 mb-6">
+                {scannedProduct.image && (
+                  <img 
+                    src={scannedProduct.image} 
+                    alt={scannedProduct.name}
+                    className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">{scannedProduct.name}</p>
+                  <p className="text-sm text-slate-500">{scannedProduct.brand}</p>
+                  <p className="text-xs text-slate-400 mt-1">{scannedProduct.category}</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Quantity</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setScanQuantity(Math.max(1, scanQuantity - 1))}
+                    className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xl font-bold text-slate-600 transition-colors"
+                    disabled={scanQuantity <= 1}
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    value={scanQuantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val >= 1) setScanQuantity(val);
+                    }}
+                    className="flex-1 h-12 text-center text-2xl font-bold text-slate-800 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                  />
+                  <button
+                    onClick={() => setScanQuantity(scanQuantity + 1)}
+                    className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xl font-bold text-slate-600 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setIsConfirmingScan(false);
+                    setScannedProduct(null);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!scannedProduct) return;
+                    
+                    const product = scannedProduct;
+                    const quantity = scanQuantity;
+                    
+                    // Check if there's an active shopping session
+                    if (activeShoppingSession != null) {
+                      const matchedItem = shoppingList.find(
+                        (item) => 
+                          (item.name.toLowerCase() === product.name.toLowerCase()) ||
+                          (product.barcode && inventory.some(i => 
+                            i.barcode === product.barcode && i.name.toLowerCase() === item.name.toLowerCase()
+                          ))
+                      );
+
+                      if (matchedItem != null) {
+                        if (!matchedItem.isChecked) {
+                          toggleItemChecked(matchedItem.id);
+                        }
+                        setShoppingListBoughtQuantities(prev => ({
+                          ...prev,
+                          [matchedItem.id]: (prev[matchedItem.id] || 0) + quantity
+                        }));
+                        success(`Added ${quantity} ${matchedItem.unit} to ${matchedItem.name}`);
+                        setView('shopping-list');
+                      }
+                    }
+
+                    // Add to inventory
+                    try {
+                      const existing = inventory.find(
+                        (i) => i.barcode === product.barcode || 
+                               i.name.toLowerCase() === product.name.toLowerCase()
+                      );
+
+                      if (existing != null) {
+                        if (!existing.barcode && product.barcode) {
+                          await updateItem(existing.id, { barcode: product.barcode });
+                          setInventory((prev) =>
+                            prev.map((i) =>
+                              i.id === existing.id ? { ...i, barcode: product.barcode } : i
+                            )
+                          );
+                        }
+                        await handleAdjustQuantity(existing.id, quantity);
+                        success(`Added ${quantity} ${existing.unit} to ${existing.name}`);
+                      } else {
+                        await handleCreateItem({
+                          name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
+                          quantity,
+                          unit: 'units',
+                          category: product.category || 'other',
+                          barcode: product.barcode,
+                          productInfo: {
+                            barcode: product.barcode,
+                            name: product.name,
+                            brand: product.brand,
+                            category: product.category,
+                            imageUrl: product.image,
+                            ingredients: product.ingredients,
+                            nutrition: product.nutrition,
+                            source: (product.source || 'openfoodfacts') as 'openfoodfacts' | 'manual',
+                            infoLastSynced: product.infoLastSynced || new Date().toISOString(),
+                          },
+                        });
+                        showToast(`${product.name} (${quantity}) added to inventory`, 'success');
+                      }
+                      setView('inventory');
+                    } catch (_err) {
+                      showToast('Failed to add item to inventory. Please try again.', 'error');
+                    }
+                    
+                    setIsConfirmingScan(false);
+                    setScannedProduct(null);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Add {scanQuantity} to Inventory
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {view === 'shopping-list' && (
