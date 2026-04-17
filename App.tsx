@@ -21,6 +21,7 @@ import {
   getActivities,
   useSetupAuthToken,
   scanReceiptBackend,
+  createShoppingSession,
 } from './services/apiService';
 import { QuickActionBar, createQuickActions } from './components/QuickActionBar';
 import { useFeatureFlags } from './src/hooks/useFeatureFlags';
@@ -1046,6 +1047,24 @@ const AppContent: React.FC = () => {
   // Shopping Session State
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
   const [sessionExpanded, setSessionExpanded] = useState(false);
+  const [startingSession, setStartingSession] = useState(false);
+
+  const handleStartSessionInline = async () => {
+    setStartingSession(true);
+    try {
+      const response = await createShoppingSession();
+      if (response.success && response.data) {
+        setActiveShoppingSession(response.data);
+        setSessionExpanded(true);
+      } else {
+        console.error('Failed to start session');
+      }
+    } catch (err) {
+      console.error('Failed to start session:', err);
+    } finally {
+      setStartingSession(false);
+    }
+  };
 
   // View Mode State (table | cards) - default to cards on mobile
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
@@ -2458,12 +2477,13 @@ const AppContent: React.FC = () => {
               <div className="flex items-center gap-1.5 w-full sm:w-auto">
                 {/* Primary: Live Session */}
                 <button
-                  onClick={() => setView('shopping-session')}
-                  className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center justify-center gap-1.5 text-sm whitespace-nowrap"
-                  title="Start Live Shopping Session"
+                  onClick={activeShoppingSession ? () => setSessionExpanded(!sessionExpanded) : handleStartSessionInline}
+                  disabled={startingSession}
+                  className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center justify-center gap-1.5 text-sm whitespace-nowrap disabled:opacity-50"
+                  title={activeShoppingSession ? 'View Session' : 'Start Shopping Session'}
                 >
-                  <span>▶️</span>
-                  <span className="hidden sm:inline">Scan & Shop</span>
+                  <span>{startingSession ? '⏳' : '▶️'}</span>
+                  <span className="hidden sm:inline">{startingSession ? 'Starting...' : activeShoppingSession ? 'Session' : 'Start Session'}</span>
                 </button>
                 
                 {/* Icon-only: Refresh */}
