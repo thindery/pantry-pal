@@ -6,9 +6,10 @@ import { lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService'
 interface BarcodeScannerProps {
   onBarcodeDetected: (product: BarcodeProduct) => void;
   onCancel: () => void;
+  autoStart?: boolean;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCancel }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCancel, autoStart = false }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
@@ -25,6 +26,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const streamRef = useRef<MediaStream | null>(null);
   const isScanningRef = useRef(false);
   const isLoadingRef = useRef(false);
+
+  // Auto-start scanning when component mounts with autoStart
+  useEffect(() => {
+    if (autoStart) {
+      startScanning();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
