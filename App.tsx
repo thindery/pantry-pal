@@ -1163,6 +1163,7 @@ const AppContent: React.FC = () => {
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
   const [shoppingListBoughtQuantities, setShoppingListBoughtQuantities] = useState<Record<string, number>>({});
+  const [hasLoadedShoppingList, setHasLoadedShoppingList] = useState(false);
 
   // Load shopping list from localStorage on mount
   useEffect(() => {
@@ -1171,7 +1172,9 @@ const AppContent: React.FC = () => {
     
     if (savedList) {
       try {
-        setShoppingList(JSON.parse(savedList));
+        const parsed = JSON.parse(savedList);
+        setShoppingList(parsed);
+        console.log('[PantryPal] Loaded shopping list from localStorage:', parsed.length, 'items');
       } catch (e) {
         console.error('Failed to parse shopping list:', e);
       }
@@ -1184,6 +1187,9 @@ const AppContent: React.FC = () => {
         console.error('Failed to parse threshold config:', e);
       }
     }
+    
+    // Mark as loaded so auto-generate can run safely
+    setHasLoadedShoppingList(true);
   }, []);
 
   // Save shopping list to localStorage
@@ -1191,12 +1197,12 @@ const AppContent: React.FC = () => {
     localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
   }, [shoppingList]);
 
-  // Auto-generate shopping list when inventory changes
+  // Auto-generate shopping list when inventory changes (only after loading from localStorage)
   useEffect(() => {
-    if (inventory.length > 0) {
+    if (inventory.length > 0 && hasLoadedShoppingList) {
       generateShoppingList();
     }
-  }, [inventory]);
+  }, [inventory, hasLoadedShoppingList]);
 
   // Save threshold config to localStorage
   useEffect(() => {
