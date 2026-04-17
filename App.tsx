@@ -1162,6 +1162,7 @@ const AppContent: React.FC = () => {
   const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
+  const [shoppingListBoughtQuantities, setShoppingListBoughtQuantities] = useState<Record<string, number>>({});
 
   // Load shopping list from localStorage on mount
   useEffect(() => {
@@ -2348,6 +2349,34 @@ const AppContent: React.FC = () => {
           <BarcodeScanner
             autoStart
             onBarcodeDetected={async (product) => {
+              // Check if there's an active shopping session
+              if (activeShoppingSession != null) {
+                // Scanning from a session — try to match with shopping list
+                const matchedItem = shoppingList.find(
+                  (item) => 
+                    (item.name.toLowerCase() === product.name.toLowerCase()) ||
+                    (product.barcode && inventory.some(i => 
+                      i.barcode === product.barcode && i.name.toLowerCase() === item.name.toLowerCase()
+                    ))
+                );
+
+                if (matchedItem != null && !matchedItem.isChecked) {
+                  // Auto-check the shopping list item
+                  toggleItemChecked(matchedItem.id);
+                  
+                  // Track bought quantity for display
+                  setShoppingListBoughtQuantities(prev => ({
+                    ...prev,
+                    [matchedItem.id]: (prev[matchedItem.id] || 0) + 1
+                  }));
+                  
+                  success(`Found ${product.name} in your shopping list!`);
+                  setView('shopping-list');
+                  return;
+                }
+              }
+
+              // Standard inventory scan flow
               try {
                 // Check if item with this barcode already exists
                 const existing = inventory.find(
@@ -2612,6 +2641,7 @@ const AppContent: React.FC = () => {
                             </p>
                             <p className="text-xs text-slate-400">
                               {item.isManual ? 'Manual add' : item.reason === 'recommendation' ? '🤖 Recommendation' : `Current: ${item.currentQuantity}`}
+                              {shoppingListBoughtQuantities[item.id] ? ` • Buying: ${shoppingListBoughtQuantities[item.id]}` : ''}
                             </p>
                           </div>
                           <div className="text-right">
