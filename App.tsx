@@ -2366,11 +2366,13 @@ const AppContent: React.FC = () => {
                     ))
                 );
 
-                if (matchedItem != null && !matchedItem.isChecked) {
-                  // Auto-check the shopping list item
-                  toggleItemChecked(matchedItem.id);
+                if (matchedItem != null) {
+                  // Auto-check the shopping list item (only if not already checked)
+                  if (!matchedItem.isChecked) {
+                    toggleItemChecked(matchedItem.id);
+                  }
                   
-                  // Track bought quantity for display
+                  // Always increment bought quantity for display (even if already checked)
                   setShoppingListBoughtQuantities(prev => ({
                     ...prev,
                     [matchedItem.id]: (prev[matchedItem.id] || 0) + 1
