@@ -28,9 +28,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const isLoadingRef = useRef(false);
 
   // Auto-start scanning when component mounts with autoStart
+  // Browsers require a user gesture for getUserMedia, so we try once on mount
+  // and if permission is denied, the user can still click "Start Scanning"
+  const autoStartAttempted = useRef(false);
   useEffect(() => {
-    if (autoStart) {
-      startScanning();
+    if (autoStart && !autoStartAttempted.current) {
+      autoStartAttempted.current = true;
+      startScanning().catch(() => {
+        // Permission denied or no user gesture — user can click Start Scanning manually
+      });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -111,9 +117,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         }
       });
     } catch {
-      console.error('Camera access error');
-      setHasCameraPermission(false);
-      setError('Camera access denied. You can upload a barcode image instead.');
+      // If this was an auto-start attempt, just fail silently — user can click Start Scanning
+      // Only show permanent error if user explicitly clicked the button
+      if (!autoStart) {
+        setHasCameraPermission(false);
+        setError('Camera access denied. You can upload a barcode image instead.');
+      }
     }
   };
 
