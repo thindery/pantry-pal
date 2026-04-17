@@ -2346,6 +2346,7 @@ const AppContent: React.FC = () => {
 
         {view === 'scan-barcode' && (
           <BarcodeScanner
+            autoStart
             onBarcodeDetected={async (product) => {
               try {
                 // Check if item with this barcode already exists
