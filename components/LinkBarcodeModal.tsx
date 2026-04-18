@@ -1,9 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { PantryItem, CacheStatus, CacheStatusInfo } from '../types';
-import { BarcodeProduct } from '../types';
-import type { BarcodeLookupResult} from '../services/barcodeService';
 import { lookupBarcode, formatRelativeTime } from '../services/barcodeService';
+import type { BarcodeLookupResult } from '../services/barcodeService';
 
 interface LinkBarcodeModalProps {
   item: PantryItem;
@@ -33,7 +32,7 @@ const getCacheStatusInfo = (result: BarcodeLookupResult): CacheStatusInfo => {
     };
   }
 
-  if (result.cached && result.stale) {
+  if (Boolean(result.cached) && Boolean(result.stale)) {
     return {
       status: 'stale' as CacheStatus,
       label: 'Cached (stale - will refresh soon)',
@@ -85,7 +84,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
 
   // Reset state when modal opens
   React.useEffect(() => {
-    if (isOpen && item) {
+    if (isOpen && item != null) {
       setBarcode(item.barcode || '');
       setLookupResult(null);
       setError(null);
@@ -96,7 +95,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
   }, [isOpen, item]);
 
   const stopScanning = useCallback(() => {
-    if (streamRef.current) {
+    if (streamRef.current != null) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
@@ -109,7 +108,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
     setError(null);
     
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (navigator.mediaDevices == null || navigator.mediaDevices.getUserMedia == null) {
         setError('Camera not supported on this device');
         return;
       }
@@ -125,7 +124,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      if (videoRef.current) {
+      if (videoRef.current != null) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
@@ -136,19 +135,19 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
 
-      reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
         if (!isScanningRef.current) return;
 
-        if (result && result.getText()) {
-          const scannedBarcode = result.getText();
+        if (result != null && (result as { getText(): string }).getText() != null) {
+          const scannedBarcode = (result as { getText(): string }).getText();
           console.log('Scanned barcode:', scannedBarcode);
           stopScanning();
           setBarcode(scannedBarcode);
           handleLookup(scannedBarcode);
         }
       });
-    } catch (err) {
-      console.error('Camera access error:', err);
+    } catch (_err) {
+      console.error('Camera access error:', _err);
       setError('Camera access denied. You can type the barcode manually.');
     }
   };
@@ -166,7 +165,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       
       setLookupResult(result);
       
-      if (result.success && result.product && item) {
+      if (result.success && result.product != null && item != null) {
         // Offer to update item with looked-up data
         const updates: Partial<PantryItem> = {};
         
@@ -206,7 +205,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     setIsLookingUp(true);
     setError(null);
@@ -221,11 +220,11 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       } else {
         setError(result.error || 'No barcode found in image');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to process image');
     } finally {
       setIsLookingUp(false);
-      if (fileInputRef.current) {
+      if (fileInputRef.current != null) {
         fileInputRef.current.value = '';
       }
     }
@@ -237,7 +236,7 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       return;
     }
 
-    if (!item) {
+    if (item == null) {
       setError('No item selected');
       return;
     }
@@ -258,19 +257,19 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
       if (updateCategory && lookupData?.category) {
         updates.category = lookupData.category;
       }
-      if (lookupData?.productInfo) {
+      if (lookupData?.productInfo != null) {
         updates.productInfo = lookupData.productInfo;
       }
       
       await onSave(item.id, barcode.trim(), updates);
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save barcode');
     }
   };
 
   const handleUnlink = async () => {
-    if (!item) {
+    if (item == null) {
       setError('No item selected');
       return;
     }
@@ -278,15 +277,15 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
     try {
       await onSave(item.id, '', { productInfo: undefined });
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to unlink barcode');
     }
   };
 
   // Get cache status for display
-  const cacheStatus = lookupResult ? getCacheStatusInfo(lookupResult) : null;
+  const cacheStatus = lookupResult != null ? getCacheStatusInfo(lookupResult) : null;
 
-  if (!isOpen || !item) return null;
+  if (isOpen == false || item == null) return null;
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -311,14 +310,14 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
           </p>
         </div>
 
-        {error && (
+        {error != null && (
           <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 text-sm">
             {error}
           </div>
         )}
 
         {/* Cache Status Badge */}
-        {cacheStatus && (
+        {cacheStatus != null && (
           <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium mb-4 ${cacheStatus.color}`}>
             <span>{cacheStatus.icon}</span>
             <span>{cacheStatus.label}</span>
@@ -407,9 +406,9 @@ export const LinkBarcodeModal: React.FC<LinkBarcodeModalProps> = ({
         )}
 
         {/* Lookup Result - only show when linking new barcode */}
-        {!item?.barcode && lookupResult && (
+        {item?.barcode == null && lookupResult != null && (
           <div className={`mb-4 p-4 rounded-lg ${lookupResult.success ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
-            {lookupResult.success && lookupResult.product ? (
+            {lookupResult.success && lookupResult.product != null ? (
               <>
                 <p className="text-emerald-700 font-semibold mb-2">✓ Product Found</p>
                 

@@ -30,7 +30,7 @@ export function useFeatureFlags() {
     }
     return DEFAULT_FLAGS;
   });
-  const [isLoaded, setIsLoaded] = useState(true);
+  const [isLoaded, _setIsLoaded] = useState(true);
 
   // Persist flags to localStorage
   useEffect(() => {

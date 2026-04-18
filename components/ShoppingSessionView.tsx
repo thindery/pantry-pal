@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { ShoppingSession, ShoppingSessionItem, BarcodeProduct } from '../types';
+import type { ShoppingSession, BarcodeProduct } from '../types';
 import BarcodeScanner from './BarcodeScanner';
 import {
   createShoppingSession,
@@ -17,11 +17,6 @@ interface ShoppingSessionViewProps {
   onCancel: () => void;
 }
 
-interface SessionItemWithImage extends ShoppingSessionItem {
-  image?: string;
-  brand?: string;
-}
-
 const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   session,
   onSessionCreated,
@@ -33,12 +28,12 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   const [showScanner, setShowScanner] = useState(false);
   const [sessionData, setSessionData] = useState<ShoppingSession | null>(session);
   const [showReceiptCapture, setShowReceiptCapture] = useState(false);
-  const [showInventoryConfirm, setShowInventoryConfirm] = useState(false);
+  const [_showInventoryConfirm, _setShowInventoryConfirm] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [justAddedItem, setJustAddedItem] = useState<string | null>(null);
-  const [addToInventory, setAddToInventory] = useState(false);
-  const [inventoryAdded, setInventoryAdded] = useState(false);
+  const [_addToInventory, _setAddToInventory] = useState(false);
+  const [_inventoryAdded, _setInventoryAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsEndRef = useRef<HTMLDivElement>(null);
@@ -50,7 +45,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
 
   // Scroll to bottom when new items are added
   useEffect(() => {
-    if (justAddedItem && itemsEndRef.current) {
+    if (justAddedItem != null && itemsEndRef.current != null) {
       itemsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [sessionData?.items?.length, justAddedItem]);
@@ -60,7 +55,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     setError(null);
     try {
       const response = await createShoppingSession();
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setSessionData(response.data);
         onSessionCreated(response.data);
       } else {
@@ -78,7 +73,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
     if (!sessionData?.id) return;
     try {
       const response = await getShoppingSession(sessionData.id);
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setSessionData(response.data);
       }
     } catch (err) {
@@ -101,7 +96,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         quantity: 1,
       });
 
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setJustAddedItem(response.data.id);
         await refreshSession();
       } else {
@@ -138,7 +133,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
 
   const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -159,13 +154,13 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         notes: notes || undefined,
       });
 
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         // If user chose to add to inventory, call the API
         if (shouldAddToInventory) {
           try {
             const inventoryResponse = await addSessionToInventory(sessionData.id);
             if (inventoryResponse.success) {
-              setInventoryAdded(true);
+              _setInventoryAdded(true);
             }
           } catch (inventoryErr) {
             console.error('Failed to add to inventory:', inventoryErr);
@@ -229,7 +224,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </button>
         </div>
 
-        {activeTab === 'active' && (!sessionData || sessionData.status !== 'active') && (
+        ({activeTab === 'active' && (sessionData == null || sessionData.status !== 'active') && (
           <button
             onClick={handleStartSession}
             disabled={isLoading}
@@ -270,7 +265,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
   }
 
   // No active session - show start screen
-  if (!sessionData || sessionData.status !== 'active') {
+  if (sessionData == null || sessionData.status !== 'active') {
     return (
       <div className="min-h-screen bg-white">
         {renderHeader()}
@@ -285,7 +280,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
             </p>
           </div>
 
-          {error && (
+          {error != null && (
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
               ⚠️ {error}
             </div>
@@ -402,7 +397,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           />
         </div>
 
-        {error && (
+        {error != null && (
           <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
             ⚠️ {error}
           </div>
@@ -500,7 +495,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
         Scan Barcode
       </button>
 
-      {error && (
+      {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
           ⚠️ {error}
         </div>
@@ -527,7 +522,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
           </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto pb-2">
-            {(sessionData.items || []).map((item, index) => (
+            {(sessionData.items || []).map((item, _index) => (
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${

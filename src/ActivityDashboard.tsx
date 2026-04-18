@@ -3,31 +3,28 @@ import * as React from 'react';
 
 // TASK-043/007: Activity dashboard with null safety fixes
 export const ActivityDashboard: React.FC = () => {
-  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
+  const [stats, setStats] = useState(() => ({ total: 0, active: 0, completed: 0 }));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadStats();
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/activities/stats');
+        const data = await response.json();
+        
+        setStats({
+          total: data?.total ?? 0,
+          active: data?.active ?? 0,
+          completed: data?.completed ?? 0
+        });
+      } catch (_err) {
+        console.error('Failed to load stats:', _err);
+        setStats({ total: 0, active: 0, completed: 0 });
+        setError('Unable to load statistics');
+      }
+    };
+    fetchStats();
   }, []);
-
-  const loadStats = async () => {
-    try {
-      const response = await fetch('/api/activities/stats');
-      const data = await response.json();
-      
-      // Bug fix: Handle null/undefined values safely
-      setStats({
-        total: data?.total ?? 0,
-        active: data?.active ?? 0,
-        completed: data?.completed ?? 0
-      });
-    } catch (err) {
-      console.error('Failed to load stats:', err);
-      // Gracefully fallback to zeros on error
-      setStats({ total: 0, active: 0, completed: 0 });
-      setError('Unable to load statistics');
-    }
-  };
 
   return (
     <div>

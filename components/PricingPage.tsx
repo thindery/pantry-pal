@@ -99,7 +99,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isSignedIn } = useAuth();
-  const { tierInfo, isFree, isPro, isFamily } = useSubscription();
+  const { tierInfo: _tierInfo, isFree, isPro, isFamily } = useSubscription();
 
   const handleUpgrade = async (tier: 'pro' | 'family') => {
     if (!isSignedIn) {
@@ -122,6 +122,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
       );
 
       // Redirect to Stripe checkout
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = checkout.url;
     } catch (err) {
       console.error('Checkout failed:', err);

@@ -59,10 +59,10 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
     try {
       // Try to parse the response directly
       results = JSON.parse(response.text);
-    } catch (parseError) {
+    } catch (_parseError) {
       // If direct parsing fails, try to extract JSON from markdown
       const jsonMatch = response.text.match(/\[\s*\{.*\}\s*\]/s);
-      if (jsonMatch) {
+      if (jsonMatch != null) {
         results = JSON.parse(jsonMatch[0]);
       } else {
         throw new Error('Failed to parse Gemini response as JSON');

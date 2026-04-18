@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { BarcodeProduct } from '../types';
-import { BarcodeLookupResult, lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
+import { lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
 
 interface BarcodeScannerProps {
   onBarcodeDetected: (product: BarcodeProduct) => void;
   onCancel: () => void;
+  autoStart?: boolean;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCancel }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCancel, autoStart = false }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
@@ -18,8 +19,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [detectedProduct, setDetectedProduct] = useState<BarcodeProduct | null>(null);
   const [torchOn, setTorchOn] = useState(false);
-  const [isConfirmingScan, setIsConfirmingScan] = useState(false);
-  const [scanQuantity, setScanQuantity] = useState(1);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +26,19 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const streamRef = useRef<MediaStream | null>(null);
   const isScanningRef = useRef(false);
   const isLoadingRef = useRef(false);
+
+  // Auto-start scanning when component mounts with autoStart
+  // Browsers require a user gesture for getUserMedia, so we try once on mount
+  // and if permission is denied, the user can still click "Start Scanning"
+  const autoStartAttempted = useRef(false);
+  useEffect(() => {
+    if (autoStart && !autoStartAttempted.current) {
+      autoStartAttempted.current = true;
+      startScanning().catch(() => {
+        // Permission denied or no user gesture — user can click Start Scanning manually
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
@@ -46,7 +58,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
   const stopScanning = useCallback(() => {
     // Stop the media stream (ZXing reader stops automatically when stream ends)
-    if (streamRef.current) {
+    if (streamRef.current != null) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
@@ -62,7 +74,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
     try {
       // Check for camera support
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (navigator.mediaDevices == null || navigator.mediaDevices.getUserMedia == null) {
         setHasCameraPermission(false);
         setError('Camera not supported on this device');
         return;
@@ -80,7 +92,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      if (videoRef.current) {
+      if (videoRef.current != null) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
@@ -93,21 +105,24 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       readerRef.current = reader;
 
       // Start continuous scanning
-      reader.decodeFromVideoElement(videoRef.current!, (result: any, err: any) => {
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
         // Ignore results if we're no longer scanning or already processing
         // Use refs here to avoid stale closure issues
         if (!isScanningRef.current || isLoadingRef.current) return;
 
-        if (result && result.getText()) {
-          const barcode = result.getText();
+        if (result != null && (result as { getText(): string }).getText() != null) {
+          const barcode = (result as { getText(): string }).getText();
           console.log('Camera scan detected barcode:', barcode);
           handleBarcodeDetected(barcode);
         }
       });
-    } catch (err) {
-      console.error('Camera access error:', err);
-      setHasCameraPermission(false);
-      setError('Camera access denied. You can upload a barcode image instead.');
+    } catch {
+      // If this was an auto-start attempt, just fail silently — user can click Start Scanning
+      // Only show permanent error if user explicitly clicked the button
+      if (!autoStart) {
+        setHasCameraPermission(false);
+        setError('Camera access denied. You can upload a barcode image instead.');
+      }
     }
   };
 
@@ -127,7 +142,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const result = await lookupBarcode(barcode);
       console.log('Barcode lookup result:', result);
 
-      if (result.success && result.product) {
+      if (Boolean(result.success) && result.product != null) {
         setDetectedProduct(result.product);
       } else {
         // Unknown barcode - allow manual entry
@@ -152,8 +167,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files?.[0];
+    if (file == null) return;
 
     console.log('Processing image upload:', file.name, file.type, file.size);
     setError(null);
@@ -165,9 +180,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       const result = await scanBarcodeFromImage(file);
       console.log('Image scan result:', result);
 
-      if (result.success && result.product) {
+      if (Boolean(result.success) && result.product != null) {
         setDetectedProduct(result.product);
-      } else if (result.product.barcode) {
+      } else if (result.product?.barcode) {
         // Barcode found but lookup failed
         setDetectedProduct({
           barcode: result.product.barcode,
@@ -183,7 +198,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     } finally {
       setIsLoading(false);
       // Reset file input
-      if (fileInputRef.current) {
+      if (fileInputRef.current != null) {
         fileInputRef.current.value = '';
       }
     }
@@ -197,27 +212,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleConfirmProduct = () => {
-    // Show quantity confirmation modal instead of immediately adding
-    setIsConfirmingScan(true);
-  };
-
-  const handleAddToInventory = () => {
-    if (detectedProduct) {
-      // Create product with quantity
-      const productWithQuantity: BarcodeProduct = {
-        ...detectedProduct,
-        quantity: scanQuantity,
-      };
-      onBarcodeDetected(productWithQuantity);
-      // Reset state
-      setIsConfirmingScan(false);
-      setScanQuantity(1);
+    if (detectedProduct != null) {
+      onBarcodeDetected(detectedProduct);
     }
-  };
-
-  const handleCancelConfirm = () => {
-    setIsConfirmingScan(false);
-    setScanQuantity(1);
   };
 
   const handleRescan = () => {
@@ -228,16 +225,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const toggleTorch = async () => {
-    if (!streamRef.current) return;
+    if (streamRef.current == null) return;
 
     const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
+    if (track == null) return;
 
     try {
       const capabilities = track.getCapabilities() as any;
-      if (capabilities.torch) {
+      if (Boolean(capabilities.torch)) {
         await track.applyConstraints({
-          advanced: [{ torch: !torchOn }] as any,
+          advanced: [{ torch: !torchOn }] as unknown as MediaTrackConstraints['advanced'],
         });
         setTorchOn(!torchOn);
       }
@@ -264,7 +261,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         </p>
       </div>
 
-      {error && (
+      {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
           <div className="flex items-start gap-2">
             <span className="text-lg">⚠️</span>
@@ -295,7 +292,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       )}
 
       {/* Camera View */}
-      {!detectedProduct && hasCameraPermission !== false && (
+      {detectedProduct == null && hasCameraPermission !== false && (
         <div className="relative bg-black rounded-2xl overflow-hidden aspect-square">
           <video
             ref={videoRef}
@@ -357,7 +354,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       )}
 
       {/* Fallback Options */}
-      {!detectedProduct && (
+      {detectedProduct == null && (
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -414,57 +411,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         </div>
       )}
 
-      {/* Quantity Confirmation Modal */}
-      {isConfirmingScan && detectedProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Quantity</h3>
-              <p className="text-slate-500">
-                How many <span className="font-semibold text-slate-700">{detectedProduct.name}</span> to add?
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <button
-                onClick={() => setScanQuantity(Math.max(1, scanQuantity - 1))}
-                className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl hover:bg-slate-200 transition-colors flex items-center justify-center"
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <span className="text-4xl font-bold text-slate-800 w-16 text-center">
-                {scanQuantity}
-              </span>
-              <button
-                onClick={() => setScanQuantity(scanQuantity + 1)}
-                className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl hover:bg-slate-200 transition-colors flex items-center justify-center"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleAddToInventory}
-                className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-              >
-                Add {scanQuantity} to Inventory
-              </button>
-              <button
-                onClick={handleCancelConfirm}
-                className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Product Preview */}
-      {detectedProduct && !isConfirmingScan && (
+      {detectedProduct != null && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-start gap-4 mb-4">
             {detectedProduct.image ? (

@@ -43,13 +43,13 @@ export interface CheckoutResponse {
 
 // Helper for API calls with auth
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = await (window as any).__clerkGetToken?.();
+  const token = await (window as unknown as { __clerkGetToken?: () => Promise<string | null> }).__clerkGetToken?.();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  if (token) {
+  if (token != null) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -60,7 +60,7 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error?.error?.message || `API error: ${response.status}`);
+    throw new Error(error?.error?.message ?? `API error: ${response.status}`);
   }
 
   return response.json();
@@ -151,7 +151,7 @@ export function useSubscription() {
   const [error, setError] = useState<string | null>(null);
 
   // Store getToken globally for API calls
-  (window as any).__clerkGetToken = getToken;
+  (window as unknown as { __clerkGetToken: () => Promise<string | null> }).__clerkGetToken = getToken;
 
   const fetchTierInfo = useCallback(async () => {
     try {
@@ -173,7 +173,7 @@ export function useSubscription() {
 
   const isFeatureAvailable = useCallback(
     (feature: 'voice' | 'unlimitedItems' | 'aiScanning' | 'sharedInventory') => {
-      if (!tierInfo) return false;
+      if (tierInfo == null) return false;
 
       switch (feature) {
         case 'voice':
@@ -192,13 +192,13 @@ export function useSubscription() {
   );
 
   const getItemsRemaining = useCallback(() => {
-    if (!tierInfo) return 0;
+    if (tierInfo == null) return 0;
     if (tierInfo.limits.maxItems === -1) return Infinity;
     return tierInfo.limits.maxItems - tierInfo.usage.currentItems;
   }, [tierInfo]);
 
   const getReceiptScansRemaining = useCallback(() => {
-    if (!tierInfo) return 0;
+    if (tierInfo == null) return 0;
     if (tierInfo.limits.receiptScansPerMonth === -1) return Infinity;
     return tierInfo.limits.receiptScansPerMonth - tierInfo.usage.receiptScansThisMonth;
   }, [tierInfo]);
