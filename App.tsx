@@ -2516,6 +2516,10 @@ const AppContent: React.FC = () => {
                       setView('inventory');
                     } catch (_err) {
                       showToast('Failed to add item to inventory. Please try again.', 'error');
+                    } finally {
+                      // Always close the modal regardless of success or failure
+                      setIsConfirmingScan(false);
+                      setScannedProduct(null);
                     }
                   }}
                   className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
