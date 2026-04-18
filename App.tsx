@@ -987,8 +987,8 @@ const VoiceAssistant: React.FC<{
 // Sign In Page Component
 const SignInPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 p-4">
-      <div className="w-full max-w-md flex flex-col items-center">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 p-4">
+      <div className="w-full max-w-md flex flex-col items-center justify-center">
         <div className="text-center mb-8 w-full">
           <h1 className="text-4xl font-bold text-emerald-600 mb-2">PantryPal</h1>
           <p className="text-slate-600">Smart inventory & ledger for your home</p>
@@ -997,7 +997,6 @@ const SignInPage: React.FC = () => {
           <SignIn
             appearance={{
               elements: {
-                rootBox: 'w-full',
                 card: 'shadow-none',
               }
             }}
