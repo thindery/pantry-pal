@@ -18,6 +18,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [detectedProduct, setDetectedProduct] = useState<BarcodeProduct | null>(null);
   const [torchOn, setTorchOn] = useState(false);
+  const [isConfirmingScan, setIsConfirmingScan] = useState(false);
+  const [scanQuantity, setScanQuantity] = useState(1);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -195,9 +197,27 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleConfirmProduct = () => {
+    // Show quantity confirmation modal instead of immediately adding
+    setIsConfirmingScan(true);
+  };
+
+  const handleAddToInventory = () => {
     if (detectedProduct) {
-      onBarcodeDetected(detectedProduct);
+      // Create product with quantity
+      const productWithQuantity: BarcodeProduct = {
+        ...detectedProduct,
+        quantity: scanQuantity,
+      };
+      onBarcodeDetected(productWithQuantity);
+      // Reset state
+      setIsConfirmingScan(false);
+      setScanQuantity(1);
     }
+  };
+
+  const handleCancelConfirm = () => {
+    setIsConfirmingScan(false);
+    setScanQuantity(1);
   };
 
   const handleRescan = () => {
@@ -394,8 +414,57 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         </div>
       )}
 
+      {/* Quantity Confirmation Modal */}
+      {isConfirmingScan && detectedProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Quantity</h3>
+              <p className="text-slate-500">
+                How many <span className="font-semibold text-slate-700">{detectedProduct.name}</span> to add?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <button
+                onClick={() => setScanQuantity(Math.max(1, scanQuantity - 1))}
+                className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl hover:bg-slate-200 transition-colors flex items-center justify-center"
+                aria-label="Decrease quantity"
+              >
+                −
+              </button>
+              <span className="text-4xl font-bold text-slate-800 w-16 text-center">
+                {scanQuantity}
+              </span>
+              <button
+                onClick={() => setScanQuantity(scanQuantity + 1)}
+                className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 font-bold text-xl hover:bg-slate-200 transition-colors flex items-center justify-center"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleAddToInventory}
+                className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                Add {scanQuantity} to Inventory
+              </button>
+              <button
+                onClick={handleCancelConfirm}
+                className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Product Preview */}
-      {detectedProduct && (
+      {detectedProduct && !isConfirmingScan && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-start gap-4 mb-4">
             {detectedProduct.image ? (

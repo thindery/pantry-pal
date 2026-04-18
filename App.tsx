@@ -1139,6 +1139,7 @@ const AppContent: React.FC = () => {
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  const [hasLoadedShoppingList, setHasLoadedShoppingList] = useState(false);
   const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
@@ -1147,6 +1148,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const savedList = localStorage.getItem('pantry_shopping_list');
     const savedThresholds = localStorage.getItem('pantry_threshold_config');
+    const savedSession = localStorage.getItem('pantry_active_shopping_session');
     
     if (savedList) {
       try {
@@ -1163,6 +1165,15 @@ const AppContent: React.FC = () => {
         console.error('Failed to parse threshold config:', e);
       }
     }
+
+    if (savedSession) {
+      try {
+        setActiveShoppingSession(JSON.parse(savedSession));
+      } catch (e) {
+        console.error('Failed to parse active shopping session:', e);
+      }
+    }
+    setHasLoadedShoppingList(true);
   }, []);
 
   // Save shopping list to localStorage
@@ -1170,12 +1181,21 @@ const AppContent: React.FC = () => {
     localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
   }, [shoppingList]);
 
-  // Auto-generate shopping list when inventory changes
+  // Save active shopping session to localStorage
   useEffect(() => {
-    if (inventory.length > 0) {
+    if (activeShoppingSession) {
+      localStorage.setItem('pantry_active_shopping_session', JSON.stringify(activeShoppingSession));
+    } else {
+      localStorage.removeItem('pantry_active_shopping_session');
+    }
+  }, [activeShoppingSession]);
+
+  // Auto-generate shopping list when inventory or activities change
+  useEffect(() => {
+    if (hasLoadedShoppingList && inventory.length > 0) {
       generateShoppingList();
     }
-  }, [inventory]);
+  }, [inventory, activities, hasLoadedShoppingList]);
 
   // Save threshold config to localStorage
   useEffect(() => {
@@ -2336,6 +2356,8 @@ const AppContent: React.FC = () => {
                          i.name.toLowerCase() === product.name.toLowerCase()
                 );
 
+                const quantityToAdd = product.quantity || 1;
+
                 if (existing) {
                   // If item exists but doesn't have a barcode, update it with the barcode
                   if (!existing.barcode && product.barcode) {
@@ -2348,13 +2370,13 @@ const AppContent: React.FC = () => {
                     );
                   }
                   // Update existing item quantity
-                  await handleAdjustQuantity(existing.id, 1);
-                  success(`Added 1 ${existing.unit} to ${existing.name}`);
+                  await handleAdjustQuantity(existing.id, quantityToAdd);
+                  success(`Added ${quantityToAdd} ${existing.unit} to ${existing.name}`);
                 } else {
                   // Create new item with barcode and product info
                   await handleCreateItem({
                     name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
-                    quantity: 1,
+                    quantity: quantityToAdd,
                     unit: 'units',
                     category: product.category || 'other',
                     barcode: product.barcode,
@@ -2721,7 +2743,10 @@ const AppContent: React.FC = () => {
                 setView('shopping-list');
                 success('Shopping session completed!');
               }}
-              onCancel={() => setView('shopping-list')}
+              onCancel={() => {
+                setActiveShoppingSession(null);
+                setView('shopping-list');
+              }}
             />
           </div>
         )}
