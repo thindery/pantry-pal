@@ -182,7 +182,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
       if (Boolean(result.success) && result.product != null) {
         setDetectedProduct(result.product);
-      } else if (result.product?.barcode) {
+      } else if (result.product.barcode) {
         // Barcode found but lookup failed
         setDetectedProduct({
           barcode: result.product.barcode,

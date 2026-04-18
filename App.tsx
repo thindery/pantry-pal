@@ -876,7 +876,7 @@ const VoiceAssistant: React.FC<{
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = message.serverContent!.modelTurn!.parts[0].inlineData?.data;
             if (base64Audio) {
               const outCtx = audioContextsRef.current!.output;
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outCtx.currentTime);
@@ -988,12 +988,12 @@ const VoiceAssistant: React.FC<{
 const SignInPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-md flex flex-col items-center">
+        <div className="text-center mb-8 w-full">
           <h1 className="text-4xl font-bold text-emerald-600 mb-2">PantryPal</h1>
           <p className="text-slate-600">Smart inventory & ledger for your home</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full flex justify-center">
           <SignIn
             appearance={{
               elements: {
