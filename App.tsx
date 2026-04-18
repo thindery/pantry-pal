@@ -2463,8 +2463,12 @@ const AppContent: React.FC = () => {
                           ...prev,
                           [matchedItem.id]: (prev[matchedItem.id] || 0) + quantity
                         }));
-                        success(`Added ${quantity} ${matchedItem.unit} to ${matchedItem.name}`);
+                        const unitText = quantity === 1 ? matchedItem.unit.replace(/s$/, '') : matchedItem.unit;
+                        success(`Added ${quantity} ${unitText} to ${matchedItem.name}`);
                         setView('shopping-list');
+                        setIsConfirmingScan(false);
+                        setScannedProduct(null);
+                        return;
                       }
                     }
 
@@ -2485,7 +2489,8 @@ const AppContent: React.FC = () => {
                           );
                         }
                         await handleAdjustQuantity(existing.id, quantity);
-                        success(`Added ${quantity} ${existing.unit} to ${existing.name}`);
+                        const unitText = quantity === 1 ? existing.unit.replace(/s$/, '') : existing.unit;
+                        success(`Added ${quantity} ${unitText} to ${existing.name}`);
                       } else {
                         await handleCreateItem({
                           name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
@@ -2505,15 +2510,13 @@ const AppContent: React.FC = () => {
                             infoLastSynced: product.infoLastSynced || new Date().toISOString(),
                           },
                         });
-                        showToast(`${product.name} (${quantity}) added to inventory`, 'success');
+                        const unitText = quantity === 1 ? 'unit' : 'units';
+                        showToast(`${product.name} (${quantity} ${unitText}) added to inventory`, 'success');
                       }
                       setView('inventory');
                     } catch (_err) {
                       showToast('Failed to add item to inventory. Please try again.', 'error');
                     }
-                    
-                    setIsConfirmingScan(false);
-                    setScannedProduct(null);
                   }}
                   className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
                 >
