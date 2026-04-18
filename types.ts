@@ -31,6 +31,7 @@ export interface BarcodeProduct {
   category?: string;
   image?: string;
   imageUrl?: string;
+  quantity?: number;
   source?: 'cache' | 'live' | 'stale';
   updatedAt?: string;
   infoLastSynced?: string;
