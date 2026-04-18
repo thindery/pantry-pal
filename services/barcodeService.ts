@@ -5,7 +5,7 @@ const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
 const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
 
 // Use PantryPal backend API which has caching
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const _API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface BarcodeLookupResult {
   success: boolean;
@@ -51,7 +51,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
       };
     }
 
-    if (!response.product) {
+    if (response.product == null) {
       return {
         success: false,
         error: 'Product data missing from response',
@@ -81,7 +81,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
  * Open Food Facts API lookup
  * https://world.openfoodfacts.org/api/v0/product/{barcode}.json
  */
-async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult> {
+async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -99,18 +99,18 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Record<string, any> = await response.json();
 
-    if (data.status !== 1 || !data.product) {
+    if (data.status !== 1 || data.product == null) {
       return { success: false, error: 'Product not found in Open Food Facts' };
     }
 
-    const product = data.product;
+    const product: Record<string, any> = data.product;
 
     // Map Open Food Facts categories to our categories
     let category = 'other';
-    const categories = product.categories?.toLowerCase() || '';
-    const pnnsGroups = product.pnns_groups_1?.toLowerCase() || '';
+    const categories = String(product.categories?.toLowerCase() ?? '');
+    const pnnsGroups = String(product.pnns_groups_1?.toLowerCase() ?? '');
 
     if (categories.includes('produce') || categories.includes('fruit') || categories.includes('vegetable') || pnnsGroups.includes('fruits') || pnnsGroups.includes('vegetables')) {
       category = 'produce';
@@ -129,8 +129,8 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
     }
 
     // Extract nutrition data from Open Food Facts
-    const nutriments = product.nutriments || {};
-    const nutrition = nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined
+    const nutriments: Record<string, any> = product.nutriments ?? {};
+    const nutrition = (nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined)
       ? {
           calories: nutriments['energy-kcal_100g'],
           protein: nutriments.proteins_100g,
@@ -139,23 +139,23 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
           fiber: nutriments.fiber_100g,
           sodium: nutriments.sodium_100g,
           sugar: nutriments.sugars_100g,
-          servingSize: product.serving_size,
-          servingUnit: product.serving_quantity,
+          servingSize: product.serving_size as string | undefined,
+          servingUnit: product.serving_quantity as string | undefined,
         }
       : undefined;
 
     // Extract ingredients
-    const ingredients = product.ingredients_text
-      ? product.ingredients_text.split(/,|\n/).map((i: string) => i.trim()).filter(Boolean)
-      : product.ingredients
-      ? product.ingredients.map((i: any) => i.text || i.id || String(i)).filter(Boolean)
+    const ingredients = product.ingredients_text != null
+      ? String(product.ingredients_text).split(/,|\n/).map((i: string) => i.trim()).filter((i: string) => i.length > 0)
+      : Array.isArray(product.ingredients)
+      ? product.ingredients.map((i: { text?: string; id?: string }) => i.text ?? i.id ?? String(i)).filter((i: string) => i.length > 0)
       : undefined;
 
     return {
       success: true,
       product: {
         barcode,
-        name: product.product_name || product.generic_name || 'Unknown Product',
+        name: product.product_name ?? product.generic_name ?? 'Unknown Product',
         brand: product.brands?.split(',')[0]?.trim(),
         category,
         image: product.image_url,
@@ -180,7 +180,7 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
  * UPC Item Database API lookup (fallback)
  * Note: Free tier has rate limits
  */
-async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
+async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -198,17 +198,17 @@ async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Record<string, any> = await response.json();
 
-    if (!data.items || data.items.length === 0) {
+    if (data.items == null || data.items.length === 0) {
       return { success: false, error: 'Product not found' };
     }
 
-    const item = data.items[0];
+    const item: Record<string, any> = data.items[0];
 
     // Try to determine category from description
     let category = 'other';
-    const description = (item.description + ' ' + item.category).toLowerCase();
+    const description = (String(item.description) + ' ' + String(item.category)).toLowerCase();
 
     if (description.includes('produce') || description.includes('fruit') || description.includes('vegetable')) {
       category = 'produce';
@@ -230,7 +230,7 @@ async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
       success: true,
       product: {
         barcode,
-        name: item.title || item.brand || 'Unknown Product',
+        name: item.title ?? item.brand ?? 'Unknown Product',
         brand: item.brand,
         category,
         image: item.images?.[0],
@@ -312,14 +312,14 @@ export async function scanBarcodeFromImage(imageFile: File): Promise<BarcodeLook
     let result;
     try {
       result = await reader.decodeFromImageUrl(imageUrl);
-    } catch (decodeErr) {
+    } catch (_decodeErr) {
       // If decodeFromImageUrl fails, try again with a small delay
       // This helps with race conditions where the image isn't fully processed
       await new Promise(resolve => setTimeout(resolve, 100));
       result = await reader.decodeFromImageUrl(imageUrl);
     }
 
-    if (result && result.getText()) {
+    if (result != null && result.getText() != null) {
       const barcode = result.getText();
       console.log('Barcode detected from image:', barcode);
       return await lookupBarcode(barcode);

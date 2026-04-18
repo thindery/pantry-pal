@@ -1,0 +1,572 @@
+
+> pantrypal:-smart-inventory-&-ledger@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives
+
+
+/Users/thindery/projects/pantry-pal/App.tsx
+     0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                                                                                                 @typescript-eslint/no-unnecessary-condition
+     0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                                                                                                 @typescript-eslint/strict-boolean-expressions
+    50:14   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                  react-refresh/only-export-components
+   444:32   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   445:9    warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+   445:10   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   488:23   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   488:23   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   504:9    warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+   504:10   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   521:9    warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   521:9    warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   587:25   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+   587:26   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   626:8    warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   626:8    warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   843:29   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   843:29   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   844:30   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   844:30   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   878:54   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   878:65   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   892:17   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   892:17   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   892:38   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   895:38   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   899:17   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   899:17   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   912:38   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+   942:11   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                                                                      @typescript-eslint/strict-boolean-expressions
+   943:11   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+   943:11   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+   948:6    warning  React Hook useEffect has a missing dependency: 'startSession'. Either include it or remove the dependency array                                                                                                 react-hooks/exhaustive-deps
+  1178:6    warning  React Hook useEffect has a missing dependency: 'generateShoppingList'. Either include it or remove the dependency array                                                                                         react-hooks/exhaustive-deps
+  1186:9    warning  The 'getThreshold' function makes the dependencies of useCallback Hook (at line 1293) change on every render. To fix this, wrap the definition of 'getThreshold' in its own useCallback() Hook                  react-hooks/exhaustive-deps
+  1187:12   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  1213:6    warning  React Hook useCallback has a missing dependency: 'getThreshold'. Either include it or remove the dependency array                                                                                               react-hooks/exhaustive-deps
+  1219:6    warning  React Hook useCallback has a missing dependency: 'getThreshold'. Either include it or remove the dependency array                                                                                               react-hooks/exhaustive-deps
+  1246:13   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  1246:14   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1304:9    warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1304:9    warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1351:11   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  1351:12   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1402:9    warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1402:9    warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1529:9    warning  The 'handleCreateItem' function makes the dependencies of useCallback Hook (at line 1657) change on every render. To fix this, wrap the definition of 'handleCreateItem' in its own useCallback() Hook          react-hooks/exhaustive-deps
+  1540:23   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1540:23   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1545:16   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  1558:9    warning  The 'handleAdjustQuantity' function makes the dependencies of useCallback Hook (at line 1657) change on every render. To fix this, wrap the definition of 'handleAdjustQuantity' in its own useCallback() Hook  react-hooks/exhaustive-deps
+  1562:11   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  1562:12   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1600:9    warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  1600:10   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1639:11   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1639:11   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1680:27   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1680:27   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1719:11   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1719:11   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1737:5    warning  React Hook useCallback has missing dependencies: 'handleAdjustQuantity' and 'handleCreateItem'. Either include them or remove the dependency array                                                              react-hooks/exhaustive-deps
+  1750:13   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1750:13   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1784:10   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1784:10   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1795:25   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+  1796:15   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1796:15   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1797:19   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1804:15   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1804:15   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1805:19   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1811:19   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1850:47   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1850:47   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1851:50   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1851:50   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  1856:259  warning  Unnecessary conditional, comparison is always true, since `"expired" === "expired"` is true                                                                                                                     @typescript-eslint/no-unnecessary-condition
+  1860:14   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  1877:39   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  1879:39   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  2013:32   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  2014:40   warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                                                                                                              @typescript-eslint/no-unnecessary-condition
+  2296:50   warning  Unnecessary optional chain on a non-nullish value                                                                                                                                                               @typescript-eslint/no-unnecessary-condition
+  2297:27   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  2297:28   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  2337:21   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  2337:21   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+  2367:32   warning  Unnecessary conditional, value is always truthy                                                                                                                                                                 @typescript-eslint/no-unnecessary-condition
+  2489:25   warning  Unnecessary conditional, value is always falsy                                                                                                                                                                  @typescript-eslint/no-unnecessary-condition
+  2489:26   warning  Unexpected object value in conditional. The condition is always true                                                                                                                                            @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/cli/optimize.ts
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  40:10  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/ActivityLedger.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  132:11  warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  132:12  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  222:32  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  260:34  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  260:34  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/AdminDashboard.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   64:33  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  141:7   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  141:8   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/BarcodeScanner.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                  @typescript-eslint/strict-boolean-expressions
+   34:6   warning  React Hook useEffect has a missing dependency: 'stopScanning'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   47:9   warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+   47:9   warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+   63:11  warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+   63:12  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+   63:38  warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+   63:39  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+   81:11  warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+   81:11  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+   99:13  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required                       @typescript-eslint/strict-boolean-expressions
+  128:29  warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+  128:29  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  153:32  warning  Unnecessary optional chain on a non-nullish value                                                                @typescript-eslint/no-unnecessary-condition
+  154:9   warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+  154:10  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  166:29  warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+  166:29  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  168:32  warning  Unnecessary optional chain on a non-nullish value                                                                @typescript-eslint/no-unnecessary-condition
+  184:11  warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+  184:11  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  198:9   warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+  198:9   warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  211:9   warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+  211:10  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  214:9   warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+  214:10  warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  261:52  warning  Unnecessary optional chain on a non-nullish value                                                                @typescript-eslint/no-unnecessary-condition
+  278:8   warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+  278:9   warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  340:8   warning  Unnecessary conditional, value is always falsy                                                                   @typescript-eslint/no-unnecessary-condition
+  340:9   warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  343:48  warning  Unnecessary optional chain on a non-nullish value                                                                @typescript-eslint/no-unnecessary-condition
+  398:8   warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+  398:8   warning  Unexpected object value in conditional. The condition is always true                                             @typescript-eslint/strict-boolean-expressions
+  422:18  warning  Unnecessary conditional, value is always truthy                                                                  @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/CheckoutResult.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/DashboardComponents.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   66:39  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  286:43  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  323:7   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  323:8   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  334:9   warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  334:9   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  410:21  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  410:21  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  437:26  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  438:26  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  448:6   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  454:26  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  462:21  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  502:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  502:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  515:14  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  559:55  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  559:55  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  566:60  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  566:60  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/ErrorBoundary.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   49:44  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   67:18  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   68:21  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   69:27  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   69:43  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   87:12  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   87:28  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  114:34  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  114:60  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  116:36  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/InventoryCard.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/LandingPage.tsx
+    0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  190:9  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  190:9  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/LinkBarcodeModal.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   35:7   warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+   59:52  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   87:19  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+   87:19  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+   98:9   warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+   98:9   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  111:11  warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  111:12  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  111:38  warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  111:39  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  127:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  127:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  141:13  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  168:29  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  168:29  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  168:47  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  168:47  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  191:20  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  207:32  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  208:9   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  208:10  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  217:43  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  227:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  227:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  239:9   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  239:10  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  254:35  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  257:39  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  260:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  260:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  260:21  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  272:9   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  272:10  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  286:23  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  286:23  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  288:18  warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  288:19  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  295:18  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  307:50  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  309:62  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  320:10  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  320:10  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  328:22  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  364:32  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  369:20  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  375:30  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  385:50  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  409:15  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  409:28  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  409:28  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  411:38  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  411:38  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  450:81  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  463:89  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  485:15  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  493:14  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/PricingPage.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/ProductInfoModal.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                      @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                      @typescript-eslint/strict-boolean-expressions
+   33:6   warning  React Hook useEffect has a missing dependency: 'fetchProductInfo'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   41:11  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+   41:11  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+   68:16  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   74:23  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   80:29  warning  Unnecessary conditional, comparison is always true, since `"cache" === "cache"` is true                              @typescript-eslint/no-unnecessary-condition
+   80:36  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  133:25  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  145:90  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  146:27  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  150:29  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  168:38  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  170:60  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  205:64  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  231:22  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+  231:22  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  231:29  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  295:22  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  295:22  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+  295:29  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/QuickActionBar.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/strict-boolean-expressions
+   75:9   warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+   75:9   warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+   84:11  warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+   84:11  warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+  191:11  warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+  191:11  warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+  192:11  warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+  192:11  warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+  290:11  warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+  290:11  warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+  304:52  warning  Unnecessary optional chain on a non-nullish value                                                                               @typescript-eslint/no-unnecessary-condition
+  305:13  warning  Unnecessary conditional, value is always truthy                                                                                 @typescript-eslint/no-unnecessary-condition
+  305:13  warning  Unexpected object value in conditional. The condition is always true                                                            @typescript-eslint/strict-boolean-expressions
+  415:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/thindery/projects/pantry-pal/components/SessionHistory.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   32:32  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   33:9   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+   33:10  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+   37:37  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   50:31  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+   50:31  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  107:50  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  237:25  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  290:31  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  290:31  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  292:36  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  339:7   warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  339:7   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  407:19  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  419:13  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  419:13  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/ShoppingSessionView.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                      @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                      @typescript-eslint/strict-boolean-expressions
+   48:26  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+   48:26  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+   51:18  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   51:25  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   58:31  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+   58:31  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+   73:21  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   76:31  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+   76:31  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+   85:21  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+   99:31  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+   99:31  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  113:6   warning  React Hook useCallback has a missing dependency: 'refreshSession'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  113:18  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  116:21  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  135:32  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  136:9   warning  Unnecessary conditional, value is always falsy                                                                       @typescript-eslint/no-unnecessary-condition
+  136:10  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  140:37  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  146:21  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  157:31  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+  157:31  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  227:37  warning  Unnecessary conditional, value is always falsy                                                                       @typescript-eslint/no-unnecessary-condition
+  227:38  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  268:7   warning  Unnecessary conditional, value is always falsy                                                                       @typescript-eslint/no-unnecessary-condition
+  268:8   warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  367:50  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  508:29  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  515:27  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+  525:15  warning  Unnecessary conditional, value is always truthy                                                                      @typescript-eslint/no-unnecessary-condition
+  525:15  warning  Unexpected object value in conditional. The condition is always true                                                 @typescript-eslint/strict-boolean-expressions
+  573:25  warning  Unnecessary optional chain on a non-nullish value                                                                    @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/Toast.tsx
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/strict-boolean-expressions
+  116:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  125:17  warning  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined                              @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/components/UpgradePrompt.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/ChartCard.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/KPICard.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/RevenueCard.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/Sidebar.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/TransactionsList.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/components/admin/index.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/index.tsx
+   0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+   0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  14:5  warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  14:6  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/services/adminService.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/services/apiService.ts
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   17:7   warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+   17:7   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+   41:7   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  103:7   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  103:8   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  111:8   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  112:15  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  112:30  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  121:28  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  123:15  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  128:7   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  128:30  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  214:13  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  215:13  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  216:13  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/services/barcodeService.ts
+    0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   54:9    warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+   54:10   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  104:31   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  112:24   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  113:24   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  115:9    warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  115:43   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  115:75   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  115:111  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  115:144  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  117:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  117:48   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  117:79   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  119:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  119:49   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  121:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  121:47   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  121:81   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  121:112  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  123:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  123:51   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  123:87   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  125:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  125:48   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  125:81   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  127:16   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  127:49   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  127:81   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  132:24   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  148:25   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  150:9    warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  161:15   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  161:39   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  206:10   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  236:15   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  236:29   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  325:9    warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  325:19   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/services/geminiService.ts
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  65:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  65:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/services/subscription.ts
+    0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+    0:1    warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+   46:112  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+   63:21   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  176:11   warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  176:12   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  195:9    warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  195:10   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  201:9    warning  Unnecessary conditional, value is always falsy                                                   @typescript-eslint/no-unnecessary-condition
+  201:10   warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+  211:20   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  212:23   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  213:21   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  213:49   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+  214:21   warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/src/ActivityDashboard.tsx
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                                 @typescript-eslint/strict-boolean-expressions
+  46:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  57:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/thindery/projects/pantry-pal/src/api/artifacts.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/components/DataTable.tsx
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                  @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly                  @typescript-eslint/strict-boolean-expressions
+  18:6   warning  React Hook useEffect has a missing dependency: 'loadRealData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  33:59  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required                       @typescript-eslint/strict-boolean-expressions
+  33:74  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required                       @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/components/FeatureFlagsPanel.tsx
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/components/KanbanBoard.tsx
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  96:67  warning  Unnecessary optional chain on a non-nullish value                                                @typescript-eslint/no-unnecessary-condition
+
+/Users/thindery/projects/pantry-pal/src/data/persistence.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/hooks/useFeatureFlags.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/types/activity.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/types/index.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/src/utils/sentry.ts
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+   0:1   warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+  12:8   warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  28:34  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  30:42  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  33:18  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  35:14  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required       @typescript-eslint/strict-boolean-expressions
+  39:11  warning  Unnecessary conditional, value is always truthy                                                  @typescript-eslint/no-unnecessary-condition
+  39:11  warning  Unexpected object value in conditional. The condition is always true                             @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/types.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/types/admin.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/vite-env.d.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+/Users/thindery/projects/pantry-pal/vite.config.ts
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/no-unnecessary-condition
+  0:1  warning  This rule requires the `strictNullChecks` compiler option to be turned on to function correctly  @typescript-eslint/strict-boolean-expressions
+
+✖ 477 problems (0 errors, 477 warnings)
+

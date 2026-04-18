@@ -61,7 +61,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       setLoadingErrors(true);
       fetch('/api/client-errors?resolved=false')
         .then(r => r.json())
-        .then(data => setErrors(data.errors || []))
+        .then(data => setErrors(data.errors ?? []))
         .catch(console.error)
         .finally(() => setLoadingErrors(false));
     }
@@ -138,7 +138,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   }
 
   // Empty state (no metrics data)
-  if (!metrics) {
+  if (metrics == null) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-md mx-4 text-center">

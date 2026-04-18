@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import type { FunctionDeclaration, LiveServerMessage} from '@google/genai';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
-import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession } from './types';
+import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession, BarcodeProduct } from './types';
 import { analyzeUsage } from './services/geminiService';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import BarcodeScanner from './components/BarcodeScanner';
@@ -21,6 +21,7 @@ import {
   getActivities,
   useSetupAuthToken,
   scanReceiptBackend,
+  createShoppingSession,
 } from './services/apiService';
 import { QuickActionBar, createQuickActions } from './components/QuickActionBar';
 import { useFeatureFlags } from './src/hooks/useFeatureFlags';
@@ -442,7 +443,7 @@ const ReceiptScanner: React.FC<{
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     setError(null);
     setScanResults(null);
@@ -485,7 +486,7 @@ const ReceiptScanner: React.FC<{
     try {
       // Use backend Tesseract.js OCR, not browser Gemini
       const response = await scanReceiptBackend(base64Image);
-      const results = response.items || [];
+      const results = response.items ?? [];
       if (results.length === 0) {
         setError('No items detected in receipt. Try a clearer image.');
       } else {
@@ -500,8 +501,8 @@ const ReceiptScanner: React.FC<{
     }
   };
 
-  const handleConfirm = async () => {
-    if (!scanResults || scanResults.length === 0) return;
+      const handleConfirm = async () => {
+    if (scanResults != null && scanResults.length === 0) return;
 
     setIsAdding(true);
     try {
@@ -518,7 +519,7 @@ const ReceiptScanner: React.FC<{
     setBase64Image(null);
     setScanResults(null);
     setError(null);
-    if (fileInputRef.current) {
+    if (fileInputRef.current != null) {
       fileInputRef.current.value = '';
     }
   };
@@ -584,7 +585,7 @@ const ReceiptScanner: React.FC<{
       )}
 
       {/* Image Preview */}
-      {selectedImage && !scanResults && (
+      {Boolean(selectedImage) && scanResults == null && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <img
@@ -623,7 +624,7 @@ const ReceiptScanner: React.FC<{
       )}
 
       {/* Scan Results */}
-      {scanResults && (
+      {scanResults != null && (
         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
             <p className="text-emerald-800 font-semibold">
@@ -832,7 +833,7 @@ const VoiceAssistant: React.FC<{
 }> = ({ onAdjustStock, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [transcription, setTranscription] = useState('');
-  const sessionRef = useRef<any>(null);
+  const sessionRef = useRef<unknown>(null);
   const audioContextsRef = useRef<{ input: AudioContext; output: AudioContext } | null>(null);
   const nextStartTimeRef = useRef(0);
   const sourcesRef = useRef(new Set<AudioBufferSourceNode>());
@@ -840,8 +841,8 @@ const VoiceAssistant: React.FC<{
   const startSession = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const inputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      const outputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -889,14 +890,14 @@ const VoiceAssistant: React.FC<{
               sourcesRef.current.add(source);
             }
 
-            if (message.serverContent?.outputTranscription) {
-              setTranscription((prev) => prev + message.serverContent!.outputTranscription.text);
+            if (Boolean(message.serverContent?.outputTranscription)) {
+              setTranscription((prev) => prev + message.serverContent!.outputTranscription!.text);
             }
             if (message.serverContent?.turnComplete) {
               setTranscription('');
             }
 
-            if (message.toolCall) {
+            if (message.toolCall != null) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'adjustStock') {
                   const result = onAdjustStock(fc.args.itemName as string, fc.args.amount as number);
@@ -939,8 +940,8 @@ const VoiceAssistant: React.FC<{
   useEffect(() => {
     startSession();
     return () => {
-      if (sessionRef.current) sessionRef.current.close();
-      if (audioContextsRef.current) {
+      if (sessionRef.current != null) (sessionRef.current as any).close();
+      if (audioContextsRef.current != null) {
         audioContextsRef.current.input.close();
         audioContextsRef.current.output.close();
       }
@@ -1045,6 +1046,30 @@ const AppContent: React.FC = () => {
 
   // Shopping Session State
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
+  const [sessionExpanded, setSessionExpanded] = useState(false);
+  const [startingSession, setStartingSession] = useState(false);
+
+  // Barcode Scan Quantity Adjustment State
+  const [scannedProduct, setScannedProduct] = useState<BarcodeProduct | null>(null);
+  const [scanQuantity, setScanQuantity] = useState<number>(1);
+  const [isConfirmingScan, setIsConfirmingScan] = useState(false);
+
+  const handleStartSessionInline = async () => {
+    setStartingSession(true);
+    try {
+      const response = await createShoppingSession();
+      if (response.success && response.data) {
+        setActiveShoppingSession(response.data);
+        setSessionExpanded(true);
+      } else {
+        console.error('Failed to start session');
+      }
+    } catch (err) {
+      console.error('Failed to start session:', err);
+    } finally {
+      setStartingSession(false);
+    }
+  };
 
   // View Mode State (table | cards) - default to cards on mobile
   const [viewMode, setViewMode] = useState<'table' | 'cards'>(() => {
@@ -1142,6 +1167,8 @@ const AppContent: React.FC = () => {
   const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
+  const [shoppingListBoughtQuantities, setShoppingListBoughtQuantities] = useState<Record<string, number>>({});
+  const [hasLoadedShoppingList, setHasLoadedShoppingList] = useState(false);
 
   // Load shopping list from localStorage on mount
   useEffect(() => {
@@ -1150,7 +1177,9 @@ const AppContent: React.FC = () => {
     
     if (savedList) {
       try {
-        setShoppingList(JSON.parse(savedList));
+        const parsed = JSON.parse(savedList);
+        setShoppingList(parsed);
+        console.log('[PantryPal] Loaded shopping list from localStorage:', parsed.length, 'items');
       } catch (e) {
         console.error('Failed to parse shopping list:', e);
       }
@@ -1163,6 +1192,9 @@ const AppContent: React.FC = () => {
         console.error('Failed to parse threshold config:', e);
       }
     }
+    
+    // Mark as loaded so auto-generate can run safely
+    setHasLoadedShoppingList(true);
   }, []);
 
   // Save shopping list to localStorage
@@ -1170,12 +1202,12 @@ const AppContent: React.FC = () => {
     localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
   }, [shoppingList]);
 
-  // Auto-generate shopping list when inventory changes
+  // Auto-generate shopping list when inventory changes (only after loading from localStorage)
   useEffect(() => {
-    if (inventory.length > 0) {
+    if (inventory.length > 0 && hasLoadedShoppingList) {
       generateShoppingList();
     }
-  }, [inventory]);
+  }, [inventory, hasLoadedShoppingList]);
 
   // Save threshold config to localStorage
   useEffect(() => {
@@ -1243,7 +1275,7 @@ const AppContent: React.FC = () => {
           (a) => a.itemId === item.id && a.type === 'ADD'
         );
         
-        if (!lastAdd) return false;
+        if (lastAdd == null) return false;
         
         const lastAddDate = new Date(lastAdd.timestamp);
         return lastAddDate < thirtyDaysAgo && item.quantity > 0 && item.quantity <= getThreshold(item.category) * 2;
@@ -1301,7 +1333,7 @@ const AppContent: React.FC = () => {
       (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
     );
     
-    if (existingItem) {
+    if (existingItem != null) {
       alert(`"${trimmedName}" is already in your shopping list!`);
       return;
     }
@@ -1336,6 +1368,15 @@ const AppContent: React.FC = () => {
     setShoppingList((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  // Update shopping list item quantity
+  const updateShoppingItemQuantity = useCallback((id: string, newQuantity: number) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, suggestedQuantity: newQuantity } : item
+      )
+    );
+  }, []);
+
   // Clear entire shopping list
   const clearShoppingList = useCallback(() => {
     if (confirm('Are you sure you want to clear the entire shopping list?')) {
@@ -1348,7 +1389,7 @@ const AppContent: React.FC = () => {
     if (shoppingList.length === 0) return '';
     
     const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
-      if (!acc[item.category]) acc[item.category] = [];
+      if (acc[item.category] == null) acc[item.category] = [];
       acc[item.category].push(item);
       return acc;
     }, {} as Record<string, ShoppingListItem[]>);
@@ -1399,7 +1440,7 @@ const AppContent: React.FC = () => {
       return;
     }
     
-    if (navigator.share) {
+    if (navigator.share != null) {
       try {
         await navigator.share({
           title: 'My Shopping List',
@@ -1537,7 +1578,7 @@ const AppContent: React.FC = () => {
     try {
       const response = await createItem(itemData);
       // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem = (response as any).data || response;
+      const newItem = (response as any).data ?? response;
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -1559,7 +1600,7 @@ const AppContent: React.FC = () => {
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
       const item = inventory.find((i) => i.id === id);
-      if (!item) return;
+      if (item == null) return;
 
       // Calculate new quantity and adjustment amount
       const newQuantity = Math.max(0, item.quantity + delta);
@@ -1636,7 +1677,7 @@ const AppContent: React.FC = () => {
     
     try {
       // First, update the inventory via API
-      if (existingItem) {
+      if (existingItem != null) {
         await handleAdjustQuantity(existingItem.id, item.suggestedQuantity);
       } else {
         await handleCreateItem({
@@ -1667,8 +1708,6 @@ const AppContent: React.FC = () => {
             : i
         )
       );
-    } catch (err) {
-      throw err;
     } finally {
       setIsEditing(false);
     }
@@ -1679,7 +1718,7 @@ const AppContent: React.FC = () => {
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
       const response = await updateItem(id, updateData);
-      const updatedItem = (response as any).data || response;
+      const updatedItem = (response as any).data ?? response;
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );
@@ -1718,7 +1757,7 @@ const AppContent: React.FC = () => {
         (i) => i.name.toLowerCase() === name.toLowerCase()
       );
 
-      if (existing) {
+      if (existing != null) {
         handleAdjustQuantity(existing.id, amount);
         resultMessage = `Successfully updated ${name}.`;
       } else if (amount > 0) {
@@ -1749,7 +1788,7 @@ const AppContent: React.FC = () => {
           (i) => i.name.toLowerCase() === item.name.toLowerCase()
         );
 
-        if (existing) {
+        if (existing != null) {
           await handleAdjustQuantity(existing.id, item.quantity);
           addedItems.push(`${item.name} (+${item.quantity})`);
         } else {
@@ -1783,7 +1822,7 @@ const AppContent: React.FC = () => {
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Barcode Toast notification */}
-        {toast && toast.visible && (
+        {toast != null && toast.visible && (
           <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
             {toast.message}
           </div>
@@ -1795,22 +1834,22 @@ const AppContent: React.FC = () => {
 
       <EditItemModal
         key={editingItem?.id}
-        item={editingItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
-        isOpen={!!editingItem}
+        item={editingItem ?? { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={editingItem != null}
         onClose={() => setEditingItem(null)}
         onSave={handleEditItem}
         isLoading={isEditing}
       />
 
       <ProductInfoModal
-        item={infoItem || { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
-        isOpen={!!infoItem}
+        item={infoItem ?? { id: '', name: '', quantity: 0, unit: 'units', category: '', lastUpdated: '' }}
+        isOpen={infoItem != null}
         onClose={() => setInfoItem(null)}
       />
 
       <LinkBarcodeModal
         item={linkingBarcodeItem}
-        isOpen={!!linkingBarcodeItem}
+        isOpen={linkingBarcodeItem != null}
         onClose={() => setLinkingBarcodeItem(null)}
         onSave={handleLinkBarcode}
         isLoading={isLinkingBarcode}
@@ -1849,8 +1888,8 @@ const AppContent: React.FC = () => {
             <StatCardMini
               stats={[
                 { label: 'All Items', value: inventory.length, color: 'sky' },
-                { label: 'Low Stock', value: (inventory || []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
-                { label: 'Out of Stock', value: (inventory || []).filter((i) => i.quantity === 0).length, color: 'slate' },
+                { label: 'Low Stock', value: (inventory ?? []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
+                { label: 'Out of Stock', value: (inventory ?? []).filter((i) => i.quantity === 0).length, color: 'slate' },
                 { label: 'Expiring Soon', value: 0, color: 'emerald' },
                 { label: 'Expired', value: 0, color: 'rose' },
               ]}
@@ -2296,7 +2335,7 @@ const AppContent: React.FC = () => {
                     capture="environment"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (!file) return;
+                      if (file == null) return;
                       setIsProcessing(true);
                       const reader = new FileReader();
                       reader.onload = async () => {
@@ -2328,61 +2367,227 @@ const AppContent: React.FC = () => {
 
         {view === 'scan-barcode' && (
           <BarcodeScanner
+            autoStart
             onBarcodeDetected={async (product) => {
-              try {
-                // Check if item with this barcode already exists
-                const existing = inventory.find(
-                  (i) => i.barcode === product.barcode || 
-                         i.name.toLowerCase() === product.name.toLowerCase()
-                );
-
-                if (existing) {
-                  // If item exists but doesn't have a barcode, update it with the barcode
-                  if (!existing.barcode && product.barcode) {
-                    await updateItem(existing.id, { barcode: product.barcode });
-                    // Update local state with the new barcode
-                    setInventory((prev) =>
-                      prev.map((i) =>
-                        i.id === existing.id ? { ...i, barcode: product.barcode } : i
-                      )
-                    );
-                  }
-                  // Update existing item quantity
-                  await handleAdjustQuantity(existing.id, 1);
-                  success(`Added 1 ${existing.unit} to ${existing.name}`);
-                } else {
-                  // Create new item with barcode and product info
-                  await handleCreateItem({
-                    name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
-                    quantity: 1,
-                    unit: 'units',
-                    category: product.category || 'other',
-                    barcode: product.barcode,
-                    productInfo: {
-                      barcode: product.barcode,
-                      name: product.name,
-                      brand: product.brand,
-                      category: product.category,
-                      imageUrl: product.image,
-                      ingredients: product.ingredients,
-                      nutrition: product.nutrition,
-                      source: (product.source || 'openfoodfacts') as 'openfoodfacts' | 'manual',
-                      infoLastSynced: product.infoLastSynced || new Date().toISOString(),
-                    },
-                  });
-                  showToast(`${product.name} added to inventory`, 'success');
-                }
-                setView('inventory');
-              } catch (_err) {
-                showToast('Failed to add item to inventory. Please try again.', 'error');
-              }
+              // Store the scanned product and show quantity confirmation
+              setScannedProduct(product);
+              setScanQuantity(1);
+              setIsConfirmingScan(true);
             }}
             onCancel={() => setView('inventory')}
           />
         )}
 
+        {/* Barcode Scan Quantity Confirmation Modal */}
+        {isConfirmingScan && scannedProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in fade-in zoom-in duration-200">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">Add to Inventory</h3>
+              
+              <div className="flex items-start gap-4 mb-6">
+                {scannedProduct.image && (
+                  <img 
+                    src={scannedProduct.image} 
+                    alt={scannedProduct.name}
+                    className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">{scannedProduct.name}</p>
+                  <p className="text-sm text-slate-500">{scannedProduct.brand}</p>
+                  <p className="text-xs text-slate-400 mt-1">{scannedProduct.category}</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Quantity</label>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button
+                    onClick={() => setScanQuantity(Math.max(1, scanQuantity - 1))}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-lg sm:text-xl font-bold text-slate-600 transition-colors flex-shrink-0"
+                    disabled={scanQuantity <= 1}
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    value={scanQuantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val >= 1) setScanQuantity(val);
+                    }}
+                    className="flex-1 min-w-0 h-10 sm:h-12 text-center text-xl sm:text-2xl font-bold text-slate-800 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                  />
+                  <button
+                    onClick={() => setScanQuantity(scanQuantity + 1)}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-lg sm:text-xl font-bold text-slate-600 transition-colors flex-shrink-0"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setIsConfirmingScan(false);
+                    setScannedProduct(null);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!scannedProduct) return;
+                    
+                    const product = scannedProduct;
+                    const quantity = scanQuantity;
+                    
+                    // Check if there's an active shopping session
+                    if (activeShoppingSession != null) {
+                      const matchedItem = shoppingList.find(
+                        (item) => 
+                          (item.name.toLowerCase() === product.name.toLowerCase()) ||
+                          (product.barcode && inventory.some(i => 
+                            i.barcode === product.barcode && i.name.toLowerCase() === item.name.toLowerCase()
+                          ))
+                      );
+
+                      if (matchedItem != null) {
+                        if (!matchedItem.isChecked) {
+                          toggleItemChecked(matchedItem.id);
+                        }
+                        setShoppingListBoughtQuantities(prev => ({
+                          ...prev,
+                          [matchedItem.id]: (prev[matchedItem.id] || 0) + quantity
+                        }));
+                        const unitText = quantity === 1 ? matchedItem.unit.replace(/s$/, '') : matchedItem.unit;
+                        success(`Added ${quantity} ${unitText} to ${matchedItem.name}`);
+                        setView('shopping-list');
+                        setIsConfirmingScan(false);
+                        setScannedProduct(null);
+                        return;
+                      }
+                    }
+
+                    // Add to inventory
+                    try {
+                      const existing = inventory.find(
+                        (i) => i.barcode === product.barcode || 
+                               i.name.toLowerCase() === product.name.toLowerCase()
+                      );
+
+                      if (existing != null) {
+                        if (!existing.barcode && product.barcode) {
+                          await updateItem(existing.id, { barcode: product.barcode });
+                          setInventory((prev) =>
+                            prev.map((i) =>
+                              i.id === existing.id ? { ...i, barcode: product.barcode } : i
+                            )
+                          );
+                        }
+                        await handleAdjustQuantity(existing.id, quantity);
+                        const unitText = quantity === 1 ? existing.unit.replace(/s$/, '') : existing.unit;
+                        success(`Added ${quantity} ${unitText} to ${existing.name}`);
+                      } else {
+                        await handleCreateItem({
+                          name: product.name.charAt(0).toUpperCase() + product.name.slice(1),
+                          quantity,
+                          unit: 'units',
+                          category: product.category || 'other',
+                          barcode: product.barcode,
+                          productInfo: {
+                            barcode: product.barcode,
+                            name: product.name,
+                            brand: product.brand,
+                            category: product.category,
+                            imageUrl: product.image,
+                            ingredients: product.ingredients,
+                            nutrition: product.nutrition,
+                            source: (product.source || 'openfoodfacts') as 'openfoodfacts' | 'manual',
+                            infoLastSynced: product.infoLastSynced || new Date().toISOString(),
+                          },
+                        });
+                        const unitText = quantity === 1 ? 'unit' : 'units';
+                        showToast(`${product.name} (${quantity} ${unitText}) added to inventory`, 'success');
+                      }
+                      setView('inventory');
+                    } catch (_err) {
+                      showToast('Failed to add item to inventory. Please try again.', 'error');
+                    } finally {
+                      // Always close the modal regardless of success or failure
+                      setIsConfirmingScan(false);
+                      setScannedProduct(null);
+                    }
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Add {scanQuantity} to Inventory
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {view === 'shopping-list' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            {activeShoppingSession && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div 
+                  onClick={() => setSessionExpanded(!sessionExpanded)}
+                  className="cursor-pointer bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🛒</span>
+                    <span className="text-sm font-medium text-emerald-800">
+                      Shopping session in progress ({activeShoppingSession.items?.length || 0} items)
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                    {sessionExpanded ? 'Collapse ▴' : 'Continue Session ▾'}
+                  </div>
+                </div>
+                
+                {sessionExpanded && (
+                  <div className="bg-white border border-emerald-200 rounded-xl p-4 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {activeShoppingSession.items?.length === 0 ? (
+                        <p className="text-sm text-slate-500 text-center py-4">No items scanned yet</p>
+                      ) : (
+                        activeShoppingSession.items?.map((item) => (
+                          <div key={item.id} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                            <span className="text-slate-700 font-medium">{item.name}</span>
+                            <span className="text-slate-500">{item.quantity}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <button 
+                        onClick={() => setView('scan-barcode')}
+                        className="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"
+                      >
+                        Scan Barcode
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setActiveShoppingSession(null);
+                          setSessionExpanded(false);
+                          success('Shopping session completed!');
+                        }}
+                        className="flex-1 px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors"
+                      >
+                        Complete Session
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Clean Toolbar - 40% height reduction */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-3 rounded-xl shadow-sm">
               {/* Title Row */}
@@ -2404,12 +2609,13 @@ const AppContent: React.FC = () => {
               <div className="flex items-center gap-1.5 w-full sm:w-auto">
                 {/* Primary: Live Session */}
                 <button
-                  onClick={() => setView('shopping-session')}
-                  className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center justify-center gap-1.5 text-sm whitespace-nowrap"
-                  title="Start Live Shopping Session"
+                  onClick={activeShoppingSession ? () => setSessionExpanded(!sessionExpanded) : handleStartSessionInline}
+                  disabled={startingSession}
+                  className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center justify-center gap-1.5 text-sm whitespace-nowrap disabled:opacity-50"
+                  title={activeShoppingSession ? 'View Session' : 'Start Shopping Session'}
                 >
-                  <span>▶️</span>
-                  <span className="hidden sm:inline">Scan & Shop</span>
+                  <span>{startingSession ? '⏳' : '▶️'}</span>
+                  <span className="hidden sm:inline">{startingSession ? 'Starting...' : activeShoppingSession ? 'Session' : 'Start Session'}</span>
                 </button>
                 
                 {/* Icon-only: Refresh */}
@@ -2488,7 +2694,7 @@ const AppContent: React.FC = () => {
                 {/* Shopping List Items by Category */}
                 {(() => {
                   const grouped: Record<string, ShoppingListItem[]> = shoppingList.reduce((acc, item) => {
-                    if (!acc[item.category]) acc[item.category] = [];
+                    if (acc[item.category] == null) acc[item.category] = [];
                     acc[item.category].push(item);
                     return acc;
                   }, {} as Record<string, ShoppingListItem[]>);
@@ -2537,12 +2743,29 @@ const AppContent: React.FC = () => {
                             </p>
                             <p className="text-xs text-slate-400">
                               {item.isManual ? 'Manual add' : item.reason === 'recommendation' ? '🤖 Recommendation' : `Current: ${item.currentQuantity}`}
+                              {shoppingListBoughtQuantities[item.id] ? ` • Buying: ${shoppingListBoughtQuantities[item.id]}` : ''}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className={`font-bold ${item.isChecked ? 'text-slate-400' : 'text-emerald-600'}`}>
-                              {item.suggestedQuantity} {item.unit}
-                            </p>
+                            <div className="flex items-center gap-1 justify-end">
+                              <button
+                                onClick={() => updateShoppingItemQuantity(item.id, Math.max(1, item.suggestedQuantity - 1))}
+                                className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold transition-colors"
+                                title="Decrease quantity"
+                              >
+                                −
+                              </button>
+                              <p className={`font-bold ${item.isChecked ? 'text-slate-400' : 'text-emerald-600'}`}>
+                                {item.suggestedQuantity} {item.unit}
+                              </p>
+                              <button
+                                onClick={() => updateShoppingItemQuantity(item.id, item.suggestedQuantity + 1)}
+                                className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold transition-colors"
+                                title="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
                             {item.reason === 'recommendation' && (
                               <span className="text-xs text-amber-500 font-medium">Buy soon</span>
                             )}

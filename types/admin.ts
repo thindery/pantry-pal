@@ -42,7 +42,7 @@ export interface AnalyticsEvent {
   eventType: 'login' | 'item_created' | 'item_updated' | 'item_deleted' | 'receipt_scanned' | 'barcode_scanned';
   userId: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface StripeEvent {
@@ -50,5 +50,5 @@ export interface StripeEvent {
   eventType: string;
   eventId: string; // Stripe event ID
   createdAt: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }

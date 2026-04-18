@@ -1,7 +1,6 @@
 import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
-import { ActivityType, ShoppingSessionListResponse } from '../types';
 import { useAuth } from '@clerk/clerk-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -15,7 +14,7 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
   };
 
   // Add auth token if available
-  if (getTokenRef) {
+  if (getTokenRef != null) {
     const token = await getTokenRef();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -39,7 +38,7 @@ export const getItems = async (): Promise<PantryItem[]> => {
   const data = await fetchApi<unknown>('/api/items');
   // Handle both direct array and wrapped responses (e.g., { items: [...] }, { data: [...] })
   if (Array.isArray(data)) return data;
-  if (data && typeof data === 'object') {
+  if (data != null && typeof data === 'object') {
     const obj = data as Record<string, unknown>;
     if (Array.isArray(obj.items)) return obj.items as PantryItem[];
     if (Array.isArray(obj.data)) return obj.data as PantryItem[];
@@ -85,13 +84,13 @@ export const scanReceiptBackend = async (base64Image: string): Promise<{ items: 
   });
 
 // Scan/Usage API
-export const processScan = (scanData: any) =>
+export const processScan = (scanData: unknown) =>
   fetchApi('/api/scan-receipt', {
     method: 'POST',
     body: JSON.stringify(scanData),
   });
 
-export const processUsage = (usageData: any) =>
+export const processUsage = (usageData: unknown) =>
   fetchApi('/api/visual-usage', {
     method: 'POST',
     body: JSON.stringify(usageData),
@@ -99,18 +98,18 @@ export const processUsage = (usageData: any) =>
 
 // Product Lookup API (includes cache status)
 export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
-  const result = await fetchApi<{ product: any; fromCache?: boolean; cachedAt?: string }>(`/api/products/barcode/${barcode}`);
+  const result = await fetchApi<{ product: Record<string, unknown>; fromCache?: boolean; cachedAt?: string }>(`/api/barcode/${barcode}`);
   
-  if (!result.product) {
-    return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+  if (result.product == null) {
+    return { product: null, fromCache: result.fromCache, cachedAt: result.cachedAt };
   }
   
   // Transform backend response to match BarcodeProduct type
   const p = result.product;
   
   // Handle image_url or imageUrl -> image mapping
-  if (!p.image) {
-    p.image = p.image_url || p.imageUrl || p.imageurl;
+  if (p.image == null) {
+    p.image = p.image_url ?? p.imageUrl ?? p.imageurl;
   }
   
   // Handle ingredients: string -> string[] if needed
@@ -119,18 +118,18 @@ export const getProductByBarcode = async (barcode: string): Promise<{ product: B
   }
   
   // Handle source/stale mapping
-  if (result.fromCache && !p.source) {
+  if (result.fromCache && p.source == null) {
     p.source = result.cachedAt ? 'stale' : 'cache';
-  } else if (!p.source) {
+  } else if (p.source == null) {
     p.source = 'live';
   }
   
   // Handle updatedAt mapping
-  if (p.info_last_synced && !p.updatedAt) {
+  if (p.info_last_synced != null && p.updatedAt == null) {
     p.updatedAt = p.info_last_synced;
   }
   
-  return result as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+  return result as unknown as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
 };
 
 // Subscription API

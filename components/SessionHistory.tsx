@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { ShoppingSession} from '../types';
-import { ShoppingSessionItem } from '../types';
+import type { ShoppingSession } from '../types';
 import { getShoppingSessions, uploadSessionReceipt } from '../services/apiService';
 
 interface SessionHistoryProps {
@@ -31,7 +30,7 @@ const SessionDetailView: React.FC<SessionDetailViewProps> = ({ session, onBack, 
 
   const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file == null) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -48,7 +47,7 @@ const SessionDetailView: React.FC<SessionDetailViewProps> = ({ session, onBack, 
 
     try {
       const response = await uploadSessionReceipt(session.id, receiptPreview);
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         onSessionUpdated(response.data);
         setShowReceiptCapture(false);
         setReceiptPreview(null);
@@ -124,7 +123,7 @@ const SessionDetailView: React.FC<SessionDetailViewProps> = ({ session, onBack, 
           />
         </div>
 
-        {error && (
+        {error != null && (
           <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
             ⚠️ {error}
           </div>
@@ -288,7 +287,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ onBack }) => {
         params.status = status;
       }
       const response = await getShoppingSessions(params);
-      if (response.success && response.data) {
+      if (response.success && response.data != null) {
         setSessions(response.data);
         setTotalPages(response.meta?.totalPages || 1);
       } else {
@@ -337,7 +336,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ onBack }) => {
   };
 
   // Session Detail View
-  if (selectedSession) {
+  if (selectedSession != null) {
     return (
       <SessionDetailView
         session={selectedSession}
@@ -387,7 +386,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ onBack }) => {
         ))}
       </div>
 
-      {error && (
+      {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
           ⚠️ {error}
           <button
