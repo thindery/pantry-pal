@@ -2401,10 +2401,10 @@ const AppContent: React.FC = () => {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">Quantity</label>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={() => setScanQuantity(Math.max(1, scanQuantity - 1))}
-                    className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xl font-bold text-slate-600 transition-colors"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-lg sm:text-xl font-bold text-slate-600 transition-colors flex-shrink-0"
                     disabled={scanQuantity <= 1}
                   >
                     −
@@ -2417,11 +2417,11 @@ const AppContent: React.FC = () => {
                       const val = parseInt(e.target.value, 10);
                       if (!isNaN(val) && val >= 1) setScanQuantity(val);
                     }}
-                    className="flex-1 h-12 text-center text-2xl font-bold text-slate-800 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                    className="flex-1 min-w-0 h-10 sm:h-12 text-center text-xl sm:text-2xl font-bold text-slate-800 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
                   />
                   <button
                     onClick={() => setScanQuantity(scanQuantity + 1)}
-                    className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xl font-bold text-slate-600 transition-colors"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-lg sm:text-xl font-bold text-slate-600 transition-colors flex-shrink-0"
                   >
                     +
                   </button>
