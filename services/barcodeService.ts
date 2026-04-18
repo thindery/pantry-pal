@@ -168,9 +168,9 @@ async function lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResult
   } catch (err) {
     if (err instanceof Error) {
       if (err.name === 'AbortError') {
-        throw new Error('Request timed out');
+        throw new Error('Request timed out', { cause: err });
       }
-      throw new Error(`Failed to fetch: ${err.message}`);
+      throw new Error(`Failed to fetch: ${err.message}`, { cause: err });
     }
     throw err;
   }
@@ -240,7 +240,7 @@ async function lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
     };
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error('Request timed out');
+      throw new Error('Request timed out', { cause: err });
     }
     throw err;
   }

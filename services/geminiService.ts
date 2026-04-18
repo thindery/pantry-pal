@@ -65,7 +65,7 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
       if (jsonMatch) {
         results = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error('Failed to parse Gemini response as JSON');
+        throw new Error('Failed to parse Gemini response as JSON', { cause: parseError });
       }
     }
 
