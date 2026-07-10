@@ -30,7 +30,10 @@ export const DataTable: React.FC<DataTableProps> = ({ fetchUrl = '/api/activitie
       
       const result = await response.json();
       // Handle both direct array and wrapped response formats
-      const activities = Array.isArray(result) ? result : (result as any).data ?? (result as any).activities ?? [];
+      const wrapped = result as { data?: unknown[]; activities?: unknown[] };
+      const activities = Array.isArray(result)
+        ? result
+        : wrapped.data ?? wrapped.activities ?? [];
       
       setData(activities);
     } catch (err) {

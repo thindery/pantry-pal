@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { FunctionDeclaration, LiveServerMessage} from '@google/genai';
+import type { Blob as GenaiBlob, FunctionDeclaration, LiveServerMessage } from '@google/genai';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
 import type { PantryItem, Activity, ActivityType, ScanResult, ShoppingListItem, ThresholdConfig, ShoppingSession, BarcodeProduct } from './types';
@@ -809,8 +809,9 @@ const InventoryItemRow: React.FC<{
   );
 };
 
-function createBlob(data: Float32Array): any {
-  return new Blob([new Uint8Array(data.buffer)]);
+/** Gemini live SDK types a custom Blob; browser Blob is accepted at runtime for PCM chunks. */
+function createBlob(data: Float32Array): GenaiBlob {
+  return new Blob([new Uint8Array(data.buffer)]) as unknown as GenaiBlob;
 }
 
 async function decodeAudioData(base64: string, ctx: AudioContext, _sampleRate: number, _channels: number): Promise<AudioBuffer> {
@@ -841,8 +842,13 @@ const VoiceAssistant: React.FC<{
   const startSession = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const inputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext ?? (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      type WindowWithWebkitAudio = Window & { webkitAudioContext?: typeof AudioContext };
+      const AudioContextCtor = window.AudioContext ?? (window as WindowWithWebkitAudio).webkitAudioContext;
+      if (AudioContextCtor == null) {
+        throw new Error('AudioContext is not supported in this browser');
+      }
+      const inputCtx = new AudioContextCtor({ sampleRate: 16000 });
+      const outputCtx = new AudioContextCtor({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -890,7 +896,7 @@ const VoiceAssistant: React.FC<{
               sourcesRef.current.add(source);
             }
 
-            if (Boolean(message.serverContent?.outputTranscription)) {
+            if (message.serverContent?.outputTranscription) {
               setTranscription((prev) => prev + message.serverContent!.outputTranscription!.text);
             }
             if (message.serverContent?.turnComplete) {
@@ -940,7 +946,7 @@ const VoiceAssistant: React.FC<{
   useEffect(() => {
     startSession();
     return () => {
-      if (sessionRef.current != null) (sessionRef.current as any).close();
+      if (sessionRef.current != null) (sessionRef.current as { close: () => void }).close();
       if (audioContextsRef.current != null) {
         audioContextsRef.current.input.close();
         audioContextsRef.current.output.close();
@@ -1577,7 +1583,10 @@ const AppContent: React.FC = () => {
     try {
       const response = await createItem(itemData);
       // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem = (response as any).data ?? response;
+      const newItem =
+        response != null && typeof response === 'object' && 'data' in response
+          ? (response as { data: PantryItem }).data
+          : (response as PantryItem);
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -1717,7 +1726,10 @@ const AppContent: React.FC = () => {
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
       const response = await updateItem(id, updateData);
-      const updatedItem = (response as any).data ?? response;
+      const updatedItem =
+        response != null && typeof response === 'object' && 'data' in response
+          ? (response as { data: PantryItem }).data
+          : (response as PantryItem);
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );

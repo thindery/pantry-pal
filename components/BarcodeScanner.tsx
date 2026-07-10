@@ -231,8 +231,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     if (track == null) return;
 
     try {
-      const capabilities = track.getCapabilities() as any;
-      if (Boolean(capabilities.torch)) {
+      const capabilities = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+      if (capabilities.torch) {
         await track.applyConstraints({
           advanced: [{ torch: !torchOn }] as unknown as MediaTrackConstraints['advanced'],
         });

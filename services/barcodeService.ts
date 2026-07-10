@@ -99,13 +99,29 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data: Record<string, any> = await response.json();
+    const data = await response.json() as {
+      status: number;
+      product?: {
+        categories?: string;
+        pnns_groups_1?: string;
+        nutriments?: Record<string, unknown>;
+        serving_size?: string;
+        serving_quantity?: string;
+        product_name?: string;
+        generic_name?: string;
+        brands?: string;
+        quantity?: string;
+        image_url?: string;
+        ingredients_text?: string;
+        ingredients?: Array<{ text?: string; id?: string } | string>;
+      };
+    };
 
     if (data.status !== 1 || data.product == null) {
       return { success: false, error: 'Product not found in Open Food Facts' };
     }
 
-    const product: Record<string, any> = data.product;
+    const product = data.product;
 
     // Map Open Food Facts categories to our categories
     let category = 'other';
@@ -129,18 +145,18 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
     }
 
     // Extract nutrition data from Open Food Facts
-    const nutriments: Record<string, any> = product.nutriments ?? {};
+    const nutriments: Record<string, unknown> = product.nutriments ?? {};
     const nutrition = (nutriments['energy-kcal_100g'] !== undefined || nutriments.proteins_100g !== undefined)
       ? {
-          calories: nutriments['energy-kcal_100g'],
-          protein: nutriments.proteins_100g,
-          carbs: nutriments.carbohydrates_100g,
-          fat: nutriments.fat_100g,
-          fiber: nutriments.fiber_100g,
-          sodium: nutriments.sodium_100g,
-          sugar: nutriments.sugars_100g,
-          servingSize: product.serving_size as string | undefined,
-          servingUnit: product.serving_quantity as string | undefined,
+          calories: nutriments['energy-kcal_100g'] as number | undefined,
+          protein: nutriments.proteins_100g as number | undefined,
+          carbs: nutriments.carbohydrates_100g as number | undefined,
+          fat: nutriments.fat_100g as number | undefined,
+          fiber: nutriments.fiber_100g as number | undefined,
+          sodium: nutriments.sodium_100g as number | undefined,
+          sugar: nutriments.sugars_100g as number | undefined,
+          servingSize: product.serving_size,
+          servingUnit: product.serving_quantity,
         }
       : undefined;
 
@@ -148,14 +164,16 @@ async function _lookupOpenFoodFacts(barcode: string): Promise<BarcodeLookupResul
     const ingredients = product.ingredients_text != null
       ? String(product.ingredients_text).split(/,|\n/).map((i: string) => i.trim()).filter((i: string) => i.length > 0)
       : Array.isArray(product.ingredients)
-      ? product.ingredients.map((i: { text?: string; id?: string }) => i.text ?? i.id ?? String(i)).filter((i: string) => i.length > 0)
+      ? product.ingredients.map((i) =>
+          typeof i === 'string' ? i : (i.text ?? i.id ?? String(i))
+        ).filter((i: string) => i.length > 0)
       : undefined;
 
     return {
       success: true,
       product: {
         barcode,
-        name: product.product_name ?? product.generic_name ?? 'Unknown Product',
+        name: String(product.product_name ?? product.generic_name ?? 'Unknown Product'),
         brand: product.brands?.split(',')[0]?.trim(),
         category,
         image: product.image_url,
@@ -198,13 +216,20 @@ async function _lookupUPCItemDB(barcode: string): Promise<BarcodeLookupResult> {
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    const data: Record<string, any> = await response.json();
+    const data = await response.json() as {
+      items?: Array<Record<string, unknown> & {
+        description?: string;
+        category?: string;
+        brand?: string;
+        title?: string;
+      }>;
+    };
 
     if (data.items == null || data.items.length === 0) {
       return { success: false, error: 'Product not found' };
     }
 
-    const item: Record<string, any> = data.items[0];
+    const item = data.items[0];
 
     // Try to determine category from description
     let category = 'other';
