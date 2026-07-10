@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --emerald-primary: #059669;
+  --emerald-light: #d1fae5;
+  --sage-muted: #6b7280;
+  --alert-orange: #f59e0b;
+  --alert-rose: #f43f5e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-emerald-primary: var(--emerald-primary);
+  --color-emerald-light: var(--emerald-light);
+  --color-sage-muted: var(--sage-muted);
+  --color-alert-orange: var(--alert-orange);
+  --color-alert-rose: var(--alert-rose);
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.font-serif-heading {
+  font-family: var(--font-serif);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(5, 150, 105, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(5, 150, 105, 0.4);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}

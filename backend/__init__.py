@@ -1,0 +1,1 @@
+"""PantryPal FastAPI backend package."""

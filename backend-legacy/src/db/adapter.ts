@@ -1,0 +1,402 @@
+/**
+ * Database Adapter Interface
+ * Abstracts database operations to support multiple backends (SQLite, PostgreSQL)
+ */
+
+import {
+  PantryItem,
+  Activity,
+  ActivityType,
+  ActivitySource,
+  ScanResult,
+  UsageResult,
+  ProductInfo,
+  ProductCacheInput,
+} from '../models/types';
+import {
+  ShoppingSession,
+  ShoppingSessionWithItems,
+  SessionItem,
+  SessionSummary,
+  SessionReceipt,
+} from '../models/shoppingSession';
+
+/**
+ * Input type for creating a new pantry item
+ */
+export interface CreateItemInput {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+  barcode?: string;
+}
+
+/**
+ * Input type for updating an existing pantry item
+ */
+export interface UpdateItemInput {
+  name?: string;
+  barcode?: string;
+  quantity?: number;
+  unit?: string;
+  category?: string;
+}
+
+/**
+ * Input type for creating a new shopping session
+ */
+export interface CreateSessionInput {
+  storeName?: string;
+  notes?: string;
+}
+
+/**
+ * Input type for adding an item to a session
+ */
+export interface AddSessionItemInput {
+  barcode?: string;
+  name: string;
+  quantity: number;
+  unit?: string;
+  price?: number;
+  category?: string;
+}
+
+/**
+ * Input type for completing a session
+ */
+export interface CompleteSessionInput {
+  receiptUrl?: string;
+  notes?: string;
+}
+
+/**
+ * Database Adapter Interface
+ * All database implementations must implement this interface
+ */
+export interface DatabaseAdapter {
+  /**
+   * Initialize the database connection and schema
+   */
+  initialize(): void;
+
+  /**
+   * Close the database connection
+   */
+  close(): void;
+
+  // ==========================================================================
+  // Pantry Item Operations
+  // ==========================================================================
+
+  /**
+   * Get all pantry items for a user with optional filtering
+   */
+  getAllItems(userId: string, category?: string): Promise<PantryItem[]>;
+
+  /**
+   * Get a single pantry item by ID (for a specific user)
+   */
+  getItemById(userId: string, id: string): Promise<PantryItem | null>;
+
+  /**
+   * Get a pantry item by name (case-insensitive) for a specific user
+   */
+  getItemByName(userId: string, name: string): Promise<PantryItem | null>;
+
+  /**
+   * Get a pantry item by barcode for a specific user
+   */
+  getItemByBarcode(userId: string, barcode: string): Promise<PantryItem | null>;
+
+  /**
+   * Create a new pantry item for a user
+   */
+  createItem(userId: string, input: CreateItemInput): Promise<PantryItem>;
+
+  /**
+   * Update an existing pantry item for a user
+   * Returns null if item not found
+   */
+  updateItem(userId: string, id: string, input: UpdateItemInput): Promise<PantryItem | null>;
+
+  /**
+   * Delete a pantry item by ID for a user
+   * Returns true if deleted, false if not found
+   */
+  deleteItem(userId: string, id: string): Promise<boolean>;
+
+  /**
+   * Adjust item quantity directly for a user (used by activity logging)
+   */
+  adjustItemQuantity(userId: string, id: string, adjustment: number): Promise<PantryItem | null>;
+
+  /**
+   * Get all unique categories for a user
+   */
+  getCategories(userId: string): Promise<string[]>;
+
+  // ==========================================================================
+  // Activity Operations
+  // ==========================================================================
+
+  /**
+   * Get all activities for a user with pagination
+   */
+  getActivities(
+    userId: string,
+    limit?: number,
+    offset?: number,
+    itemId?: string
+  ): Promise<Activity[]>;
+
+  /**
+   * Get total count of activities for a user (for pagination)
+   */
+  getActivityCount(userId: string, itemId?: string): Promise<number>;
+
+  /**
+   * Log a new activity for a user and update item quantity
+   * This is a transaction to ensure data consistency
+   */
+  logActivity(
+    userId: string,
+    itemId: string,
+    type: ActivityType,
+    amount: number,
+    source?: ActivitySource
+  ): Promise<Activity | null>;
+
+  // ==========================================================================
+  // Scan Receipt Operations
+  // ==========================================================================
+
+  /**
+   * Process receipt scan data and return standardized scan results
+   * In production, this would integrate with OCR/ML services
+   */
+  processReceiptScan(rawData: string | ScanResult[]): ScanResult[];
+
+  // ==========================================================================
+  // Visual Usage Operations
+  // ==========================================================================
+
+  /**
+   * Process visual usage detection results for a user
+   * Creates REMOVE activities for detected usage
+   */
+  processVisualUsage(
+    userId: string,
+    detections: UsageResult[],
+    source?: string
+  ): Promise<{ processed: UsageResult[]; activities: Activity[]; errors: string[] }>;
+
+  // ==========================================================================
+  // Barcode / Product Cache Operations
+  // ==========================================================================
+
+  /**
+   * Look up a cached product by barcode
+   * @param barcode The barcode to look up
+   * @param maxAgeDays Maximum age of cache in days (optional - returns stale if not specified)
+   * @returns ProductInfo if found and not stale, null otherwise
+   */
+  getProductByBarcode(barcode: string, maxAgeDays?: number): Promise<ProductInfo | null>;
+
+  /**
+   * Save a product to the cache
+   * Updates if exists, inserts if not
+   */
+  saveProduct(input: ProductCacheInput): Promise<void>;
+
+  // ==========================================================================
+  // Raw Query Access (for subscription service)
+  // ==========================================================================
+
+  /**
+   * Execute a raw query (for subscription service compatibility)
+   * Returns appropriate result based on query type
+   */
+  query(sql: string, params?: unknown[]): Promise<unknown[]> | unknown[];
+
+  /**
+   * Execute a raw command (INSERT, UPDATE, DELETE)
+   * Returns the number of affected rows
+   */
+  execute(sql: string, params?: unknown[]): Promise<{ changes: number; lastID?: string | number }>;
+
+  /**
+   * Execute within a transaction
+   */
+  transaction<T>(fn: () => T): Promise<T> | T;
+
+  // ==========================================================================
+  // Client Error Operations
+  // ==========================================================================
+
+  /**
+   * Save a client error for logging
+   */
+  saveClientError(error: {
+    userId?: string;
+    errorType: string;
+    errorMessage: string;
+    errorStack?: string;
+    component?: string;
+    url?: string;
+    userAgent?: string;
+  }): Promise<{ id: string }>;
+
+  /**
+   * Get client errors with filtering
+   */
+  getClientErrors(filters: {
+    resolved?: boolean;
+    limit?: number;
+  }): Promise<Array<{
+    id: string;
+    user_id: string | null;
+    error_type: string;
+    error_message: string;
+    error_stack: string | null;
+    component: string | null;
+    url: string | null;
+    user_agent: string | null;
+    resolved: boolean;
+    created_at: string;
+  }>>;
+
+  /**
+   * Mark a client error as resolved
+   */
+  markErrorResolved(id: string): Promise<void>;
+
+  // ==========================================================================
+  // Shopping Session Operations
+  // ==========================================================================
+
+  /**
+   * Create a new shopping session for a user
+   */
+  createSession(userId: string, input: CreateSessionInput): Promise<ShoppingSession>;
+
+  /**
+   * Get a shopping session by ID with all items
+   */
+  getSessionById(userId: string, sessionId: string): Promise<ShoppingSessionWithItems | null>;
+
+  /**
+   * List shopping sessions for a user with pagination
+   * Includes only summary info (no items)
+   */
+  getUserSessions(
+    userId: string,
+    limit?: number,
+    offset?: number,
+    status?: string
+  ): Promise<ShoppingSession[]>;
+
+  /**
+   * Count total shopping sessions for a user (for pagination)
+   */
+  getSessionCount(userId: string, status?: string): Promise<number>;
+
+  /**
+   * Add an item to a shopping session
+   * Updates session totals
+   */
+  addSessionItem(
+    userId: string,
+    sessionId: string,
+    input: AddSessionItemInput
+  ): Promise<SessionItem>;
+
+  /**
+   * Remove an item from a shopping session
+   * Updates session totals
+   */
+  removeSessionItem(userId: string, sessionId: string, itemId: string): Promise<boolean>;
+
+  /**
+   * Complete a shopping session
+   * Marks as completed and sets final totals
+   */
+  completeSession(
+    userId: string,
+    sessionId: string,
+    input: CompleteSessionInput
+  ): Promise<ShoppingSession | null>;
+
+  /**
+   * Update receipt URL for a completed session
+   * Only allows updating sessions with status='completed'
+   */
+  updateSessionReceipt(
+    userId: string,
+    sessionId: string,
+    receiptUrl: string
+  ): Promise<ShoppingSession | null>;
+
+  /**
+   * Cancel a shopping session
+   */
+  cancelSession(userId: string, sessionId: string): Promise<boolean>;
+
+  /**
+   * Get session summary statistics for a user
+   */
+  getSessionSummary(userId: string): Promise<SessionSummary>;
+
+  /**
+   * Add all items from a completed shopping session to pantry inventory
+   * Creates PantryItem entries for each SessionItem with a barcode
+   * Logs ADD activity for each item added
+   * Returns the created PantryItem entries
+   */
+  addSessionToInventory(
+    userId: string,
+    sessionId: string
+  ): Promise<{ items: PantryItem[]; activities: Activity[] }>;
+
+  // ==========================================================================
+  // Session Receipt Operations
+  // ==========================================================================
+
+  /**
+   * Capture a receipt image for a session
+   */
+  captureSessionReceipt(
+    userId: string,
+    sessionId: string,
+    imageData: string,
+    mimeType: string,
+    notes?: string
+  ): Promise<SessionReceipt>;
+
+  /**
+   * Get all receipts for a shopping session
+   */
+  getSessionReceipts(
+    userId: string,
+    sessionId: string
+  ): Promise<SessionReceipt[]>;
+
+  /**
+   * Get a single receipt by ID
+   */
+  getSessionReceiptById(
+    userId: string,
+    sessionId: string,
+    receiptId: string
+  ): Promise<SessionReceipt | null>;
+
+  /**
+   * Delete a session receipt
+   */
+  deleteSessionReceipt(
+    userId: string,
+    sessionId: string,
+    receiptId: string
+  ): Promise<boolean>;
+}

@@ -1,0 +1,69 @@
+{
+  "name": "@pantry-pal/backend",
+  "version": "1.0.0",
+  "description": "A production-ready pantry tracking backend API with receipt scanning and visual usage detection",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:postgres": "DB_TYPE=postgres ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:sqlite": "DB_TYPE=sqlite ts-node-dev --respawn --transpile-only src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "seed": "ts-node src/db/seed.ts",
+    "db:migrate": "ts-node src/db/migrate.ts",
+    "db:init": "npm run db:migrate && npm run seed",
+    "db:up": "docker-compose up -d",
+    "db:down": "docker-compose down",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "stripe:cleanup": "ts-node scripts/cleanup-stripe-products.ts",
+    "db:migrate-sqlite": "ts-node scripts/migrate-sqlite-to-postgres.ts"
+  },
+  "keywords": [
+    "pantry",
+    "inventory",
+    "tracking",
+    "api",
+    "receipt-scanning"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@types/stripe": "^8.0.416",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "helmet": "^7.1.0",
+    "pg": "^8.11.3",
+    "sharp": "^0.34.5",
+    "stripe": "^20.3.0",
+    "tesseract.js": "^7.0.0",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.24",
+    "@types/pg": "^8.11.0",
+    "@types/supertest": "^6.0.3",
+    "@types/tesseract.js": "^0.0.2",
+    "@types/uuid": "^9.0.8",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

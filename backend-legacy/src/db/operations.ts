@@ -1,0 +1,172 @@
+/**
+ * Database Operations
+ * High-level CRUD operations that delegate to the appropriate adapter
+ */
+
+import { getDatabase } from './index';
+import { CreateItemInput, UpdateItemInput, CreateSessionInput, AddSessionItemInput, CompleteSessionInput } from './adapter';
+import {
+  PantryItem,
+  Activity,
+  ActivityType,
+  ActivitySource,
+  ScanResult,
+  UsageResult,
+} from '../models/types';
+import {
+  ShoppingSession,
+  ShoppingSessionWithItems,
+  SessionItem,
+  SessionSummary,
+} from '../models/shoppingSession';
+
+// ==========================================================================
+// Pantry Item Operations
+// ==========================================================================
+
+export function getAllItems(userId: string, category?: string): Promise<PantryItem[]> {
+  return getDatabase().getAllItems(userId, category);
+}
+
+export function getItemById(userId: string, id: string): Promise<PantryItem | null> {
+  return getDatabase().getItemById(userId, id);
+}
+
+export function getItemByName(userId: string, name: string): Promise<PantryItem | null> {
+  return getDatabase().getItemByName(userId, name);
+}
+
+export function createItem(userId: string, input: CreateItemInput): Promise<PantryItem> {
+  return getDatabase().createItem(userId, input);
+}
+
+export function updateItem(userId: string, id: string, input: UpdateItemInput): Promise<PantryItem | null> {
+  return getDatabase().updateItem(userId, id, input);
+}
+
+export function deleteItem(userId: string, id: string): Promise<boolean> {
+  return getDatabase().deleteItem(userId, id);
+}
+
+export function adjustItemQuantity(userId: string, id: string, adjustment: number): Promise<PantryItem | null> {
+  return getDatabase().adjustItemQuantity(userId, id, adjustment);
+}
+
+export function getCategories(userId: string): Promise<string[]> {
+  return getDatabase().getCategories(userId);
+}
+
+// ==========================================================================
+// Activity Operations
+// ==========================================================================
+
+export function getActivities(
+  userId: string,
+  limit?: number,
+  offset?: number,
+  itemId?: string
+): Promise<Activity[]> {
+  return getDatabase().getActivities(userId, limit, offset, itemId);
+}
+
+export function getActivityCount(userId: string, itemId?: string): Promise<number> {
+  return getDatabase().getActivityCount(userId, itemId);
+}
+
+export function logActivity(
+  userId: string,
+  itemId: string,
+  type: ActivityType,
+  amount: number,
+  source: ActivitySource = 'MANUAL'
+): Promise<Activity | null> {
+  return getDatabase().logActivity(userId, itemId, type, amount, source);
+}
+
+// ==========================================================================
+// Scan Receipt Operations
+// ==========================================================================
+
+export function processReceiptScan(rawData: string | ScanResult[]): ScanResult[] {
+  return getDatabase().processReceiptScan(rawData);
+}
+
+// ==========================================================================
+// Visual Usage Operations
+// ==========================================================================
+
+export function processVisualUsage(
+  userId: string,
+  detections: UsageResult[],
+  source: string = 'VISUAL_USAGE'
+): Promise<{ processed: UsageResult[]; activities: Activity[]; errors: string[] }> {
+  return getDatabase().processVisualUsage(userId, detections, source);
+}
+
+// ==========================================================================
+// Shopping Session Operations
+// ==========================================================================
+
+export function createSession(userId: string, input: CreateSessionInput): Promise<ShoppingSession> {
+  return getDatabase().createSession(userId, input);
+}
+
+export function getSessionById(userId: string, sessionId: string): Promise<ShoppingSessionWithItems | null> {
+  return getDatabase().getSessionById(userId, sessionId);
+}
+
+export function getUserSessions(
+  userId: string,
+  limit?: number,
+  offset?: number,
+  status?: string
+): Promise<ShoppingSession[]> {
+  return getDatabase().getUserSessions(userId, limit, offset, status);
+}
+
+export function getSessionCount(userId: string, status?: string): Promise<number> {
+  return getDatabase().getSessionCount(userId, status);
+}
+
+export function addSessionItem(
+  userId: string,
+  sessionId: string,
+  input: AddSessionItemInput
+): Promise<SessionItem> {
+  return getDatabase().addSessionItem(userId, sessionId, input);
+}
+
+export function removeSessionItem(userId: string, sessionId: string, itemId: string): Promise<boolean> {
+  return getDatabase().removeSessionItem(userId, sessionId, itemId);
+}
+
+export function completeSession(
+  userId: string,
+  sessionId: string,
+  input: CompleteSessionInput
+): Promise<ShoppingSession | null> {
+  return getDatabase().completeSession(userId, sessionId, input);
+}
+
+export function updateSessionReceipt(
+  userId: string,
+  sessionId: string,
+  receiptUrl: string
+): Promise<ShoppingSession | null> {
+  return getDatabase().updateSessionReceipt(userId, sessionId, receiptUrl);
+}
+
+export function cancelSession(userId: string, sessionId: string): Promise<boolean> {
+  return getDatabase().cancelSession(userId, sessionId);
+}
+
+export function getSessionSummary(userId: string): Promise<SessionSummary> {
+  return getDatabase().getSessionSummary(userId);
+}
+
+export function addSessionToInventory(
+  userId: string,
+  sessionId: string
+): Promise<{ items: PantryItem[]; activities: Activity[] }> {
+  return getDatabase().addSessionToInventory(userId, sessionId);
+}
