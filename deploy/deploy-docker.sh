@@ -36,6 +36,8 @@ ssh ovh "
   echo \"Build ID: \$BUILD_ID\" &&
   docker compose build &&
   docker compose up -d &&
+  echo 'Running database migrations...' &&
+  docker compose run --rm backend python database/migrate.py migrate &&
   echo 'Waiting for health checks...' &&
   for i in \$(seq 1 30); do
     if docker compose ps --format json | grep -q '\"Health\":\"healthy\"'; then

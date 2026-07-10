@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
   async rewrites() {
     const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "https://localhost:3001";
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     return [
       {
         source: "/api/:path*",

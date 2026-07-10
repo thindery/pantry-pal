@@ -64,9 +64,12 @@ Use `./switch-env.sh dev|prod` to symlink `.env`. See `.env.example` for all key
 ## Docker
 
 ```bash
-docker network create app-network  # once
-docker compose up --build
+docker compose up --build -d
+docker compose run --rm backend python database/migrate.py migrate
 ```
+
+Compose creates the `app-network` bridge automatically — no manual `docker network create` needed.
+After the stack is up, run migrations before using the app (the OVH deploy script does this automatically).
 
 ## Agents
 
