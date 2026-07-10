@@ -16,6 +16,7 @@ UUID_REGEX = re.compile(
 MAX_ITEM_NAME_LENGTH = 100
 MAX_UNIT_LENGTH = 20
 MAX_CATEGORY_LENGTH = 50
+MAX_RECEIPT_IMAGE_BYTES = 10 * 1024 * 1024  # 10MB decoded image
 
 
 class ActivityType(str, Enum):
@@ -109,6 +110,15 @@ class ReceiptScanRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     image: str = Field(..., min_length=1)
+
+    @field_validator("image")
+    @classmethod
+    def validate_image_size(cls, v: str) -> str:
+        padding = v.count("=")
+        decoded_size = (len(v) * 3) // 4 - padding
+        if decoded_size > MAX_RECEIPT_IMAGE_BYTES:
+            raise ValueError("Image exceeds maximum size of 10MB")
+        return v
 
 
 class CheckoutRequest(BaseModel):
