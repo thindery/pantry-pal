@@ -19,7 +19,13 @@ _JWKS_CACHE_AT: float = 0.0
 _JWKS_TTL_SECONDS = 3600
 
 
+def _is_production() -> bool:
+    return os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development")) == "production"
+
+
 def _test_auth_enabled() -> bool:
+    if _is_production():
+        return False
     return os.getenv("ALLOW_TEST_AUTH") == "1"
 
 
