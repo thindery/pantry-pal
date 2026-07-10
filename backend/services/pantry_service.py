@@ -56,6 +56,17 @@ def get_all_items(user_id: str, category: Optional[str] = None) -> list[dict[str
             return [_row_to_item(r) for r in cur.fetchall()]
 
 
+def get_item_by_name(user_id: str, name: str) -> Optional[dict[str, Any]]:
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT * FROM pantry_items WHERE user_id = %s AND LOWER(name) = LOWER(%s)",
+                (user_id, name),
+            )
+            row = cur.fetchone()
+            return _row_to_item(row) if row else None
+
+
 def get_item_by_id(user_id: str, item_id: str) -> Optional[dict[str, Any]]:
     with db_connection() as conn:
         with conn.cursor() as cur:

@@ -13,6 +13,9 @@ const isProtectedRoute = createRouteMatcher([
   "/api/shopping-sessions(.*)",
   "/api/receipts(.*)",
   "/api/barcode(.*)",
+  "/api/client-errors(.*)",
+  "/api/scan-receipt(.*)",
+  "/api/visual-usage(.*)",
 ]);
 
 const isPublicRoute = createRouteMatcher([
@@ -21,7 +24,6 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/pricing(.*)",
   "/checkout(.*)",
-  "/api/webhooks/clerk",
   "/api/webhooks/stripe",
   "/build-id.txt",
 ]);
@@ -32,6 +34,13 @@ export default clerkMiddleware(async (auth, req) => {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.delete("x-user-id");
   requestHeaders.delete("x-user-email");
+
+  // Allow anonymous client error reporting from ErrorBoundary
+  if (req.method === "POST" && req.nextUrl.pathname === "/api/client-errors") {
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  }
 
   if (userId) {
     const token = await getToken();

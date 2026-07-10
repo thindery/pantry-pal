@@ -17,9 +17,11 @@ from backend.routers import (
     activities,
     admin,
     barcode,
+    client_errors,
     health,
     items,
     receipts,
+    scan,
     shopping_sessions,
     subscription,
     webhooks,
@@ -86,6 +88,8 @@ def create_app() -> FastAPI:
     app.include_router(subscription.router)
     app.include_router(webhooks.router)
     app.include_router(admin.router)
+    app.include_router(client_errors.router)
+    app.include_router(scan.router)
 
     return app
 

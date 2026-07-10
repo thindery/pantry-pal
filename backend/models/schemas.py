@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -155,6 +155,48 @@ class UpdateSessionReceiptRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     receiptUrl: str = Field(..., max_length=500)
+
+
+class ScanResultItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=MAX_ITEM_NAME_LENGTH)
+    quantity: float = Field(..., ge=0)
+    unit: Optional[str] = Field(default=None, max_length=MAX_UNIT_LENGTH)
+    category: Optional[str] = Field(default=None, max_length=MAX_CATEGORY_LENGTH)
+
+
+class ScanReceiptRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scanData: Union[str, list[ScanResultItem]]
+    minConfidence: Optional[float] = Field(default=None, ge=0, le=1)
+
+
+class UsageDetection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=MAX_ITEM_NAME_LENGTH)
+    quantityUsed: float = Field(..., gt=0)
+
+
+class VisualUsageRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    detections: list[UsageDetection] = Field(..., min_length=1)
+    detectionSource: Optional[str] = Field(default=None, max_length=100)
+
+
+class ClientErrorCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    type: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1)
+    stack: Optional[str] = None
+    component: Optional[str] = None
+    url: Optional[str] = None
+    userAgent: Optional[str] = None
+    userId: Optional[str] = None
 
 
 class BarcodeSaveRequest(BaseModel):
