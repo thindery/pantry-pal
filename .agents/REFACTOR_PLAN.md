@@ -104,6 +104,7 @@ pantry-pal/
 | [PP-016](tickets/PP-016-postgres-first.md) | Postgres-first DATABASE_URL; SQLite tests only |
 | [PP-017](tickets/PP-017-global-rules-audit.md) | Global rules compliance audit |
 | [PP-018](tickets/PP-018-remove-railway-docs.md) | Remove/replace Railway-centric deploy docs |
+| [PP-019](tickets/PP-019-postgres-integration-and-linting.md) | Postgres integration tests + linting standards |
 
 ### Phase 3 — Gold-standard stack modernization
 
@@ -137,6 +138,8 @@ PP-001 → PP-002 → PP-003 → PP-004 → PP-006 → PP-005
                          → PP-015 → PP-016 → PP-017 → PP-018
 
 PP-006 ──────────────────────────────────────────────┐
+                                                     ↓
+PP-010 → PP-016 → PP-019 (PG integration + lint) → PP-015 (CI wires it)
                                                      ↓
 PP-020 → PP-021 → PP-022 → PP-023 → PP-024 → PP-025
                 ↘

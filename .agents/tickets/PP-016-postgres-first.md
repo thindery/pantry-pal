@@ -14,14 +14,22 @@
 
 Treat PostgreSQL as the primary store for local Docker and production path. Keep SQLite only for fast unit/contract tests if needed.
 
+**Full Postgres integration test suite + SQL safety guard** live in **[PP-019](PP-019-postgres-integration-and-linting.md)** — this ticket is config/runtime defaults only.
+
 ## Acceptance Criteria
 
 - [ ] Default local Docker path uses Postgres via `DATABASE_URL`
 - [ ] Document SQLite as test/dev-without-docker only
 - [ ] Adapter code paths still work during interim Express phase
-- [ ] At least one integration test path against Postgres (or ticket follow-up if FastAPI rewrite owns it)
 - [ ] README reflects Postgres-first
+- [ ] Hand off integration coverage to PP-019 (do not consider this ticket “done” by claiming tests elsewhere without linking)
+
+## Related
+
+- [PP-010](PP-010-docker-compose-postgres.md) — compose `db` service
+- [PP-019](PP-019-postgres-integration-and-linting.md) — integration tests + linting standards
 
 ## Log
 
 - 2026-07-10: Ticket created
+- 2026-07-10: Integration suite ownership moved to PP-019

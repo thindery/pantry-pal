@@ -18,7 +18,8 @@ Agents must read the linked playbook before starting each ticket.
 | [PP-011](tickets/PP-011-dockerfiles-node22.md) | `playbooks/ovh_deployment.md` | 2 | P0 |
 | [PP-013](tickets/PP-013-deploy-script.md) | `playbooks/ovh_deployment.md` | 2 | P0 |
 | [PP-014](tickets/PP-014-nginx-template.md) | `playbooks/ovh_deployment.md` | 2 | P0 |
-| [PP-016](tickets/PP-016-postgres-first.md) | `playbooks/postgresql_integration_testing.md` | 2 | P0 |
+| [PP-016](tickets/PP-016-postgres-first.md) | `playbooks/postgresql_integration_testing.md` (config) | 2 | P0 |
+| [PP-019](tickets/PP-019-postgres-integration-and-linting.md) | `playbooks/postgresql_integration_testing.md` (full suite + lint) | 2 | P0 |
 | [PP-020](tickets/PP-020-scaffold-next16.md) | `playbooks/portfolio_stack_baseline.md` + `nextjs_config_and_conventions.md` | 3 | P0 |
 | [PP-022](tickets/PP-022-clerk-nextjs.md) | `playbooks/clerk_authentication.md` + `clerk_middleware_pattern.md` | 3 | P0 |
 | [PP-024](tickets/PP-024-tailwind4-design.md) | `playbooks/markdown2pdf_design_system.md` | 3 | P1 |

@@ -25,7 +25,8 @@ Harden local git hooks so commits cannot land with type errors, lint errors, or 
 ## Non-goals
 
 - CI monorepo workflow (PP-015)
-- max-warnings=0 for entire codebase (hundreds of pre-existing warnings; errors still fail)
+- Postgres integration tests + lint maturity (PP-019 — do after monorepo + compose)
+- max-warnings=0 for entire codebase (hundreds of pre-existing warnings; errors still fail) — track under PP-019
 - E2E / Playwright
 
 ## Log

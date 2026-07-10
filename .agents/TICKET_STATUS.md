@@ -17,7 +17,7 @@ Last updated: 2026-07-10 (PP-007)
 |--|-------|
 | Phase 0 done | 1 (PP-000) |
 | Phase 1 open | 6 |
-| Phase 2 open | 9 |
+| Phase 2 open | 10 |
 | Phase 3 open | 16 |
 | Blocked (domain) | PP-033, PP-034 |
 | Done | 2 |
@@ -55,6 +55,7 @@ Last updated: 2026-07-10 (PP-007)
 | [PP-016](./tickets/PP-016-postgres-first.md) | Postgres-first DATABASE_URL | P0 | 🔄 To Do |
 | [PP-017](./tickets/PP-017-global-rules-audit.md) | Global rules compliance audit | P0 | 🔄 To Do |
 | [PP-018](./tickets/PP-018-remove-railway-docs.md) | Remove/replace Railway deploy docs | P1 | 🔄 To Do |
+| [PP-019](./tickets/PP-019-postgres-integration-and-linting.md) | Postgres integration tests + linting standards | P0 | 🔄 To Do (after monorepo + compose) |
 
 ## Phase 3 — Gold-standard modernization
 
@@ -85,8 +86,10 @@ Last updated: 2026-07-10 (PP-007)
 2. **PP-004** (docs) in parallel with smoke fixes
 3. **PP-010** → **PP-011** → **PP-012** → **PP-015** → **PP-016**
 4. **PP-013** / **PP-014** (deploy scaffold, no live domain needed)
-5. **PP-020+** Next migration and **PP-026+** FastAPI (can parallel after monorepo stable)
-6. **PP-033** when domain purchased → **PP-034** → **PP-035**
+5. **PP-019** Postgres integration tests + linting maturity (after compose/DB)
+6. **PP-015** CI wires unit + lint + PG integration jobs
+7. **PP-020+** Next migration and **PP-026+** FastAPI (can parallel after monorepo stable)
+8. **PP-033** when domain purchased → **PP-034** → **PP-035**
 
 ---
 
