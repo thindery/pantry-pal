@@ -1,11 +1,12 @@
 # PP-021: Port Vite SPA routes/views into App Router
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (core port) — incomplete criteria in follow-ups  
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Created:** 2026-07-10  
 **Depends on:** PP-020, PP-023 (can start modularize first)  
-**Blocks:** PP-022
+**Blocks:** PP-022  
+**Follow-up:** PP-036 (backend routes for admin/scan flows), PP-039 (ticket/migration audit sync)
 
 ---
 

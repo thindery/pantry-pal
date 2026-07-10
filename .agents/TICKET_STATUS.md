@@ -1,6 +1,6 @@
 # Ticket Status — PantryPal
 
-Last updated: 2026-07-10 (refactor complete)
+Last updated: 2026-07-10 (PP-039 migration + ticket sync)
 
 **Product:** PantryPal — smart pantry inventory & ledger  
 **Domain:** TBD (purchase pending)  
@@ -13,7 +13,8 @@ Last updated: 2026-07-10 (refactor complete)
 
 | | Count |
 |--|-------|
-| Done | 33 |
+| Done | 34 |
+| In progress (audit follow-ups) | 3 (PP-036, PP-037, PP-038) |
 | Blocked (domain) | 2 (PP-033, PP-034) |
 | User action pending | 1 (PP-035 Railway teardown) |
 
@@ -72,6 +73,17 @@ Last updated: 2026-07-10 (refactor complete)
 | PP-033 | Domain + Cloudflare DNS | ⏸️ Blocked (domain purchase) |
 | PP-034 | OVH production cutover | ⏸️ Blocked (domain) |
 | PP-035 | Decommission Railway | 📋 Ready — user dashboard action when OVH live |
+
+> **Note:** PP-021 and PP-026 are marked done for the core migration, but acceptance criteria remain incomplete — tracked in follow-up tickets PP-036 (missing FastAPI routes) and PP-039 (migration 013 + ticket sync).
+
+## Phase 3 — Post-migration fixes (audit follow-ups)
+
+| Ticket | Title | Status |
+|--------|-------|--------|
+| PP-036 | Port missing FastAPI routes | 🔄 In progress |
+| PP-037 | Deploy, Docker, env, and test fixes | 🔄 In progress |
+| PP-038 | Security and validation hardening | 🔄 In progress |
+| PP-039 | Migration 013 + ticket status sync | ✅ Done |
 
 ---
 

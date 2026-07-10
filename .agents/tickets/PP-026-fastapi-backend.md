@@ -1,12 +1,13 @@
 # PP-026: Express → FastAPI backend port
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (core port) — incomplete criteria in follow-ups  
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `fastapi_backend_patterns.md`  
 **Created:** 2026-07-10  
 **Depends on:** PP-016  
-**Blocks:** PP-027, PP-028, PP-029
+**Blocks:** PP-027, PP-028, PP-029  
+**Follow-up:** PP-036 (missing routes: client-errors, scan/OCR), PP-039 (migration 013 sync columns)
 
 ---
 
