@@ -27,6 +27,7 @@ RUN mkdir -p /app/data \
     && chown -R app:app /app
 
 FROM base AS test
+COPY tests/ /app/tests/
 CMD ["python", "-m", "pytest", "tests/", "-v"]
 
 FROM base AS production

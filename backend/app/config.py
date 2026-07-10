@@ -20,7 +20,7 @@ class Settings:
 
     @property
     def cors_origins(self) -> List[str]:
-        raw = os.getenv("CORS_ORIGINS", "")
+        raw = os.getenv("CORS_ORIGINS", "") or os.getenv("ALLOWED_ORIGINS", "")
         if raw.strip():
             return [o.strip() for o in raw.split(",") if o.strip()]
         if self.ENVIRONMENT == "production":

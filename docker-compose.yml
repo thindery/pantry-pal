@@ -27,7 +27,6 @@ services:
       - storage-data:/app/data
     environment:
       - PORT=8000
-      - NODE_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER:-pantry_pal_user}:${POSTGRES_PASSWORD:-secure_password_placeholder}@pantry-pal-db/${POSTGRES_DB:-pantry_pal_prod}
     env_file:
       - .env
@@ -74,4 +73,3 @@ volumes:
 
 networks:
   app-network:
-    external: true
