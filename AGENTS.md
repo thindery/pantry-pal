@@ -36,6 +36,20 @@ pantry-pal/
 └── README.md
 ```
 
+## Quality gate (pre-commit)
+
+Husky runs **`npm run check`** on every commit:
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # ESLint (errors fail; warnings allowed for now)
+npm run test:run    # Vitest unit suite
+```
+
+- Local verify: `npm run check`
+- CI-style (includes frontend build): `npm run check:ci`
+- Do **not** use `--no-verify` unless explicitly agreed — fix the failure instead.
+
 ## Ticket workflow
 
 1. Open [`.agents/TICKET_STATUS.md`](.agents/TICKET_STATUS.md) and pick the next open ticket in dependency order.
@@ -44,7 +58,7 @@ pantry-pal/
 4. Commit: `PP-XXX: description`
 5. Update ticket status + `TICKET_STATUS.md` when done.
 
-**Start here:** [PP-001](.agents/tickets/PP-001-monorepo-layout.md) monorepo layout.
+**Next monorepo work:** [PP-001](.agents/tickets/PP-001-monorepo-layout.md) (after PP-007 quality gate is merged).
 
 ## Domain
 

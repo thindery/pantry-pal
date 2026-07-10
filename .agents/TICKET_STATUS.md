@@ -1,6 +1,6 @@
 # Ticket Status — PantryPal
 
-Last updated: 2026-07-10
+Last updated: 2026-07-10 (PP-007)
 
 **Product:** PantryPal — smart pantry inventory & ledger  
 **Domain:** TBD (purchase pending)  
@@ -20,7 +20,7 @@ Last updated: 2026-07-10
 | Phase 2 open | 9 |
 | Phase 3 open | 16 |
 | Blocked (domain) | PP-033, PP-034 |
-| Done | 1 |
+| Done | 2 |
 
 ---
 
@@ -34,6 +34,7 @@ Last updated: 2026-07-10
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
+| [PP-007](./tickets/PP-007-pre-commit-quality-gate.md) | Pre-commit quality gate (typecheck + lint + tests) | P0 | ✅ Done |
 | [PP-001](./tickets/PP-001-monorepo-layout.md) | Monorepo layout: frontend/ + backend/ clean copy | P0 | 🔄 To Do |
 | [PP-002](./tickets/PP-002-root-scripts-workspaces.md) | Root scripts / workspaces / single dev entry | P0 | 🔄 To Do |
 | [PP-003](./tickets/PP-003-env-and-gitignore.md) | Env templates + gitignore portfolio standard | P0 | 🔄 To Do |

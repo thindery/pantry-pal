@@ -95,11 +95,11 @@ describe('StatCardMini', () => {
     expect(totalItemsCard).not.toHaveClass('ring-2');
   });
 
-  it('uses responsive grid layout', () => {
+  it('uses flexible wrap layout for stat cards', () => {
     render(<StatCardMini stats={mockStats} />);
-    
-    const grid = screen.getByText('Total Items').closest('div')?.parentElement;
-    expect(grid).toHaveClass('grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-5');
+
+    const row = screen.getByText('Total Items').closest('button')?.parentElement;
+    expect(row).toHaveClass('flex', 'flex-wrap', 'gap-2');
   });
 });
 
@@ -146,7 +146,8 @@ describe('LowStockPreview', () => {
     expect(screen.getByText('Milk')).toBeInTheDocument();
     expect(screen.getByText('Eggs')).toBeInTheDocument();
     expect(screen.getByText('Flour')).toBeInTheDocument();
-    expect(screen.getByText('dairy')).toBeInTheDocument();
+    // Multiple dairy items share the category label
+    expect(screen.getAllByText('dairy').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('pantry')).toBeInTheDocument();
   });
 
@@ -477,6 +478,14 @@ describe('CategoryPills', () => {
   });
 });
 
+/** Match product names that Fuse highlight splits across child spans */
+function getSuggestionByProductName(name: string) {
+  return screen.getByText((_, el) => {
+    if (el == null || el.tagName !== 'DIV') return false;
+    return el.classList.contains('font-medium') && el.textContent === name;
+  });
+}
+
 describe('InlineQuickAdd', () => {
   const mockCategories = ['pantry', 'dairy', 'produce', 'frozen'];
   const mockInventory: PantryItem[] = [
@@ -518,7 +527,7 @@ describe('InlineQuickAdd', () => {
     await userEvent.type(input, 'mi');
 
     await waitFor(() => {
-      expect(screen.getByText('Milk')).toBeInTheDocument();
+      expect(getSuggestionByProductName('Milk')).toBeInTheDocument();
     });
   });
 
@@ -535,7 +544,7 @@ describe('InlineQuickAdd', () => {
     await userEvent.type(input, 'm');
 
     await waitFor(() => {
-      expect(screen.queryByText('Milk')).not.toBeInTheDocument();
+      expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
   });
 
@@ -552,10 +561,10 @@ describe('InlineQuickAdd', () => {
     await userEvent.type(input, 'mil');
 
     await waitFor(() => {
-      expect(screen.getByText('Milk')).toBeInTheDocument();
+      expect(getSuggestionByProductName('Milk')).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText('Milk'));
+    await userEvent.click(getSuggestionByProductName('Milk'));
 
     expect(input).toHaveValue('Milk');
   });
@@ -596,10 +605,10 @@ describe('InlineQuickAdd', () => {
     await userEvent.type(input, 'Milk');
 
     await waitFor(() => {
-      expect(screen.getByText('Milk')).toBeInTheDocument();
+      expect(getSuggestionByProductName('Milk')).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText('Milk'));
+    await userEvent.click(getSuggestionByProductName('Milk'));
 
     // Change quantity
     const quantityInput = screen.getByRole('spinbutton');
@@ -684,13 +693,13 @@ describe('InlineQuickAdd', () => {
     await userEvent.type(input, 'mi');
 
     await waitFor(() => {
-      expect(screen.getByText('Milk')).toBeInTheDocument();
+      expect(getSuggestionByProductName('Milk')).toBeInTheDocument();
     });
 
     await userEvent.keyboard('{Escape}');
 
     await waitFor(() => {
-      expect(screen.queryByText('Milk')).not.toBeInTheDocument();
+      expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
   });
 
@@ -784,7 +793,7 @@ describe('RecentActivityPreview', () => {
   it('displays relative timestamps', () => {
     render(<RecentActivityPreview activities={mockActivities} />);
 
-    expect(screen.getByText(/just now|ago/)).toBeInTheDocument();
+    expect(screen.getAllByText(/ago|just now/).length).toBeGreaterThan(0);
   });
 
   it('limits to maxItems', () => {

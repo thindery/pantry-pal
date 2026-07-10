@@ -89,48 +89,59 @@ export const scanReceipt = async (base64Image: string): Promise<ScanResult[]> =>
 };
 
 export const analyzeUsage = async (base64Image: string): Promise<UsageResult[]> => {
-  const ai = getAIClient();
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: [
-      {
-        parts: [
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: base64Image,
+  try {
+    const ai = getAIClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          parts: [
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: base64Image,
+              },
             },
+            {
+              text: "Identify the pantry items visible in this photo that are being used for cooking or preparation. Estimate the quantity being used (as a number). Return a JSON array of items and their used quantities.",
+            },
+          ],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING },
+              quantityUsed: { type: Type.NUMBER },
+            },
+            required: ["name", "quantityUsed"],
           },
-          {
-            text: "Identify the pantry items visible in this photo that are being used for cooking or preparation. Estimate the quantity being used (as a number). Return a JSON array of items and their used quantities.",
-          },
-        ],
-      },
-    ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING },
-            quantityUsed: { type: Type.NUMBER },
-          },
-          required: ["name", "quantityUsed"],
         },
       },
-    },
-  });
+    });
 
-  try {
-    // Access response.text property directly
-    const results = JSON.parse(response.text || "[]");
-    // Send usage results to backend
-    await processUsage(results);
+    let results: UsageResult[];
+    try {
+      results = JSON.parse(response.text || "[]") as UsageResult[];
+    } catch (e) {
+      console.error("Failed to parse usage JSON", e);
+      return [];
+    }
+
+    // Backend logging is non-critical — still return parsed results on failure
+    try {
+      await processUsage(results);
+    } catch (err) {
+      console.warn('Failed to log usage to backend:', err);
+    }
+
     return results;
   } catch (e) {
-    console.error("Failed to parse usage JSON", e);
+    console.error("analyzeUsage error:", e);
     return [];
   }
 };

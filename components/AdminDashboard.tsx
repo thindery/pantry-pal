@@ -36,24 +36,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [loadingErrors, setLoadingErrors] = useState(false);
 
   // Fetch dashboard metrics from real API
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const data = await getDashboardMetrics(period);
-        setMetrics(data);
-      } catch (err) {
-        console.error('Failed to fetch dashboard metrics:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchMetrics = React.useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-    fetchMetrics();
+    try {
+      const data = await getDashboardMetrics(period);
+      setMetrics(data);
+    } catch (err) {
+      console.error('Failed to fetch dashboard metrics:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
   }, [period]);
+
+  useEffect(() => {
+    void fetchMetrics();
+  }, [fetchMetrics]);
 
   // Fetch errors when viewing errors tab
   useEffect(() => {
@@ -83,7 +83,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   // Handle retry for failed dashboard load
   const handleRetry = () => {
-    setPeriod(prev => prev); // Trigger re-fetch by resetting period
+    void fetchMetrics();
   };
 
   // Handle window resize for sidebar

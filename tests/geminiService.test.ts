@@ -1,22 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock the environment
-vi.stubGlobal('import', {
-  meta: {
-    env: { VITE_GEMINI_API_KEY: 'test-api-key-123' }
-  }
-});
+const { mockGenerateContent } = vi.hoisted(() => ({
+  mockGenerateContent: vi.fn(),
+}));
 
-// Mock @google/genai
 vi.mock('@google/genai', () => {
-  const mockGenerateContent = vi.fn();
+  class MockGoogleGenAI {
+    models = {
+      generateContent: mockGenerateContent,
+    };
+  }
+
   return {
-    GoogleGenAI: vi.fn().mockImplementation(() => ({
-      models: {
-        generateContent: mockGenerateContent,
-      },
-    })),
-    mockGenerateContent, // Export for tests
+    GoogleGenAI: MockGoogleGenAI,
     Type: {
       ARRAY: 'array',
       OBJECT: 'object',
@@ -26,24 +22,17 @@ vi.mock('@google/genai', () => {
   };
 });
 
-// Mock apiService
 vi.mock('../services/apiService', () => ({
   processScan: vi.fn().mockResolvedValue(undefined),
   processUsage: vi.fn().mockResolvedValue(undefined),
 }));
 
-// Import mocked module to get access to mockGenerateContent
-import { GoogleGenAI } from '@google/genai';
 import * as apiService from '../services/apiService';
+import { scanReceipt, analyzeUsage } from '../services/geminiService';
 
 describe('geminiService', () => {
-  let mockGenerateContent: ReturnType<typeof vi.fn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
-  
-  // Dynamically import geminiService to get fresh instance with mocks
-  let scanReceipt: typeof import('../services/geminiService').scanReceipt;
-  let analyzeUsage: typeof import('../services/geminiService').analyzeUsage;
 
   const mockScanResults = [
     { name: 'Milk', quantity: 2, unit: 'cartons', category: 'dairy' },
@@ -55,31 +44,18 @@ describe('geminiService', () => {
     { name: 'Sugar', quantityUsed: 0.5 },
   ];
 
-  beforeEach(async () => {
-    vi.clearAllMocks();
-    
-    // Create fresh mock for generateContent
-    mockGenerateContent = vi.fn();
-    
-    // Reset GoogleGenAI mock implementation
-    (GoogleGenAI as any).mockImplementation(() => ({
-      models: {
-        generateContent: mockGenerateContent,
-      },
-    }));
-    
-    // Setup console spies
+  beforeEach(() => {
+    mockGenerateContent.mockReset();
+    vi.mocked(apiService.processScan).mockReset().mockResolvedValue(undefined);
+    vi.mocked(apiService.processUsage).mockReset().mockResolvedValue(undefined);
+
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
-    // Import fresh module
-    const geminiModule = await import('../services/geminiService');
-    scanReceipt = geminiModule.scanReceipt;
-    analyzeUsage = geminiModule.analyzeUsage;
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   describe('scanReceipt', () => {

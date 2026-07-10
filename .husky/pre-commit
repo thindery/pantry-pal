@@ -1,1 +1,9 @@
-npm run typecheck && npm run lint && npm run build:frontend
+#!/usr/bin/env sh
+# Pre-commit quality gate: typecheck → lint → unit tests
+# Failures abort the commit. Keep this fast enough to run on every commit.
+
+set -e
+
+echo "▶ pre-commit: npm run check (typecheck + lint + test:run)"
+npm run check
+echo "✅ pre-commit checks passed"

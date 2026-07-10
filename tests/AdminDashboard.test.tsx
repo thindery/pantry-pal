@@ -149,7 +149,8 @@ describe('AdminDashboard', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // Do not restoreAllMocks — that clears vi.mock factory implementations
+    vi.clearAllMocks();
   });
 
   describe('Loading State', () => {
@@ -240,7 +241,7 @@ describe('AdminDashboard', () => {
     });
 
     it('renders dashboard title and description', () => {
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
       expect(screen.getByText('Overview of your app performance')).toBeInTheDocument();
     });
 
@@ -287,14 +288,13 @@ describe('AdminDashboard', () => {
     });
 
     it('fetches data for multiple period changes', async () => {
-      const periodSelect = screen.getByTestId('period-select');
-      
-      await userEvent.selectOptions(periodSelect, '30d');
+      await userEvent.selectOptions(screen.getByTestId('period-select'), '30d');
       await waitFor(() => {
         expect(adminService.getDashboardMetrics).toHaveBeenCalledWith('30d');
       });
 
-      await userEvent.selectOptions(periodSelect, '90d');
+      // Re-query after re-render (controlled select)
+      await userEvent.selectOptions(screen.getByTestId('period-select'), '90d');
       await waitFor(() => {
         expect(adminService.getDashboardMetrics).toHaveBeenCalledWith('90d');
       });
@@ -328,7 +328,7 @@ describe('AdminDashboard', () => {
       await userEvent.click(usersNav);
 
       await waitFor(() => {
-        expect(screen.getByText('Users')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
         expect(screen.getByText('User management coming in Phase 2')).toBeInTheDocument();
       });
     });
@@ -337,12 +337,12 @@ describe('AdminDashboard', () => {
       // First go to users view
       await userEvent.click(screen.getByTestId('nav-users'));
       await waitFor(() => {
-        expect(screen.getByText('Users')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
       });
 
       // Then go back to dashboard
       await userEvent.click(screen.getByTestId('nav-dashboard'));
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
       expect(screen.getByText('Overview of your app performance')).toBeInTheDocument();
     });
   });
@@ -380,7 +380,8 @@ describe('AdminDashboard', () => {
     it('displays error details correctly', async () => {
       await waitFor(() => {
         expect(screen.getByText('Cannot read property of undefined')).toBeInTheDocument();
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        // Component column value "Dashboard" (not the nav label)
+        expect(screen.getByRole('cell', { name: 'Dashboard' })).toBeInTheDocument();
       });
     });
 
@@ -396,7 +397,8 @@ describe('AdminDashboard', () => {
         expect(screen.queryByText('Loading dashboard...')).not.toBeInTheDocument();
       });
 
-      await userEvent.click(screen.getByTestId('nav-errors'));
+      const errorNavs = screen.getAllByTestId('nav-errors');
+      await userEvent.click(errorNavs[errorNavs.length - 1]);
 
       await waitFor(() => {
         expect(screen.getByText(/no unresolved errors/i)).toBeInTheDocument();
