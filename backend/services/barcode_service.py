@@ -85,8 +85,9 @@ def save_product(data: dict[str, Any]) -> None:
                 """
                 INSERT INTO product_cache (
                     barcode, name, brand, category, image_url, ingredients,
-                    nutrition, source, info_last_synced, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    nutrition, source, info_last_synced, updated_at,
+                    needs_sync, sync_retry_count, last_error
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, 0, NULL)
                 ON CONFLICT (barcode) DO UPDATE SET
                     name = EXCLUDED.name,
                     brand = EXCLUDED.brand,
@@ -96,7 +97,10 @@ def save_product(data: dict[str, Any]) -> None:
                     nutrition = EXCLUDED.nutrition,
                     source = EXCLUDED.source,
                     info_last_synced = EXCLUDED.info_last_synced,
-                    updated_at = EXCLUDED.updated_at
+                    updated_at = EXCLUDED.updated_at,
+                    needs_sync = 0,
+                    sync_retry_count = 0,
+                    last_error = NULL
                 """,
                 (
                     data["barcode"],
@@ -110,6 +114,23 @@ def save_product(data: dict[str, Any]) -> None:
                     now,
                     now,
                 ),
+            )
+
+
+def mark_product_needs_sync(barcode: str, error: Optional[str] = None) -> None:
+    """Flag a cached product for background retry after a failed lookup."""
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE product_cache
+                SET needs_sync = 1,
+                    sync_retry_count = COALESCE(sync_retry_count, 0) + 1,
+                    last_error = %s,
+                    updated_at = %s
+                WHERE barcode = %s
+                """,
+                (error, _now(), barcode),
             )
 
 

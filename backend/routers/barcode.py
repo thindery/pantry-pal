@@ -44,6 +44,8 @@ async def _refresh_barcode(barcode: str) -> None:
     result = await barcode_service.lookup_open_food_facts(barcode)
     if result.get("success") and result.get("product"):
         barcode_service.save_product(result["product"])
+    else:
+        barcode_service.mark_product_needs_sync(barcode, result.get("error"))
 
 
 @router.post("/{barcode}", status_code=201)
