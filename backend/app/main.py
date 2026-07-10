@@ -41,9 +41,16 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     close_pool()
 
 
+def _api_docs_enabled() -> bool:
+    environment = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))
+    if environment == "production":
+        return os.getenv("ENABLE_API_DOCS") == "1"
+    return os.getenv("ENABLE_API_DOCS", "1").lower() not in ("0", "false", "no")
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
-    docs_enabled = os.getenv("ENABLE_API_DOCS", "1").lower() not in ("0", "false", "no")
+    docs_enabled = _api_docs_enabled()
 
     app = FastAPI(
         title=settings.APP_NAME,
