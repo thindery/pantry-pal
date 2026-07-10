@@ -1,232 +1,68 @@
-# PantryPal Frontend - AGENTS.md
+# AGENTS.md — PantryPal
 
-**⚠️ IMPORTANT:** When working on REMY-XXX tickets, read `~/projects/remy-tracker/REMY-AGENT.md` first for ticket workflow guidelines.
+> **Global rules:** Read [`project-director/rules/global_rules.md`](../project-director/rules/global_rules.md) before any work.  
+> **Tickets:** All refactor work is tracked in [`.agents/TICKET_STATUS.md`](.agents/TICKET_STATUS.md).  
+> **Plan:** [`.agents/REFACTOR_PLAN.md`](.agents/REFACTOR_PLAN.md) · [`.agents/PLAYBOOK_COMPLIANCE.md`](.agents/PLAYBOOK_COMPLIANCE.md)
 
-## Project Overview
+## Product
 
-**PantryPal Frontend** is a React SPA for the PantryPal inventory tracking system. This repo contains the user-facing web application for managing pantry items, shopping lists, and AI-powered receipt scanning. The backend API lives in a separate repo (`pantry-pal-api`).
+**PantryPal** is a smart pantry inventory & ledger app: inventory CRUD, activity ledger, barcode scanning, AI receipt/usage scanning, Clerk auth, Stripe subscriptions, admin dashboard.
 
-## Architecture Overview (from DESIGN.md)
+## Current vs target architecture
 
-PantryPal Frontend is a **React SPA** that communicates with the `pantry-pal-api` backend.
+| | **Today (pre-refactor)** | **Target (after PP-001…PP-035)** |
+|--|--------------------------|----------------------------------|
+| Repos | `pantry-pal` + sibling `pantry-pal-api` | **Single** `pantry-pal` monorepo |
+| Frontend | Vite + React 19 SPA | Next.js **16** App Router + React **19** + Tailwind **4** |
+| Backend | Express (separate repo) | FastAPI under `backend/` |
+| DB | SQLite local / Postgres dual | PostgreSQL **16** primary |
+| Hosting | Railway-oriented docs | OVH Docker (domain TBD) |
 
-### Frontend-Only Responsibilities
-- ✅ UI rendering and component composition
-- ✅ Client-side state management (useState, useMemo)
-- ✅ User interactions and form handling
-- ✅ Camera access for barcode scanning
-- ✅ Image processing before sending to APIs
-- ✅ Clerk authentication integration
-- ✅ Responsive design (mobile-first)
+**Interim after Phase 1:** monorepo with `frontend/` (Vite) + `backend/` (Express clean copy). Do not leave dual-repo path hacks (`../pantry-pal-api`).
 
-Delegated to backend (`pantry-pal-api`):
-- ❌ Database operations
-- ❌ Business logic validation
-- ❌ Subscription tier enforcement
-- ❌ Webhook handling (Stripe)
-- ❌ User session management
-
-### State Management
-**Local State** (useState): Form inputs, UI state, routing.
-**Global State** (Clerk + API): Auth, items, activities, subscription tier.
-**Derived State** (useMemo): Filtered lists, stock calculations, stats.
-
-### Component Hierarchy
-```
-App (Main container, view routing)
-├── ClerkProvider (Auth wrapper)
-    ├── SignedOut
-    │   └── LandingPage
-    └── SignedIn
-        ├── Navbar (Navigation)
-        ├── ToastContainer (Notifications)
-        └── View Components:
-            ├── DashboardView
-            ├── InventoryCard
-            ├── ActivityLedger
-            ├── BarcodeScanner
-            ├── PricingPage
-            ├── AdminDashboard
-            └── Modals
-```
-
-### Data Flow
-- **Inventory Operations**: User → App State → API Call → Backend → DB (Optimistic updates).
-- **Receipt Scanning**: Upload → Gemini API → JSON Extraction → Confirm → Batch Create.
-- **Barcode Scanning**: Camera → ZXing → Product API Lookup → Confirm.
-
-### Authentication & Subscriptions
-- **Auth**: Clerk JWT tokens on all API calls.
-- **Stripe**: Frontend creates checkout session → Stripe UI → Success redirect → Webhook update.
-
-## Tech Stack
-
-### Core Technologies
-- **Framework**: React 19 (with TypeScript)
-- **Build Tool**: Vite 6.x
-- **Styling**: Tailwind CSS (via CDN)
-- **Authentication**: Clerk (@clerk/clerk-react)
-- **AI Integration**: Google Gemini API (@google/genai) - for receipt/usage image processing
-- **Charts**: Recharts
-- **Barcode Scanning**: @zxing/browser, @zxing/library
-- **Search**: Fuse.js (client-side fuzzy search)
-- **Icons**: lucide-react
-
-### What This Repo Does NOT Do
-- ❌ Database storage (handled by `pantry-pal-api`)
-- ❌ User authentication (delegated to Clerk)
-- ❌ Payment processing (Stripe integration via backend)
-- ❌ Server-side logic (all API calls go to backend)
-
-### Development Tools
-- **Testing**: Vitest + React Testing Library + jsdom
-- **TypeScript**: ~5.8.2
-- **Mocking**: MSW (Mock Service Worker)
-
-## Project Structure
+## Layout (target)
 
 ```
 pantry-pal/
-├── App.tsx                 # Main app component, routing, state management
-├── index.tsx               # Entry point with ClerkProvider
-├── index.html              # HTML template with Tailwind CDN
-├── index.css               # Global styles
-├── types.ts                # Core TypeScript interfaces
-├── vite.config.ts          # Vite configuration with HTTPS
-├── vitest.config.ts       # Test configuration
-├── components/             # React components
-│   ├── InventoryCard.tsx
-│   ├── ActivityLedger.tsx
-│   ├── BarcodeScanner.tsx
-│   ├── DashboardComponents.tsx
-│   ├── LandingPage.tsx
-│   ├── PricingPage.tsx
-│   ├── AdminDashboard.tsx
-│   ├── QuickActionBar.tsx
-│   ├── Toast.tsx
-│   ├── UpgradePrompt.tsx
-│   └── ...
-├── services/               # Business logic & API integration
-│   ├── apiService.ts       # Backend API client
-│   ├── geminiService.ts    # Google Gemini AI integration
-│   ├── subscription.ts     # Stripe subscription management
-│   ├── barcodeService.ts   # Barcode scanning & lookup
-│   └── adminService.ts     # Admin dashboard API
-├── types/                  # Additional type definitions
-│   └── admin.ts
-├── tests/                  # Vitest test files
-├── docs/                   # Feature specs & architecture docs
-└── dist/                   # Production build output
+├── .agents/           # tickets, status, audits
+├── frontend/          # Next 16 (Vite until PP-020+)
+├── backend/           # FastAPI (Express until PP-026+)
+├── database/          # SQL migrations
+├── deploy/            # deploy-docker.sh, nginx
+├── docker-compose.yml
+├── switch-env.sh
+├── AGENTS.md
+├── DESIGN.md
+└── README.md
 ```
 
-## Environment Variables
+## Ticket workflow
 
-Required in `.env.local`:
-- `VITE_GEMINI_API_KEY` - Google Gemini API key
-- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk auth key
-- `VITE_API_URL` - Backend API URL (default: http://localhost:3001)
+1. Open [`.agents/TICKET_STATUS.md`](.agents/TICKET_STATUS.md) and pick the next open ticket in dependency order.
+2. Read the ticket file and any linked playbook under `project-director/playbooks/`.
+3. Branch: `feature/PP-XXX-brief-description`
+4. Commit: `PP-XXX: description`
+5. Update ticket status + `TICKET_STATUS.md` when done.
 
-## Key Features
+**Start here:** [PP-001](.agents/tickets/PP-001-monorepo-layout.md) monorepo layout.
 
-### Inventory Management
-- Add/edit/delete pantry items
-- Track quantity, unit, category
-- Categories: produce, pantry, dairy, frozen, meat, beverages, snacks, other
-- Units: units, lbs, oz, grams, kg, cups, bottles, cans, boxes, other
+## Domain
 
-### Activity Ledger
-- Tracks ADD, REMOVE, ADJUST actions
-- Sources: MANUAL, RECEIPT_SCAN, VISUAL_USAGE
-- Full audit trail with timestamps
+Domain not purchased yet. Use placeholders until [PP-033](.agents/tickets/PP-033-domain-cloudflare-dns.md). Do not hardcode a production hostname.
 
-### AI-Powered Scanning
-- **Receipt Scanning**: Extract items from receipt photos (Gemini 2.0 Flash)
-- **Visual Usage**: Identify items being used from photos
+## Gold standards
 
-### Barcode Scanning
-- Camera-based barcode scanning
-- Product lookup with caching
-- Manual barcode linking
+- Structure/deploy: `markdown-pdf`, `userkudos`
+- Next app patterns: `agent-paige`, `shipinaday`
+- Stack versions: `project-director/playbooks/portfolio_stack_baseline.md`
 
-### Shopping List
-- Auto-generated based on low stock thresholds
-- Manual item addition
-- Category-based organization
+## What not to do
 
-### Subscriptions (Stripe)
-- **Free Tier**: 50 items, 5 receipt scans/month
-- **Pro Tier**: Unlimited items, unlimited scans, voice assistant
-- **Family Tier**: Multi-device, shared inventory
+- Do not keep developing against standalone `pantry-pal-api` as source of truth after monorepo merge
+- Do not commit secrets (`.env`, keys, tokens)
+- Do not start OVH live cutover (PP-034) before domain (PP-033) and security audit (PP-032)
+- Do not expand product features mid-refactor unless filed as separate tickets
 
-### Admin Dashboard
-- User tier management
-- System analytics
-- Feature flags
+## Design
 
-## Backend API
-
-Separate repository: `pantry-pal-api`
-- Base URL: http://localhost:3001 (development)
-- Authentication: Clerk JWT tokens
-- Endpoints:
-  - `/api/items` - CRUD operations
-  - `/api/activities` - Activity logging
-  - `/api/receipts/scan` - Receipt OCR
-  - `/api/products/barcode/:code` - Product lookup
-  - `/api/subscription/*` - Stripe integration
-
-## Common Tasks
-
-### Running Tests
-```bash
-npm test          # Run vitest
-npm run test:ui   # UI mode
-npm run test:coverage
-```
-
-### Building
-```bash
-npm run build     # Production build to dist/
-npm run preview   # Preview production build
-```
-
-### Development
-```bash
-npm run dev       # Vite dev server with HTTPS (port 5173)
-```
-
-### Ticket Workflow (via remy-tracker)
-All tickets are tracked in the remy-tracker repo. Development follows Ralph workflow:
-
-1. **Get ticket**: `remy list --status="Dev Backlog"` (check for assigned work)
-2. **Branch**: `git checkout -b feature/REMY-XXX-brief-desc`
-3. **Develop**: Implement changes in this repo
-4. **Commit**: `git commit -m "REMY-XXX: Description"`
-5. **PR**: Create PR, link to remy-tracker ticket
-6. **Merge**: After review, merge to main
-7. **Update ticket**: `remy move REMY-XXX --to="Closed/Done"`
-
-**Important**: Code changes here → ticket updates via `remy` command (works from any directory).
-
-## Architecture Notes
-
-- **Single-Page App**: React Router via view state (`View` type)
-- **Mobile-First**: Bottom nav on mobile, top nav on desktop
-- **HTTPS Local Dev**: Uses `.certs/` directory for local SSL
-- **AI-First**: Heavy reliance on Gemini for intelligent features
-- **Subscription-Gated**: Features limited by user tier
-
-## Testing
-
-- Vitest with jsdom environment
-- React Testing Library for component tests
-- MSW for API mocking
-- Test files: `tests/*.test.{ts,tsx}`
-
-## Related Documentation
-
-- `README.md` - Quick start guide
-- `TESTING.md` - Testing, building, deployment guide
-- `TECH_REVIEW.md` - Security and architecture review
-- `docs/FEATURE-*` - Feature specifications
-- `docs/frontend-architecture.md` - Detailed architecture
+See [DESIGN.md](./DESIGN.md) — kitchen utility (emerald/sage), mobile-first, distinct marketing / dashboard / admin surfaces.
