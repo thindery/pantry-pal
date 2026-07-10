@@ -1,6 +1,6 @@
 # PP-036: Port missing FastAPI routes (audit follow-up)
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done  
 **Priority:** P0  
 **Phase:** 3 — Post-migration fixes  
 **Created:** 2026-07-10  

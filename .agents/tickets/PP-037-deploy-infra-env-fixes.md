@@ -1,6 +1,6 @@
 # PP-037: Deploy, Docker, env, and test fixes (audit follow-up)
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done  
 **Priority:** P0  
 **Phase:** 2–3 — Post-migration fixes  
 **Created:** 2026-07-10  

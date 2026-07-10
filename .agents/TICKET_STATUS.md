@@ -1,6 +1,6 @@
 # Ticket Status — PantryPal
 
-Last updated: 2026-07-10 (PP-039 migration + ticket sync)
+Last updated: 2026-07-10 (PP-036–039 audit fixes merged)
 
 **Product:** PantryPal — smart pantry inventory & ledger  
 **Domain:** TBD (purchase pending)  
@@ -13,8 +13,8 @@ Last updated: 2026-07-10 (PP-039 migration + ticket sync)
 
 | | Count |
 |--|-------|
-| Done | 34 |
-| In progress (audit follow-ups) | 3 (PP-036, PP-037, PP-038) |
+| Done | 38 |
+| In progress | 0 |
 | Blocked (domain) | 2 (PP-033, PP-034) |
 | User action pending | 1 (PP-035 Railway teardown) |
 
@@ -80,9 +80,9 @@ Last updated: 2026-07-10 (PP-039 migration + ticket sync)
 
 | Ticket | Title | Status |
 |--------|-------|--------|
-| PP-036 | Port missing FastAPI routes | 🔄 In progress |
-| PP-037 | Deploy, Docker, env, and test fixes | 🔄 In progress |
-| PP-038 | Security and validation hardening | 🔄 In progress |
+| PP-036 | Port missing FastAPI routes | ✅ Done |
+| PP-037 | Deploy, Docker, env, and test fixes | ✅ Done |
+| PP-038 | Security and validation hardening | ✅ Done |
 | PP-039 | Migration 013 + ticket status sync | ✅ Done |
 
 ---
@@ -90,7 +90,7 @@ Last updated: 2026-07-10 (PP-039 migration + ticket sync)
 ## Verification
 
 ```bash
-npm run check          # typecheck + lint + 3 vitest + 13 pytest
+npm run check          # typecheck + lint + 3 vitest + 28 pytest
 npm run test:sql-safety
 npm run test:postgres  # requires docker compose up -d db
 npm run build:frontend

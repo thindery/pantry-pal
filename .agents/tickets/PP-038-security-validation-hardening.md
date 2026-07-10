@@ -1,6 +1,6 @@
 # PP-038: Security and validation hardening (audit follow-up)
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done  
 **Priority:** P1  
 **Phase:** 3 — Post-migration fixes  
 **Created:** 2026-07-10  
