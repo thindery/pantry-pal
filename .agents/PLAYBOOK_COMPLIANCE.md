@@ -33,6 +33,20 @@ Agents must read the linked playbook before starting each ticket.
 | [PP-032](tickets/PP-032-security-audit.md) | `playbooks/agent_paige_security_audit.md` + SEC rules | 3 | P0 |
 | [PP-033](tickets/PP-033-domain-cloudflare-dns.md) | `playbooks/cloudflare_dns.md` | 3 | P0 (blocked) |
 | [PP-034](tickets/PP-034-ovh-production-cutover.md) | `playbooks/ovh_deployment.md` | 3 | P0 (blocked) |
+| [PP-044](tickets/PP-044-nginx-api-auth-routing.md) | `playbooks/ovh_deployment.md`, `clerk_middleware_pattern.md` | 3 | P0 |
+| [PP-045](tickets/PP-045-gemini-server-proxy.md) | `playbooks/agent_paige_security_audit.md`, `ssrf_protection.md` | 3 | P0 |
+| [PP-046](tickets/PP-046-backend-ai-quotas.md) | `playbooks/agent_paige_security_audit.md`, `billing_and_database.md` | 3 | P1 |
+| [PP-047](tickets/PP-047-server-item-tier-limits.md) | `playbooks/agent_paige_security_audit.md`, `billing_and_database.md` | 3 | P1 |
+| [PP-048](tickets/PP-048-harden-client-errors.md) | `playbooks/agent_paige_security_audit.md`, `rate_limiting.md` | 3 | P1 |
+| [PP-049](tickets/PP-049-stripe-redirect-validation.md) | `playbooks/agent_paige_security_audit.md`, `billing_and_database.md` | 3 | P1 |
+| [PP-050](tickets/PP-050-remove-public-admin-emails.md) | `playbooks/agent_paige_security_audit.md` | 3 | P2 |
+| [PP-051](tickets/PP-051-hsts-csp-headers.md) | `playbooks/agent_paige_security_audit.md`, `nextjs_config_and_conventions.md` | 3 | P2 |
+| [PP-052](tickets/PP-052-redis-rate-limiting.md) | `playbooks/rate_limiting.md` | 3 | P2 |
+| [PP-053](tickets/PP-053-validate-receipt-url.md) | `playbooks/ssrf_protection.md` | 3 | P2 |
+| [PP-054](tickets/PP-054-restrict-health-endpoint.md) | `playbooks/ovh_deployment.md` | 3 | P2 |
+| [PP-055](tickets/PP-055-sanitize-api-errors.md) | `playbooks/agent_paige_security_audit.md` | 3 | P3 |
+| [PP-056](tickets/PP-056-stripe-webhook-tests.md) | `playbooks/billing_and_database.md` | 3 | P3 |
+| [PP-057](tickets/PP-057-jwt-aud-oauth-hardening.md) | `playbooks/clerk_authentication.md` | 3 | P3 |
 
 ## Out of scope (for now)
 
