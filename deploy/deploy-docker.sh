@@ -74,17 +74,24 @@ ssh ovh "
 
   if [ ! -d \"\$REMOTE_DIR/.git\" ]; then
     echo 'Bootstrapping \$REMOTE_DIR (first deploy)...'
-    git clone \"\$REPO_URL\" \"\$REMOTE_DIR\"
+    if [ -d \"\$REMOTE_DIR\" ] && [ \"\$(ls -A \"\$REMOTE_DIR\" 2>/dev/null)\" ]; then
+      ENV_BACKUP=\"/tmp/pantry-pal-env.prod.bak\"
+      [ -f \"\$REMOTE_DIR/.env.prod\" ] && cp \"\$REMOTE_DIR/.env.prod\" \"\$ENV_BACKUP\"
+      git clone \"\$REPO_URL\" \"\$REMOTE_DIR\"
+      [ -f \"\$ENV_BACKUP\" ] && mv \"\$ENV_BACKUP\" \"\$REMOTE_DIR/.env.prod\"
+    else
+      git clone \"\$REPO_URL\" \"\$REMOTE_DIR\"
+    fi
   fi
 
   docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
 
   cd \"\$REMOTE_DIR\" &&
-  ln -sf .env.prod .env &&
   echo 'Fetching origin...' &&
   git fetch origin &&
   git checkout -B $TAG origin/$TAG &&
   git reset --hard origin/$TAG &&
+  ln -sf .env.prod .env &&
 
   echo 'Cleaning orphan containers...' &&
   docker ps -a --format '{{.Names}}' | grep '_pantry-pal' | xargs -r docker rm -f 2>/dev/null || true &&
