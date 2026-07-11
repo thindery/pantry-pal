@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { createBearerToken } from "@/lib/auth-token";
+import {
+  createBearerToken,
+  createBearerTokenFromSession,
+} from "@/lib/auth-token";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -8,7 +11,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const token = await createBearerToken(req);
+  let token = await createBearerToken(req);
+  if (!token) {
+    const user = session.user as { id?: string; email?: string | null };
+    const userId = user.id;
+    if (userId) {
+      token = await createBearerTokenFromSession(userId, user.email);
+    }
+  }
   if (!token) {
     return NextResponse.json({ error: "Token unavailable" }, { status: 500 });
   }
