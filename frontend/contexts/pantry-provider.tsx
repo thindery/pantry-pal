@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type {
   PantryItem,
   Activity,
@@ -44,6 +45,7 @@ export type DashboardInlineFilter =
 export function usePantryState() {
   // Set up auth token for API calls
   const router = useRouter();
+  const { status: sessionStatus } = useSession();
   useSetupAuthToken();
 
   // Toast notifications
@@ -539,9 +541,10 @@ export function usePantryState() {
   };
 
   useEffect(() => {
-    loadInventory();
-    loadActivities();
-  }, []);
+    if (sessionStatus !== "authenticated") return;
+    void loadInventory();
+    void loadActivities();
+  }, [sessionStatus]);
 
   // Save to localStorage as backup
   useEffect(() => {

@@ -9,18 +9,23 @@ const API_URL = getApiBaseUrl();
 // Global variable to store the getToken function
 let getTokenRef: (() => Promise<string | null>) | null = null;
 
+async function resolveAuthToken(): Promise<string | null> {
+  if (getTokenRef != null) {
+    const token = await getTokenRef();
+    if (token) return token;
+  }
+  return getBearerToken();
+}
+
 // Helper for API calls
 export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  // Add auth token if available
-  if (getTokenRef != null) {
-    const token = await getTokenRef();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+  const token = await resolveAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
