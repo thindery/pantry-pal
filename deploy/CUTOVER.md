@@ -9,8 +9,8 @@ OVH follows the same pattern as **agent-paige** and **userkudos**: app container
 ```
 Cloudflare (proxied, SSL Full) → OVH :443
   → nginx container (/opt/nginx) — conf.d/*.conf
-    → pantry-pal-frontend:3000  (Next.js)
-    → pantry-pal-backend:8000   (/api/, /health)
+    → pantry-pal-frontend:38472  (Next.js — not 3000)
+    → pantry-pal-backend:52841   (/api/, /health — not 8000)
     → pantry-pal-db             (Postgres, internal)
 ```
 
@@ -67,5 +67,5 @@ curl -sf https://www.mypantryhub.com/build-id.txt
 | Nginx install | `cp deploy/nginx/*.conf /opt/nginx/conf.d/` | Same |
 | Nginx reload | `cd /opt/nginx && docker compose exec nginx …` | Same |
 | Network | `app-network` external | Same |
-| Host port | `3000:3000` (legacy) | `expose: 3000` only (no conflict with agent-paige) |
+| Container ports | `3000` (legacy host publish) | `38472` / `52841` (expose only, no host bind) |
 | Pre-deploy tests | npm test + ephemeral Postgres | TODO (add before prod traffic) |

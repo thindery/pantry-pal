@@ -1,5 +1,7 @@
 version: '3.8'
 
+# OVH: expose-only on app-network (no host publish). Uncommon ports avoid
+# collisions with agent-paige :3000, markdown-pdf :3001, userkudos :3003, etc.
 services:
   db:
     image: postgres:16-alpine
@@ -27,18 +29,18 @@ services:
     container_name: pantry-pal-backend
     restart: unless-stopped
     expose:
-      - "8000"
+      - "${BACKEND_PORT:-52841}"
     volumes:
       - storage-data:/app/data
     environment:
-      - PORT=8000
+      - PORT=${BACKEND_PORT:-52841}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-pantry_pal_user}:${POSTGRES_PASSWORD:-secure_password_placeholder}@pantry-pal-db/${POSTGRES_DB:-pantry_pal_prod}
     env_file:
       - .env
     depends_on:
       - db
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/health')"]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -51,20 +53,20 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://pantry-pal-backend:8000
+        - NEXT_PUBLIC_API_URL=http://pantry-pal-backend:${BACKEND_PORT:-52841}
         - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         - BUILD_ID=${BUILD_ID:-unknown}
     container_name: pantry-pal-frontend
     restart: unless-stopped
     expose:
-      - "3000"
+      - "${FRONTEND_PORT:-38472}"
     environment:
-      - PORT=3000
+      - PORT=${FRONTEND_PORT:-38472}
       - HOSTNAME=0.0.0.0
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${FRONTEND_PORT:-38472}/"]
       interval: 10s
       timeout: 3s
       retries: 3
