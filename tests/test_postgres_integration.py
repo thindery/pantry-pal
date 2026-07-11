@@ -43,3 +43,30 @@ def test_item_crud_roundtrip(client, auth_headers):
 
     deleted = client.delete(f"/api/items/{item_id}", headers=auth_headers)
     assert deleted.status_code == 200
+
+
+def test_barcode_save_logs_barcode_scan_activity(client, auth_headers):
+    """Barcode add must log BARCODE_SCAN without tripping activities.source CHECK."""
+    barcode = f"9{uuid.uuid4().int % 10**12:012d}"
+
+    response = client.post(
+        f"/api/barcode/{barcode}",
+        headers=auth_headers,
+        json={
+            "name": "Scan Test Product",
+            "quantity": 1,
+            "unit": "units",
+            "category": "snacks",
+        },
+    )
+    assert response.status_code == 201, response.text
+    data = response.json()
+    assert data["success"] is True
+    assert data["item"]["barcode"] == barcode
+    assert data["activity"]["source"] == "BARCODE_SCAN"
+
+    try:
+        deleted = client.delete(f"/api/items/{data['item']['id']}", headers=auth_headers)
+        assert deleted.status_code == 200
+    except Exception:
+        pass
