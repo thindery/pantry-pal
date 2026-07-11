@@ -16,6 +16,8 @@ const PUBLIC_PATHS = new Set([
   "/auth/signin",
   "/auth/error",
   "/build-id.txt",
+  "/sitemap.xml",
+  "/robots.txt",
 ]);
 
 const PUBLIC_PREFIXES = [
