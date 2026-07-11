@@ -192,40 +192,94 @@ export const processUsage = (usageData: unknown) =>
     body: JSON.stringify(usageData),
   });
 
-// Product Lookup API (includes cache status)
-export const getProductByBarcode = async (barcode: string): Promise<{ product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string }> => {
-  const result = await fetchApi<{ product: Record<string, unknown>; fromCache?: boolean; cachedAt?: string }>(`/api/barcode/${barcode}`);
-  
+export type ProductLookupResult = {
+  product: BarcodeProduct | null;
+  fromCache?: boolean;
+  cachedAt?: string;
+};
+
+type BarcodeLookupApiResponse = {
+  success?: boolean;
+  cached?: boolean;
+  stale?: boolean;
+  fromCache?: boolean;
+  cachedAt?: string;
+  product?: Record<string, unknown>;
+};
+
+const productLookupSessionCache = new Map<string, ProductLookupResult>();
+
+/** Normalize backend barcode lookup payload for ProductInfoModal badges. */
+export function normalizeBarcodeLookupResponse(
+  result: BarcodeLookupApiResponse,
+): ProductLookupResult {
+  const fromCache = result.cached ?? result.fromCache ?? false;
+  const isStale = Boolean(result.stale);
+
   if (result.product == null) {
-    return { product: null, fromCache: result.fromCache, cachedAt: result.cachedAt };
+    return {
+      product: null,
+      fromCache,
+      cachedAt: result.cachedAt,
+    };
   }
-  
-  // Transform backend response to match BarcodeProduct type
-  const p = result.product;
-  
-  // Handle image_url or imageUrl -> image mapping
+
+  const raw = result.product;
+  const p = { ...raw } as BarcodeProduct & Record<string, unknown>;
+
   if (p.image == null) {
-    p.image = p.image_url ?? p.imageUrl ?? p.imageurl;
+    p.image = (raw.image_url ?? raw.imageUrl ?? raw.imageurl) as string | undefined;
   }
-  
-  // Handle ingredients: string -> string[] if needed
-  if (typeof p.ingredients === 'string') {
-    p.ingredients = p.ingredients.split(/,|\n/).map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+
+  const rawIngredients = raw.ingredients;
+  if (typeof rawIngredients === 'string') {
+    p.ingredients = rawIngredients
+      .split(/,|\n/)
+      .map((i: string) => i.trim())
+      .filter((i: string) => i.length > 0);
   }
-  
-  // Handle source/stale mapping
-  if (result.fromCache && p.source == null) {
-    p.source = result.cachedAt ? 'stale' : 'cache';
-  } else if (p.source == null) {
+
+  const syncedAt =
+    result.cachedAt ??
+    (typeof raw.infoLastSynced === 'string' ? raw.infoLastSynced : undefined) ??
+    (typeof raw.info_last_synced === 'string' ? raw.info_last_synced : undefined);
+
+  if (syncedAt != null && p.updatedAt == null) {
+    p.updatedAt = syncedAt;
+  }
+  if (syncedAt != null) {
+    p.infoLastSynced = syncedAt;
+  }
+
+  if (isStale) {
+    p.source = 'stale';
+  } else if (fromCache) {
+    p.source = 'cache';
+  } else {
     p.source = 'live';
   }
-  
-  // Handle updatedAt mapping
-  if (p.info_last_synced != null && p.updatedAt == null) {
-    p.updatedAt = p.info_last_synced;
+
+  return {
+    product: p,
+    fromCache,
+    cachedAt: syncedAt,
+  };
+}
+
+// Product Lookup API (includes cache status)
+export const getProductByBarcode = async (
+  barcode: string,
+  options?: { bypassSessionCache?: boolean },
+): Promise<ProductLookupResult> => {
+  const clean = barcode.replace(/[^0-9]/g, '');
+  if (!options?.bypassSessionCache && productLookupSessionCache.has(clean)) {
+    return productLookupSessionCache.get(clean)!;
   }
-  
-  return result as unknown as { product: BarcodeProduct | null; fromCache?: boolean; cachedAt?: string };
+
+  const result = await fetchApi<BarcodeLookupApiResponse>(`/api/barcode/${clean}`);
+  const normalized = normalizeBarcodeLookupResponse(result);
+  productLookupSessionCache.set(clean, normalized);
+  return normalized;
 };
 
 // Subscription API
