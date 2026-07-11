@@ -78,7 +78,9 @@ async def save_barcode_product(
             "brand": body.brand,
             "category": body.category,
             "imageUrl": body.imageUrl,
-            "source": "manual_entry",
+            "ingredients": body.ingredients,
+            "nutrition": body.nutrition,
+            "source": "openfoodfacts" if body.imageUrl or body.brand else "manual_entry",
         }
     )
     item = pantry_service.create_item(

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from backend.auth_session import require_authenticated_user_id
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import CreateItemRequest, UpdateItemRequest
-from backend.services import pantry_service, subscription_service
+from backend.services import barcode_service, pantry_service, subscription_service
 
 router = APIRouter(prefix="/api/items", tags=["Items"])
 UUID_REGEX = re.compile(
@@ -60,7 +60,14 @@ async def create_item(body: CreateItemRequest, user_id: str = Depends(require_au
                     {"remaining": tier_check["remaining"]},
                 ),
             )
-        item = pantry_service.create_item(user_id, body.model_dump())
+        payload = body.model_dump()
+        item = pantry_service.create_item(user_id, payload)
+        if payload.get("barcode"):
+            barcode_service.ensure_product_cached(
+                payload["barcode"],
+                name=payload["name"],
+                category=payload["category"],
+            )
         return success_response(item, {"userId": user_id})
     except HTTPException:
         raise

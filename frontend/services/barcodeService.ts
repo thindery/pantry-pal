@@ -1,4 +1,5 @@
 import type { BarcodeProduct } from '../types';
+import { ApiError } from '@/lib/api-error';
 import { fetchApi } from './apiService';
 
 const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
@@ -72,7 +73,10 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
     console.error('Barcode lookup error:', err);
     return {
       success: false,
-      error: 'Failed to lookup barcode. Please try again.',
+      error:
+        err instanceof ApiError
+          ? err.message
+          : 'Failed to lookup barcode. Please try again.',
     };
   }
 }

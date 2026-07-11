@@ -30,6 +30,8 @@ import {
   getActivities,
   useSetupAuthToken,
   createShoppingSession,
+  saveBarcodeProduct,
+  ApiError,
 } from "@/services/apiService";
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { DEFAULT_THRESHOLDS } from "@/lib/constants";
@@ -631,14 +633,75 @@ export function usePantryState() {
       success(`Added ${newItem.name} to inventory`);
       return Promise.resolve();
     } catch (err) {
-      error('Failed to add item');
-      throw err;
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Failed to add item. Please try again.";
+      error(message);
+      throw err instanceof ApiError ? err : new ApiError(message, 0);
     } finally {
       setIsAddingItem(false);
     }
   };
 
-  const handleAdjustQuantity = async (id: string, delta: number) => {
+  const handleSaveScannedProduct = async (
+    product: BarcodeProduct,
+    quantity: number,
+  ): Promise<void> => {
+    const displayName =
+      product.name.charAt(0).toUpperCase() + product.name.slice(1);
+
+    const existing = inventory.find(
+      (i) =>
+        (product.barcode && i.barcode === product.barcode) ||
+        i.name.toLowerCase() === product.name.toLowerCase(),
+    );
+
+    if (existing != null) {
+      if (!existing.barcode && product.barcode) {
+        await updateItem(existing.id, { barcode: product.barcode });
+      }
+      await handleAdjustQuantity(existing.id, quantity, { silent: true });
+      const unitText =
+        quantity === 1
+          ? existing.unit.replace(/s$/, "")
+          : existing.unit;
+      success(`Added ${quantity} ${unitText} to ${existing.name}`);
+      return;
+    }
+
+    const ingredients =
+      Array.isArray(product.ingredients) && product.ingredients.length > 0
+        ? product.ingredients.join(", ")
+        : undefined;
+
+    const result = await saveBarcodeProduct(product.barcode, {
+      name: displayName,
+      quantity,
+      unit: "units",
+      category: product.category || "other",
+      brand: product.brand,
+      imageUrl: product.image ?? product.imageUrl,
+      ingredients,
+      nutrition: product.nutrition,
+    });
+
+    setInventory((prev) => [...prev, result.item]);
+    await addActivityLog(
+      { id: result.item.id, name: result.item.name },
+      "ADD",
+      quantity,
+      "BARCODE_SCAN",
+    );
+    const unitText = quantity === 1 ? "unit" : "units";
+    success(`${displayName} (${quantity} ${unitText}) added to inventory`);
+  };
+
+  const handleAdjustQuantity = async (
+    id: string,
+    delta: number,
+    options?: { silent?: boolean },
+  ) => {
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
       const item = inventory.find((i) => i.id === id);
@@ -668,7 +731,14 @@ export function usePantryState() {
       );
     } catch (err) {
       console.error('Failed to adjust quantity:', err);
-      alert('Failed to update quantity. Please try again.');
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Failed to update quantity. Please try again.";
+      if (!options?.silent) {
+        error(message);
+      }
+      throw err instanceof ApiError ? err : new ApiError(message, 0);
     } finally {
       setUpdatingItemIds((prev) => {
         const next = new Set(prev);
@@ -871,6 +941,7 @@ export function usePantryState() {
     receiptScansRemaining,
     isFeatureAvailable,
     handleCreateItem,
+    handleSaveScannedProduct,
     handleAdjustQuantity,
     handleSetToZero,
     markItemAsBought,

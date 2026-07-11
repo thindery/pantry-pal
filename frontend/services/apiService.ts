@@ -1,8 +1,11 @@
-import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
+import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem, NutritionData} from '../types';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { getApiBaseUrl } from '@/lib/env';
 import { getBearerToken } from '@/lib/get-bearer-token';
+import { ApiError, parseApiErrorBody } from '@/lib/api-error';
+
+export { ApiError };
 
 const API_URL = getApiBaseUrl();
 
@@ -35,7 +38,17 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
   });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    let body: unknown = null;
+    try {
+      body = await response.json();
+    } catch {
+      body = null;
+    }
+    throw parseApiErrorBody(
+      body,
+      response.status,
+      `Request failed (${response.status})`,
+    );
   }
 
   return response.json();
@@ -57,11 +70,41 @@ export const getItems = async (): Promise<PantryItem[]> => {
 export const getItem = (id: string): Promise<PantryItem> =>
   fetchApi<PantryItem>(`/api/items/${id}`);
 
-export const createItem = (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<PantryItem> =>
-  fetchApi<PantryItem>('/api/items', {
+export const createItem = (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<PantryItem> => {
+  const { productInfo: _productInfo, ...payload } = item;
+  return fetchApi<PantryItem>('/api/items', {
     method: 'POST',
-    body: JSON.stringify(item),
+    body: JSON.stringify(payload),
   });
+};
+
+export interface SaveBarcodeProductPayload {
+  name: string;
+  quantity: number;
+  unit?: string;
+  category: string;
+  brand?: string;
+  imageUrl?: string;
+  ingredients?: string;
+  nutrition?: NutritionData;
+}
+
+/** Save product to Postgres cache and create pantry item (barcode scan flow). */
+export const saveBarcodeProduct = async (
+  barcode: string,
+  payload: SaveBarcodeProductPayload,
+): Promise<{ item: PantryItem; product: BarcodeProduct }> => {
+  const clean = barcode.replace(/[^0-9]/g, '');
+  const result = await fetchApi<{
+    success: boolean;
+    item: PantryItem;
+    product: BarcodeProduct;
+  }>(`/api/barcode/${clean}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return { item: result.item, product: result.product };
+};
 
 export const updateItem = (id: string, item: Partial<PantryItem>): Promise<PantryItem> =>
   fetchApi<PantryItem>(`/api/items/${id}`, {

@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { usePantry } from "@/contexts/pantry-provider";
 import { EditItemModal } from "@/components/dashboard/edit-item-modal";
 import ProductInfoModal from "@/components/ProductInfoModal";
 import LinkBarcodeModal from "@/components/LinkBarcodeModal";
-import { updateItem } from "@/services/apiService";
+import { ApiError } from "@/services/apiService";
 
 const emptyItem = {
   id: "",
@@ -40,11 +40,12 @@ export function DashboardModals() {
     toggleItemChecked,
     setShoppingListBoughtQuantities,
     success,
-    showToast,
-    handleAdjustQuantity,
-    handleCreateItem,
+    handleSaveScannedProduct,
     router,
   } = usePantry();
+
+  const [scanSaveError, setScanSaveError] = useState<string | null>(null);
+  const [isSavingScan, setIsSavingScan] = useState(false);
 
   return (
     <>
@@ -130,125 +131,91 @@ export function DashboardModals() {
               </div>
             </div>
 
+            {scanSaveError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm">
+                {scanSaveError}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <button
                 onClick={() => {
+                  setScanSaveError(null);
                   setIsConfirmingScan(false);
                   setScannedProduct(null);
                 }}
-                className="flex-1 py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                disabled={isSavingScan}
+                className="flex-1 py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={async () => {
-                  if (!scannedProduct) return;
+                  if (!scannedProduct || isSavingScan) return;
 
                   const product = scannedProduct;
                   const quantity = scanQuantity;
-
-                  if (activeShoppingSession != null) {
-                    const matchedItem = shoppingList.find(
-                      (item) =>
-                        item.name.toLowerCase() ===
-                          product.name.toLowerCase() ||
-                        (product.barcode &&
-                          inventory.some(
-                            (i) =>
-                              i.barcode === product.barcode &&
-                              i.name.toLowerCase() ===
-                                item.name.toLowerCase()
-                          ))
-                    );
-
-                    if (matchedItem != null) {
-                      if (!matchedItem.isChecked) {
-                        toggleItemChecked(matchedItem.id);
-                      }
-                      setShoppingListBoughtQuantities((prev) => ({
-                        ...prev,
-                        [matchedItem.id]:
-                          (prev[matchedItem.id] || 0) + quantity,
-                      }));
-                      const unitText =
-                        quantity === 1
-                          ? matchedItem.unit.replace(/s$/, "")
-                          : matchedItem.unit;
-                      success(
-                        `Added ${quantity} ${unitText} to ${matchedItem.name}`
-                      );
-                      router.push("/dashboard/shopping-list/");
-                      setIsConfirmingScan(false);
-                      setScannedProduct(null);
-                      return;
-                    }
-                  }
+                  setScanSaveError(null);
+                  setIsSavingScan(true);
 
                   try {
-                    const existing = inventory.find(
-                      (i) =>
-                        i.barcode === product.barcode ||
-                        i.name.toLowerCase() === product.name.toLowerCase()
-                    );
+                    if (activeShoppingSession != null) {
+                      const matchedItem = shoppingList.find(
+                        (item) =>
+                          item.name.toLowerCase() ===
+                            product.name.toLowerCase() ||
+                          (product.barcode &&
+                            inventory.some(
+                              (i) =>
+                                i.barcode === product.barcode &&
+                                i.name.toLowerCase() ===
+                                  item.name.toLowerCase()
+                            ))
+                      );
 
-                    if (existing != null) {
-                      if (!existing.barcode && product.barcode) {
-                        await updateItem(existing.id, {
-                          barcode: product.barcode,
-                        });
+                      if (matchedItem != null) {
+                        if (!matchedItem.isChecked) {
+                          toggleItemChecked(matchedItem.id);
+                        }
+                        setShoppingListBoughtQuantities((prev) => ({
+                          ...prev,
+                          [matchedItem.id]:
+                            (prev[matchedItem.id] || 0) + quantity,
+                        }));
+                        const unitText =
+                          quantity === 1
+                            ? matchedItem.unit.replace(/s$/, "")
+                            : matchedItem.unit;
+                        success(
+                          `Added ${quantity} ${unitText} to ${matchedItem.name}`
+                        );
+                        router.push("/dashboard/shopping-list/");
+                        setIsConfirmingScan(false);
+                        setScannedProduct(null);
+                        return;
                       }
-                      await handleAdjustQuantity(existing.id, quantity);
-                      const unitText =
-                        quantity === 1
-                          ? existing.unit.replace(/s$/, "")
-                          : existing.unit;
-                      success(
-                        `Added ${quantity} ${unitText} to ${existing.name}`
-                      );
-                    } else {
-                      await handleCreateItem({
-                        name:
-                          product.name.charAt(0).toUpperCase() +
-                          product.name.slice(1),
-                        quantity,
-                        unit: "units",
-                        category: product.category || "other",
-                        barcode: product.barcode,
-                        productInfo: {
-                          barcode: product.barcode,
-                          name: product.name,
-                          brand: product.brand,
-                          category: product.category,
-                          imageUrl: product.image,
-                          ingredients: product.ingredients,
-                          nutrition: product.nutrition,
-                          source: (product.source ||
-                            "openfoodfacts") as "openfoodfacts" | "manual",
-                          infoLastSynced:
-                            product.infoLastSynced ||
-                            new Date().toISOString(),
-                        },
-                      });
-                      const unitText = quantity === 1 ? "unit" : "units";
-                      showToast(
-                        `${product.name} (${quantity} ${unitText}) added to inventory`,
-                        "success"
-                      );
                     }
+
+                    await handleSaveScannedProduct(product, quantity);
                     router.push("/dashboard/");
-                  } catch {
-                    showToast(
-                      "Failed to add item to inventory. Please try again.",
-                      "error"
-                    );
-                  } finally {
                     setIsConfirmingScan(false);
                     setScannedProduct(null);
+                  } catch (err) {
+                    const message =
+                      err instanceof ApiError
+                        ? err.message
+                        : "Failed to add item to inventory. Please try again.";
+                    setScanSaveError(message);
+                  } finally {
+                    setIsSavingScan(false);
                   }
                 }}
-                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                disabled={isSavingScan}
+                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
-                Add {scanQuantity} to Inventory
+                {isSavingScan
+                  ? "Saving..."
+                  : `Add ${scanQuantity} to Inventory`}
               </button>
             </div>
           </div>

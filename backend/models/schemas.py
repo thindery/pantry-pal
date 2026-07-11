@@ -30,6 +30,7 @@ class ActivitySource(str, Enum):
     MANUAL = "MANUAL"
     RECEIPT_SCAN = "RECEIPT_SCAN"
     VISUAL_USAGE = "VISUAL_USAGE"
+    BARCODE_SCAN = "BARCODE_SCAN"
     SHOPPING_SESSION = "SHOPPING_SESSION"
 
 
@@ -227,9 +228,16 @@ class ClientErrorCreateRequest(BaseModel):
 class BarcodeSaveRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name: str
-    quantity: float = 1
-    unit: str = "pieces"
-    category: str
-    brand: Optional[str] = None
-    imageUrl: Optional[str] = None
+    name: str = Field(..., min_length=1, max_length=MAX_ITEM_NAME_LENGTH)
+    quantity: float = Field(default=1, gt=0, le=999999)
+    unit: str = Field(default="pieces", min_length=1, max_length=MAX_UNIT_LENGTH)
+    category: str = Field(..., min_length=1, max_length=MAX_CATEGORY_LENGTH)
+    brand: Optional[str] = Field(default=None, max_length=200)
+    imageUrl: Optional[str] = Field(default=None, max_length=2000)
+    ingredients: Optional[str] = Field(default=None, max_length=8000)
+    nutrition: Optional[dict[str, float]] = None
+
+    @field_validator("name", "unit", "category")
+    @classmethod
+    def strip_whitespace(cls, v: str) -> str:
+        return v.strip()

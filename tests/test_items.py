@@ -31,22 +31,32 @@ def test_list_items(mock_get, client, auth_headers):
     mock_get.assert_called_once()
 
 
+@patch("backend.routers.items.barcode_service.ensure_product_cached")
 @patch(
     "backend.routers.items.subscription_service.can_add_items",
     return_value={"allowed": True, "remaining": 45},
 )
 @patch("backend.routers.items.pantry_service.get_all_items", return_value=[])
 @patch("backend.routers.items.pantry_service.create_item", return_value=SAMPLE_ITEM)
-def test_create_item_validation(mock_create, mock_get, mock_can, client, auth_headers):
+def test_create_item_validation(
+    mock_create, mock_get, mock_can, mock_cache, client, auth_headers
+):
     response = client.post(
         "/api/items",
         headers=auth_headers,
-        json={"name": "Apple", "quantity": 5, "unit": "pieces", "category": "produce"},
+        json={
+            "name": "Apple",
+            "quantity": 5,
+            "unit": "pieces",
+            "category": "produce",
+            "barcode": "012345678905",
+        },
     )
     assert response.status_code == 201
     data = response.json()
     assert data["success"] is True
     assert data["data"]["id"] == SAMPLE_ITEM["id"]
+    mock_cache.assert_called_once()
 
 
 @patch(

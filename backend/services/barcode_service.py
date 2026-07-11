@@ -76,6 +76,30 @@ def get_product_by_barcode(barcode: str, max_age_days: Optional[int] = None) -> 
             return _row_to_product(row) if row else None
 
 
+def ensure_product_cached(
+    barcode: str,
+    *,
+    name: str,
+    category: str,
+    brand: Optional[str] = None,
+    image_url: Optional[str] = None,
+    source: str = "manual_entry",
+) -> None:
+    """Upsert minimal product metadata when an item is saved with a barcode."""
+    if get_product_by_barcode(barcode):
+        return
+    save_product(
+        {
+            "barcode": barcode,
+            "name": name,
+            "brand": brand,
+            "category": category,
+            "imageUrl": image_url,
+            "source": source,
+        }
+    )
+
+
 def save_product(data: dict[str, Any]) -> None:
     now = _now()
     nutrition = json.dumps(data["nutrition"]) if data.get("nutrition") else None
