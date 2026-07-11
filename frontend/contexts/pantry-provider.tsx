@@ -117,8 +117,13 @@ export function usePantryState() {
   // Sort state
   const [sortBy, setSortBy] = useState<'recent' | 'quantity' | 'alphabetical'>('recent');
 
-  // Stat card filter state (for inventory view)
+  // Stat card filter state (legacy / inventory deep links)
   const [statCardFilter, setStatCardFilter] = useState<string | null>(null);
+
+  // Pantry list filter chips (PP-043)
+  const [pantryFilter, setPantryFilter] = useState<"all" | "low" | "out">("all");
+
+  const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
 
   // Dashboard inline filter state
   type DashboardInlineFilter = 'low-stock' | 'out-of-stock' | 'expiring-soon' | 'expired' | 'all-items' | null;
@@ -157,29 +162,41 @@ export function usePantryState() {
     }
   }, []);
 
+  const itemIsLowStock = useCallback(
+    (item: PantryItem): boolean => {
+      const threshold =
+        thresholdConfig[item.category] ??
+        DEFAULT_THRESHOLDS[item.category] ??
+        2;
+      return item.quantity > 0 && item.quantity <= threshold;
+    },
+    [thresholdConfig]
+  );
+
   // Filtered and sorted inventory
   const filteredInventory = useMemo(() => {
     let items = Array.isArray(inventory) ? [...inventory] : [];
 
-    // Apply stat card filter
-    if (statCardFilter) {
+    if (pantryFilter === "low") {
+      items = items.filter((i) => itemIsLowStock(i));
+    } else if (pantryFilter === "out") {
+      items = items.filter((i) => i.quantity === 0);
+    } else if (statCardFilter) {
       switch (statCardFilter) {
-        case 'In Stock':
+        case "In Stock":
           items = items.filter((i) => i.quantity > 0);
           break;
-        case 'Low Stock':
-          items = items.filter((i) => i.quantity > 0 && i.quantity < 3);
+        case "Low Stock":
+          items = items.filter((i) => itemIsLowStock(i));
           break;
-        case 'Out of Stock':
+        case "Out of Stock":
           items = items.filter((i) => i.quantity === 0);
           break;
-        case 'Expiring Soon':
-          // For now, filter to items with quantity > 0 (placeholder for expiry logic)
+        case "Expiring Soon":
           items = items.filter((i) => i.quantity > 0);
           break;
-        case 'Total':
+        case "Total":
         default:
-          // No filtering for Total
           break;
       }
     }
@@ -195,11 +212,10 @@ export function usePantryState() {
       default:
         return items;
     }
-  }, [inventory, sortBy, statCardFilter]);
+  }, [inventory, sortBy, statCardFilter, pantryFilter, itemIsLowStock]);
 
   // Shopping List State
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
-  const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
   const [isGeneratingList, setIsGeneratingList] = useState(false);
   const [shoppingListBoughtQuantities, setShoppingListBoughtQuantities] = useState<Record<string, number>>({});
@@ -838,7 +854,7 @@ export function usePantryState() {
       }
     }
 
-    router.push('/dashboard/inventory/');
+    router.push('/dashboard/');
 
     if (failedItems.length === 0) {
       alert(`Successfully added ${addedItems.length} item(s) to inventory!`);
@@ -870,6 +886,8 @@ export function usePantryState() {
     viewMode, setViewMode,
     sortBy, setSortBy,
     statCardFilter, setStatCardFilter,
+    pantryFilter, setPantryFilter,
+    itemIsLowStock,
     dashboardInlineFilter, setDashboardInlineFilter,
     clearStatCardFilter, clearDashboardInlineFilter,
     handleStatCardClick,

@@ -1,5 +1,5 @@
-import { DashboardHome } from "@/components/dashboard/views/dashboard-home";
+import { InventoryView } from "@/components/dashboard/views/inventory-view";
 
 export default function DashboardPage() {
-  return <DashboardHome />;
+  return <InventoryView />;
 }

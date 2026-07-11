@@ -46,7 +46,7 @@ export function ScanUsageView() {
                     for (const r of results) {
                       await adjustStock(r.name, -r.quantityUsed);
                     }
-                    router.push("/dashboard/inventory/");
+                    router.push("/dashboard/");
                   } catch {
                     alert("Error processing image.");
                   } finally {

@@ -4,14 +4,23 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/components/Toast";
 import { DashboardNavbar } from "@/components/dashboard/navbar";
 import { DashboardModals } from "@/components/dashboard/dashboard-modals";
+import { ThresholdSettingsModal } from "@/components/dashboard/ThresholdSettingsModal";
 import { PantryProvider, usePantry } from "@/contexts/pantry-provider";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { toasts, removeToast, toast, isPaid } = usePantry();
+  const {
+    toasts,
+    removeToast,
+    toast,
+    showThresholdSettings,
+    setShowThresholdSettings,
+    thresholdConfig,
+    setThresholdConfig,
+  } = usePantry();
 
   return (
     <>
-      <DashboardNavbar isPaid={isPaid} />
+      <DashboardNavbar />
       <div className="min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
@@ -28,8 +37,15 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
 
         <DashboardModals />
-        <main className="py-8">{children}</main>
+        <main className="py-6 md:py-8">{children}</main>
       </div>
+      {showThresholdSettings && (
+        <ThresholdSettingsModal
+          thresholdConfig={thresholdConfig}
+          onChange={setThresholdConfig}
+          onClose={() => setShowThresholdSettings(false)}
+        />
+      )}
     </>
   );
 }

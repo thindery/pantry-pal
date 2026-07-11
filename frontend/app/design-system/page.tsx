@@ -296,7 +296,7 @@ export default function DesignSystemPage() {
             </Link>
             {" · "}
             <Link
-              href="/dashboard/inventory/"
+              href="/dashboard/"
               className="text-[var(--primary)] font-medium hover:underline"
             >
               Current inventory (requires sign-in)

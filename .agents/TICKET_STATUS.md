@@ -91,7 +91,8 @@ Last updated: 2026-07-11 (PP-040 brand consolidation)
 |--------|-------|--------|
 | PP-040 | Brand consolidation — Pantry Hub (DBA) | ✅ Done |
 | PP-041 | Marketing pages & legal links audit | ✅ Done |
-| PP-042 | Dashboard UX & design kit — designer handoff | 🎨 Handoff ready |
+| PP-042 | Dashboard UX & design kit — designer handoff | ✅ Approved |
+| PP-043 | Dashboard UI implementation | ✅ Done |
 
 ---
 

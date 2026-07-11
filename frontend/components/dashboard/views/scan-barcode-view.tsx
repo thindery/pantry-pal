@@ -19,7 +19,7 @@ export function ScanBarcodeView() {
         setScanQuantity(1);
         setIsConfirmingScan(true);
       }}
-      onCancel={() => router.push("/dashboard/inventory/")}
+      onCancel={() => router.push("/dashboard/")}
     />
   );
 }

@@ -62,7 +62,7 @@ export function AddItemView() {
           <div className="max-w-lg mx-auto animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-2 mb-6">
               <button
-                onClick={() => router.push("/dashboard/inventory/")}
+                onClick={() => router.push("/dashboard/")}
                 className="text-slate-400 hover:text-slate-600 text-sm"
               >
                 ← Back to Inventory
@@ -70,7 +70,7 @@ export function AddItemView() {
             </div>
             <AddItemForm
               onSubmit={handleCreateItem}
-              onCancel={() => router.push("/dashboard/inventory/")}
+              onCancel={() => router.push("/dashboard/")}
               isLoading={isAddingItem}
             />
           </div>

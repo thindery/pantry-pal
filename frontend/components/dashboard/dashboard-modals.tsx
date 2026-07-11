@@ -246,7 +246,7 @@ export function DashboardModals() {
                         "success"
                       );
                     }
-                    router.push("/dashboard/inventory/");
+                    router.push("/dashboard/");
                   } catch {
                     showToast(
                       "Failed to add item to inventory. Please try again.",

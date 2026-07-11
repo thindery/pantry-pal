@@ -1,6 +1,6 @@
 # PP-042: Dashboard UX & design kit review
 
-**Status:** 🎨 Designer handoff ready
+**Status:** ✅ Approved — implemented in PP-043
 **Priority:** P1  
 **Phase:** 3 — Brand & polish  
 **Created:** 2026-07-11  

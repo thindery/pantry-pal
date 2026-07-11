@@ -1,247 +1,181 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Barcode, Loader2, Package, Plus, Search } from "lucide-react";
+import { UserButton } from "@/components/auth/UserButton";
+import { PantryListRow } from "@/components/dashboard/PantryListRow";
 import { usePantry } from "@/contexts/pantry-provider";
-
-import { InventoryItemRow } from "@/components/dashboard/inventory-item-row";
-import InventoryCard from "@/components/InventoryCard";
+import { BRAND_NAME } from "@/lib/site-content";
 
 export function InventoryView() {
   const {
     router,
     inventory,
-    activities,
-    featureFlags,
-    dashboardInlineFilter,
-    handleStatCardClick,
-    clearDashboardInlineFilter,
-    handleAdjustQuantity,
-    handleSetToZero,
-    setEditingItem,
-    setInfoItem,
-    setLinkingBarcodeItem,
-    updatingItemIds,
-    handleScanReceiptClick,
-    handleVoiceAssistantClick,
-    statCardFilter,
-    clearStatCardFilter,
+    pantryFilter,
+    setPantryFilter,
     sortBy,
     setSortBy,
-    viewMode,
-    setViewMode,
     filteredInventory,
+    itemIsLowStock,
     inventoryError,
     isLoadingInventory,
     loadInventory,
-    handleCreateItem,
-    isAddingItem,
-    shoppingList,
-    activeShoppingSession,
-    sessionExpanded,
-    setSessionExpanded,
-    startingSession,
-    handleStartSessionInline,
-    isGeneratingList,
-    generateShoppingList,
-    shoppingListBoughtQuantities,
-    toggleItemChecked,
-    updateShoppingItemQuantity,
-    markItemAsBought,
-    removeShoppingItem,
-    addManualShoppingItem,
-    copyToClipboard,
-    shareShoppingList,
-    clearShoppingList,
-    showThresholdSettings,
-    setShowThresholdSettings,
-    thresholdConfig,
-    setThresholdConfig,
+    handleAdjustQuantity,
+    setEditingItem,
+    setInfoItem,
+    updatingItemIds,
   } = usePantry();
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const displayedItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return filteredInventory;
+    return filteredInventory.filter((item) =>
+      item.name.toLowerCase().includes(q)
+    );
+  }, [filteredInventory, searchQuery]);
+
+  const filterChips = [
+    { id: "all" as const, label: "All" },
+    { id: "low" as const, label: "Low" },
+    { id: "out" as const, label: "Out" },
+  ];
+
   return (
-          <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-            {/* Header Row */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-2xl font-bold text-slate-800">Your Pantry</h2>
-                {statCardFilter && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-600">
-                      Filtered by: <span className="font-semibold text-emerald-600">{statCardFilter}</span>
-                    </span>
-                    <button
-                      onClick={clearStatCardFilter}
-                      className="text-xs px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
-                    >
-                      Clear filter
-                    </button>
-                  </div>
-                )}
-              </div>
-              {/* Compact Action Buttons Toolbar */}
-              <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-                <button
-                  onClick={() => router.push("/dashboard/scan-barcode/")}
-                  className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
-                  title="Scan Barcode"
-                >
-                  <span className="text-base">📱</span>
-                  <span className="hidden sm:inline">Barcode</span>
-                </button>
-                <button
-                  onClick={() => router.push("/dashboard/scan-receipt/")}
-                  className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
-                  title="Scan Receipt"
-                >
-                  <span className="text-base">📷</span>
-                  <span className="hidden sm:inline">Receipt</span>
-                </button>
-                <button
-                  onClick={() => router.push("/dashboard/add-item/")}
-                  className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
-                  title="Add Item"
-                >
-                  <span className="text-base">➕</span>
-                  <span className="hidden sm:inline">Add</span>
-                </button>
-              </div>
-            </div>
+    <div className="space-y-4 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Package className="text-[var(--primary)]" size={22} />
+          <h1 className="text-xl font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
+        </div>
+        <UserButton />
+      </div>
 
-            {/* Controls Toolbar - Sort + View Toggle */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200">
-              {/* Sort By */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">Sort by:</span>
-                <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-                  {(['recent', 'quantity', 'alphabetical'] as const).map((sort) => (
-                    <button
-                      key={sort}
-                      onClick={() => setSortBy(sort)}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                        sortBy === sort
-                          ? 'bg-white text-slate-800 shadow-sm'
-                          : 'text-slate-500 hover:text-slate-700'
-                      }`}
-                    >
-                      {sort === 'recent' ? 'Recent' : sort === 'quantity' ? 'Quantity' : 'Name'}
-                    </button>
-                  ))}
-                </div>
-              </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/scan-barcode/")}
+          className="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-xl px-4 py-3 font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+        >
+          <Barcode size={20} />
+          Scan item
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/add-item/")}
+          className="inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-xl px-4 py-3 font-semibold hover:bg-[var(--surface-muted)] transition-colors"
+        >
+          <Plus size={20} />
+          Add manually
+        </button>
+      </div>
 
-              {/* View Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">View:</span>
-                <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setViewMode('table')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
-                      viewMode === 'table'
-                        ? 'bg-white text-slate-800 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    <span>📋</span> Table
-                  </button>
-                  <button
-                    onClick={() => setViewMode('cards')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
-                      viewMode === 'cards'
-                        ? 'bg-white text-slate-800 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    <span>🃏</span> Cards
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div className="relative">
+        <Search
+          size={18}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]"
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search items..."
+          className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-xl bg-[var(--surface)] text-[var(--foreground)] placeholder:text-[var(--muted-light)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+        />
+      </div>
 
-            {inventoryError && (
-              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm flex justify-between items-center">
-                <span>Error loading inventory: {inventoryError}</span>
-                <button
-                  onClick={loadInventory}
-                  className="px-3 py-1 bg-rose-100 rounded-lg hover:bg-rose-200 transition-colors"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          {filterChips.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => setPantryFilter(chip.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                pantryFilter === chip.id
+                  ? "bg-[var(--primary-light)] text-[var(--primary)]"
+                  : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as "recent" | "quantity" | "alphabetical")
+          }
+          className="text-sm text-[var(--muted)] bg-[var(--surface)] border border-[var(--border)] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          aria-label="Sort inventory"
+        >
+          <option value="recent">Recent</option>
+          <option value="alphabetical">Name</option>
+          <option value="quantity">Quantity</option>
+        </select>
+      </div>
 
-            {isLoadingInventory ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin text-4xl">⏳</div>
-              </div>
-            ) : inventory.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-                <p className="text-4xl mb-4">📦</p>
-                <p className="text-slate-500 mb-4">Your pantry is empty</p>
-                <button
-                  onClick={() => router.push("/dashboard/add-item/")}
-                  className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-                >
-                  Add Your First Item
-                </button>
-              </div>
-            ) : filteredInventory.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-                <p className="text-4xl mb-4">🔍</p>
-                <p className="text-slate-500 mb-4">No items match the "{statCardFilter}" filter</p>
-                <button
-                  onClick={clearStatCardFilter}
-                  className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-                >
-                  Clear Filter
-                </button>
-              </div>
-            ) : viewMode === 'table' ? (
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                      <tr>
-                        <th className="px-3 py-3 md:px-6 md:py-4">Item</th>
-                        <th className="px-3 py-3 md:px-6 md:py-4">Quantity</th>
-                        <th className="px-3 py-3 md:px-6 md:py-4">Status</th>
-                        <th className="px-3 py-3 md:px-6 md:py-4">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredInventory.map((item) => (
-                        <InventoryItemRow
-                          key={item.id}
-                          item={item}
-                          onAdjustQuantity={handleAdjustQuantity}
-                          onSetToZero={handleSetToZero}
-                          onEdit={() => setEditingItem(item)}
-                          onInfo={() => setInfoItem(item)}
-                          onLinkBarcode={() => setLinkingBarcodeItem(item)}
-                          isUpdating={updatingItemIds.has(item.id)}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredInventory.map((item) => (
-                  <InventoryCard
-                    key={item.id}
-                    item={item}
-                    onAdjustQuantity={handleAdjustQuantity}
-                    onSetToZero={handleSetToZero}
-                    onEdit={() => setEditingItem(item)}
-                    onInfo={() => setInfoItem(item)}
-                    onLinkBarcode={() => setLinkingBarcodeItem(item)}
-                    isUpdating={updatingItemIds.has(item.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        
+      {inventoryError && (
+        <div className="p-4 bg-[var(--danger-light)] border border-rose-200 rounded-xl text-[var(--danger)] text-sm flex justify-between items-center gap-3">
+          <span>Error loading inventory: {inventoryError}</span>
+          <button
+            type="button"
+            onClick={loadInventory}
+            className="px-3 py-1 bg-rose-100 rounded-lg hover:bg-rose-200 transition-colors shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {isLoadingInventory ? (
+        <div className="flex items-center justify-center py-16 text-[var(--primary)]">
+          <Loader2 size={32} className="animate-spin" />
+        </div>
+      ) : inventory.length === 0 ? (
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 text-center">
+          <Package size={40} className="mx-auto mb-4 text-[var(--muted-light)]" />
+          <p className="text-[var(--foreground)] font-semibold mb-1">Your pantry is empty</p>
+          <p className="text-[var(--muted)] text-sm mb-4">Scan a barcode or add your first item.</p>
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard/add-item/")}
+            className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+          >
+            Add your first item
+          </button>
+        </div>
+      ) : displayedItems.length === 0 ? (
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 text-center">
+          <Search size={32} className="mx-auto mb-3 text-[var(--muted-light)]" />
+          <p className="text-[var(--muted)]">No items match your search or filter.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery("");
+              setPantryFilter("all");
+            }}
+            className="mt-3 text-sm text-[var(--primary)] font-medium hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      ) : (
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm divide-y divide-[var(--border)] overflow-hidden">
+          {displayedItems.map((item) => (
+            <PantryListRow
+              key={item.id}
+              item={item}
+              isLowStock={itemIsLowStock(item)}
+              onAdjustQuantity={handleAdjustQuantity}
+              onEdit={() => setEditingItem(item)}
+              onInfo={() => setInfoItem(item)}
+              isUpdating={updatingItemIds.has(item.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
