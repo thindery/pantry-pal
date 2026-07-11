@@ -467,6 +467,21 @@ const createItemFromBarcode = (barcodeProduct: BarcodeProduct): Partial<PantryIt
 
 ---
 
+## Bearer Token Contract (PP-057)
+
+Next.js middleware mints short-lived HS256 JWTs for FastAPI on each authenticated `/api/*` request.
+
+| Claim | Value | Notes |
+|-------|-------|-------|
+| `sub` | User ID | Required |
+| `email` | User email | Optional |
+| `aud` | `pantry-pal` (configurable via `JWT_AUDIENCE`) | Required — tokens without matching audience are rejected |
+| `iat` / `exp` | Issued / 30-day expiry | Set in `frontend/lib/auth-token.ts` |
+
+Backend verification: `backend/auth_session.py` → `verify_nextauth_token()` with `verify_aud: True`.
+
+---
+
 ## Summary
 
 **Recommended Architecture: Option C (Hybrid)**

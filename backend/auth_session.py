@@ -22,6 +22,10 @@ def _auth_secret() -> str:
     return os.getenv("AUTH_SECRET", os.getenv("NEXTAUTH_SECRET", "")).strip()
 
 
+def _jwt_audience() -> str:
+    return os.getenv("JWT_AUDIENCE", "pantry-pal").strip() or "pantry-pal"
+
+
 def verify_nextauth_token(token: str) -> tuple[Optional[str], Optional[str]]:
     secret = _auth_secret()
     if not secret or not token:
@@ -31,9 +35,14 @@ def verify_nextauth_token(token: str) -> tuple[Optional[str], Optional[str]]:
             token,
             secret,
             algorithms=["HS256"],
-            options={"verify_aud": False},
+            audience=_jwt_audience(),
+            options={"verify_aud": True},
         )
     except JWTError:
+        return None, None
+    aud = claims.get("aud")
+    expected_aud = _jwt_audience()
+    if aud != expected_aud:
         return None, None
     sub = claims.get("sub") or claims.get("id")
     if not isinstance(sub, str) or not sub:

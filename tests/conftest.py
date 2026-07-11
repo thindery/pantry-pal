@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 os.environ.setdefault("ALLOW_TEST_AUTH", "1")
+os.environ.setdefault("RATE_LIMIT_STORE", "memory")
 os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/pantry_pal_test")
 
 from app import app  # noqa: E402
@@ -15,11 +16,16 @@ from app import app  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def clear_rate_limits():
-    from backend.middleware.rate_limit import _buckets
+    from backend.services.rate_limit_service import (
+        clear_memory_buckets,
+        clear_rate_limit_events,
+    )
 
-    _buckets.clear()
+    clear_memory_buckets()
+    clear_rate_limit_events()
     yield
-    _buckets.clear()
+    clear_memory_buckets()
+    clear_rate_limit_events()
 
 
 @pytest.fixture

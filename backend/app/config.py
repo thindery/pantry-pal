@@ -10,14 +10,16 @@ from typing import List
 class Settings:
     APP_NAME = "Pantry Hub API"
     APP_VERSION = "1.0.0"
-    PORT = int(os.getenv("PORT", "8000"))
-    ENVIRONMENT = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))
 
-    # Rate limits (requests per minute) — PP-030
-    RATE_LIMIT_GENERAL = int(os.getenv("RATE_LIMIT_GENERAL", "100"))
-    RATE_LIMIT_RECEIPT_SCAN = int(os.getenv("RATE_LIMIT_RECEIPT_SCAN", "10"))
-    RATE_LIMIT_BARCODE = int(os.getenv("RATE_LIMIT_BARCODE", "30"))
-    RATE_LIMIT_CLIENT_ERRORS = int(os.getenv("RATE_LIMIT_CLIENT_ERRORS", "10"))
+    def __init__(self) -> None:
+        self.PORT = int(os.getenv("PORT", "8000"))
+        self.ENVIRONMENT = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))
+
+        # Rate limits (requests per minute) — PP-030 / PP-052
+        self.RATE_LIMIT_GENERAL = int(os.getenv("RATE_LIMIT_GENERAL", "100"))
+        self.RATE_LIMIT_RECEIPT_SCAN = int(os.getenv("RATE_LIMIT_RECEIPT_SCAN", "10"))
+        self.RATE_LIMIT_BARCODE = int(os.getenv("RATE_LIMIT_BARCODE", "30"))
+        self.RATE_LIMIT_CLIENT_ERRORS = int(os.getenv("RATE_LIMIT_CLIENT_ERRORS", "10"))
 
     @property
     def cors_origins(self) -> List[str]:

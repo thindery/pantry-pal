@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-07-11 (PP-058 Gemini decommission + security fixes)
+Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,7 +16,7 @@ Last updated: 2026-07-11 (PP-058 Gemini decommission + security fixes)
 | Done | 42 |
 | In progress | 1 (PP-033) |
 | Ready | 2 (PP-034, PP-035) |
-| Security open | 2 (PP-052, PP-059) |
+| Security open | 0 |
 | User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
 
 ---
@@ -111,16 +111,16 @@ Last updated: 2026-07-11 (PP-058 Gemini decommission + security fixes)
 | PP-049 | Validate Stripe redirect URLs | P1 | ✅ Done |
 | PP-050 | Remove public admin email env | P2 | ✅ Done |
 | PP-051 | Add HSTS + CSP headers | P2 | ✅ Done |
-| PP-052 | Redis rate limiting | P2 | 📋 Open |
+| PP-052 | Postgres rate limiting | P2 | ✅ Done |
 | PP-053 | Validate receiptUrl | P2 | ✅ Done |
 | PP-054 | Restrict /health exposure | P2 | ✅ Done |
 | PP-055 | Sanitize API error responses | P3 | ✅ Done |
 | PP-056 | Stripe webhook signature tests | P3 | ✅ Done |
-| PP-057 | JWT aud + OAuth linking hardening | P3 | 🔄 Partial (OAuth linking off) |
+| PP-057 | JWT aud + OAuth linking hardening | P3 | ✅ Done |
 | PP-058 | Decommission Gemini client integration | P0 | ✅ Done |
-| PP-059 | Research voice/usage without AI tokens | P2 | 📋 Open |
+| PP-059 | Research voice/usage without AI tokens | P2 | ✅ Done |
 
-**Remaining:** PP-052 (Redis), PP-057 (`aud` claim), PP-059 (research) → re-audit
+**Remaining:** Security remediation complete — schedule follow-up re-audit; optional PP-060/PP-061 from voice-usage research
 
 ---
 

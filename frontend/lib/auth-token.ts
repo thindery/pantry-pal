@@ -2,6 +2,9 @@ import { getToken } from "next-auth/jwt";
 import { SignJWT } from "jose";
 import type { NextRequest } from "next/server";
 
+/** Audience claim for FastAPI bearer tokens (must match backend JWT_AUDIENCE). */
+export const JWT_AUDIENCE = process.env.JWT_AUDIENCE ?? "pantry-pal";
+
 async function signBearerJwt(sub: string, email?: string | null): Promise<string | null> {
   const secret = process.env.AUTH_SECRET;
   if (!secret || !sub) return null;
@@ -12,6 +15,7 @@ async function signBearerJwt(sub: string, email?: string | null): Promise<string
     email: email ?? undefined,
   })
     .setProtectedHeader({ alg: "HS256" })
+    .setAudience(JWT_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60)
     .sign(key);

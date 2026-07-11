@@ -1,39 +1,28 @@
-"""In-memory rate limiting middleware (PP-030)."""
+"""Rate limiting middleware — Postgres-backed sliding window (PP-052)."""
 
 from __future__ import annotations
 
-import time
-from collections import defaultdict
 from typing import Callable
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.app.config import get_settings
+from backend.auth_session import resolve_authenticated_user
 from backend.models.responses import error_response
-
-_buckets: dict[str, list[float]] = defaultdict(list)
-
-
-def _window_key(identifier: str, window_start: int) -> str:
-    return f"{identifier}:{window_start}"
+from backend.services import rate_limit_service
 
 
-def _prune(bucket: list[float], now: float, window: int = 60) -> list[float]:
-    cutoff = now - window
-    return [t for t in bucket if t > cutoff]
-
-
-def check_rate_limit(identifier: str, limit: int, window: int = 60) -> tuple[bool, int]:
-    now = time.time()
-    bucket = _prune(_buckets[identifier], now, window)
-    if len(bucket) >= limit:
-        _buckets[identifier] = bucket
-        retry_after = int(window - (now - bucket[0])) if bucket else window
-        return False, max(1, retry_after)
-    bucket.append(now)
-    _buckets[identifier] = bucket
-    return True, limit - len(bucket)
+def _endpoint_key(path: str) -> str:
+    if path.startswith("/api/receipts/scan"):
+        return "receipt_scan"
+    if path.startswith("/api/barcode"):
+        return "barcode"
+    if path == "/api/client-errors":
+        return "client_errors"
+    if path.startswith("/api/"):
+        return "general"
+    return path
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -55,17 +44,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         else:
             return await call_next(request)
 
-        user_id = request.headers.get("x-user-id")
-        auth = request.headers.get("Authorization", "")
-        if auth.startswith("Bearer "):
-            identifier = f"user:{auth[7:20]}"
-        elif user_id:
+        endpoint = _endpoint_key(path)
+        user_id, _ = await resolve_authenticated_user(request)
+        if user_id:
             identifier = f"user:{user_id}"
         else:
             host = request.client.host if request.client else "unknown"
             identifier = f"ip:{host}"
 
-        allowed, remaining_or_retry = check_rate_limit(identifier, limit)
+        allowed, remaining_or_retry = rate_limit_service.check_rate_limit(
+            identifier,
+            endpoint,
+            limit,
+        )
         if not allowed:
             from fastapi.responses import JSONResponse
 
