@@ -1,9 +1,9 @@
 # Ticket Status — PantryPal
 
-Last updated: 2026-07-10 (PP-036–039 audit fixes merged)
+Last updated: 2026-07-11 (PP-033 domain: mypantryhub.com)
 
-**Product:** PantryPal — smart pantry inventory & ledger  
-**Domain:** TBD (purchase pending)  
+**Product:** PantryPal / Pantry Hub — smart pantry inventory & ledger  
+**Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
 **Stack:** Next 16 + FastAPI + PG 16 monorepo → OVH Docker  
 **Gold standards:** `markdown-pdf`, `userkudos`, `agent-paige`
 
@@ -14,9 +14,9 @@ Last updated: 2026-07-10 (PP-036–039 audit fixes merged)
 | | Count |
 |--|-------|
 | Done | 38 |
-| In progress | 0 |
-| Blocked (domain) | 2 (PP-033, PP-034) |
-| User action pending | 1 (PP-035 Railway teardown) |
+| In progress | 1 (PP-033) |
+| Ready | 2 (PP-034, PP-035) |
+| User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
 
 ---
 
@@ -70,9 +70,9 @@ Last updated: 2026-07-10 (PP-036–039 audit fixes merged)
 | PP-030 | Rate limiting | ✅ Done (in-memory) |
 | PP-031 | SEO / social / AEO baseline | ✅ Done |
 | PP-032 | Pre-OVH security audit | ✅ Done |
-| PP-033 | Domain + Cloudflare DNS | ⏸️ Blocked (domain purchase) |
-| PP-034 | OVH production cutover | ⏸️ Blocked (domain) |
-| PP-035 | Decommission Railway | 📋 Ready — user dashboard action when OVH live |
+| PP-033 | Domain + Cloudflare DNS | 🔄 In progress |
+| PP-034 | OVH production cutover | 📋 Ready |
+| PP-035 | Decommission Railway | 📋 Ready — after PP-034 live |
 
 > **Note:** PP-021 and PP-026 are marked done for the core migration, but acceptance criteria remain incomplete — tracked in follow-up tickets PP-036 (missing FastAPI routes) and PP-039 (migration 013 + ticket sync).
 
@@ -98,7 +98,8 @@ npm run build:frontend
 
 ## Next steps (human)
 
-1. Purchase domain → PP-033
-2. Configure Cloudflare DNS + TLS
-3. Run `./deploy/deploy-docker.sh main` → PP-034
-4. Stop Railway services → PP-035
+1. **PP-033:** `cd deploy/terraform && terraform apply` · Cloudflare SSL Full · Clerk/Stripe prod URLs
+2. **PP-034:** Copy `.env.prod.example` → `.env.prod` on OVH · install nginx vhost · `./deploy/deploy-docker.sh main`
+3. **PP-035:** Stop Railway services after production smoke passes
+
+See **`deploy/CUTOVER.md`** for the full checklist.

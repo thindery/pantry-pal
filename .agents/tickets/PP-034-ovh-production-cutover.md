@@ -1,6 +1,6 @@
 # PP-034: OVH production cutover
 
-**Status:** ⏸️ Blocked (needs domain PP-033)  
+**Status:** 📋 Ready (domain set — needs PP-033 DNS apply + `.env.prod` on OVH)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `ovh_deployment.md`  
@@ -27,3 +27,4 @@ Deploy PantryPal to OVH: `/opt/pantry-pal`, compose on app-network, nginx vhost,
 ## Log
 
 - 2026-07-10: Ticket created (blocked on domain)
+- 2026-07-11: Domain **mypantryhub.com** — nginx/env templates ready; see `deploy/CUTOVER.md`

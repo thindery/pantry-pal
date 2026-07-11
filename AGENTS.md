@@ -17,7 +17,7 @@
 | Database | PostgreSQL **16** (`DATABASE_URL`) |
 | Auth | Clerk JWT middleware |
 | Payments | Stripe checkout + webhooks |
-| Hosting (target) | OVH Docker + nginx (domain TBD) |
+| Hosting (target) | OVH Docker + nginx — **mypantryhub.com** |
 
 **Legacy reference:** `backend-legacy/` (Express), `docs/legacy/vite-spa/` (Vite SPA).
 
@@ -52,7 +52,8 @@ Husky pre-commit runs `npm run check`. Requires `.venv` with `pip install -r req
 
 ## Domain
 
-Domain not purchased yet (PP-033). Use placeholders — do not hardcode production hostnames.
+**Production:** [mypantryhub.com](https://www.mypantryhub.com) (canonical: `www.mypantryhub.com`).  
+DNS: `deploy/terraform/`. Nginx: `deploy/nginx/pantry-pal.conf`. Prod env: `.env.prod.example`.
 
 ## Gold standards
 
@@ -63,4 +64,4 @@ Domain not purchased yet (PP-033). Use placeholders — do not hardcode producti
 
 - Do not develop against standalone `pantry-pal-api` (archived)
 - Do not commit secrets
-- Do not start OVH live cutover (PP-034) before domain (PP-033) and security audit (PP-032)
+- Do not start OVH live cutover (PP-034) before PP-033 DNS/nginx and security audit (PP-032) are complete

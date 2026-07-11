@@ -55,7 +55,9 @@ pantry-pal/
 
 ## Environment
 
-Use `./switch-env.sh dev|prod` to symlink `.env`. See `.env.example` for all keys.
+Use `./switch-env.sh dev|prod` to symlink `.env`. See `.env.example` (dev) and `.env.prod.example` (production).
+
+**Production domain:** [mypantryhub.com](https://www.mypantryhub.com) — cutover guide: [`deploy/CUTOVER.md`](deploy/CUTOVER.md).
 
 - `NEXT_PUBLIC_*` — frontend (Clerk, API URL, Gemini)
 - `DATABASE_URL` — PostgreSQL (primary store)
