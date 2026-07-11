@@ -20,6 +20,8 @@ import {
 interface LandingPageProps {
   onGetStarted: () => void;
   onLogin: () => void;
+  isLoggedIn?: boolean;
+  onGoToDashboard?: () => void;
 }
 
 // Stats data
@@ -181,9 +183,15 @@ const FAQS = [
   },
 ];
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
+const LandingPage: React.FC<LandingPageProps> = ({
+  onGetStarted,
+  onLogin,
+  isLoggedIn = false,
+  onGoToDashboard,
+}) => {
   const [showFullPricing, setShowFullPricing] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const goToApp = isLoggedIn && onGoToDashboard ? onGoToDashboard : onGetStarted;
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -206,7 +214,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         </div>
         <PricingPreview 
           onSelectPlan={(plan) => {
-            if (plan === 'free') onGetStarted();
+            if (plan === 'free') goToApp();
           }} 
           showFullPricing={true}
         />
@@ -228,18 +236,29 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <button onClick={() => scrollToSection('faq')} className="text-slate-600 hover:text-slate-800 transition-colors">FAQ</button>
             </div>
             <div className="flex items-center gap-4">
-              <button 
-                onClick={onLogin}
-                className="text-slate-600 hover:text-slate-800 font-medium transition-colors"
-              >
-                Log In
-              </button>
-              <button 
-                onClick={onGetStarted}
-                className="bg-[#7CB342] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#689F38] transition-colors"
-              >
-                Get Started
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={onGoToDashboard}
+                  className="bg-[#7CB342] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#689F38] transition-colors"
+                >
+                  Dashboard
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={onLogin}
+                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={onGetStarted}
+                    className="bg-[#7CB342] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#689F38] transition-colors"
+                  >
+                    Get Started
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -261,11 +280,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               Never run out of essentials again. Track your pantry with receipt scanning, barcode lookup, and smart shopping lists.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button 
-                onClick={onGetStarted}
+              <button
+                onClick={goToApp}
                 className="bg-[#7CB342] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#689F38] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#7CB342]/20"
               >
-                Get Started Free
+                {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button 
@@ -352,7 +371,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             </p>
           </div>
           <PricingPreview onSelectPlan={(plan) => {
-            if (plan === 'free') onGetStarted();
+            if (plan === 'free') goToApp();
             else setShowFullPricing(true);
           }} />
           <div className="text-center mt-8">
@@ -439,11 +458,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
             Join thousands of households who've simplified their kitchen management. Start free today.
           </p>
-          <button 
-            onClick={onGetStarted}
+          <button
+            onClick={goToApp}
             className="bg-white text-[#7CB342] px-8 py-4 rounded-xl font-bold hover:bg-slate-100 transition-colors shadow-lg"
           >
-            Get Started Free
+            {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
           </button>
         </div>
       </section>

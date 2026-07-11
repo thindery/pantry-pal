@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingCart, User } from "lucide-react";
+import { Home, Package, ShoppingCart, User } from "lucide-react";
 import { BRAND_NAME } from "@/lib/site-content";
 
 const NAV_LINKS = [
@@ -29,8 +29,15 @@ export function DashboardNavbar() {
   return (
     <>
       <nav className="hidden md:flex fixed top-0 left-0 right-0 w-full bg-[var(--surface)] border-b border-[var(--border)] px-6 py-3 items-center gap-8 z-[9999]">
-        <Link href="/dashboard/" className="font-bold text-lg text-[var(--primary)]">
+        <Link href="/" className="font-bold text-lg text-[var(--primary)]">
           {BRAND_NAME}
+        </Link>
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)] transition-colors"
+        >
+          <Home size={18} />
+          Home
         </Link>
         {NAV_LINKS.map((link) => {
           const Icon = link.icon;

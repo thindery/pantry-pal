@@ -6,6 +6,7 @@ import {
   Camera,
   ChevronRight,
   ClipboardList,
+  Home,
   LogOut,
   Settings,
   Sparkles,
@@ -27,6 +28,11 @@ export function AccountView() {
   const isAdmin = (session?.user as { isAdmin?: boolean } | undefined)?.isAdmin === true;
 
   const menuItems = [
+    {
+      label: "Homepage",
+      icon: Home,
+      href: "/",
+    },
     {
       label: "Low stock thresholds",
       icon: Settings,
