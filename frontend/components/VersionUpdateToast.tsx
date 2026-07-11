@@ -55,7 +55,7 @@ export default function VersionUpdateToast() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[60] max-w-sm">
+    <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 md:bottom-4 z-[10050] max-w-sm pointer-events-auto">
       <div className="flex items-start gap-3 rounded-xl border border-emerald-500/25 bg-white/95 backdrop-blur-md px-4 py-3 shadow-xl shadow-black/10">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-slate-900">Update available</p>

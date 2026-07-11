@@ -1,6 +1,6 @@
 # PP-025: Frontend deploy version toast
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done  
 **Priority:** P1  
 **Phase:** 3 — Modernization  
 **Playbook:** `frontend_deploy_version_toast.md`  
@@ -16,12 +16,14 @@ Implement portfolio standard stale-tab refresh toast: poll `build-id.txt`, botto
 
 ## Acceptance Criteria
 
-- [ ] `versionCheck.ts` + `VersionUpdateToast.tsx` (or equivalent)
-- [ ] `public/build-id.txt`
-- [ ] Dockerfile / deploy exports BUILD_ID
-- [ ] next.config no-cache on `/build-id.txt`
-- [ ] Mounted in root layout
-- [ ] Auth middleware excludes `/build-id.txt`
+- [x] `versionCheck.ts` + `VersionUpdateToast.tsx`
+- [x] `public/build-id.txt` (`dev` placeholder)
+- [x] Dockerfile / deploy exports BUILD_ID before `docker compose build`
+- [x] `next.config` no-cache on `/build-id.txt`
+- [x] Mounted in root `app/layout.tsx`
+- [x] Auth middleware excludes `/build-id.txt` (public path + matcher)
+- [x] Toast z-index above dashboard mobile nav (`z-[10050]`, `bottom-20` on mobile)
+- [x] Vitest coverage for `isNewerBuildAvailable` + dismiss
 
 ## Related
 
@@ -30,3 +32,4 @@ Implement portfolio standard stale-tab refresh toast: poll `build-id.txt`, botto
 ## Log
 
 - 2026-07-10: Ticket created
+- 2026-07-11: Fixed toast hidden behind dashboard navbar; moved mount to layout; hardened middleware matcher; added versionCheck tests

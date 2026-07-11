@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import VersionUpdateToast from "@/components/VersionUpdateToast";
 import {
   BRAND_NAME,
   SITE_DESCRIPTION,
@@ -71,7 +72,10 @@ export default function RootLayout({
       className={`${inter.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <VersionUpdateToast />
+        </Providers>
       </body>
     </html>
   );
