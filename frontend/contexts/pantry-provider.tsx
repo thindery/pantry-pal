@@ -861,11 +861,16 @@ export function usePantryState() {
   const handleEditItem = async (id: string, updates: Partial<PantryItem>) => {
     setIsEditing(true);
     try {
-      const updatedItem = await updateItem(id, updates);
+      const existing = inventory.find((i) => i.id === id);
+      const payload = { ...updates };
+      if (existing?.barcode?.trim() && "name" in payload) {
+        delete payload.name;
+      }
+      const updatedItem = await updateItem(id, payload);
       setInventory((prev) =>
         prev.map((i) =>
           i.id === id
-            ? { ...i, ...updates, lastUpdated: updatedItem.lastUpdated }
+            ? { ...i, ...payload, lastUpdated: updatedItem.lastUpdated }
             : i
         )
       );

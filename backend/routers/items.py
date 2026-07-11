@@ -84,6 +84,17 @@ async def update_item(item_id: str, body: UpdateItemRequest, user_id: str = Depe
     data = {k: v for k, v in body.model_dump().items() if v is not None}
     if not data:
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "At least one field must be provided for update"))
+    existing = pantry_service.get_item_by_id(user_id, item_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=error_response("NOT_FOUND", f"Item with ID {item_id} not found"))
+    if existing.get("barcode") and "name" in data and data["name"] != existing["name"]:
+        raise HTTPException(
+            status_code=403,
+            detail=error_response(
+                "NAME_LOCKED",
+                "Product name cannot be changed for barcode-linked items.",
+            ),
+        )
     updated = pantry_service.update_item(user_id, item_id, data)
     if not updated:
         raise HTTPException(status_code=404, detail=error_response("NOT_FOUND", f"Item with ID {item_id} not found"))

@@ -17,6 +17,16 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
   const [unit, setUnit] = useState(item.unit);
   const [category, setCategory] = useState(item.category);
   const [error, setError] = useState<string | null>(null);
+  const isNameLocked = Boolean(item.barcode?.trim());
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(item.name);
+      setUnit(item.unit);
+      setCategory(item.category);
+      setError(null);
+    }
+  }, [isOpen, item.id, item.name, item.unit, item.category]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -40,11 +50,11 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
     }
 
     try {
-      await onSave(item.id, {
-        name: name.trim(),
-        unit,
-        category,
-      });
+      const updates: Partial<PantryItem> = { unit, category };
+      if (!isNameLocked) {
+        updates.name = name.trim();
+      }
+      await onSave(item.id, updates);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update item');
@@ -73,15 +83,26 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Item Name
+              {isNameLocked ? "Product Name" : "Item Name"}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+              readOnly={isNameLocked}
+              className={`w-full px-4 py-2 border border-slate-300 rounded-lg outline-none transition-all ${
+                isNameLocked
+                  ? "bg-slate-50 text-slate-700 cursor-not-allowed"
+                  : "focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              }`}
               disabled={isLoading}
             />
+            {isNameLocked && (
+              <p className="text-xs text-slate-500 mt-1">
+                This name comes from the barcode product database and cannot be
+                changed. Only custom items without a barcode can be renamed.
+              </p>
+            )}
           </div>
 
           <div>

@@ -101,3 +101,36 @@ def test_get_item_invalid_id(client, auth_headers):
     assert response.status_code == 400
     data = response.json()
     assert data["error"]["code"] == "VALIDATION_ERROR"
+
+
+BARCODE_ITEM = {
+    **SAMPLE_ITEM,
+    "barcode": "012345678905",
+    "name": "Nerds Gummy Clusters",
+}
+
+
+@patch("backend.routers.items.pantry_service.update_item")
+@patch("backend.routers.items.pantry_service.get_item_by_id", return_value=BARCODE_ITEM)
+def test_update_item_rejects_name_change_for_barcode_item(mock_get, mock_update, client, auth_headers):
+    response = client.put(
+        f"/api/items/{BARCODE_ITEM['id']}",
+        headers=auth_headers,
+        json={"name": "Custom Name"},
+    )
+    assert response.status_code == 403
+    data = response.json()
+    assert data["error"]["code"] == "NAME_LOCKED"
+    mock_update.assert_not_called()
+
+
+@patch("backend.routers.items.pantry_service.update_item", return_value=BARCODE_ITEM)
+@patch("backend.routers.items.pantry_service.get_item_by_id", return_value=BARCODE_ITEM)
+def test_update_item_allows_unit_change_for_barcode_item(mock_get, mock_update, client, auth_headers):
+    response = client.put(
+        f"/api/items/{BARCODE_ITEM['id']}",
+        headers=auth_headers,
+        json={"unit": "bags"},
+    )
+    assert response.status_code == 200
+    mock_update.assert_called_once()
