@@ -11,6 +11,11 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-pantry_pal_prod}
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pantry_pal_user} -d ${POSTGRES_DB:-pantry_pal_prod}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - app-network
 
@@ -51,8 +56,8 @@ services:
         - BUILD_ID=${BUILD_ID:-unknown}
     container_name: pantry-pal-frontend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - PORT=3000
       - HOSTNAME=0.0.0.0
@@ -73,3 +78,4 @@ volumes:
 
 networks:
   app-network:
+    external: true

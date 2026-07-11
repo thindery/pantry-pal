@@ -2,43 +2,70 @@
 
 **Tickets:** PP-033 (DNS) → PP-034 (OVH deploy) → PP-035 (Railway teardown)
 
-## PP-033 — DNS & config (repo)
+OVH follows the same pattern as **agent-paige** and **userkudos**: app containers on shared `app-network`, central Docker nginx at `/opt/nginx/`.
 
-- [x] Domain: **mypantryhub.com** (purchased)
-- [x] Zone in Cloudflare (active)
-- [x] Terraform: `deploy/terraform/`
-- [x] Nginx template: `deploy/nginx/pantry-pal.conf`
-- [x] Prod env template: `.env.prod.example`
-- [x] `terraform apply` in `deploy/terraform/` (A @, CNAME www, wildcard *) — applied 2026-07-11
+## Architecture (OVH)
+
+```
+Cloudflare (proxied, SSL Full) → OVH :443
+  → nginx container (/opt/nginx) — conf.d/*.conf
+    → pantry-pal-frontend:3000  (Next.js)
+    → pantry-pal-backend:8000   (/api/, /health)
+    → pantry-pal-db             (Postgres, internal)
+```
+
+| Path on server | Purpose |
+|----------------|---------|
+| `/opt/pantry-pal` | Git clone + `docker compose` |
+| `/opt/nginx/conf.d/pantry-pal.conf` | Vhost (copied on each deploy) |
+| `/opt/nginx/ssl/cert.pem` | Shared origin cert (Cloudflare Full) |
+| `app-network` | Shared Docker bridge (external) |
+
+**Do not** use host `/etc/nginx` or `127.0.0.1` upstreams — the nginx container cannot reach host ports that way.
+
+## PP-033 — DNS & config
+
+- [x] Domain: **mypantryhub.com**
+- [x] Terraform applied (`deploy/terraform/`)
+- [x] Nginx template uses container names + `resolver 127.0.0.11`
+- [x] `.env.prod.example`
 - [ ] Cloudflare SSL mode: **Full**
-- [ ] Clerk production: add `https://www.mypantryhub.com`, `https://mypantryhub.com` to allowed origins; webhook URL `https://www.mypantryhub.com/api/webhooks/clerk`
-- [ ] Stripe production: webhook `https://www.mypantryhub.com/api/webhooks/stripe`
-- [ ] Resend (if used): verify `mypantryhub.com`, add DKIM in dashboard
+- [ ] Clerk: origins `https://www.mypantryhub.com`, `https://mypantryhub.com`; webhook `https://www.mypantryhub.com/api/webhooks/clerk`
+- [ ] Stripe webhook: `https://www.mypantryhub.com/api/webhooks/stripe`
 
-## PP-034 — OVH
+## PP-034 — First deploy
 
 ```bash
-# 1. On OVH: clone repo, copy .env.prod.example → .env.prod, fill secrets
+# 1. On laptop: ensure .env.prod exists on server (one-time)
 ssh ovh
-sudo mkdir -p /opt/pantry-pal && sudo chown $USER /opt/pantry-pal
-# git clone … /opt/pantry-pal
+cp /opt/pantry-pal/.env.prod.example /opt/pantry-pal/.env.prod   # after clone
+# Fill Clerk/Stripe/Postgres secrets
 
-# 2. Install nginx vhost
-sudo cp /opt/pantry-pal/deploy/nginx/pantry-pal.conf /etc/nginx/conf.d/pantry-pal.conf
-sudo nginx -t && sudo systemctl reload nginx
-
-# 3. Deploy from laptop
+# 2. Deploy (clones repo on first run, installs nginx vhost)
 ./deploy/deploy-docker.sh main
 ```
 
-## Smoke (production)
+The deploy script will:
+- Clone to `/opt/pantry-pal` if missing
+- `docker compose up -d --build` on `app-network`
+- Run migrations
+- Copy `deploy/nginx/pantry-pal.conf` → `/opt/nginx/conf.d/`
+- Reload central nginx: `docker compose exec -T nginx nginx -s reload`
+
+## Smoke
 
 ```bash
 curl -sf https://www.mypantryhub.com/health
 curl -sf https://www.mypantryhub.com/build-id.txt
-# Sign in via Clerk, create item, check Stripe checkout redirect
 ```
 
-## Clerk custom domain (optional later)
+## Compare with agent-paige
 
-If using `clerk.mypantryhub.com`, add **DNS-only** CNAME per `project-director/playbooks/cloudflare_dns.md` (grey cloud, not proxied).
+| Step | agent-paige | pantry-pal |
+|------|-------------|------------|
+| Server path | `/opt/agentpaige` | `/opt/pantry-pal` |
+| Nginx install | `cp deploy/nginx/*.conf /opt/nginx/conf.d/` | Same |
+| Nginx reload | `cd /opt/nginx && docker compose exec nginx …` | Same |
+| Network | `app-network` external | Same |
+| Host port | `3000:3000` (legacy) | `expose: 3000` only (no conflict with agent-paige) |
+| Pre-deploy tests | npm test + ephemeral Postgres | TODO (add before prod traffic) |
