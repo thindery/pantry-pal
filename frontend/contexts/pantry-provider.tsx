@@ -536,7 +536,7 @@ export function usePantryState() {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      setActivities(acts);
+      setActivities(Array.isArray(acts) ? acts : []);
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
@@ -588,7 +588,10 @@ export function usePantryState() {
         amount: Math.abs(amount),
         source,
       });
-      setActivities((prev) => [activity, ...prev].slice(0, 100));
+      setActivities((prev) => {
+        const list = Array.isArray(prev) ? prev : [];
+        return [activity, ...list].slice(0, 100);
+      });
     } catch (_err) {
       const newActivity: Activity = {
         id: Math.random().toString(36).substr(2, 9),
@@ -599,7 +602,10 @@ export function usePantryState() {
         timestamp: new Date().toISOString(),
         source,
       };
-      setActivities((prev) => [newActivity, ...prev].slice(0, 100));
+      setActivities((prev) => {
+        const list = Array.isArray(prev) ? prev : [];
+        return [newActivity, ...list].slice(0, 100);
+      });
     }
   };
 
@@ -617,12 +623,7 @@ export function usePantryState() {
 
     setIsAddingItem(true);
     try {
-      const response = await createItem(itemData);
-      // Backend returns { data: {...}, success: true, meta: {...} }
-      const newItem =
-        response != null && typeof response === 'object' && 'data' in response
-          ? (response as { data: PantryItem }).data
-          : (response as PantryItem);
+      const newItem = await createItem(itemData);
       setInventory((prev) => [...prev, newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
@@ -829,11 +830,7 @@ export function usePantryState() {
     setIsLinkingBarcode(true);
     try {
       const updateData: Partial<PantryItem> = { barcode, ...updates };
-      const response = await updateItem(id, updateData);
-      const updatedItem =
-        response != null && typeof response === 'object' && 'data' in response
-          ? (response as { data: PantryItem }).data
-          : (response as PantryItem);
+      const updatedItem = await updateItem(id, updateData);
       setInventory((prev) =>
         prev.map((item) => (item.id === id ? updatedItem : item))
       );

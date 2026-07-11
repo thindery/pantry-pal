@@ -331,8 +331,11 @@ function highlightMatch(
 
   const allIndices: Array<[number, number]> = [];
   keyMatches.forEach((m) => {
-    if (m.indices != null) {
-      allIndices.push(...m.indices);
+    if (!Array.isArray(m.indices)) return;
+    for (const index of m.indices) {
+      if (Array.isArray(index) && index.length >= 2) {
+        allIndices.push([index[0], index[1]]);
+      }
     }
   });
 
@@ -343,13 +346,13 @@ function highlightMatch(
   const sortedIndices = allIndices.sort((a, b) => a[0] - b[0]);
   const mergedIndices: Array<[number, number]> = [];
 
-  let current = [...sortedIndices[0]] as [number, number];
+  let current: [number, number] = [sortedIndices[0][0], sortedIndices[0][1]];
   for (let i = 1; i < sortedIndices.length; i++) {
     if (current[1] >= sortedIndices[i][0] - 1) {
       current[1] = Math.max(current[1], sortedIndices[i][1]);
     } else {
-      mergedIndices.push([...current]);
-      current = [...sortedIndices[i]] as [number, number];
+      mergedIndices.push([current[0], current[1]]);
+      current = [sortedIndices[i][0], sortedIndices[i][1]];
     }
   }
   mergedIndices.push(current);
@@ -556,14 +559,14 @@ export const InlineQuickAdd: React.FC<InlineQuickAddProps> = ({
                 >
                   {/* Product name with highlighted matches */}
                   <div className="font-medium text-slate-800">
-                    {highlightMatch(result.item.name, result.matches != null ? [...result.matches] : undefined, 'name')}
+                    {highlightMatch(result.item.name, Array.isArray(result.matches) ? result.matches : undefined, 'name')}
                   </div>
 
                   {/* Barcode shown underneath if available */}
                   {result.item.barcode && (
                     <div className="text-xs text-slate-500 mt-0.5">
                       Barcode: {' '}
-                      {highlightMatch(result.item.barcode, result.matches != null ? [...result.matches] : undefined, 'barcode')}
+                      {highlightMatch(result.item.barcode, Array.isArray(result.matches) ? result.matches : undefined, 'barcode')}
                     </div>
                   )}
                 </li>

@@ -54,28 +54,55 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
   return response.json();
 }
 
+/** Unwrap FastAPI success_response `{ success, data }` or return payload as-is. */
+function unwrapData<T>(payload: unknown): T {
+  if (payload != null && typeof payload === 'object' && 'data' in payload) {
+    return (payload as { data: T }).data;
+  }
+  return payload as T;
+}
+
+function unwrapList<T>(payload: unknown): T[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload != null && typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+    if (Array.isArray(obj.data)) return obj.data as T[];
+    if (Array.isArray(obj.items)) return obj.items as T[];
+  }
+  return [];
+}
+
 // Pantry Items API
 export const getItems = async (): Promise<PantryItem[]> => {
   const data = await fetchApi<unknown>('/api/items');
-  // Handle both direct array and wrapped responses (e.g., { items: [...] }, { data: [...] })
-  if (Array.isArray(data)) return data;
-  if (data != null && typeof data === 'object') {
-    const obj = data as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as PantryItem[];
-    if (Array.isArray(obj.data)) return obj.data as PantryItem[];
-  }
-  return [];
+  return unwrapList<PantryItem>(data);
 };
 
-export const getItem = (id: string): Promise<PantryItem> =>
-  fetchApi<PantryItem>(`/api/items/${id}`);
+export const getItem = async (id: string): Promise<PantryItem> => {
+  const data = await fetchApi<unknown>(`/api/items/${id}`);
+  return unwrapData<PantryItem>(data);
+};
 
-export const createItem = (item: Omit<PantryItem, 'id' | 'lastUpdated'>): Promise<PantryItem> => {
+export const createItem = async (
+  item: Omit<PantryItem, 'id' | 'lastUpdated'>,
+): Promise<PantryItem> => {
   const { productInfo: _productInfo, ...payload } = item;
-  return fetchApi<PantryItem>('/api/items', {
+  const data = await fetchApi<unknown>('/api/items', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  return unwrapData<PantryItem>(data);
+};
+
+export const updateItem = async (
+  id: string,
+  item: Partial<PantryItem>,
+): Promise<PantryItem> => {
+  const data = await fetchApi<unknown>(`/api/items/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(item),
+  });
+  return unwrapData<PantryItem>(data);
 };
 
 export interface SaveBarcodeProductPayload {
@@ -106,26 +133,26 @@ export const saveBarcodeProduct = async (
   return { item: result.item, product: result.product };
 };
 
-export const updateItem = (id: string, item: Partial<PantryItem>): Promise<PantryItem> =>
-  fetchApi<PantryItem>(`/api/items/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(item),
-  });
-
 export const deleteItem = (id: string): Promise<void> =>
   fetchApi<void>(`/api/items/${id}`, {
     method: 'DELETE',
   });
 
 // Activities API
-export const getActivities = (): Promise<Activity[]> =>
-  fetchApi<Activity[]>('/api/activities');
+export const getActivities = async (): Promise<Activity[]> => {
+  const data = await fetchApi<unknown>('/api/activities');
+  return unwrapList<Activity>(data);
+};
 
-export const logActivity = (activity: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity> =>
-  fetchApi<Activity>('/api/activities', {
+export const logActivity = async (
+  activity: Omit<Activity, 'id' | 'timestamp'>,
+): Promise<Activity> => {
+  const data = await fetchApi<unknown>('/api/activities', {
     method: 'POST',
     body: JSON.stringify(activity),
   });
+  return unwrapData<Activity>(data);
+};
 
 // Receipt OCR API (Tesseract.js backend)
 export const scanReceiptBackend = async (base64Image: string): Promise<{ items: Array<{ name: string; quantity: number; unit?: string; category?: string }> }> =>
