@@ -14,7 +14,8 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     return [
       {
-        source: "/api/:path*",
+        // NextAuth routes stay on Next.js; everything else proxies to FastAPI
+        source: "/api/:path((?!auth).*)",
         destination: `${apiUrl}/api/:path*`,
       },
     ];

@@ -7,7 +7,7 @@ import re
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
 
-from backend.clerk_auth import require_authenticated_user_id
+from backend.auth_session import require_authenticated_user_id
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import CreateItemRequest, UpdateItemRequest
 from backend.services import pantry_service

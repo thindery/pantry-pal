@@ -1,7 +1,8 @@
 import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, ShoppingSessionItem} from '../types';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { getApiBaseUrl } from '@/lib/env';
+import { getBearerToken } from '@/lib/get-bearer-token';
 
 const API_URL = getApiBaseUrl();
 
@@ -148,15 +149,15 @@ export const createCheckoutSession = (data: {
     body: JSON.stringify(data),
   });
 
-// Auth token setup hook using Clerk
+// Auth token setup hook — fetches NextAuth bearer token for backend API calls
 export function useSetupAuthToken() {
-  const { getToken } = useAuth();
+  const { status } = useSession();
 
   useEffect(() => {
-    // Store the getToken function in the global ref
     getTokenRef = async () => {
+      if (status !== 'authenticated') return null;
       try {
-        return await getToken();
+        return await getBearerToken();
       } catch (err) {
         console.error('Failed to get auth token:', err);
         return null;
@@ -166,7 +167,7 @@ export function useSetupAuthToken() {
     return () => {
       getTokenRef = null;
     };
-  }, [getToken]);
+  }, [status]);
 }
 
 // Shopping Session API

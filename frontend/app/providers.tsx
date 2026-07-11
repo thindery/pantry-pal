@@ -1,20 +1,13 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import { SessionProvider } from "next-auth/react";
 import VersionUpdateToast from "@/components/VersionUpdateToast";
-import { clerkAuthAppearance } from "@/lib/clerk-appearance";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider
-      signInUrl="/sign-in/"
-      signUpUrl="/sign-up/"
-      signInFallbackRedirectUrl="/dashboard/"
-      signUpFallbackRedirectUrl="/dashboard/"
-      appearance={clerkAuthAppearance}
-    >
+    <SessionProvider>
       {children}
       <VersionUpdateToast />
-    </ClerkProvider>
+    </SessionProvider>
   );
 }

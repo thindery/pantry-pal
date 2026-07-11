@@ -3,10 +3,11 @@
  * Handles tier info, checkout, and subscription management
  */
 
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
 
 import { getApiBaseUrl } from '@/lib/env';
+import { getBearerToken } from '@/lib/get-bearer-token';
 
 const API_URL = getApiBaseUrl();
 
@@ -45,7 +46,7 @@ export interface CheckoutResponse {
 
 // Helper for API calls with auth
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = await (window as unknown as { __clerkGetToken?: () => Promise<string | null> }).__clerkGetToken?.();
+  const token = await getBearerToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -147,20 +148,10 @@ export async function createCustomerPortal(returnUrl: string): Promise<{ url: st
 
 // React Hook for subscription status
 export function useSubscription() {
-  const { getToken } = useAuth();
+  const { status } = useSession();
   const [tierInfo, setTierInfo] = useState<UserTierInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      (
-        window as unknown as {
-          __clerkGetToken: () => Promise<string | null>;
-        }
-      ).__clerkGetToken = getToken;
-    }
-  }, [getToken]);
 
   const fetchTierInfo = useCallback(async () => {
     try {
@@ -177,8 +168,12 @@ export function useSubscription() {
   }, []);
 
   useEffect(() => {
-    fetchTierInfo();
-  }, [fetchTierInfo]);
+    if (status === 'authenticated') {
+      fetchTierInfo();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [fetchTierInfo, status]);
 
   const isFeatureAvailable = useCallback(
     (feature: 'voice' | 'unlimitedItems' | 'aiScanning' | 'sharedInventory') => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 
 interface PricingPageProps {
@@ -100,7 +100,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isSignedIn } = useAuth();
+  const { status } = useSession();
+  const isSignedIn = status === 'authenticated';
   const { tierInfo: _tierInfo, isFree, isPro, isFamily } = useSubscription();
 
   const handleUpgrade = async (tier: 'pro' | 'family') => {

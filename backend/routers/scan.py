@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.clerk_auth import require_authenticated_user_id
+from backend.auth_session import require_authenticated_user_id
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import ScanReceiptRequest, VisualUsageRequest
 from backend.services import scan_service

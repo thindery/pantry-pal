@@ -5,7 +5,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
-from backend.clerk_auth import is_admin_user, resolve_authenticated_user
+from backend.auth_session import resolve_authenticated_user
+from backend.clerk_auth import is_admin_user
 from backend.models.responses import error_response
 from backend.models.schemas import ClientErrorCreateRequest
 from backend.services import client_errors_service

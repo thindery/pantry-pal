@@ -6,7 +6,7 @@ import asyncio
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.clerk_auth import require_authenticated_user_id
+from backend.auth_session import require_authenticated_user_id
 from backend.models.schemas import BarcodeSaveRequest
 from backend.services import barcode_service, pantry_service
 

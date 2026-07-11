@@ -8,8 +8,8 @@ export function LandingPageWrapper() {
 
   return (
     <LandingPage
-      onGetStarted={() => router.push("/sign-up/")}
-      onLogin={() => router.push("/sign-in/")}
+      onGetStarted={() => router.push("/auth/signin/")}
+      onLogin={() => router.push("/auth/signin/")}
     />
   );
 }

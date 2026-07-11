@@ -6,7 +6,8 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from backend.clerk_auth import is_admin_user, resolve_authenticated_user
+from backend.auth_session import resolve_authenticated_user
+from backend.clerk_auth import is_admin_user
 from backend.models.responses import error_response, success_response
 from backend.services import admin_service
 
