@@ -86,6 +86,9 @@ export const getItem = async (id: string): Promise<PantryItem> => {
 export const createItem = async (
   item: Omit<PantryItem, 'id' | 'lastUpdated'>,
 ): Promise<PantryItem> => {
+  if (item == null || typeof item !== 'object') {
+    throw new ApiError('Invalid item data', 400);
+  }
   const { productInfo: _productInfo, ...payload } = item;
   const data = await fetchApi<unknown>('/api/items', {
     method: 'POST',
@@ -149,7 +152,12 @@ export const logActivity = async (
 ): Promise<Activity> => {
   const data = await fetchApi<unknown>('/api/activities', {
     method: 'POST',
-    body: JSON.stringify(activity),
+    body: JSON.stringify({
+      itemId: activity.itemId,
+      type: activity.type,
+      amount: activity.amount,
+      source: activity.source,
+    }),
   });
   return unwrapData<Activity>(data);
 };

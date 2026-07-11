@@ -62,6 +62,15 @@ export function usePantryState() {
 
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+
+  const normalizeActivities = (value: unknown): Activity[] => {
+    if (Array.isArray(value)) return value;
+    if (value != null && typeof value === 'object' && 'data' in value) {
+      const data = (value as { data: unknown }).data;
+      if (Array.isArray(data)) return data as Activity[];
+    }
+    return [];
+  };
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
@@ -536,7 +545,7 @@ export function usePantryState() {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      setActivities(Array.isArray(acts) ? acts : []);
+      setActivities(normalizeActivities(acts));
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
@@ -544,7 +553,7 @@ export function usePantryState() {
       if (savedAct) {
         try {
           const parsed = JSON.parse(savedAct);
-          setActivities(Array.isArray(parsed) ? parsed : []);
+          setActivities(normalizeActivities(parsed));
         } catch (e) {
           console.error('Failed to parse saved activities:', e);
           setActivities([]);

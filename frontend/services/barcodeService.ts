@@ -59,13 +59,14 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResul
       };
     }
 
+    const raw = response.product;
     return {
       success: true,
       product: {
-        ...response.product,
+        ...(typeof raw === 'object' && raw != null ? raw : {}),
         barcode: cleanBarcode,
-        name: response.product.productName || response.product.name,
-        image: response.product.imageUrl,
+        name: raw.productName || raw.name,
+        image: raw.imageUrl,
       },
       rateLimited: response.rateLimited,
     };
