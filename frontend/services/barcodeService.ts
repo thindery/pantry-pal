@@ -4,7 +4,7 @@ import { fetchApi } from './apiService';
 const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
 const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
 
-// Use PantryPal backend API which has caching
+// Use Pantry Hub backend API which has caching
 const _API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface BarcodeLookupResult {
@@ -18,7 +18,7 @@ export interface BarcodeLookupResult {
 }
 
 /**
- * Look up product information by barcode using PantryPal backend API
+ * Look up product information by barcode using Pantry Hub backend API
  * Backend handles caching and rate limiting
  */
 export async function lookupBarcode(barcode: string): Promise<BarcodeLookupResult> {

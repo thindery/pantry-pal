@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "PantryPal API",
-    "description": "PantryPal inventory management API",
+    "title": "Pantry Hub API",
+    "description": "Pantry Hub inventory management API",
     "version": "1.0.0"
   },
   "paths": {
@@ -1344,6 +1344,233 @@
           }
         }
       }
+    },
+    "/api/client-errors": {
+      "post": {
+        "tags": [
+          "Client Errors"
+        ],
+        "summary": "Create Client Error",
+        "operationId": "create_client_error_api_client_errors_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientErrorCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Client Errors"
+        ],
+        "summary": "List Client Errors",
+        "operationId": "list_client_errors_api_client_errors_get",
+        "parameters": [
+          {
+            "name": "resolved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "false",
+              "title": "Resolved"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client-errors/{error_id}/resolve": {
+      "patch": {
+        "tags": [
+          "Client Errors"
+        ],
+        "summary": "Resolve Client Error",
+        "operationId": "resolve_client_error_api_client_errors__error_id__resolve_patch",
+        "parameters": [
+          {
+            "name": "error_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Error Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scan-receipt": {
+      "post": {
+        "tags": [
+          "Scan"
+        ],
+        "summary": "Scan Receipt",
+        "operationId": "scan_receipt_api_scan_receipt_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanReceiptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/visual-usage": {
+      "post": {
+        "tags": [
+          "Scan"
+        ],
+        "summary": "Visual Usage",
+        "operationId": "visual_usage_api_visual_usage_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisualUsageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/visual-usage/supported-items": {
+      "get": {
+        "tags": [
+          "Scan"
+        ],
+        "summary": "Visual Usage Supported Items",
+        "operationId": "visual_usage_supported_items_api_visual_usage_supported_items_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1517,6 +1744,82 @@
           "cancelUrl"
         ],
         "title": "CheckoutRequest"
+      },
+      "ClientErrorCreateRequest": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Type"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "component": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "userAgent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Useragent"
+          },
+          "userId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Userid"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "type",
+          "message"
+        ],
+        "title": "ClientErrorCreateRequest"
       },
       "CompleteSessionRequest": {
         "properties": {
@@ -1706,6 +2009,89 @@
         ],
         "title": "ReceiptScanRequest"
       },
+      "ScanReceiptRequest": {
+        "properties": {
+          "scanData": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScanResultItem"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Scandata"
+          },
+          "minConfidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minconfidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scanData"
+        ],
+        "title": "ScanReceiptRequest"
+      },
+      "ScanResultItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Quantity"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "quantity"
+        ],
+        "title": "ScanResultItem"
+      },
       "UpdateItemRequest": {
         "properties": {
           "name": {
@@ -1792,6 +2178,28 @@
         ],
         "title": "UpdateSessionReceiptRequest"
       },
+      "UsageDetection": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "quantityUsed": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantityused"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "quantityUsed"
+        ],
+        "title": "UsageDetection"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -1824,6 +2232,36 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VisualUsageRequest": {
+        "properties": {
+          "detections": {
+            "items": {
+              "$ref": "#/components/schemas/UsageDetection"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Detections"
+          },
+          "detectionSource": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detectionsource"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "detections"
+        ],
+        "title": "VisualUsageRequest"
       }
     }
   }

@@ -1,4 +1,4 @@
-# AGENTS.md — PantryPal
+# AGENTS.md — Pantry Hub
 
 > **Global rules:** Read [`project-director/rules/global_rules.md`](../project-director/rules/global_rules.md) before any work.  
 > **Tickets:** [`.agents/TICKET_STATUS.md`](.agents/TICKET_STATUS.md)  
@@ -6,7 +6,7 @@
 
 ## Product
 
-**PantryPal** — smart pantry inventory & ledger: inventory CRUD, activity ledger, barcode scanning, AI receipt/usage scanning, Clerk auth, Stripe subscriptions, admin dashboard.
+**Pantry Hub** (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger: inventory CRUD, activity ledger, barcode scanning, AI receipt/usage scanning, Clerk auth, Stripe subscriptions, admin dashboard.
 
 ## Stack (current)
 

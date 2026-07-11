@@ -212,7 +212,7 @@ export function usePantryState() {
       try {
         const parsed = JSON.parse(savedList);
         setShoppingList(parsed);
-        console.log('[PantryPal] Loaded shopping list from localStorage:', parsed.length, 'items');
+        console.log('[Pantry Hub] Loaded shopping list from localStorage:', parsed.length, 'items');
       } catch (e) {
         console.error('Failed to parse shopping list:', e);
       }

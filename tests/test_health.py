@@ -7,7 +7,7 @@ def test_root_returns_api_info(client):
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["name"] == "PantryPal API"
+    assert data["name"] == "Pantry Hub API"
     assert data["health"] == "/health"
 
 

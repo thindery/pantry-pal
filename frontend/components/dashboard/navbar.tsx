@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@/components/auth/UserButton";
+import { BRAND_NAME } from "@/lib/site-content";
 
 interface DashboardNavbarProps {
   isPaid?: boolean;
@@ -28,7 +29,7 @@ export function DashboardNavbar({ isPaid }: DashboardNavbarProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-slate-200 px-4 py-2 pb-[env(safe-area-inset-bottom)] md:pb-4 flex justify-around items-center md:top-0 md:bottom-auto md:border-t-0 md:border-b md:justify-start md:gap-8 z-[9999]">
       <div className="hidden md:block font-bold text-xl text-emerald-600 mr-4">
-        PantryPal
+        {BRAND_NAME}
       </div>
       {NAV_LINKS.map((link) => (
         <Link

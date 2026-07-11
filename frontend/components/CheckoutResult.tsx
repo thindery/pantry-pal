@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { BRAND_NAME } from '@/lib/site-content';
 
 interface CheckoutResultProps {
   status: 'success' | 'cancel';
@@ -28,7 +29,7 @@ export const CheckoutResult: React.FC<CheckoutResultProps> = ({ status, onClose 
             Your subscription is now active.
           </p>
           <p className="text-emerald-200">
-            Redirecting you back to PantryPal...
+            Redirecting you back to {BRAND_NAME}...
           </p>
           <button
             onClick={onClose}

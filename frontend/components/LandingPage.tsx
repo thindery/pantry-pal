@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import { BrandMark } from '@/components/BrandMark';
+import { BRAND_NAME, CONTACT_EMAIL, LEGAL_LINE } from '@/lib/site-content';
 import { 
-  ChefHat, 
-  ShoppingCart, 
+  ShoppingCart,
   Mic, 
   Smartphone, 
   BarChart3, 
@@ -38,7 +39,7 @@ const FEATURES = [
   {
     icon: Mic,
     title: 'Voice Assistant',
-    description: 'Just say "I used 3 eggs" and PantryPal updates your stock. Hands-free management while you cook.',
+    description: `Just say "I used 3 eggs" and ${BRAND_NAME} updates your stock. Hands-free management while you cook.`,
   },
   {
     icon: Smartphone,
@@ -136,7 +137,7 @@ const PRICING_TIERS = [
 // Testimonials
 const TESTIMONIALS = [
   {
-    quote: 'PantryPal has completely changed how we manage our kitchen. No more duplicate purchases or running out of essentials!',
+    quote: `${BRAND_NAME} has completely changed how we manage our kitchen. No more duplicate purchases or running out of essentials!`,
     author: 'Sarah M.',
     role: 'Home Cook & Mom of 3',
     rating: 5,
@@ -162,7 +163,7 @@ const FAQS = [
     answer: 'Our AI analyzes your receipt photo and extracts item names, quantities, and categories automatically. It\'s powered by Google\'s Gemini AI for high accuracy.',
   },
   {
-    question: 'Can I use PantryPal with multiple devices?',
+    question: `Can I use ${BRAND_NAME} with multiple devices?`,
     answer: 'Yes! With a Pro or Family plan, your inventory syncs across all your devices in real-time. Free plan is limited to single device use.',
   },
   {
@@ -171,7 +172,7 @@ const FAQS = [
   },
   {
     question: 'How does the voice assistant work?',
-    answer: 'Just tap the microphone and talk naturally. Say things like "I used 3 eggs" or "Add 2 gallons of milk" and PantryPal handles the rest.',
+    answer: `Just tap the microphone and talk naturally. Say things like "I used 3 eggs" or "Add 2 gallons of milk" and ${BRAND_NAME} handles the rest.`,
   },
   {
     question: 'Can I share my pantry with family members?',
@@ -198,10 +199,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
     return (
       <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🥗</span>
-            <span className="font-bold text-xl text-slate-800">PantryPal</span>
-          </div>
+          <BrandMark />
           <button
             onClick={() => setShowFullPricing(false)}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
@@ -225,12 +223,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       <nav className="sticky top-0 z-40 bg-[#FEFDF9]/80 backdrop-blur-md border-b border-[#F5F0E6]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#7CB342] rounded-lg flex items-center justify-center">
-                <ChefHat className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl text-slate-800">PantryPal</span>
-            </div>
+            <BrandMark />
             <div className="hidden md:flex items-center gap-8">
               <button onClick={() => scrollToSection('features')} className="text-slate-600 hover:text-slate-800 transition-colors">Features</button>
               <button onClick={() => scrollToSection('how-it-works')} className="text-slate-600 hover:text-slate-800 transition-colors">How It Works</button>
@@ -307,7 +300,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               Everything You Need to Manage Your Pantry
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              From AI-powered scanning to household sharing, PantryPal has all the tools you need.
+              From AI-powered scanning to household sharing, {BRAND_NAME} has all the tools you need.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -384,7 +377,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               Loved by Home Managers Everywhere
             </h2>
             <p className="text-lg text-slate-600">
-              See what our users are saying about PantryPal.
+              See what our users are saying about {BRAND_NAME}.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -463,12 +456,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-[#7CB342] rounded-lg flex items-center justify-center">
-                  <ChefHat className="w-5 h-5 text-white" />
-                </div>
-                <span className="font-bold text-xl text-white">PantryPal</span>
-              </div>
+              <BrandMark
+                className="mb-4"
+                nameClassName="font-bold text-xl text-white"
+              />
               <p className="text-sm text-slate-400">
                 Smart inventory & ledger for your home. Never run out of essentials again.
               </p>
@@ -493,12 +484,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <ul className="space-y-2 text-sm">
                 <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
+                <li>
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white transition-colors">
+                    {CONTACT_EMAIL}
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-slate-700 pt-8 text-center text-sm text-slate-400">
-            © {new Date().getFullYear()} PantryPal. All rights reserved.
+            © {new Date().getFullYear()} {LEGAL_LINE}. All rights reserved.
           </div>
         </div>
       </footer>

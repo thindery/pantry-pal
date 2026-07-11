@@ -18,7 +18,7 @@ _start_time = time.time()
 @router.get("/")
 async def root():
     return {
-        "name": "PantryPal API",
+        "name": "Pantry Hub API",
         "version": "1.0.0",
         "status": "operational",
         "environment": os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development")),

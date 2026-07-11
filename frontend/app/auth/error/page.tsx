@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { BRAND_NAME } from "@/lib/site-content";
 
 export const metadata = {
-  title: "Sign In Error — Pantry Hub",
+  title: `Sign In Error — ${BRAND_NAME}`,
 };
 
 export default async function AuthErrorPage({

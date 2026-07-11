@@ -8,7 +8,7 @@ from typing import List
 
 
 class Settings:
-    APP_NAME = "PantryPal API"
+    APP_NAME = "Pantry Hub API"
     APP_VERSION = "1.0.0"
     PORT = int(os.getenv("PORT", "8000"))
     ENVIRONMENT = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))

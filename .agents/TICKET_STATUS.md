@@ -1,8 +1,8 @@
-# Ticket Status — PantryPal
+# Ticket Status — Pantry Hub
 
-Last updated: 2026-07-11 (PP-033 domain: mypantryhub.com)
+Last updated: 2026-07-11 (PP-040 brand consolidation)
 
-**Product:** PantryPal / Pantry Hub — smart pantry inventory & ledger  
+**Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
 **Stack:** Next 16 + FastAPI + PG 16 monorepo → OVH Docker  
 **Gold standards:** `markdown-pdf`, `userkudos`, `agent-paige`
@@ -13,7 +13,7 @@ Last updated: 2026-07-11 (PP-033 domain: mypantryhub.com)
 
 | | Count |
 |--|-------|
-| Done | 38 |
+| Done | 39 |
 | In progress | 1 (PP-033) |
 | Ready | 2 (PP-034, PP-035) |
 | User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
@@ -84,6 +84,12 @@ Last updated: 2026-07-11 (PP-033 domain: mypantryhub.com)
 | PP-037 | Deploy, Docker, env, and test fixes | ✅ Done |
 | PP-038 | Security and validation hardening | ✅ Done |
 | PP-039 | Migration 013 + ticket status sync | ✅ Done |
+
+## Phase 3 — Brand & polish
+
+| Ticket | Title | Status |
+|--------|-------|--------|
+| PP-040 | Brand consolidation — Pantry Hub (DBA) | ✅ Done |
 
 ---
 

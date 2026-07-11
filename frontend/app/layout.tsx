@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import {
+  BRAND_NAME,
+  SITE_DESCRIPTION,
+  SITE_OG_DESCRIPTION,
+  SITE_TAGLINE,
+  SITE_TWITTER_DESCRIPTION,
+} from "@/lib/site-content";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -19,11 +26,10 @@ export const metadata: Metadata = {
     ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
     : undefined,
   title: {
-    default: "PantryPal | Smart Home Inventory & Shopping Lists",
-    template: "%s | PantryPal",
+    default: `${BRAND_NAME} | ${SITE_TAGLINE}`,
+    template: `%s | ${BRAND_NAME}`,
   },
-  description:
-    "Track pantry inventory, scan receipts and barcodes, auto-generate shopping lists, and manage household stock with AI-powered kitchen utilities.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "pantry",
     "inventory",
@@ -35,17 +41,15 @@ export const metadata: Metadata = {
     "household",
   ],
   openGraph: {
-    title: "PantryPal | Smart Home Inventory",
-    description:
-      "Effortless inventory management with receipt scanning, barcode lookup, and smart low-stock alerts.",
+    title: `${BRAND_NAME} | Smart Home Inventory`,
+    description: SITE_OG_DESCRIPTION,
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PantryPal | Smart Home Inventory",
-    description:
-      "Track what you have, know what you need. PantryPal keeps your kitchen organized.",
+    title: `${BRAND_NAME} | Smart Home Inventory`,
+    description: SITE_TWITTER_DESCRIPTION,
   },
   robots: {
     index: true,

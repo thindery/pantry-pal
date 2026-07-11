@@ -1,4 +1,5 @@
 import React from 'react';
+import { PRO_PLAN_NAME } from '@/lib/site-content';
 
 interface UpgradePromptProps {
   title: string;
@@ -58,7 +59,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
         {/* Feature Highlight */}
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
           <p className="text-sm text-emerald-800 text-center">
-            Unlock <span className="font-semibold">{getFeatureName()}</span> and more with PantryPal Pro
+            Unlock <span className="font-semibold">{getFeatureName()}</span> and more with {PRO_PLAN_NAME}
           </p>
         </div>
 

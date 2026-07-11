@@ -1,4 +1,4 @@
-"""FastAPI application factory for PantryPal."""
+"""FastAPI application factory for Pantry Hub."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title=settings.APP_NAME,
-        description="PantryPal inventory management API",
+        description="Pantry Hub inventory management API",
         version=settings.APP_VERSION,
         docs_url="/docs" if docs_enabled else None,
         redoc_url="/redoc" if docs_enabled else None,

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
+import { BrandMark } from '@/components/BrandMark';
 
 interface PricingPageProps {
   onClose: () => void;
@@ -159,10 +160,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
     <div className="fixed inset-0 z-[100] bg-white overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🥗</span>
-          <span className="font-bold text-xl text-slate-800">PantryPal</span>
-        </div>
+        <BrandMark />
         <button
           onClick={onClose}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
