@@ -8,7 +8,7 @@ import {
   isNewerBuildAvailable,
 } from "@/lib/versionCheck";
 
-const CHECK_INTERVAL_MS = 60 * 1000;
+const CHECK_INTERVAL_MS = 30 * 1000;
 
 export default function VersionUpdateToast() {
   const [visible, setVisible] = useState(false);
@@ -34,14 +34,20 @@ export default function VersionUpdateToast() {
     const onVisible = () => {
       if (document.visibilityState === "visible") runCheck();
     };
+    const onPageShow = (event: PageTransitionEvent) => {
+      // Restored from bfcache keeps old JS — re-check immediately
+      if (event.persisted) runCheck();
+    };
 
     window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisible);
     const interval = window.setInterval(runCheck, CHECK_INTERVAL_MS);
 
     return () => {
       cancelled = true;
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(interval);
     };
