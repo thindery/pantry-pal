@@ -31,9 +31,10 @@ ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=builder /app/frontend/dist/standalone ./
-COPY --from=builder /app/frontend/dist/static ./dist/static
-COPY --from=builder /app/frontend/public ./public
+COPY --from=builder /app/frontend/dist/static ./frontend/dist/static
+COPY --from=builder /app/frontend/public ./frontend/public
 
+WORKDIR /app/frontend
 USER node
 EXPOSE 38472
 CMD ["node", "server.js"]
