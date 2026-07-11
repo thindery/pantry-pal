@@ -15,7 +15,8 @@ ENV NODE_ENV=production
 
 COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
-RUN npm ci --workspace=@pantry-pal/frontend
+ENV HUSKY=0
+RUN npm ci --workspace=@pantry-pal/frontend --ignore-scripts
 
 COPY frontend ./frontend
 

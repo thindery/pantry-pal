@@ -89,7 +89,8 @@ ssh ovh "
   cd \"\$REMOTE_DIR\" &&
   echo 'Fetching origin...' &&
   git fetch origin &&
-  git checkout -B $TAG origin/$TAG &&
+  rm -f .env &&
+  git checkout -f -B $TAG origin/$TAG &&
   git reset --hard origin/$TAG &&
   ln -sf .env.prod .env &&
 
