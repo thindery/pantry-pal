@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Activity, ActivityType } from '../types';
+import { normalizeList } from '@/lib/normalize-list';
 
 type TimeFilter = 'all' | '7d' | '30d' | '90d';
 
@@ -95,16 +96,21 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
 }) => {
   const [filter, setFilter] = useState<TimeFilter>('all');
 
+  const safeActivities = useMemo(
+    () => normalizeList<Activity>(activities),
+    [activities],
+  );
+
   const filteredActivities = useMemo(() => {
-    if (filter === 'all') return activities;
+    if (filter === 'all') return safeActivities;
     
     const now = new Date();
     const cutoff = new Date();
     const days = filter === '7d' ? 7 : filter === '30d' ? 30 : 90;
     cutoff.setDate(now.getDate() - days);
     
-    return activities.filter(a => new Date(a.timestamp) >= cutoff);
-  }, [activities, filter]);
+    return safeActivities.filter(a => new Date(a.timestamp) >= cutoff);
+  }, [safeActivities, filter]);
 
   const stats = useMemo(() => {
     const added = filteredActivities

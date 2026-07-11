@@ -35,6 +35,7 @@ import {
 } from "@/services/apiService";
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { DEFAULT_THRESHOLDS } from "@/lib/constants";
+import { normalizeList } from "@/lib/normalize-list";
 
 export type DashboardInlineFilter =
   | "low-stock"
@@ -63,14 +64,28 @@ export function usePantryState() {
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
 
-  const normalizeActivities = (value: unknown): Activity[] => {
-    if (Array.isArray(value)) return value;
-    if (value != null && typeof value === 'object' && 'data' in value) {
-      const data = (value as { data: unknown }).data;
-      if (Array.isArray(data)) return data as Activity[];
+  const safeActivities = useMemo(
+    () => normalizeList<Activity>(activities),
+    [activities],
+  );
+
+  const setActivitiesSafe = useCallback(
+    (value: React.SetStateAction<Activity[]>) => {
+      setActivities((prev) => {
+        const base = normalizeList<Activity>(prev);
+        const next = typeof value === "function" ? value(base) : value;
+        return normalizeList<Activity>(next);
+      });
+    },
+    [],
+  );
+
+  // Repair in-memory state if a legacy wrapped API payload was stored
+  useEffect(() => {
+    if (!Array.isArray(activities)) {
+      setActivitiesSafe(safeActivities);
     }
-    return [];
-  };
+  }, [activities, safeActivities, setActivitiesSafe]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
@@ -229,6 +244,27 @@ export function usePantryState() {
   const [shoppingListBoughtQuantities, setShoppingListBoughtQuantities] = useState<Record<string, number>>({});
   const [hasLoadedShoppingList, setHasLoadedShoppingList] = useState(false);
 
+  // Sanitize legacy corrupted localStorage payloads on mount
+  useEffect(() => {
+    for (const key of ["pantry_activities", "pantry_inventory", "pantry_shopping_list"] as const) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          const normalized = normalizeList(parsed);
+          if (normalized.length > 0) {
+            localStorage.setItem(key, JSON.stringify(normalized));
+          } else {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch {
+        localStorage.removeItem(key);
+      }
+    }
+  }, []);
+
   // Load shopping list from localStorage on mount
   useEffect(() => {
     const savedList = localStorage.getItem('pantry_shopping_list');
@@ -237,10 +273,14 @@ export function usePantryState() {
     if (savedList) {
       try {
         const parsed = JSON.parse(savedList);
-        setShoppingList(parsed);
-        console.log('[Pantry Hub] Loaded shopping list from localStorage:', parsed.length, 'items');
+        const list = normalizeList<ShoppingListItem>(parsed);
+        setShoppingList(list);
+        if (list.length > 0) {
+          console.log('[Pantry Hub] Loaded shopping list from localStorage:', list.length, 'items');
+        }
       } catch (e) {
         console.error('Failed to parse shopping list:', e);
+        localStorage.removeItem('pantry_shopping_list');
       }
     }
     
@@ -280,7 +320,7 @@ export function usePantryState() {
 
   // Calculate suggested quantity based on past consumption
   const calculateSuggestedQuantity = useCallback((item: PantryItem): number => {
-    const itemActivities = activities.filter(
+    const itemActivities = safeActivities.filter(
       (a) => a.itemId === item.id && (a.type === 'REMOVE' || a.type === 'ADJUST')
     );
     
@@ -301,7 +341,7 @@ export function usePantryState() {
     const suggested = Math.ceil(dailyUsage * 14 / avgUsage) * Math.ceil(avgUsage);
     
     return Math.max(suggested, 1);
-  }, [activities, thresholdConfig]);
+  }, [safeActivities, thresholdConfig]);
 
   // Check if item is low stock
   const isLowStock = useCallback((item: PantryItem): boolean => {
@@ -330,7 +370,7 @@ export function usePantryState() {
       const recommendationItems = inventoryArray.filter((item) => {
         if (lowStockItems.includes(item)) return false;
         
-        const lastAdd = activities.find(
+        const lastAdd = safeActivities.find(
           (a) => a.itemId === item.id && a.type === 'ADD'
         );
         
@@ -369,7 +409,8 @@ export function usePantryState() {
         })),
       ];
       
-      const existingManualItems = shoppingList.filter((item) => item.isManual);
+      const safeShoppingList = normalizeList<ShoppingListItem>(shoppingList);
+      const existingManualItems = safeShoppingList.filter((item) => item.isManual);
       const existingItemNames = new Set(newItems.map((i) => i.name.toLowerCase()));
       
       const mergedItems = [
@@ -381,7 +422,7 @@ export function usePantryState() {
     } finally {
       setIsGeneratingList(false);
     }
-  }, [inventory, activities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold]);
+  }, [inventory, safeActivities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold]);
 
   // Add manual item to shopping list
   const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string) => {
@@ -410,7 +451,11 @@ export function usePantryState() {
       reason: 'manual',
     };
     
-    setShoppingList((prev) => [...prev, newItem].sort((a, b) => a.category.localeCompare(b.category)));
+    setShoppingList((prev) =>
+      [...normalizeList<ShoppingListItem>(prev), newItem].sort((a, b) =>
+        a.category.localeCompare(b.category),
+      ),
+    );
   }, [shoppingList]);
 
   // Toggle item checked status
@@ -545,7 +590,7 @@ export function usePantryState() {
     setActivitiesError(null);
     try {
       const acts = await getActivities();
-      setActivities(normalizeActivities(acts));
+      setActivitiesSafe(acts);
     } catch (err) {
       console.error('Failed to load activities:', err);
       setActivitiesError(err instanceof Error ? err.message : 'Failed to load activities');
@@ -553,10 +598,10 @@ export function usePantryState() {
       if (savedAct) {
         try {
           const parsed = JSON.parse(savedAct);
-          setActivities(normalizeActivities(parsed));
+          setActivitiesSafe(parsed);
         } catch (e) {
           console.error('Failed to parse saved activities:', e);
-          setActivities([]);
+          setActivitiesSafe([]);
         }
       }
     } finally {
@@ -578,10 +623,10 @@ export function usePantryState() {
   }, [inventory]);
 
   useEffect(() => {
-    if (activities.length > 0) {
-      localStorage.setItem('pantry_activities', JSON.stringify(activities));
+    if (safeActivities.length > 0) {
+      localStorage.setItem('pantry_activities', JSON.stringify(safeActivities));
     }
-  }, [activities]);
+  }, [safeActivities]);
 
   const addActivityLog = async (
     item: { id: string; name: string },
@@ -597,10 +642,7 @@ export function usePantryState() {
         amount: Math.abs(amount),
         source,
       });
-      setActivities((prev) => {
-        const list = Array.isArray(prev) ? prev : [];
-        return [activity, ...list].slice(0, 100);
-      });
+      setActivitiesSafe((prev) => [activity, ...prev].slice(0, 100));
     } catch (_err) {
       const newActivity: Activity = {
         id: Math.random().toString(36).substr(2, 9),
@@ -611,10 +653,7 @@ export function usePantryState() {
         timestamp: new Date().toISOString(),
         source,
       };
-      setActivities((prev) => {
-        const list = Array.isArray(prev) ? prev : [];
-        return [newActivity, ...list].slice(0, 100);
-      });
+      setActivitiesSafe((prev) => [newActivity, ...prev].slice(0, 100));
     }
   };
 
@@ -633,7 +672,7 @@ export function usePantryState() {
     setIsAddingItem(true);
     try {
       const newItem = await createItem(itemData);
-      setInventory((prev) => [...prev, newItem]);
+      setInventory((prev) => [...normalizeList<PantryItem>(prev), newItem]);
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
         'ADD',
@@ -696,7 +735,7 @@ export function usePantryState() {
       nutrition: product.nutrition,
     });
 
-    setInventory((prev) => [...prev, result.item]);
+    setInventory((prev) => [...normalizeList<PantryItem>(prev), result.item]);
     await addActivityLog(
       { id: result.item.id, name: result.item.name },
       "ADD",
@@ -903,7 +942,7 @@ export function usePantryState() {
     router,
     toasts, success, error, removeToast,
     toast, showToast,
-    inventory, activities,
+    inventory, activities: safeActivities,
     isProcessing, setIsProcessing,
     isLoadingInventory, isLoadingActivities,
     featureFlags,
