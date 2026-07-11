@@ -13,7 +13,7 @@ Last updated: 2026-07-11 (PP-040 brand consolidation)
 
 | | Count |
 |--|-------|
-| Done | 39 |
+| Done | 40 |
 | In progress | 1 (PP-033) |
 | Ready | 2 (PP-034, PP-035) |
 | User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
@@ -90,6 +90,7 @@ Last updated: 2026-07-11 (PP-040 brand consolidation)
 | Ticket | Title | Status |
 |--------|-------|--------|
 | PP-040 | Brand consolidation — Pantry Hub (DBA) | ✅ Done |
+| PP-041 | Marketing pages & legal links audit | ✅ Done |
 
 ---
 

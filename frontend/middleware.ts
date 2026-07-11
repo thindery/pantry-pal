@@ -8,6 +8,8 @@ const { auth } = NextAuth(authConfig);
 const PUBLIC_PATHS = new Set([
   "/",
   "/pricing",
+  "/privacy",
+  "/terms",
   "/checkout",
   "/checkout/success",
   "/checkout/cancel",
