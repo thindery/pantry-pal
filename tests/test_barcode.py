@@ -42,16 +42,33 @@ def test_lookup_barcode_returns_cached_product(client, auth_headers):
     assert data["product"]["name"] == "Organic Milk"
 
 
+SAMPLE_ACTIVITY = {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "userId": "test_user_contract_001",
+    "itemId": SAMPLE_ITEM["id"],
+    "itemName": SAMPLE_ITEM["name"],
+    "type": "ADD",
+    "amount": 2,
+    "timestamp": "2026-07-10T12:00:00Z",
+    "source": "BARCODE_SCAN",
+}
+
+
 @patch(
     "backend.routers.barcode.subscription_service.can_add_items",
     return_value={"allowed": True, "remaining": 45},
 )
 @patch("backend.routers.barcode.pantry_service.get_all_items", return_value=[])
+@patch(
+    "backend.routers.barcode.pantry_service.log_activity",
+    return_value=SAMPLE_ACTIVITY,
+)
 @patch("backend.routers.barcode.pantry_service.create_item", return_value=SAMPLE_ITEM)
 @patch("backend.routers.barcode.barcode_service.save_product")
 def test_save_barcode_product_creates_item_and_cache(
     mock_save_product,
     mock_create,
+    mock_log_activity,
     mock_get_items,
     mock_can,
     client,
@@ -76,8 +93,11 @@ def test_save_barcode_product_creates_item_and_cache(
     data = response.json()
     assert data["success"] is True
     assert data["item"]["barcode"] == "012345678905"
+    assert data["activity"]["source"] == "BARCODE_SCAN"
     mock_save_product.assert_called_once()
     mock_create.assert_called_once()
+    mock_log_activity.assert_called_once()
+    assert mock_log_activity.call_args.kwargs.get("adjust_quantity") is False
 
 
 def test_create_item_rejects_extra_product_info(client, auth_headers):

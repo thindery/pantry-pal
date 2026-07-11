@@ -93,9 +93,18 @@ async def save_barcode_product(
             "barcode": clean,
         },
     )
+    activity = pantry_service.log_activity(
+        user_id,
+        item["id"],
+        "ADD",
+        body.quantity,
+        "BARCODE_SCAN",
+        adjust_quantity=False,
+    )
     return {
         "success": True,
         "cached": True,
+        "activity": activity,
         "product": {
             "barcode": clean,
             "name": body.name,

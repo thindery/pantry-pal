@@ -123,17 +123,22 @@ export interface SaveBarcodeProductPayload {
 export const saveBarcodeProduct = async (
   barcode: string,
   payload: SaveBarcodeProductPayload,
-): Promise<{ item: PantryItem; product: BarcodeProduct }> => {
+): Promise<{ item: PantryItem; product: BarcodeProduct; activity?: Activity }> => {
   const clean = barcode.replace(/[^0-9]/g, '');
   const result = await fetchApi<{
     success: boolean;
     item: PantryItem;
     product: BarcodeProduct;
+    activity?: Activity;
   }>(`/api/barcode/${clean}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  return { item: result.item, product: result.product };
+  return {
+    item: result.item,
+    product: result.product,
+    activity: result.activity,
+  };
 };
 
 export const deleteItem = (id: string): Promise<void> =>
@@ -142,13 +147,17 @@ export const deleteItem = (id: string): Promise<void> =>
   });
 
 // Activities API
-export const getActivities = async (): Promise<Activity[]> => {
-  const data = await fetchApi<unknown>('/api/activities');
+export const getActivities = async (limit = 100): Promise<Activity[]> => {
+  const data = await fetchApi<unknown>(`/api/activities?limit=${limit}`);
   return unwrapList<Activity>(data);
 };
 
+export interface LogActivityPayload extends Omit<Activity, 'id' | 'timestamp'> {
+  adjustQuantity?: boolean;
+}
+
 export const logActivity = async (
-  activity: Omit<Activity, 'id' | 'timestamp'>,
+  activity: LogActivityPayload,
 ): Promise<Activity> => {
   const data = await fetchApi<unknown>('/api/activities', {
     method: 'POST',
@@ -157,6 +166,7 @@ export const logActivity = async (
       type: activity.type,
       amount: activity.amount,
       source: activity.source,
+      adjustQuantity: activity.adjustQuantity ?? true,
     }),
   });
   return unwrapData<Activity>(data);

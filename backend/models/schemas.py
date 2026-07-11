@@ -98,6 +98,7 @@ class CreateActivityRequest(BaseModel):
     type: Literal["ADD", "REMOVE", "ADJUST"]
     amount: float = Field(..., gt=0, le=999999)
     source: ActivitySource = ActivitySource.MANUAL
+    adjustQuantity: bool = True
 
     @field_validator("itemId")
     @classmethod

@@ -209,6 +209,7 @@ def log_activity(
     activity_type: str,
     amount: float,
     source: str = "MANUAL",
+    adjust_quantity: bool = True,
 ) -> Optional[dict[str, Any]]:
     item = get_item_by_id(user_id, item_id)
     if not item:
@@ -246,11 +247,12 @@ def log_activity(
                     source,
                 ),
             )
-            new_qty = max(0.0, item["quantity"] + quantity_adj)
-            cur.execute(
-                "UPDATE pantry_items SET quantity = %s, last_updated = %s WHERE user_id = %s AND id = %s",
-                (new_qty, now, user_id, item_id),
-            )
+            if adjust_quantity:
+                new_qty = max(0.0, item["quantity"] + quantity_adj)
+                cur.execute(
+                    "UPDATE pantry_items SET quantity = %s, last_updated = %s WHERE user_id = %s AND id = %s",
+                    (new_qty, now, user_id, item_id),
+                )
 
     return {
         "id": activity_id,

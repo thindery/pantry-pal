@@ -49,6 +49,24 @@ def test_create_activity(mock_log, client, auth_headers):
     assert data["data"]["type"] == "ADD"
 
 
+@patch("backend.routers.activities.pantry_service.log_activity", return_value=SAMPLE_ACTIVITY)
+def test_create_activity_record_only(mock_log, client, auth_headers):
+    response = client.post(
+        "/api/activities",
+        headers=auth_headers,
+        json={
+            "itemId": "550e8400-e29b-41d4-a716-446655440000",
+            "type": "ADD",
+            "amount": 2,
+            "source": "MANUAL",
+            "adjustQuantity": False,
+        },
+    )
+    assert response.status_code == 201
+    mock_log.assert_called_once()
+    assert mock_log.call_args.kwargs.get("adjust_quantity") is False
+
+
 def test_create_activity_invalid_item_id(client, auth_headers):
     response = client.post(
         "/api/activities",

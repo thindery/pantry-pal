@@ -39,7 +39,12 @@ async def list_activities(
 @router.post("", status_code=201)
 async def create_activity(body: CreateActivityRequest, user_id: str = Depends(require_authenticated_user_id)):
     activity = pantry_service.log_activity(
-        user_id, body.itemId, body.type, body.amount, body.source.value
+        user_id,
+        body.itemId,
+        body.type,
+        body.amount,
+        body.source.value,
+        adjust_quantity=body.adjustQuantity,
     )
     if not activity:
         raise HTTPException(

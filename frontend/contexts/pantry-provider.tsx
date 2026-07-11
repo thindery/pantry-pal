@@ -585,7 +585,7 @@ export function usePantryState() {
   };
 
   // Load activities from API
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     setIsLoadingActivities(true);
     setActivitiesError(null);
     try {
@@ -607,7 +607,7 @@ export function usePantryState() {
     } finally {
       setIsLoadingActivities(false);
     }
-  };
+  }, [setActivitiesSafe]);
 
   useEffect(() => {
     if (sessionStatus !== "authenticated") return;
@@ -628,6 +628,10 @@ export function usePantryState() {
     }
   }, [safeActivities]);
 
+  const prependActivity = useCallback((activity: Activity) => {
+    setActivitiesSafe((prev) => [activity, ...prev].slice(0, 100));
+  }, [setActivitiesSafe]);
+
   const addActivityLog = async (
     item: { id: string; name: string },
     type: ActivityType,
@@ -641,8 +645,9 @@ export function usePantryState() {
         type,
         amount: Math.abs(amount),
         source,
+        adjustQuantity: false,
       });
-      setActivitiesSafe((prev) => [activity, ...prev].slice(0, 100));
+      prependActivity(activity);
     } catch (_err) {
       const newActivity: Activity = {
         id: Math.random().toString(36).substr(2, 9),
@@ -653,7 +658,7 @@ export function usePantryState() {
         timestamp: new Date().toISOString(),
         source,
       };
-      setActivitiesSafe((prev) => [newActivity, ...prev].slice(0, 100));
+      prependActivity(newActivity);
     }
   };
 
@@ -710,7 +715,10 @@ export function usePantryState() {
       if (!existing.barcode && product.barcode) {
         await updateItem(existing.id, { barcode: product.barcode });
       }
-      await handleAdjustQuantity(existing.id, quantity, { silent: true });
+      await handleAdjustQuantity(existing.id, quantity, {
+        silent: true,
+        source: "BARCODE_SCAN",
+      });
       const unitText =
         quantity === 1
           ? existing.unit.replace(/s$/, "")
@@ -736,12 +744,9 @@ export function usePantryState() {
     });
 
     setInventory((prev) => [...normalizeList<PantryItem>(prev), result.item]);
-    await addActivityLog(
-      { id: result.item.id, name: result.item.name },
-      "ADD",
-      quantity,
-      "BARCODE_SCAN",
-    );
+    if (result.activity) {
+      prependActivity(result.activity);
+    }
     const unitText = quantity === 1 ? "unit" : "units";
     success(`${displayName} (${quantity} ${unitText}) added to inventory`);
   };
@@ -749,7 +754,7 @@ export function usePantryState() {
   const handleAdjustQuantity = async (
     id: string,
     delta: number,
-    options?: { silent?: boolean },
+    options?: { silent?: boolean; source?: Activity["source"] },
   ) => {
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
@@ -763,16 +768,15 @@ export function usePantryState() {
       // Skip if no actual change
       if (actualDelta === 0) return;
 
-      // Call activities endpoint which updates quantity AND logs activity
-      await logActivity({
+      const activity = await logActivity({
         itemId: item.id,
         itemName: item.name,
         type: actualDelta > 0 ? 'ADD' : 'REMOVE',
         amount: Math.abs(actualDelta),
-        source: 'MANUAL',
+        source: options?.source ?? 'MANUAL',
       });
+      prependActivity(activity);
 
-      // Update local state optimistically
       setInventory((prev) =>
         prev.map((i) =>
           i.id === id ? { ...i, quantity: newQuantity, lastUpdated: new Date().toISOString() } : i
@@ -803,16 +807,15 @@ export function usePantryState() {
 
     setUpdatingItemIds((prev) => new Set(prev).add(id));
     try {
-      // Call activities endpoint which updates quantity AND logs activity
-      await logActivity({
+      const activity = await logActivity({
         itemId: item.id,
         itemName: item.name,
         type: 'REMOVE',
         amount: item.quantity,
         source: 'MANUAL',
       });
+      prependActivity(activity);
 
-      // Update local state optimistically
       setInventory((prev) =>
         prev.map((i) =>
           i.id === id ? { ...i, quantity: 0, lastUpdated: new Date().toISOString() } : i
