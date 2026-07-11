@@ -1,6 +1,6 @@
 # PP-042: Dashboard UX & design kit review
 
-**Status:** 📋 Ready for designer  
+**Status:** 🎨 Designer handoff ready
 **Priority:** P1  
 **Phase:** 3 — Brand & polish  
 **Created:** 2026-07-11  
@@ -29,7 +29,7 @@ Everything else is secondary and should not compete with these three jobs on fir
 | Nav | 4 tabs (Dashboard, Inventory, Shopping, Ledger) — Ledger rarely needed |
 | Visual noise | Emoji icons, multiple card styles, competing CTAs |
 | Placeholder stats | Expiring/Expired always 0 but still shown |
-| Auth bug | Inventory 401 on load (race before session ready) — **fix in progress** |
+| Auth bug | Inventory 401 on load — **fixed** (`fc48110`) |
 
 ---
 
@@ -169,6 +169,17 @@ Threshold settings: per-category defaults (produce 3, pantry 2, etc.) — alread
 - `shipinaday/playbooks/templates/components-ui/` — nav/footer patterns
 - `shipinaday/playbooks/baseline/src/app/globals.css` — token structure reference
 
+## Handoff package
+
+| Asset | Location |
+|-------|----------|
+| Full designer brief | `.agents/design/PP-042-designer-handoff.md` |
+| Live design kit | https://www.mypantryhub.com/design-system/ |
+| CSS tokens | `frontend/app/globals.css` |
+| Token constants | `frontend/lib/design-tokens.ts` |
+| Component preview page | `frontend/app/design-system/page.tsx` |
+
 ## Log
 
 - 2026-07-11: Ticket created from user goals 1–3 + playbook design kit guidance
+- 2026-07-11: Designer handoff package + live `/design-system/` reference page

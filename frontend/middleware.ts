@@ -18,6 +18,7 @@ const PUBLIC_PATHS = new Set([
   "/build-id.txt",
   "/sitemap.xml",
   "/robots.txt",
+  "/design-system",
 ]);
 
 const PUBLIC_PREFIXES = [
