@@ -83,7 +83,7 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              {isNameLocked ? "Product Name" : "Item Name"}
+              Item Name
             </label>
             <input
               type="text"
@@ -95,14 +95,8 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
                   ? "bg-slate-50 text-slate-700 cursor-not-allowed"
                   : "focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               }`}
-              disabled={isLoading}
+              disabled={isLoading || isNameLocked}
             />
-            {isNameLocked && (
-              <p className="text-xs text-slate-500 mt-1">
-                This name comes from the barcode product database and cannot be
-                changed. Only custom items without a barcode can be renamed.
-              </p>
-            )}
           </div>
 
           <div>
