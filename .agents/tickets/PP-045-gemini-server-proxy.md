@@ -1,6 +1,6 @@
 # PP-045: Proxy Gemini API server-side
 
-**Status:** 📋 Open  
+**Status:** ❌ Cancelled (superseded by PP-058)
 **Priority:** P0  
 **Phase:** 3 — Security remediation  
 **Playbook:** `agent_paige_security_audit.md`, `ssrf_protection.md`  

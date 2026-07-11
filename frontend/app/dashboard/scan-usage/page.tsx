@@ -1,5 +1,6 @@
-import { ScanUsageView } from "@/components/dashboard/views/scan-usage-view";
+import { redirect } from "next/navigation";
 
+/** Legacy Gemini visual-usage route — decommissioned (PP-058). */
 export default function ScanUsagePage() {
-  return <ScanUsageView />;
+  redirect("/dashboard/");
 }

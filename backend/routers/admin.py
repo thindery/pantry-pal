@@ -30,10 +30,10 @@ async def dashboard(
 ):
     try:
         return success_response(admin_service.get_dashboard_metrics(period))
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail=error_response("INTERNAL_ERROR", "Failed to retrieve dashboard metrics", {"error": str(exc)}),
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve dashboard metrics"),
         )
 
 
@@ -45,10 +45,10 @@ async def transactions(
 ):
     try:
         return success_response(admin_service.get_transactions(limit, cursor))
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail=error_response("INTERNAL_ERROR", "Failed to retrieve transactions", {"error": str(exc)}),
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve transactions"),
         )
 
 
@@ -56,8 +56,8 @@ async def transactions(
 async def alerts(_admin: str = Depends(require_admin)):
     try:
         return success_response(admin_service.get_failed_payment_alerts())
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail=error_response("INTERNAL_ERROR", "Failed to retrieve alerts", {"error": str(exc)}),
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve alerts"),
         )

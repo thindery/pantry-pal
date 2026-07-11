@@ -22,7 +22,6 @@ export function AddItemView() {
     setLinkingBarcodeItem,
     updatingItemIds,
     handleScanReceiptClick,
-    handleVoiceAssistantClick,
     statCardFilter,
     clearStatCardFilter,
     sortBy,

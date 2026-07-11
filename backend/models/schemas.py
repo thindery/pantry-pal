@@ -160,11 +160,27 @@ class CompleteSessionRequest(BaseModel):
     receiptUrl: Optional[str] = Field(default=None, max_length=500)
     notes: Optional[str] = Field(default=None, max_length=500)
 
+    @field_validator("receiptUrl")
+    @classmethod
+    def validate_receipt_url(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        from backend.lib.url_validation import validate_receipt_url
+
+        return validate_receipt_url(v)
+
 
 class UpdateSessionReceiptRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     receiptUrl: str = Field(..., max_length=500)
+
+    @field_validator("receiptUrl")
+    @classmethod
+    def validate_receipt_url(cls, v: str) -> str:
+        from backend.lib.url_validation import validate_receipt_url
+
+        return validate_receipt_url(v)
 
 
 class ScanResultItem(BaseModel):
@@ -198,15 +214,14 @@ class VisualUsageRequest(BaseModel):
 
 
 class ClientErrorCreateRequest(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
-    type: str = Field(..., min_length=1)
-    message: str = Field(..., min_length=1)
-    stack: Optional[str] = None
-    component: Optional[str] = None
-    url: Optional[str] = None
-    userAgent: Optional[str] = None
-    userId: Optional[str] = None
+    type: str = Field(..., min_length=1, max_length=200)
+    message: str = Field(..., min_length=1, max_length=2000)
+    stack: Optional[str] = Field(default=None, max_length=8000)
+    component: Optional[str] = Field(default=None, max_length=500)
+    url: Optional[str] = Field(default=None, max_length=2000)
+    userAgent: Optional[str] = Field(default=None, max_length=500)
 
 
 class BarcodeSaveRequest(BaseModel):

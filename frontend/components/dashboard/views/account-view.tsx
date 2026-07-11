@@ -7,19 +7,11 @@ import {
   ChevronRight,
   ClipboardList,
   LogOut,
-  Mic,
   Settings,
   Sparkles,
 } from "lucide-react";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
-
-function getAdminEmails(): string[] {
-  return (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
 
 export function AccountView() {
   const { data: session } = useSession();
@@ -28,12 +20,11 @@ export function AccountView() {
     isPaid,
     setShowThresholdSettings,
     handleScanReceiptClick,
-    handleVoiceAssistantClick,
   } = usePantry();
 
   const email = session?.user?.email ?? "";
   const name = session?.user?.name ?? email;
-  const isAdmin = email && getAdminEmails().includes(email.toLowerCase());
+  const isAdmin = (session?.user as { isAdmin?: boolean } | undefined)?.isAdmin === true;
 
   const menuItems = [
     {
@@ -47,7 +38,6 @@ export function AccountView() {
       href: "/dashboard/ledger/",
     },
     { label: "Scan receipt", icon: Camera, onClick: handleScanReceiptClick },
-    { label: "Voice assistant", icon: Mic, onClick: handleVoiceAssistantClick },
     ...(isAdmin
       ? [{ label: "Admin", icon: Settings, href: "/admin/" }]
       : []),

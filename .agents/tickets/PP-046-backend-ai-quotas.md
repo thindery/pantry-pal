@@ -1,6 +1,6 @@
 # PP-046: Enforce AI and voice quotas on backend
 
-**Status:** 📋 Open  
+**Status:** ❌ Cancelled (Gemini decommissioned — PP-058)
 **Priority:** P1  
 **Phase:** 3 — Security remediation  
 **Playbook:** `agent_paige_security_audit.md`, `billing_and_database.md`  

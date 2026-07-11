@@ -62,7 +62,7 @@ function isProtectedPath(pathname: string): boolean {
 }
 
 function getAdminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+  return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
@@ -82,10 +82,6 @@ export default auth(async (req) => {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.delete("x-user-id");
   requestHeaders.delete("x-user-email");
-
-  if (req.method === "POST" && normalizePath(pathname) === "/api/client-errors") {
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  }
 
   const isLoggedIn = !!req.auth;
   const userEmail = req.auth?.user?.email?.toLowerCase();

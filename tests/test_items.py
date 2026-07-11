@@ -31,8 +31,13 @@ def test_list_items(mock_get, client, auth_headers):
     mock_get.assert_called_once()
 
 
+@patch(
+    "backend.routers.items.subscription_service.can_add_items",
+    return_value={"allowed": True, "remaining": 45},
+)
+@patch("backend.routers.items.pantry_service.get_all_items", return_value=[])
 @patch("backend.routers.items.pantry_service.create_item", return_value=SAMPLE_ITEM)
-def test_create_item_validation(mock_create, client, auth_headers):
+def test_create_item_validation(mock_create, mock_get, mock_can, client, auth_headers):
     response = client.post(
         "/api/items",
         headers=auth_headers,
@@ -42,6 +47,23 @@ def test_create_item_validation(mock_create, client, auth_headers):
     data = response.json()
     assert data["success"] is True
     assert data["data"]["id"] == SAMPLE_ITEM["id"]
+
+
+@patch(
+    "backend.routers.items.subscription_service.can_add_items",
+    return_value={"allowed": False, "remaining": 0},
+)
+@patch("backend.routers.items.pantry_service.get_all_items", return_value=[SAMPLE_ITEM] * 50)
+def test_create_item_tier_limit(mock_get, mock_can, client, auth_headers):
+    response = client.post(
+        "/api/items",
+        headers=auth_headers,
+        json={"name": "Banana", "quantity": 1, "unit": "pieces", "category": "produce"},
+    )
+    assert response.status_code == 403
+    data = response.json()
+    assert data["error"]["code"] == "TIER_LIMIT_EXCEEDED"
+    mock_can.assert_called_once()
 
 
 def test_create_item_missing_name(client, auth_headers):

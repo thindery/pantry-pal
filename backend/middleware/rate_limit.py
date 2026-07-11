@@ -41,10 +41,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         settings = get_settings()
         path = request.url.path
 
-        if path in ("/health", "/api/receipts/health", "/api/webhooks/stripe"):
+        if path in ("/health", "/api/webhooks/stripe"):
             return await call_next(request)
 
-        if path.startswith("/api/receipts/scan"):
+        if path == "/api/client-errors" and request.method == "POST":
+            limit = settings.RATE_LIMIT_CLIENT_ERRORS
+        elif path.startswith("/api/receipts/scan"):
             limit = settings.RATE_LIMIT_RECEIPT_SCAN
         elif path.startswith("/api/barcode"):
             limit = settings.RATE_LIMIT_BARCODE

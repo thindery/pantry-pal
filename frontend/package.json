@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@auth/pg-adapter": "^1.11.2",
-    "@google/genai": "^1.38.0",
+
     "@sentry/browser": "^10.48.0",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",

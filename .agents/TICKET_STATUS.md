@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-07-11 (PP-045 security audit + remediation tickets)
+Last updated: 2026-07-11 (PP-058 Gemini decommission + security fixes)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,7 +16,7 @@ Last updated: 2026-07-11 (PP-045 security audit + remediation tickets)
 | Done | 42 |
 | In progress | 1 (PP-033) |
 | Ready | 2 (PP-034, PP-035) |
-| Security open | 13 (PP-045–PP-057) |
+| Security open | 2 (PP-052, PP-059) |
 | User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
 
 ---
@@ -104,21 +104,23 @@ Last updated: 2026-07-11 (PP-045 security audit + remediation tickets)
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-045 | Proxy Gemini API server-side | P0 | 📋 Open |
-| PP-046 | Enforce AI/voice quotas on backend | P1 | 📋 Open |
-| PP-047 | Server-side item tier limits | P1 | 📋 Open |
-| PP-048 | Harden client-errors ingestion | P1 | 📋 Open |
-| PP-049 | Validate Stripe redirect URLs | P1 | 📋 Open |
-| PP-050 | Remove public admin email env | P2 | 📋 Open |
-| PP-051 | Add HSTS + CSP headers | P2 | 📋 Open |
+| PP-045 | Proxy Gemini API server-side | P0 | ❌ Cancelled → PP-058 |
+| PP-046 | Enforce AI/voice quotas on backend | P1 | ❌ Cancelled → PP-058 |
+| PP-047 | Server-side item tier limits | P1 | ✅ Done |
+| PP-048 | Harden client-errors ingestion | P1 | ✅ Done |
+| PP-049 | Validate Stripe redirect URLs | P1 | ✅ Done |
+| PP-050 | Remove public admin email env | P2 | ✅ Done |
+| PP-051 | Add HSTS + CSP headers | P2 | ✅ Done |
 | PP-052 | Redis rate limiting | P2 | 📋 Open |
-| PP-053 | Validate receiptUrl | P2 | 📋 Open |
-| PP-054 | Restrict /health exposure | P2 | 📋 Open |
-| PP-055 | Sanitize API error responses | P3 | 📋 Open |
-| PP-056 | Stripe webhook signature tests | P3 | 📋 Open |
-| PP-057 | JWT aud + OAuth linking hardening | P3 | 📋 Open |
+| PP-053 | Validate receiptUrl | P2 | ✅ Done |
+| PP-054 | Restrict /health exposure | P2 | ✅ Done |
+| PP-055 | Sanitize API error responses | P3 | ✅ Done |
+| PP-056 | Stripe webhook signature tests | P3 | ✅ Done |
+| PP-057 | JWT aud + OAuth linking hardening | P3 | 🔄 Partial (OAuth linking off) |
+| PP-058 | Decommission Gemini client integration | P0 | ✅ Done |
+| PP-059 | Research voice/usage without AI tokens | P2 | 📋 Open |
 
-**Ship order:** PP-045 → PP-047/048/049 (P1) → PP-046 → P2 backlog → re-audit
+**Remaining:** PP-052 (Redis), PP-057 (`aud` claim), PP-059 (research) → re-audit
 
 ---
 

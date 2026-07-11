@@ -26,13 +26,29 @@ def admin_headers(auth_headers, monkeypatch):
     return auth_headers
 
 
+def test_create_client_error_requires_auth(client):
+    response = client.post(
+        "/api/client-errors",
+        json={
+            "type": "TypeError",
+            "message": "Cannot read property",
+            "stack": "at Component",
+            "component": "Dashboard",
+            "url": "https://example.com/dashboard",
+            "userAgent": "Mozilla/5.0",
+        },
+    )
+    assert response.status_code == 401
+
+
 @patch(
     "backend.routers.client_errors.client_errors_service.save_client_error",
     return_value={"id": "err_001"},
 )
-def test_create_client_error_public(mock_save, client):
+def test_create_client_error_authenticated(mock_save, client, auth_headers):
     response = client.post(
         "/api/client-errors",
+        headers=auth_headers,
         json={
             "type": "TypeError",
             "message": "Cannot read property",

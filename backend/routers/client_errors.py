@@ -24,10 +24,13 @@ async def require_admin(request: Request) -> str:
 
 
 @router.post("")
-async def create_client_error(body: ClientErrorCreateRequest):
+async def create_client_error(body: ClientErrorCreateRequest, request: Request):
+    user_id, _ = await resolve_authenticated_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail=error_response("UNAUTHORIZED", "Authentication required"))
     try:
         saved = client_errors_service.save_client_error(
-            user_id=body.userId,
+            user_id=user_id,
             error_type=body.type,
             error_message=body.message,
             error_stack=body.stack,

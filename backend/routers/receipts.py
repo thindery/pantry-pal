@@ -15,13 +15,6 @@ from backend.services import receipt_ocr, subscription_service
 router = APIRouter(prefix="/api/receipts", tags=["Receipts"])
 
 
-@router.get("/health")
-async def receipts_health():
-    return success_response(
-        {"status": "ok", "ocrEngine": "pytesseract", "supportedLanguages": ["eng"]}
-    )
-
-
 @router.post("/scan")
 async def scan_receipt(body: ReceiptScanRequest, user_id: str = Depends(require_authenticated_user_id)):
     if not re.match(r"^[A-Za-z0-9+/]*={0,2}$", body.image):
@@ -55,8 +48,8 @@ async def scan_receipt(body: ReceiptScanRequest, user_id: str = Depends(require_
                 "rawLength": len(result.get("rawText", "")),
             },
         )
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail=error_response("OCR_ERROR", str(exc)),
+            detail=error_response("OCR_ERROR", "Receipt scan failed"),
         )

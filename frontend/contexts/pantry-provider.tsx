@@ -75,9 +75,6 @@ export function usePantryState() {
   const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
   const [linkingBarcodeItem, setLinkingBarcodeItem] = useState<PantryItem | null>(null);
   const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [_showVoiceLock, setShowVoiceLock] = useState(false);
-
   // Shopping Session State
   const [activeShoppingSession, setActiveShoppingSession] = useState<ShoppingSession | null>(null);
   const [sessionExpanded, setSessionExpanded] = useState(false);
@@ -780,14 +777,6 @@ export function usePantryState() {
     }
   };
 
-  const handleVoiceAssistantClick = useCallback(() => {
-    if (!isFeatureAvailable('voice')) {
-      setShowVoiceLock(true);
-    } else {
-      setIsVoiceActive(true);
-    }
-  }, [isFeatureAvailable]);
-
   const handleScanReceiptClick = useCallback(() => {
     // Check receipt scan limit
     if (receiptScansRemaining !== Infinity && receiptScansRemaining <= 0) {
@@ -796,35 +785,6 @@ export function usePantryState() {
       router.push('/dashboard/scan-receipt/');
     }
   }, [receiptScansRemaining]);
-
-  const adjustStock = useCallback(
-    (name: string, amount: number) => {
-      let resultMessage = '';
-
-      const existing = inventory.find(
-        (i) => i.name.toLowerCase() === name.toLowerCase()
-      );
-
-      if (existing != null) {
-        handleAdjustQuantity(existing.id, amount);
-        resultMessage = `Successfully updated ${name}.`;
-      } else if (amount > 0) {
-        handleCreateItem({
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          quantity: amount,
-          unit: 'units',
-          category: 'other',
-        }).then(() => {
-          resultMessage = `Added new item ${name} with quantity ${amount}.`;
-        });
-      } else {
-        resultMessage = `Could not find ${name} to remove.`;
-      }
-
-      return resultMessage;
-    },
-    [inventory]
-  );
 
   const handleAddScannedItems = async (items: ScanResult[]) => {
     const addedItems: string[] = [];
@@ -879,7 +839,6 @@ export function usePantryState() {
     infoItem, setInfoItem,
     linkingBarcodeItem, setLinkingBarcodeItem,
     isLinkingBarcode,
-    isVoiceActive, setIsVoiceActive,
     activeShoppingSession, setActiveShoppingSession,
     sessionExpanded, setSessionExpanded,
     startingSession, handleStartSessionInline,
@@ -917,9 +876,7 @@ export function usePantryState() {
     markItemAsBought,
     handleEditItem,
     handleLinkBarcode,
-    handleVoiceAssistantClick,
     handleScanReceiptClick,
-    adjustStock,
     handleAddScannedItems,
     scannedProduct, setScannedProduct,
     scanQuantity, setScanQuantity,

@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from backend.auth_session import require_authenticated_user_id
 from backend.models.schemas import BarcodeSaveRequest
-from backend.services import barcode_service, pantry_service
+from backend.models.responses import error_response
+from backend.services import barcode_service, pantry_service, subscription_service
 
 router = APIRouter(prefix="/api/barcode", tags=["Barcode"])
 
@@ -57,6 +58,18 @@ async def save_barcode_product(
     clean = _clean_barcode(barcode)
     if len(clean) < 8:
         raise HTTPException(status_code=400, detail={"success": False, "cached": False, "error": "Invalid barcode format"})
+
+    existing = pantry_service.get_all_items(user_id)
+    tier_check = subscription_service.can_add_items(user_id, len(existing))
+    if not tier_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=error_response(
+                "TIER_LIMIT_EXCEEDED",
+                "Item limit reached for your plan. Upgrade to add more items.",
+                {"remaining": tier_check["remaining"]},
+            ),
+        )
 
     barcode_service.save_product(
         {

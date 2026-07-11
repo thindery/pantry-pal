@@ -17,6 +17,7 @@ class Settings:
     RATE_LIMIT_GENERAL = int(os.getenv("RATE_LIMIT_GENERAL", "100"))
     RATE_LIMIT_RECEIPT_SCAN = int(os.getenv("RATE_LIMIT_RECEIPT_SCAN", "10"))
     RATE_LIMIT_BARCODE = int(os.getenv("RATE_LIMIT_BARCODE", "30"))
+    RATE_LIMIT_CLIENT_ERRORS = int(os.getenv("RATE_LIMIT_CLIENT_ERRORS", "10"))
 
     @property
     def cors_origins(self) -> List[str]:

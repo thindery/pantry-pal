@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from backend.auth_session import require_authenticated_user_id
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import CreateItemRequest, UpdateItemRequest
-from backend.services import pantry_service
+from backend.services import pantry_service, subscription_service
 
 router = APIRouter(prefix="/api/items", tags=["Items"])
 UUID_REGEX = re.compile(
@@ -49,8 +49,21 @@ async def get_item(item_id: str, user_id: str = Depends(require_authenticated_us
 @router.post("", status_code=201)
 async def create_item(body: CreateItemRequest, user_id: str = Depends(require_authenticated_user_id)):
     try:
+        existing = pantry_service.get_all_items(user_id)
+        tier_check = subscription_service.can_add_items(user_id, len(existing))
+        if not tier_check["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=error_response(
+                    "TIER_LIMIT_EXCEEDED",
+                    "Item limit reached for your plan. Upgrade to add more items.",
+                    {"remaining": tier_check["remaining"]},
+                ),
+            )
         item = pantry_service.create_item(user_id, body.model_dump())
         return success_response(item, {"userId": user_id})
+    except HTTPException:
+        raise
     except ValidationError as exc:
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "Invalid request body", {"errors": exc.errors()}))
     except Exception:

@@ -69,7 +69,7 @@ const STEPS = [
   {
     number: '01',
     title: 'Scan or Add Items',
-    description: 'Use receipt scanning, barcode scanning, or voice commands to quickly add items to your pantry.',
+    description: 'Use receipt scanning, barcode scanning, or manual entry to quickly add items to your pantry.',
   },
   {
     number: '02',
@@ -92,7 +92,7 @@ const PRICING_TIERS = [
     period: 'forever',
     features: [
       'Up to 50 pantry items',
-      '5 AI receipt scans/month',
+      '5 receipt scans/month',
       'Manual item entry',
       'Basic categories',
       'Single device',
@@ -107,8 +107,7 @@ const PRICING_TIERS = [
     period: '/month',
     features: [
       'Unlimited pantry items',
-      'Unlimited AI receipt scans',
-      'Voice assistant with Gemini',
+      'Unlimited receipt scans',
       'Cloud sync across devices',
       'Advanced analytics',
       'Push notifications',
@@ -161,7 +160,7 @@ const TESTIMONIALS = [
 const FAQS = [
   {
     question: 'How does the receipt scanning work?',
-    answer: 'Our AI analyzes your receipt photo and extracts item names, quantities, and categories automatically. It\'s powered by Google\'s Gemini AI for high accuracy.',
+    answer: 'Take a photo of your grocery receipt and our OCR engine extracts item names, quantities, and categories automatically.',
   },
   {
     question: `Can I use ${BRAND_NAME} with multiple devices?`,
@@ -171,10 +170,7 @@ const FAQS = [
     question: 'Is there a limit on how many items I can track?',
     answer: 'Free plans can track up to 50 items. Pro and Family plans offer unlimited item tracking.',
   },
-  {
-    question: 'How does the voice assistant work?',
-    answer: `Just tap the microphone and talk naturally. Say things like "I used 3 eggs" or "Add 2 gallons of milk" and ${BRAND_NAME} handles the rest.`,
-  },
+
   {
     question: 'Can I share my pantry with family members?',
     answer: 'Absolutely! The Family plan supports up to 5 household members with shared inventory and individual shopping lists.',
@@ -262,7 +258,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <span className="text-[#7CB342]">Home</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              Never run out of essentials again. Track your pantry with AI-powered receipt scanning, voice commands, and smart shopping lists.
+              Never run out of essentials again. Track your pantry with receipt scanning, barcode lookup, and smart shopping lists.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button 

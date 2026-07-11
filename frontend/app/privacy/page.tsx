@@ -82,9 +82,8 @@ export default function PrivacyPage() {
             generate in the app.
           </li>
           <li>
-            <strong className="text-slate-900">Scan &amp; AI inputs:</strong> receipt images, barcode
-            lookups, and voice or text prompts you submit for AI-assisted features (where enabled on
-            your plan).
+            <strong className="text-slate-900">Scan inputs:</strong> receipt images and barcode lookups
+            you submit for OCR and product matching.
           </li>
           <li>
             <strong className="text-slate-900">Billing information:</strong> processed by Stripe. We do
@@ -106,22 +105,21 @@ export default function PrivacyPage() {
           <li>Provide inventory tracking, shopping lists, and subscription features.</li>
           <li>Authenticate your account and keep sessions secure.</li>
           <li>Process payments and manage Pro or Family plans.</li>
-          <li>Run receipt scanning, barcode lookup, and AI-assisted features you request.</li>
+          <li>Run receipt scanning and barcode lookup you request.</li>
           <li>Send transactional emails and respond to support requests.</li>
           <li>Detect abuse, enforce limits, and maintain service reliability.</li>
         </ul>
       </LegalSection>
 
-      <LegalSection id="inventory-data" number="4" title="Inventory & AI Features">
+      <LegalSection id="inventory-data" number="4" title="Inventory & Scan Features">
         <p>
           Pantry items and activity logs are stored in our database and associated with your account.
           If you use household sharing on a Family plan, designated members you invite may view and
           edit shared inventory according to product settings.
         </p>
         <p>
-          Receipt and usage images sent for AI processing are used to extract item details for your
-          inventory. Do not upload images containing sensitive information unrelated to grocery or
-          pantry items.
+          Receipt images sent for OCR processing are used to extract item details for your inventory.
+          Do not upload images containing sensitive information unrelated to grocery or pantry items.
         </p>
       </LegalSection>
 
@@ -158,10 +156,6 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong className="text-slate-900">Stripe</strong> — subscription billing
-          </li>
-          <li>
-            <strong className="text-slate-900">Google Gemini</strong> — optional AI receipt, usage,
-            and voice features
           </li>
           <li>
             <strong className="text-slate-900">Open Food Facts</strong> — barcode product lookups

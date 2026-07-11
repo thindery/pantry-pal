@@ -53,6 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
       
       fetch('/api/client-errors', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(errorData),
       }).catch(console.error);

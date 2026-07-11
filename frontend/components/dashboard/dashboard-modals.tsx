@@ -5,7 +5,6 @@ import { usePantry } from "@/contexts/pantry-provider";
 import { EditItemModal } from "@/components/dashboard/edit-item-modal";
 import ProductInfoModal from "@/components/ProductInfoModal";
 import LinkBarcodeModal from "@/components/LinkBarcodeModal";
-import { VoiceAssistant } from "@/components/dashboard/voice-assistant";
 import { updateItem } from "@/services/apiService";
 
 const emptyItem = {
@@ -19,9 +18,6 @@ const emptyItem = {
 
 export function DashboardModals() {
   const {
-    isVoiceActive,
-    setIsVoiceActive,
-    adjustStock,
     editingItem,
     setEditingItem,
     handleEditItem,
@@ -52,13 +48,6 @@ export function DashboardModals() {
 
   return (
     <>
-      {isVoiceActive && (
-        <VoiceAssistant
-          onAdjustStock={adjustStock}
-          onClose={() => setIsVoiceActive(false)}
-        />
-      )}
-
       <EditItemModal
         key={editingItem?.id}
         item={editingItem ?? emptyItem}
