@@ -20,8 +20,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <DashboardNavbar />
-      <div className="min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="relative z-0 min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {toast != null && toast.visible && (
@@ -39,6 +38,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         <DashboardModals />
         <main className="py-6 md:py-8">{children}</main>
       </div>
+      <DashboardNavbar />
       {showThresholdSettings && (
         <ThresholdSettingsModal
           thresholdConfig={thresholdConfig}

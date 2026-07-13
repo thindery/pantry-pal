@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, Package, ShoppingCart, User } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { UserButton } from "@/components/auth/UserButton";
+import { DashboardLink } from "@/components/dashboard/dashboard-link";
 
 const NAV_LINKS = [
   { href: "/dashboard/", label: "Pantry", icon: Package },
@@ -46,10 +47,10 @@ export function DashboardNavbar() {
           const Icon = link.icon;
           const active = isActive(pathname, link.href);
           return (
-            <Link
+            <DashboardLink
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
                 active
                   ? "text-[var(--primary)] bg-[var(--primary-light)]"
                   : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
@@ -57,7 +58,7 @@ export function DashboardNavbar() {
             >
               <Icon size={18} />
               {link.label}
-            </Link>
+            </DashboardLink>
           );
         })}
         <div className="ml-auto">
@@ -65,15 +66,15 @@ export function DashboardNavbar() {
         </div>
       </nav>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-[var(--surface)] border-t border-[var(--border)] px-2 py-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center z-[9999]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-[var(--surface)] border-t border-[var(--border)] px-2 py-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center z-[9999] pointer-events-auto touch-manipulation">
         {NAV_LINKS.map((link) => {
           const Icon = link.icon;
           const active = isActive(pathname, link.href);
           return (
-            <Link
+            <DashboardLink
               key={link.href}
               href={link.href}
-              className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-xs font-medium transition-colors active:scale-95 active:bg-[var(--surface-muted)] ${
                 active
                   ? "text-[var(--primary)] bg-[var(--primary-light)]"
                   : "text-[var(--muted)]"
@@ -81,7 +82,7 @@ export function DashboardNavbar() {
             >
               <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
               {link.label}
-            </Link>
+            </DashboardLink>
           );
         })}
       </nav>

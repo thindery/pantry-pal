@@ -3,12 +3,12 @@
 import { useMemo, useState } from "react";
 import { Barcode, Loader2, Package, Plus, Search, Settings } from "lucide-react";
 import { PantryListRow } from "@/components/dashboard/PantryListRow";
+import { DashboardLink } from "@/components/dashboard/dashboard-link";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME } from "@/lib/site-content";
 
 export function InventoryView() {
   const {
-    router,
     inventory,
     pantryFilter,
     setPantryFilter,
@@ -61,22 +61,20 @@ export function InventoryView() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard/scan-barcode/")}
-          className="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-xl px-4 py-3 font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+        <DashboardLink
+          href="/dashboard/scan-barcode/"
+          className="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-xl px-4 py-3 font-semibold hover:bg-[var(--primary-hover)] active:scale-[0.98] transition-colors touch-manipulation"
         >
           <Barcode size={20} />
           Scan item
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard/add-item/")}
-          className="inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-xl px-4 py-3 font-semibold hover:bg-[var(--surface-muted)] transition-colors"
+        </DashboardLink>
+        <DashboardLink
+          href="/dashboard/add-item/"
+          className="inline-flex items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-xl px-4 py-3 font-semibold hover:bg-[var(--surface-muted)] active:scale-[0.98] transition-colors touch-manipulation"
         >
           <Plus size={20} />
           Add manually
-        </button>
+        </DashboardLink>
       </div>
 
       <div className="relative">
@@ -146,13 +144,12 @@ export function InventoryView() {
           <Package size={40} className="mx-auto mb-4 text-[var(--muted-light)]" />
           <p className="text-[var(--foreground)] font-semibold mb-1">Your pantry is empty</p>
           <p className="text-[var(--muted)] text-sm mb-4">Scan a barcode or add your first item.</p>
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard/add-item/")}
-            className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+          <DashboardLink
+            href="/dashboard/add-item/"
+            className="inline-flex bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[var(--primary-hover)] active:scale-[0.98] transition-colors touch-manipulation"
           >
             Add your first item
-          </button>
+          </DashboardLink>
         </div>
       ) : displayedItems.length === 0 ? (
         <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 text-center">
