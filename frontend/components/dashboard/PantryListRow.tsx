@@ -54,7 +54,7 @@ export function PantryListRow({
           {isLowStock && (
             <>
               <span className="mx-1">·</span>
-              <span>alert ≤ {lowStockThreshold}</span>
+              <span>warn at or below {lowStockThreshold}</span>
             </>
           )}
         </p>

@@ -11,5 +11,5 @@ export function getShoppingItemReason(
     item.lowStockThreshold != null && item.pantryItemId != null
       ? "your alert"
       : `${item.category} default`;
-  return `Need ${item.suggestedQuantity} · have ${item.currentQuantity} · ${scope} ≤ ${threshold}`;
+  return `Need ${item.suggestedQuantity} · have ${item.currentQuantity} · ${scope}: warn at or below ${threshold}`;
 }
