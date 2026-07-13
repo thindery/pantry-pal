@@ -419,54 +419,88 @@ export function usePantryState() {
         );
       });
       
-      const newItems: ShoppingListItem[] = [
-        ...lowStockItems.map((item) => ({
-          id: `low-${item.id}-${Date.now()}`,
-          name: item.name,
-          category: item.category,
-          currentQuantity: item.quantity,
-          suggestedQuantity: isOutOfStock(item) 
-            ? calculateSuggestedQuantity(item) 
-            : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1),
-          unit: item.unit,
-          isManual: false,
-          isChecked: false,
-          addedAt: new Date().toISOString(),
-          reason: 'low_stock' as 'low_stock' | 'manual' | 'recommendation',
-          pantryItemId: item.id,
-          lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
-        })),
-        ...recommendationItems.map((item) => ({
-          id: `rec-${item.id}-${Date.now()}`,
-          name: item.name,
-          category: item.category,
-          currentQuantity: item.quantity,
-          suggestedQuantity: calculateSuggestedQuantity(item),
-          unit: item.unit,
-          isManual: false,
-          isChecked: false,
-          addedAt: new Date().toISOString(),
-          reason: 'recommendation' as 'low_stock' | 'manual' | 'recommendation',
-        })),
-      ];
-      
-      const safeShoppingList = normalizeList<ShoppingListItem>(shoppingList);
-      const existingManualItems = safeShoppingList.filter((item) => item.isManual);
-      const existingItemNames = new Set(newItems.map((i) => i.name.toLowerCase()));
-      
-      const mergedItems = [
-        ...newItems,
-        ...existingManualItems.filter((item) => !existingItemNames.has(item.name.toLowerCase())),
-      ];
-      
-      setShoppingList(mergedItems.sort((a, b) => a.category.localeCompare(b.category)));
+      setShoppingList((prevList) => {
+        const safeShoppingList = normalizeList<ShoppingListItem>(prevList);
+        
+        // Match existing items by name or by pantryItemId to preserve their custom/checked state
+        const existingByName = new Map<string, ShoppingListItem>();
+        const existingById = new Map<string, ShoppingListItem>();
+        
+        safeShoppingList.forEach((item) => {
+          existingByName.set(item.name.toLowerCase(), item);
+          if (item.pantryItemId) {
+            existingById.set(item.pantryItemId, item);
+          }
+        });
+
+        const newItems: ShoppingListItem[] = [
+          ...lowStockItems.map((item) => {
+            const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
+            if (existing) {
+              return {
+                ...existing,
+                currentQuantity: item.quantity,
+                lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
+              };
+            }
+            return {
+              id: `low-${item.id}-${Date.now()}`,
+              name: item.name,
+              category: item.category,
+              currentQuantity: item.quantity,
+              suggestedQuantity: isOutOfStock(item) 
+                ? calculateSuggestedQuantity(item) 
+                : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1),
+              unit: item.unit,
+              isManual: false,
+              isChecked: false,
+              addedAt: new Date().toISOString(),
+              reason: 'low_stock' as const,
+              pantryItemId: item.id,
+              lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
+            };
+          }),
+          ...recommendationItems.map((item) => {
+            const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
+            if (existing) {
+              return {
+                ...existing,
+                currentQuantity: item.quantity,
+              };
+            }
+            return {
+              id: `rec-${item.id}-${Date.now()}`,
+              name: item.name,
+              category: item.category,
+              currentQuantity: item.quantity,
+              suggestedQuantity: calculateSuggestedQuantity(item),
+              unit: item.unit,
+              isManual: false,
+              isChecked: false,
+              addedAt: new Date().toISOString(),
+              reason: 'recommendation' as const,
+              pantryItemId: item.id,
+            };
+          }),
+        ];
+
+        // Keep manual items that aren't already represented in the newly generated items
+        const existingManualItems = safeShoppingList.filter((item) => item.isManual);
+        const newItemsNames = new Set(newItems.map((i) => i.name.toLowerCase()));
+        
+        const mergedItems = [
+          ...newItems,
+          ...existingManualItems.filter((item) => !newItemsNames.has(item.name.toLowerCase())),
+        ];
+
+        return mergedItems.sort((a, b) => a.category.localeCompare(b.category));
+      });
     } finally {
       setIsGeneratingList(false);
     }
   }, [
     inventory,
     safeActivities,
-    shoppingList,
     isLowStock,
     isOutOfStock,
     calculateSuggestedQuantity,
