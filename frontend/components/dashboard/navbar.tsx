@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ShoppingCart, User } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
+import { UserButton } from "@/components/auth/UserButton";
 
 const NAV_LINKS = [
   { href: "/dashboard/", label: "Pantry", icon: Package },
@@ -59,6 +60,9 @@ export function DashboardNavbar() {
             </Link>
           );
         })}
+        <div className="ml-auto">
+          <UserButton />
+        </div>
       </nav>
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-[var(--surface)] border-t border-[var(--border)] px-2 py-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center z-[9999]">

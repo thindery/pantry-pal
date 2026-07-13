@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Barcode, Loader2, Package, Plus, Search } from "lucide-react";
-import { UserButton } from "@/components/auth/UserButton";
 import { PantryListRow } from "@/components/dashboard/PantryListRow";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME } from "@/lib/site-content";
@@ -44,12 +43,9 @@ export function InventoryView() {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Package className="text-[var(--primary)]" size={22} />
-          <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
-        </div>
-        <UserButton />
+      <div className="flex items-center gap-2">
+        <Package className="text-[var(--primary)]" size={22} />
+        <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
