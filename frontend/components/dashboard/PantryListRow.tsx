@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, MoreHorizontal, Plus } from "lucide-react";
+import { Bell, Minus, MoreHorizontal, Plus } from "lucide-react";
 import type { PantryItem } from "@/types";
 
 interface PantryListRowProps {
@@ -54,7 +54,13 @@ export function PantryListRow({
           {isLowStock && (
             <>
               <span className="mx-1">·</span>
-              <span>warn at or below {lowStockThreshold}</span>
+              <span
+                className="inline-flex items-center gap-0.5"
+                title={`Low stock alert at or below ${lowStockThreshold}`}
+              >
+                <Bell size={12} aria-hidden />
+                <span>@ {lowStockThreshold}</span>
+              </span>
             </>
           )}
         </p>
