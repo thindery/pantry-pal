@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Check,
   Loader2,
+  Minus,
   Plus,
   RefreshCw,
   Settings,
@@ -225,9 +226,11 @@ export function ShoppingListView() {
                         Math.max(1, item.suggestedQuantity - 1)
                       )
                     }
-                    className="w-7 h-7 rounded-lg bg-[var(--surface-muted)] text-[var(--muted)] text-sm font-bold"
+                    disabled={item.suggestedQuantity <= 1}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[var(--border)] disabled:opacity-30 transition-colors"
+                    aria-label="Decrease quantity"
                   >
-                    −
+                    <Minus size={16} />
                   </button>
                   <span className="w-12 text-center text-sm font-semibold text-[var(--primary)]">
                     {item.suggestedQuantity}
@@ -237,9 +240,10 @@ export function ShoppingListView() {
                     onClick={() =>
                       updateShoppingItemQuantity(item.id, item.suggestedQuantity + 1)
                     }
-                    className="w-7 h-7 rounded-lg bg-[var(--surface-muted)] text-[var(--muted)] text-sm font-bold"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--primary-light)] text-[var(--primary)] hover:bg-[var(--primary-muted)] disabled:opacity-30 transition-colors"
+                    aria-label="Increase quantity"
                   >
-                    +
+                    <Plus size={16} />
                   </button>
                   <button
                     type="button"
