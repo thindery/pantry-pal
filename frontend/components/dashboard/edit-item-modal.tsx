@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Info } from "lucide-react";
 import type { BarcodeProduct, PantryItem } from "@/types";
 import { UNITS, CATEGORIES } from "@/lib/constants";
 import { getProductByBarcode } from "@/services/apiService";
@@ -18,6 +19,32 @@ interface EditItemModalProps {
 }
 
 type DetailTab = "overview" | "nutrition" | "ingredients";
+
+const LOW_STOCK_TOOLTIP =
+  "We flag this item and add it to your shopping list when quantity is at or below this number. Set to 0 to only alert when completely out of stock.";
+
+const compactSelectClass =
+  "text-xs py-1 pl-2 pr-6 border border-slate-200 rounded-md bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
+
+function FieldTooltip({ text }: { text: string }) {
+  return (
+    <span className="relative group inline-flex">
+      <button
+        type="button"
+        className="text-slate-400 hover:text-slate-600 transition-colors"
+        aria-label="More info"
+      >
+        <Info size={12} />
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-1/2 bottom-full z-20 mb-1.5 w-48 -translate-x-1/2 rounded-lg bg-slate-800 px-2.5 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
 
 function formatDate(dateString?: string) {
   if (!dateString) return "—";
@@ -76,6 +103,108 @@ function ProductNutrition({ nutrition }: { nutrition: NonNullable<BarcodeProduct
         })}
       </div>
       <p className="text-xs text-slate-400 text-center">Values per 100g</p>
+    </div>
+  );
+}
+
+interface ItemSettingsFieldsProps {
+  unit: string;
+  category: string;
+  useCustomThreshold: boolean;
+  customThreshold: string;
+  categoryDefaultThreshold: number;
+  isLoading: boolean;
+  onUnitChange: (unit: string) => void;
+  onCategoryChange: (category: string) => void;
+  onUseCustomThresholdChange: (useCustom: boolean) => void;
+  onCustomThresholdChange: (value: string) => void;
+}
+
+function ItemSettingsFields({
+  unit,
+  category,
+  useCustomThreshold,
+  customThreshold,
+  categoryDefaultThreshold,
+  isLoading,
+  onUnitChange,
+  onCategoryChange,
+  onUseCustomThresholdChange,
+  onCustomThresholdChange,
+}: ItemSettingsFieldsProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <label className="flex items-center gap-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Unit
+          </span>
+          <select
+            value={unit}
+            onChange={(e) => onUnitChange(e.target.value)}
+            className={compactSelectClass}
+            disabled={isLoading}
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 shrink-0">
+            Category
+          </span>
+          <select
+            value={category}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            className={`${compactSelectClass} max-w-[7.5rem]`}
+            disabled={isLoading}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c.charAt(0).toUpperCase() + c.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <span className="flex items-center gap-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Alert
+          </span>
+          <FieldTooltip text={LOW_STOCK_TOOLTIP} />
+        </span>
+
+        <label className="flex items-center gap-1 text-xs text-slate-600">
+          <input
+            type="checkbox"
+            checked={!useCustomThreshold}
+            onChange={(e) => onUseCustomThresholdChange(!e.target.checked)}
+            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          Default ({categoryDefaultThreshold})
+        </label>
+
+        {useCustomThreshold && (
+          <label className="flex items-center gap-1 text-xs text-slate-600">
+            <span className="text-slate-400">≤</span>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={customThreshold}
+              onChange={(e) => onCustomThresholdChange(e.target.value)}
+              className="w-12 text-xs py-1 px-1.5 border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+              disabled={isLoading}
+            />
+          </label>
+        )}
+      </div>
     </div>
   );
 }
@@ -214,6 +343,21 @@ export function EditItemModal({
     }
   };
 
+  const settingsFields = (
+    <ItemSettingsFields
+      unit={unit}
+      category={category}
+      useCustomThreshold={useCustomThreshold}
+      customThreshold={customThreshold}
+      categoryDefaultThreshold={categoryDefaultThreshold}
+      isLoading={isLoading}
+      onUnitChange={setUnit}
+      onCategoryChange={setCategory}
+      onUseCustomThresholdChange={setUseCustomThreshold}
+      onCustomThresholdChange={setCustomThreshold}
+    />
+  );
+
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -227,141 +371,71 @@ export function EditItemModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 text-sm">
               {error}
             </div>
           )}
 
-          {hasBarcode && (
-            <div>
-              {productLoading ? (
-                <div className="py-6 flex flex-col items-center justify-center">
-                  <div className="animate-spin text-3xl mb-2">⏳</div>
-                  <p className="text-sm text-slate-500">Loading product info...</p>
-                </div>
-              ) : (
+          {hasBarcode ? (
+            productLoading ? (
+              <div className="py-8 flex flex-col items-center justify-center">
+                <div className="animate-spin text-3xl mb-2">⏳</div>
+                <p className="text-sm text-slate-500">Loading product info...</p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm">
                 <div className="flex items-start gap-4">
                   {product?.image ? (
                     <img
                       src={product.image}
                       alt={displayName}
-                      className="w-20 h-20 object-contain bg-slate-50 rounded-xl flex-shrink-0"
+                      className="w-28 h-28 object-contain bg-white rounded-xl border border-slate-100 flex-shrink-0 shadow-sm"
                     />
                   ) : (
-                    <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
+                    <div className="w-28 h-28 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-4xl flex-shrink-0 shadow-sm">
                       📦
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg text-slate-800 leading-tight">
-                      {displayName}
-                    </h3>
-                    {product?.brand && (
-                      <p className="text-slate-500 text-sm mt-1">{product.brand}</p>
-                    )}
-                    {item.barcode && (
-                      <p className="text-xs text-slate-400 mt-2 font-mono">{item.barcode}</p>
-                    )}
+
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <div>
+                      <h3 className="font-bold text-xl text-slate-900 leading-snug">
+                        {displayName}
+                      </h3>
+                      {product?.brand && (
+                        <p className="text-slate-500 text-sm mt-0.5">{product.brand}</p>
+                      )}
+                      {item.barcode && (
+                        <p className="text-[11px] text-slate-400 mt-1.5 font-mono tracking-wide">
+                          {item.barcode}
+                        </p>
+                      )}
+                    </div>
+
+                    {settingsFields}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {!hasBarcode && (
+              </div>
+            )
+          ) : (
+            <div className="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm space-y-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
                   Item Name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                  className="w-full text-lg font-semibold px-3 py-2 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                   disabled={isLoading}
                 />
               </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Unit
-              </label>
-              <select
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white"
-                disabled={isLoading}
-              >
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
+              {settingsFields}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white"
-                disabled={isLoading}
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-              <div>
-                <p className="text-sm font-medium text-slate-800">Low stock alert</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  We flag this item and add it to your shopping list when quantity is at
-                  or below this number.
-                </p>
-              </div>
-
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={!useCustomThreshold}
-                  onChange={(e) => setUseCustomThreshold(!e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                Use category default ({categoryDefaultThreshold} for {category})
-              </label>
-
-              {useCustomThreshold && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Alert when at or below
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={customThreshold}
-                    onChange={(e) => setCustomThreshold(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Set to 0 to only alert when completely out of stock.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
 
           {hasBarcode && !productLoading && (
             <div>
@@ -408,8 +482,8 @@ export function EditItemModal({
                   </div>
                 )}
 
-                {activeTab === "nutrition" && (
-                  product?.nutrition != null ? (
+                {activeTab === "nutrition" &&
+                  (product?.nutrition != null ? (
                     <ProductNutrition nutrition={product.nutrition} />
                   ) : (
                     <div className="text-center py-6">
@@ -417,11 +491,10 @@ export function EditItemModal({
                         No nutrition information available for this product.
                       </p>
                     </div>
-                  )
-                )}
+                  ))}
 
-                {activeTab === "ingredients" && (
-                  product?.ingredients != null && product.ingredients.length > 0 ? (
+                {activeTab === "ingredients" &&
+                  (product?.ingredients != null && product.ingredients.length > 0 ? (
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                       <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                         Ingredients
@@ -443,13 +516,12 @@ export function EditItemModal({
                         No ingredient information available for this product.
                       </p>
                     </div>
-                  )
-                )}
+                  ))}
               </div>
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-1">
             <button
               onClick={handleSave}
               disabled={isLoading}
