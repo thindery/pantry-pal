@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* PP-042 design kit — light greens + oranges */
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #059669;
-  --primary-hover: #047857;
-  --primary-light: #d1fae5;
-  --primary-muted: #ecfdf5;
+  /* Brand greens — aligned with marketing (grocery / healthy) */
+  --primary: #7cb342;
+  --primary-hover: #689f38;
+  --primary-light: #e8f5e9;
+  --primary-muted: #f1f8e9;
   --accent: #f59e0b;
   --accent-hover: #d97706;
   --accent-light: #fef3c7;
+  /* Dashboard: cool neutral (not marketing cream) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --muted: #64748b;
   --muted-light: #94a3b8;
   --border: #e2e8f0;
@@ -18,6 +19,11 @@
   --surface-muted: #f1f5f9;
   --danger: #f43f5e;
   --danger-light: #ffe4e6;
+  /* Marketing-only warm surfaces */
+  --marketing-bg: #fefdf9;
+  --marketing-surface: #f5f0e6;
+  --marketing-border: #f5f0e6;
+  --marketing-surface-hover: #e8e0d0;
   /* Legacy aliases */
   --emerald-primary: var(--primary);
   --emerald-light: var(--primary-light);
@@ -48,6 +54,20 @@
   --color-sage-muted: var(--muted);
   --color-alert-orange: var(--accent);
   --color-alert-rose: var(--danger);
+  --color-marketing-bg: var(--marketing-bg);
+  --color-marketing-surface: var(--marketing-surface);
+  --color-marketing-border: var(--marketing-border);
+  /* Map Tailwind emerald scale to brand green */
+  --color-emerald-50: #f1f8e9;
+  --color-emerald-100: #dcedc8;
+  --color-emerald-200: #c5e1a5;
+  --color-emerald-300: #aed581;
+  --color-emerald-400: #9ccc65;
+  --color-emerald-500: #8bc34a;
+  --color-emerald-600: #7cb342;
+  --color-emerald-700: #689f38;
+  --color-emerald-800: #558b2f;
+  --color-emerald-900: #33691e;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -63,6 +83,10 @@ body {
   font-family: var(--font-serif);
 }
 
+.marketing-page {
+  background: var(--marketing-bg);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -73,12 +97,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(5, 150, 105, 0.25);
+  background: rgba(124, 179, 66, 0.25);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(5, 150, 105, 0.4);
+  background: rgba(124, 179, 66, 0.4);
 }
 
 @keyframes fade-in {
@@ -92,4 +116,107 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* Marketing scroll-reveal */
+.reveal {
+  opacity: 0;
+  transition:
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-fade-up {
+  transform: translateY(28px);
+}
+
+.reveal-fade-in {
+  transform: none;
+}
+
+.reveal-fade-left {
+  transform: translateX(-28px);
+}
+
+.reveal-fade-right {
+  transform: translateX(28px);
+}
+
+.reveal-scale {
+  transform: scale(0.96);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero entrance on page load */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  opacity: 0;
+  animation: hero-enter 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-enter-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.hero-enter-delay-2 {
+  animation-delay: 0.24s;
+}
+
+.hero-enter-delay-3 {
+  animation-delay: 0.36s;
+}
+
+.hero-enter-delay-4 {
+  animation-delay: 0.48s;
+}
+
+@keyframes gentle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-fade-up,
+  .reveal-fade-in,
+  .reveal-fade-left,
+  .reveal-fade-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .hero-enter {
+    opacity: 1;
+    animation: none;
+  }
+
+  .animate-gentle-float {
+    animation: none;
+  }
 }

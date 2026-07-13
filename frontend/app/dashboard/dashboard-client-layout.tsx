@@ -28,7 +28,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           <div
             className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-medium transition-all animate-fade-in ${
               toast.type === "success"
-                ? "bg-emerald-600 text-white"
+                ? "bg-[var(--primary)] text-white"
                 : "bg-rose-600 text-white"
             }`}
           >

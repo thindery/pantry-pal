@@ -51,7 +51,7 @@ export function AccountView() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <h1 className="text-2xl font-bold text-[var(--foreground)]">Account</h1>
+      <h1 className="text-2xl font-serif-heading font-bold text-[var(--foreground)]">Account</h1>
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
         <p className="font-semibold text-[var(--foreground)]">{name}</p>

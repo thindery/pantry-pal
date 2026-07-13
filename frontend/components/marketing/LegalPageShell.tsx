@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { RevealOnScroll } from "@/components/marketing/RevealOnScroll";
 
 export interface LegalNavItem {
   label: string;
@@ -26,10 +27,10 @@ export function LegalPageShell({
   children,
 }: LegalPageShellProps) {
   return (
-    <div className="min-h-screen bg-[#FEFDF9] flex flex-col">
+    <div className="marketing-page min-h-screen flex flex-col">
       <MarketingNav />
       <main className="flex-1 pb-16">
-        <section className="pt-12 pb-10 px-4 sm:px-6 lg:px-8 border-b border-[#F5F0E6]">
+        <section className="pt-12 pb-10 px-4 sm:px-6 lg:px-8 border-b border-[var(--marketing-border)]">
           <div className="max-w-4xl mx-auto">
             <Link
               href="/"
@@ -38,16 +39,18 @@ export function LegalPageShell({
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              {title}
-              {titleAccent ? (
-                <span className="text-[#7CB342]"> {titleAccent}</span>
-              ) : null}
-            </h1>
-            <p className="text-lg text-slate-600 max-w-2xl">{description}</p>
-            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-xs text-emerald-800">
-              Last updated: {lastUpdated}
-            </div>
+            <RevealOnScroll>
+              <h1 className="text-4xl md:text-5xl font-serif-heading font-bold text-slate-900 mb-4">
+                {title}
+                {titleAccent ? (
+                  <span className="text-[var(--primary)]"> {titleAccent}</span>
+                ) : null}
+              </h1>
+              <p className="text-lg text-slate-600 max-w-2xl">{description}</p>
+              <div className="mt-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-xs text-emerald-800">
+                Last updated: {lastUpdated}
+              </div>
+            </RevealOnScroll>
           </div>
         </section>
 
@@ -92,12 +95,14 @@ interface LegalSectionProps {
 
 export function LegalSection({ id, number, title, children }: LegalSectionProps) {
   return (
-    <div id={id} className="scroll-mt-28 space-y-4">
-      <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-        <span className="text-[#7CB342]">{number}.</span> {title}
-      </h2>
-      <div className="space-y-3">{children}</div>
-    </div>
+    <RevealOnScroll>
+      <div id={id} className="scroll-mt-28 space-y-4">
+        <h2 className="text-2xl font-serif-heading font-bold text-slate-900 flex items-center gap-2">
+          <span className="text-[var(--primary)]">{number}.</span> {title}
+        </h2>
+        <div className="space-y-3">{children}</div>
+      </div>
+    </RevealOnScroll>
   );
 }
 

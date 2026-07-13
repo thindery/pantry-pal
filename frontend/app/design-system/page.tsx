@@ -61,7 +61,7 @@ export default function DesignSystemPage() {
             {BRAND_NAME} Design Kit
           </h1>
           <p className="text-[var(--muted)] max-w-2xl">
-            Light-mode dashboard system. Emerald primary, amber accent. Reference for
+            Light-mode dashboard system. Brand green primary, amber accent. Reference for
             streamlining the logged-in experience around add, view inventory, and
             threshold-based shopping lists.
           </p>

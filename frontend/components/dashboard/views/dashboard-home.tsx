@@ -66,7 +66,7 @@ export function DashboardHome() {
             {/* Header with Quick Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-800">Your Pantry</h1>
+                <h1 className="text-2xl font-serif-heading font-bold text-[var(--foreground)]">Your Pantry</h1>
                 <p className="text-slate-500 text-sm">Quick overview of your inventory</p>
               </div>
               {featureFlags.fabEnabled && (

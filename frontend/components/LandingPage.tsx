@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { BrandMark } from '@/components/BrandMark';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { BRAND_NAME } from '@/lib/site-content';
 import { 
   ShoppingCart,
@@ -223,9 +224,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-[#FEFDF9]">
+    <div className="marketing-page min-h-screen">
       {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-[#FEFDF9]/80 backdrop-blur-md border-b border-[#F5F0E6]">
+      <nav className="sticky top-0 z-40 bg-[var(--marketing-bg)]/80 backdrop-blur-md border-b border-[var(--marketing-border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <BrandMark />
@@ -239,7 +240,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               {isLoggedIn ? (
                 <button
                   onClick={onGoToDashboard}
-                  className="bg-[#7CB342] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#689F38] transition-colors"
+                  className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:bg-[var(--primary-hover)] transition-colors"
                 >
                   Dashboard
                 </button>
@@ -253,7 +254,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   </button>
                   <button
                     onClick={onGetStarted}
-                    className="bg-[#7CB342] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#689F38] transition-colors"
+                    className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg font-medium hover:bg-[var(--primary-hover)] transition-colors"
                   >
                     Get Started
                   </button>
@@ -268,38 +269,38 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-[#F5F0E6] px-4 py-2 rounded-full mb-6">
+            <div className="hero-enter inline-flex items-center gap-2 bg-[var(--marketing-surface)] px-4 py-2 rounded-full mb-6 animate-gentle-float">
               <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
               <span className="text-sm font-medium text-slate-700">Trusted by 50,000+ households</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
+            <h1 className="hero-enter hero-enter-delay-1 text-4xl md:text-6xl font-serif-heading font-bold text-slate-800 mb-6 leading-tight">
               Smart Inventory & Ledger for Your{' '}
-              <span className="text-[#7CB342]">Home</span>
+              <span className="text-[var(--primary)]">Home</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            <p className="hero-enter hero-enter-delay-2 text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
               Never run out of essentials again. Track your pantry with receipt scanning, barcode lookup, and smart shopping lists.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="hero-enter hero-enter-delay-3 flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button
                 onClick={goToApp}
-                className="bg-[#7CB342] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#689F38] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#7CB342]/20"
+                className="bg-[var(--primary)] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[var(--primary-hover)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
               >
                 {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => scrollToSection('how-it-works')}
-                className="bg-white text-slate-700 border-2 border-slate-200 px-8 py-4 rounded-xl font-semibold hover:border-[#7CB342] hover:text-[#7CB342] transition-all"
+                className="bg-white text-slate-700 border-2 border-slate-200 px-8 py-4 rounded-xl font-semibold hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all"
               >
                 See How It Works
               </button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto">
+            <div className="hero-enter hero-enter-delay-4 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto">
               {STATS.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-[#7CB342]">{stat.value}</div>
+                  <div className="text-2xl md:text-3xl font-serif-heading font-bold text-[var(--primary)]">{stat.value}</div>
                   <div className="text-sm text-slate-500">{stat.label}</div>
                 </div>
               ))}
@@ -311,49 +312,50 @@ const LandingPage: React.FC<LandingPageProps> = ({
       {/* Features Section */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+          <RevealOnScroll className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Everything You Need to Manage Your Pantry
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               From AI-powered scanning to household sharing, {BRAND_NAME} has all the tools you need.
             </p>
-          </div>
+          </RevealOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {FEATURES.map((feature, index) => (
-              <div 
-                key={index} 
-                className="bg-[#FEFDF9] rounded-2xl p-6 border border-[#F5F0E6] hover:shadow-lg transition-shadow"
-              >
-                <div className="w-12 h-12 bg-[#7CB342]/10 rounded-xl flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-[#7CB342]" />
+              <RevealOnScroll key={index} delay={index * 80}>
+                <div className="bg-[var(--marketing-bg)] rounded-2xl p-6 border border-[var(--marketing-border)] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 h-full">
+                  <div className="w-12 h-12 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center mb-4">
+                    <feature.icon className="w-6 h-6 text-[var(--primary)]" />
+                  </div>
+                  <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2">{feature.title}</h3>
+                  <p className="text-slate-600">{feature.description}</p>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">{feature.title}</h3>
-                <p className="text-slate-600">{feature.description}</p>
-              </div>
+              </RevealOnScroll>
             ))}
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-[#F5F0E6]">
+      <section id="how-it-works" className="py-20 bg-[var(--marketing-surface)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+          <RevealOnScroll className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               How It Works
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Getting started is easy. Three simple steps to pantry management bliss.
             </p>
-          </div>
+          </RevealOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {STEPS.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="text-6xl font-bold text-[#7CB342]/20 mb-4">{step.number}</div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">{step.title}</h3>
-                <p className="text-slate-600">{step.description}</p>
-              </div>
+              <RevealOnScroll key={index} variant="fade-up" delay={index * 120}>
+                <div className="text-center">
+                  <div className="text-6xl font-serif-heading font-bold text-[var(--primary)]/20 mb-4">{step.number}</div>
+                  <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2">{step.title}</h3>
+                  <p className="text-slate-600">{step.description}</p>
+                </div>
+              </RevealOnScroll>
             ))}
           </div>
         </div>
@@ -362,54 +364,58 @@ const LandingPage: React.FC<LandingPageProps> = ({
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+          <RevealOnScroll className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Start free and upgrade when you need more power. No hidden fees.
             </p>
-          </div>
-          <PricingPreview onSelectPlan={(plan) => {
-            if (plan === 'free') goToApp();
-            else setShowFullPricing(true);
-          }} />
-          <div className="text-center mt-8">
+          </RevealOnScroll>
+          <RevealOnScroll delay={100}>
+            <PricingPreview onSelectPlan={(plan) => {
+              if (plan === 'free') goToApp();
+              else setShowFullPricing(true);
+            }} />
+          </RevealOnScroll>
+          <RevealOnScroll className="text-center mt-8" delay={200}>
             <button 
               onClick={() => setShowFullPricing(true)}
-              className="text-[#7CB342] font-medium hover:underline inline-flex items-center gap-2"
+              className="text-[var(--primary)] font-medium hover:underline inline-flex items-center gap-2"
             >
               View full pricing details <ArrowRight className="w-4 h-4" />
             </button>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-[#FEFDF9]">
+      <section className="py-20 bg-[var(--marketing-bg)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+          <RevealOnScroll className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Loved by Home Managers Everywhere
             </h2>
             <p className="text-lg text-slate-600">
               See what our users are saying about {BRAND_NAME}.
             </p>
-          </div>
+          </RevealOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {TESTIMONIALS.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-2xl p-6 shadow-sm border border-[#F5F0E6]">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
-                  ))}
+              <RevealOnScroll key={index} variant="scale" delay={index * 100}>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--marketing-border)] h-full">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 mb-4 italic">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div>
+                    <p className="font-semibold text-slate-800">{testimonial.author}</p>
+                    <p className="text-sm text-slate-500">{testimonial.role}</p>
+                  </div>
                 </div>
-                <p className="text-slate-700 mb-4 italic">"{testimonial.quote}"</p>
-                <div>
-                  <p className="font-semibold text-slate-800">{testimonial.author}</p>
-                  <p className="text-sm text-slate-500">{testimonial.role}</p>
-                </div>
-              </div>
+              </RevealOnScroll>
             ))}
           </div>
         </div>
@@ -418,53 +424,52 @@ const LandingPage: React.FC<LandingPageProps> = ({
       {/* FAQ Section */}
       <section id="faq" className="py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+          <RevealOnScroll className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Frequently Asked Questions
             </h2>
-          </div>
+          </RevealOnScroll>
           <div className="space-y-4">
             {FAQS.map((faq, index) => (
-              <div 
-                key={index} 
-                className="border border-[#F5F0E6] rounded-xl overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                  className="w-full flex justify-between items-center p-4 text-left bg-[#FEFDF9] hover:bg-[#F5F0E6] transition-colors"
-                >
-                  <span className="font-semibold text-slate-800">{faq.question}</span>
-                  <span className="text-2xl text-slate-400">
-                    {openFaqIndex === index ? '−' : '+'}
-                  </span>
-                </button>
-                {openFaqIndex === index && (
-                  <div className="p-4 bg-white">
-                    <p className="text-slate-600">{faq.answer}</p>
-                  </div>
-                )}
-              </div>
+              <RevealOnScroll key={index} delay={index * 60}>
+                <div className="border border-[var(--marketing-border)] rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full flex justify-between items-center p-4 text-left bg-[var(--marketing-bg)] hover:bg-[var(--marketing-surface)] transition-colors"
+                  >
+                    <span className="font-semibold text-slate-800">{faq.question}</span>
+                    <span className="text-2xl text-slate-400">
+                      {openFaqIndex === index ? '−' : '+'}
+                    </span>
+                  </button>
+                  {openFaqIndex === index && (
+                    <div className="p-4 bg-white">
+                      <p className="text-slate-600">{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              </RevealOnScroll>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#7CB342]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="py-20 bg-[var(--primary)]">
+        <RevealOnScroll className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-white mb-4">
             Ready to Transform Your Pantry?
           </h2>
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of households who've simplified their kitchen management. Start free today.
+            Join thousands of households who&apos;ve simplified their kitchen management. Start free today.
           </p>
           <button
             onClick={goToApp}
-            className="bg-white text-[#7CB342] px-8 py-4 rounded-xl font-bold hover:bg-slate-100 transition-colors shadow-lg"
+            className="bg-white text-[var(--primary)] px-8 py-4 rounded-xl font-bold hover:bg-slate-100 transition-colors shadow-lg hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
           </button>
-        </div>
+        </RevealOnScroll>
       </section>
 
       <MarketingFooter />
@@ -482,21 +487,21 @@ const PricingPreview: React.FC<{
       {PRICING_TIERS.map((tier) => (
         <div 
           key={tier.id}
-          className={`relative rounded-2xl border-2 p-6 transition-all ${
+          className={`relative rounded-2xl border-2 p-6 transition-all h-full ${
             tier.popular 
-              ? 'border-[#7CB342] shadow-lg' 
-              : 'border-[#F5F0E6] hover:border-[#7CB342]/50'
+              ? 'border-[var(--primary)] shadow-lg' 
+              : 'border-[var(--marketing-border)] hover:border-[var(--primary)]/50'
           }`}
         >
           {tier.popular && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-[#7CB342] text-white text-xs font-bold px-3 py-1 rounded-full">
+              <span className="bg-[var(--primary)] text-white text-xs font-bold px-3 py-1 rounded-full">
                 Most Popular
               </span>
             </div>
           )}
           <div className="text-center mb-6">
-            <h3 className="text-xl font-bold text-slate-800 mb-1">{tier.name}</h3>
+            <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-1">{tier.name}</h3>
             <div className="mb-2">
               <span className="text-4xl font-bold text-slate-800">{tier.price}</span>
               <span className="text-slate-500 text-sm ml-1">{tier.period}</span>
@@ -505,7 +510,7 @@ const PricingPreview: React.FC<{
           <ul className="space-y-3 mb-6">
             {tier.features.map((feature, index) => (
               <li key={index} className="flex items-start gap-3 text-sm">
-                <CheckCircle2 className="w-5 h-5 text-[#7CB342] flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-[var(--primary)] flex-shrink-0" />
                 <span className="text-slate-700">{feature}</span>
               </li>
             ))}
@@ -514,8 +519,8 @@ const PricingPreview: React.FC<{
             onClick={() => onSelectPlan(tier.id as 'free' | 'pro' | 'family')}
             className={`w-full py-3 rounded-xl font-semibold transition-all ${
               tier.popular
-                ? 'bg-[#7CB342] text-white hover:bg-[#689F38]'
-                : 'bg-[#F5F0E6] text-slate-800 hover:bg-[#E8E0D0]'
+                ? 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]'
+                : 'bg-[var(--marketing-surface)] text-slate-800 hover:bg-[var(--marketing-surface-hover)]'
             }`}
           >
             {tier.cta}

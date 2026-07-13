@@ -6,10 +6,10 @@
 export const colors = {
   background: "#f8fafc",
   foreground: "#0f172a",
-  primary: "#059669",
-  primaryHover: "#047857",
-  primaryLight: "#d1fae5",
-  primaryMuted: "#ecfdf5",
+  primary: "#7cb342",
+  primaryHover: "#689f38",
+  primaryLight: "#e8f5e9",
+  primaryMuted: "#f1f8e9",
   accent: "#f59e0b",
   accentHover: "#d97706",
   accentLight: "#fef3c7",
@@ -20,6 +20,9 @@ export const colors = {
   surfaceMuted: "#f1f5f9",
   danger: "#f43f5e",
   dangerLight: "#ffe4e6",
+  marketingBg: "#fefdf9",
+  marketingSurface: "#f5f0e6",
+  marketingBorder: "#f5f0e6",
 } as const;
 
 export const typography = {

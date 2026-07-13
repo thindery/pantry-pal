@@ -9,8 +9,8 @@ interface BrandMarkProps {
 
 export function BrandMark({
   className = "",
-  nameClassName = "font-bold text-xl text-slate-800",
-  iconClassName = "w-8 h-8 bg-[#7CB342] rounded-lg flex items-center justify-center",
+  nameClassName = "font-serif-heading font-bold text-xl text-slate-800",
+  iconClassName = "w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center",
 }: BrandMarkProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>

@@ -47,7 +47,7 @@ export function InventoryView() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Package className="text-[var(--primary)]" size={22} />
-          <h1 className="text-xl font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
+          <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
         </div>
         <UserButton />
       </div>

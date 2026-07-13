@@ -43,7 +43,7 @@ export function ShoppingListView() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <ShoppingCart size={22} className="text-[var(--primary)]" />
-            <h1 className="text-xl font-bold text-[var(--foreground)]">Shopping list</h1>
+            <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">Shopping list</h1>
           </div>
           <p className="text-sm text-[var(--muted)]">
             {shoppingList.length === 0

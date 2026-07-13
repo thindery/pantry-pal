@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ShoppingCart, User } from "lucide-react";
-import { BRAND_NAME } from "@/lib/site-content";
+import { BrandMark } from "@/components/BrandMark";
 
 const NAV_LINKS = [
   { href: "/dashboard/", label: "Pantry", icon: Package },
@@ -29,8 +29,10 @@ export function DashboardNavbar() {
   return (
     <>
       <nav className="hidden md:flex fixed top-0 left-0 right-0 w-full bg-[var(--surface)] border-b border-[var(--border)] px-6 py-3 items-center gap-8 z-[9999]">
-        <Link href="/" className="font-bold text-lg text-[var(--primary)]">
-          {BRAND_NAME}
+        <Link href="/" className="hover:opacity-90 transition-opacity">
+          <BrandMark
+            nameClassName="font-serif-heading font-bold text-lg text-[var(--foreground)]"
+          />
         </Link>
         <Link
           href="/"
