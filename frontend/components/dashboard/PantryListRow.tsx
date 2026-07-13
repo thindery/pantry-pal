@@ -1,12 +1,11 @@
 "use client";
 
-import { Bell, Minus, MoreHorizontal, Plus } from "lucide-react";
+import { Info, Minus, Plus } from "lucide-react";
 import type { PantryItem } from "@/types";
 
 interface PantryListRowProps {
   item: PantryItem;
   isLowStock: boolean;
-  lowStockThreshold: number;
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onEdit: () => void;
   isUpdating: boolean;
@@ -18,10 +17,15 @@ function quantityStep(unit: string): number {
   return 1;
 }
 
+function rowBackgroundClass(isOut: boolean, isLowStock: boolean): string {
+  if (isOut) return "bg-[var(--danger-light)]/70";
+  if (isLowStock) return "bg-[var(--accent-light)]/40";
+  return "bg-[var(--primary-light)]/60";
+}
+
 export function PantryListRow({
   item,
   isLowStock,
-  lowStockThreshold,
   onAdjustQuantity,
   onEdit,
   isUpdating,
@@ -31,9 +35,7 @@ export function PantryListRow({
 
   return (
     <div
-      className={`flex items-center justify-between gap-3 px-4 py-3 ${
-        isLowStock && !isOut ? "bg-[var(--accent-light)]/40" : ""
-      }`}
+      className={`flex items-center justify-between gap-3 px-4 py-3 ${rowBackgroundClass(isOut, isLowStock)}`}
     >
       <button
         type="button"
@@ -51,24 +53,12 @@ export function PantryListRow({
           {item.quantity} {item.unit}
           <span className="mx-1">·</span>
           <span className="capitalize">{item.category}</span>
-          {isLowStock && (
-            <>
-              <span className="mx-1">·</span>
-              <span
-                className="inline-flex items-center gap-0.5"
-                title={`Low stock alert at or below ${lowStockThreshold}`}
-              >
-                <Bell size={12} aria-hidden />
-                <span>@ {lowStockThreshold}</span>
-              </span>
-            </>
-          )}
         </p>
       </button>
 
       <div className="flex items-center gap-2 shrink-0">
         {isOut ? (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--muted)]">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--danger-light)] text-[var(--danger)]">
             Out
           </span>
         ) : isLowStock ? (
@@ -80,10 +70,10 @@ export function PantryListRow({
         <button
           type="button"
           onClick={onEdit}
-          className="p-1.5 text-[var(--muted)] hover:text-[var(--foreground)] rounded-lg md:hidden"
-          aria-label="More actions"
+          className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] rounded-lg md:hidden"
+          aria-label="Item details"
         >
-          <MoreHorizontal size={16} />
+          <Info size={16} />
         </button>
 
         <div className="flex items-center gap-1">

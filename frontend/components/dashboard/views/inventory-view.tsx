@@ -16,7 +16,6 @@ export function InventoryView() {
     setSortBy,
     filteredInventory,
     itemIsLowStock,
-    getThresholdForItem,
     inventoryError,
     isLoadingInventory,
     loadInventory,
@@ -173,7 +172,6 @@ export function InventoryView() {
               key={item.id}
               item={item}
               isLowStock={itemIsLowStock(item)}
-              lowStockThreshold={getThresholdForItem(item)}
               onAdjustQuantity={handleAdjustQuantity}
               onEdit={() => setEditingItem(item)}
               isUpdating={updatingItemIds.has(item.id)}
