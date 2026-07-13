@@ -9,12 +9,11 @@ interface InventoryItemRowProps {
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
-  onInfo: () => void;
   onLinkBarcode: () => void;
   isUpdating: boolean;
 }
 
-export function InventoryItemRow({ item, isLowStock, onAdjustQuantity, onSetToZero, onEdit, onInfo, onLinkBarcode, isUpdating }: InventoryItemRowProps) {
+export function InventoryItemRow({ item, isLowStock, onAdjustQuantity, onSetToZero, onEdit, onLinkBarcode, isUpdating }: InventoryItemRowProps) {
   const isOutOfStock = item.quantity <= 0;
   const getStep = (unit: string) => {
     if (['lbs', 'kg', 'grams', 'oz'].includes(unit)) return 0.5;
@@ -29,15 +28,6 @@ export function InventoryItemRow({ item, isLowStock, onAdjustQuantity, onSetToZe
       <td className="px-3 py-3 md:px-6 md:py-4">
         <div className={`flex items-center gap-2 font-medium ${isOutOfStock ? 'text-slate-400' : 'text-slate-800'}`}>
           <span>{item.name}</span>
-          {item.barcode && (
-            <button
-              onClick={onInfo}
-              className="text-slate-400 hover:text-emerald-600 transition-colors"
-              title="View product details"
-            >
-              ℹ️
-            </button>
-          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="capitalize">{item.category}</span>

@@ -12,7 +12,7 @@ import httpx
 from database.db import db_connection
 
 OPEN_FOOD_FACTS_API = "https://world.openfoodfacts.org/api/v0/product"
-PRODUCT_CACHE_MAX_AGE_DAYS = int(os.getenv("PRODUCT_CACHE_MAX_AGE_DAYS", "7"))
+PRODUCT_CACHE_MAX_AGE_DAYS = int(os.getenv("PRODUCT_CACHE_MAX_AGE_DAYS", "60"))
 
 
 def _now() -> str:

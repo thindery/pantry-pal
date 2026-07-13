@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Minus, MoreHorizontal, Plus } from "lucide-react";
+import { Minus, MoreHorizontal, Plus } from "lucide-react";
 import type { PantryItem } from "@/types";
 
 interface PantryListRowProps {
@@ -9,7 +9,6 @@ interface PantryListRowProps {
   lowStockThreshold: number;
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onEdit: () => void;
-  onInfo: () => void;
   isUpdating: boolean;
 }
 
@@ -25,7 +24,6 @@ export function PantryListRow({
   lowStockThreshold,
   onAdjustQuantity,
   onEdit,
-  onInfo,
   isUpdating,
 }: PantryListRowProps) {
   const isOut = item.quantity <= 0;
@@ -72,17 +70,6 @@ export function PantryListRow({
             Low
           </span>
         ) : null}
-
-        {item.barcode && (
-          <button
-            type="button"
-            onClick={onInfo}
-            className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] rounded-lg"
-            aria-label="Product info"
-          >
-            <Info size={16} />
-          </button>
-        )}
 
         <button
           type="button"

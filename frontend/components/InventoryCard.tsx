@@ -6,7 +6,6 @@ interface Props {
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
-  onInfo: () => void;
   onLinkBarcode: () => void;
   isUpdating: boolean;
 }
@@ -27,7 +26,6 @@ export const InventoryCard: React.FC<Props> = ({
   onAdjustQuantity,
   onSetToZero,
   onEdit,
-  onInfo,
   onLinkBarcode,
   isUpdating,
 }) => {
@@ -80,15 +78,6 @@ export const InventoryCard: React.FC<Props> = ({
             >
               {item.name}
             </h3>
-            {item.barcode && (
-              <button
-                onClick={onInfo}
-                className="text-slate-400 hover:text-emerald-600 transition-colors flex-shrink-0"
-                title="View product details"
-              >
-                ℹ️
-              </button>
-            )}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-lg">{categoryIcons[item.category] || '📦'}</span>

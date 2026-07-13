@@ -18,7 +18,6 @@ export function AddItemView() {
     handleAdjustQuantity,
     handleSetToZero,
     setEditingItem,
-    setInfoItem,
     setLinkingBarcodeItem,
     updatingItemIds,
     handleScanReceiptClick,

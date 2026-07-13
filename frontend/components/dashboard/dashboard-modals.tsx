@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { usePantry } from "@/contexts/pantry-provider";
 import { EditItemModal } from "@/components/dashboard/edit-item-modal";
-import ProductInfoModal from "@/components/ProductInfoModal";
 import LinkBarcodeModal from "@/components/LinkBarcodeModal";
 import { ApiError } from "@/services/apiService";
 import { getCategoryThreshold } from "@/lib/threshold-utils";
@@ -27,8 +26,6 @@ export function DashboardModals() {
     setItemThreshold,
     itemThresholdOverrides,
     thresholdConfig,
-    infoItem,
-    setInfoItem,
     linkingBarcodeItem,
     setLinkingBarcodeItem,
     handleLinkBarcode,
@@ -77,12 +74,6 @@ export function DashboardModals() {
             setItemThreshold(editingItem.id, threshold);
           }
         }}
-      />
-
-      <ProductInfoModal
-        item={infoItem ?? emptyItem}
-        isOpen={infoItem != null}
-        onClose={() => setInfoItem(null)}
       />
 
       {linkingBarcodeItem != null && (

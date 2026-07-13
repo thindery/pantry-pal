@@ -22,7 +22,6 @@ export function InventoryView() {
     loadInventory,
     handleAdjustQuantity,
     setEditingItem,
-    setInfoItem,
     updatingItemIds,
     setShowThresholdSettings,
   } = usePantry();
@@ -180,7 +179,6 @@ export function InventoryView() {
               lowStockThreshold={getThresholdForItem(item)}
               onAdjustQuantity={handleAdjustQuantity}
               onEdit={() => setEditingItem(item)}
-              onInfo={() => setInfoItem(item)}
               isUpdating={updatingItemIds.has(item.id)}
             />
           ))}

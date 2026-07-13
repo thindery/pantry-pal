@@ -209,7 +209,7 @@ type BarcodeLookupApiResponse = {
 
 const productLookupSessionCache = new Map<string, ProductLookupResult>();
 
-/** Normalize backend barcode lookup payload for ProductInfoModal badges. */
+/** Normalize backend barcode lookup payload for product detail views. */
 export function normalizeBarcodeLookupResponse(
   result: BarcodeLookupApiResponse,
 ): ProductLookupResult {

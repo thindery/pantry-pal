@@ -21,7 +21,6 @@ export function DashboardHome() {
     handleAdjustQuantity,
     handleSetToZero,
     setEditingItem,
-    setInfoItem,
     setLinkingBarcodeItem,
     updatingItemIds,
     handleScanReceiptClick,
@@ -187,7 +186,6 @@ export function DashboardHome() {
                             onAdjustQuantity={handleAdjustQuantity}
                             onSetToZero={handleSetToZero}
                             onEdit={() => setEditingItem(item)}
-                            onInfo={() => setInfoItem(item)}
                             onLinkBarcode={() => setLinkingBarcodeItem(item)}
                             isUpdating={updatingItemIds.has(item.id)}
                           />

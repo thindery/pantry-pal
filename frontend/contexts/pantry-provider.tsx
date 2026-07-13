@@ -104,7 +104,6 @@ export function usePantryState() {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [infoItem, setInfoItem] = useState<PantryItem | null>(null);
   const [linkingBarcodeItem, setLinkingBarcodeItem] = useState<PantryItem | null>(null);
   const [isLinkingBarcode, setIsLinkingBarcode] = useState(false);
   // Shopping Session State
@@ -1022,7 +1021,6 @@ export function usePantryState() {
     isAddingItem,
     editingItem, setEditingItem,
     isEditing,
-    infoItem, setInfoItem,
     linkingBarcodeItem, setLinkingBarcodeItem,
     isLinkingBarcode,
     activeShoppingSession, setActiveShoppingSession,
