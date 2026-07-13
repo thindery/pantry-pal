@@ -21,7 +21,7 @@ interface EditItemModalProps {
 type DetailTab = "overview" | "nutrition" | "ingredients";
 
 const LOW_STOCK_TOOLTIP =
-  "We flag this item and add it to your shopping list when quantity is at or below this number. Set to 0 to only alert when completely out of stock.";
+  "When stock hits this number or lower, we mark the item as low and add it to your shopping list. Use 0 to only alert when completely out of stock.";
 
 const compactSelectClass =
   "text-xs py-1 pl-2 pr-6 border border-slate-200 rounded-md bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none";
@@ -173,33 +173,36 @@ function ItemSettingsFields({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1 shrink-0">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Alert
           </span>
           <FieldTooltip text={LOW_STOCK_TOOLTIP} />
         </span>
 
-        <label className="flex items-center gap-1 text-xs text-slate-600">
-          <input
-            type="checkbox"
-            checked={!useCustomThreshold}
-            onChange={(e) => onUseCustomThresholdChange(!e.target.checked)}
-            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-          />
-          Default ({categoryDefaultThreshold})
-        </label>
+        <select
+          value={useCustomThreshold ? "custom" : "default"}
+          onChange={(e) => onUseCustomThresholdChange(e.target.value === "custom")}
+          className={compactSelectClass}
+          disabled={isLoading}
+        >
+          <option value="default">
+            Category default ({categoryDefaultThreshold})
+          </option>
+          <option value="custom">Custom amount</option>
+        </select>
 
         {useCustomThreshold && (
-          <label className="flex items-center gap-1 text-xs text-slate-600">
-            <span className="text-slate-400">≤</span>
+          <label className="flex items-center gap-1.5 text-xs text-slate-600">
+            <span className="text-slate-500 whitespace-nowrap">Warn at or below</span>
             <input
               type="number"
               min={0}
               step={1}
               value={customThreshold}
               onChange={(e) => onCustomThresholdChange(e.target.value)}
-              className="w-12 text-xs py-1 px-1.5 border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+              aria-label="Low stock alert quantity"
+              className="w-14 text-xs py-1 px-1.5 border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
               disabled={isLoading}
             />
           </label>
