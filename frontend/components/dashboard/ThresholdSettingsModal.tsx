@@ -32,7 +32,9 @@ export function ThresholdSettingsModal({
           </button>
         </div>
         <p className="text-[var(--muted)] text-sm mb-4">
-          Items at or below these levels appear on your shopping list.
+          These are defaults by category. Items at or below the threshold appear on
+          your shopping list. To override for one item (like milk), edit that item and
+          set a custom low stock alert.
         </p>
         <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
           {CATEGORIES.map((category) => (

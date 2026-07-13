@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Barcode, Loader2, Package, Plus, Search } from "lucide-react";
+import { Barcode, Loader2, Package, Plus, Search, Settings } from "lucide-react";
 import { PantryListRow } from "@/components/dashboard/PantryListRow";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME } from "@/lib/site-content";
@@ -16,6 +16,7 @@ export function InventoryView() {
     setSortBy,
     filteredInventory,
     itemIsLowStock,
+    getThresholdForItem,
     inventoryError,
     isLoadingInventory,
     loadInventory,
@@ -23,6 +24,7 @@ export function InventoryView() {
     setEditingItem,
     setInfoItem,
     updatingItemIds,
+    setShowThresholdSettings,
   } = usePantry();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,9 +45,20 @@ export function InventoryView() {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
-      <div className="flex items-center gap-2">
-        <Package className="text-[var(--primary)]" size={22} />
-        <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Package className="text-[var(--primary)]" size={22} />
+          <h1 className="text-xl font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowThresholdSettings(true)}
+          className="p-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--primary)] hover:border-[var(--primary-light)] transition-colors"
+          aria-label="Low stock threshold settings"
+          title="Category threshold defaults"
+        >
+          <Settings size={20} />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -164,6 +177,7 @@ export function InventoryView() {
               key={item.id}
               item={item}
               isLowStock={itemIsLowStock(item)}
+              lowStockThreshold={getThresholdForItem(item)}
               onAdjustQuantity={handleAdjustQuantity}
               onEdit={() => setEditingItem(item)}
               onInfo={() => setInfoItem(item)}

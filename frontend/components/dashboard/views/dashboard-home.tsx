@@ -59,6 +59,7 @@ export function DashboardHome() {
     setShowThresholdSettings,
     thresholdConfig,
     setThresholdConfig,
+    itemIsLowStock,
   } = usePantry();
 
   return (
@@ -86,7 +87,7 @@ export function DashboardHome() {
             <StatCardMini
               stats={[
                 { label: 'All Items', value: inventory.length, color: 'sky' },
-                { label: 'Low Stock', value: (inventory ?? []).filter((i) => i.quantity > 0 && i.quantity < 3).length, color: 'amber' },
+                { label: 'Low Stock', value: (inventory ?? []).filter((i) => itemIsLowStock(i)).length, color: 'amber' },
                 { label: 'Out of Stock', value: (inventory ?? []).filter((i) => i.quantity === 0).length, color: 'slate' },
                 { label: 'Expiring Soon', value: 0, color: 'emerald' },
                 { label: 'Expired', value: 0, color: 'rose' },
@@ -113,7 +114,7 @@ export function DashboardHome() {
                         ({(() => {
                           switch(dashboardInlineFilter) {
                             case 'low-stock':
-                              return (inventory ?? []).filter((i) => i.quantity > 0 && i.quantity < 3).length;
+                              return (inventory ?? []).filter((i) => itemIsLowStock(i)).length;
                             case 'out-of-stock':
                               return (inventory ?? []).filter((i) => i.quantity === 0).length;
                             default:
@@ -155,7 +156,7 @@ export function DashboardHome() {
                         const filteredItems = (() => {
                           switch(dashboardInlineFilter) {
                             case 'low-stock':
-                              return inventory.filter((i) => i.quantity > 0 && i.quantity < 3);
+                              return inventory.filter((i) => itemIsLowStock(i));
                             case 'out-of-stock':
                               return inventory.filter((i) => i.quantity === 0);
                             case 'expiring-soon':
@@ -182,6 +183,7 @@ export function DashboardHome() {
                           <InventoryItemRow
                             key={item.id}
                             item={item}
+                            isLowStock={itemIsLowStock(item)}
                             onAdjustQuantity={handleAdjustQuantity}
                             onSetToZero={handleSetToZero}
                             onEdit={() => setEditingItem(item)}
@@ -200,7 +202,7 @@ export function DashboardHome() {
                   const totalCount = (() => {
                     switch(dashboardInlineFilter) {
                       case 'low-stock':
-                        return inventory.filter((i) => i.quantity > 0 && i.quantity < 3).length;
+                        return inventory.filter((i) => itemIsLowStock(i)).length;
                       case 'out-of-stock':
                         return inventory.filter((i) => i.quantity === 0).length;
                       default:
@@ -236,6 +238,7 @@ export function DashboardHome() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <LowStockPreview
                 items={inventory}
+                isItemLowStock={itemIsLowStock}
                 onAdjustQuantity={handleAdjustQuantity}
                 onViewAll={() => router.push("/dashboard/inventory/")}
               />
@@ -250,7 +253,7 @@ export function DashboardHome() {
             <CategoryPills
               categories={[...CATEGORIES].map((cat) => {
                 const count = (inventory ?? []).filter((i) => i.category === cat).length;
-                const lowStockCount = (inventory ?? []).filter((i) => i.category === cat && i.quantity > 0 && i.quantity < 3).length;
+                const lowStockCount = (inventory ?? []).filter((i) => i.category === cat && itemIsLowStock(i)).length;
                 const icons: Record<string, string> = {
                   produce: '🥬',
                   pantry: '🥫',

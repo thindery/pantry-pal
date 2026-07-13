@@ -36,6 +36,12 @@ import {
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { DEFAULT_THRESHOLDS } from "@/lib/constants";
 import { normalizeList } from "@/lib/normalize-list";
+import {
+  type ItemThresholdOverrides,
+  getCategoryThreshold,
+  getItemThreshold,
+  isItemLowStock,
+} from "@/lib/threshold-utils";
 
 export type DashboardInlineFilter =
   | "low-stock"
@@ -147,6 +153,8 @@ export function usePantryState() {
   const [pantryFilter, setPantryFilter] = useState<"all" | "low" | "out">("all");
 
   const [thresholdConfig, setThresholdConfig] = useState<ThresholdConfig>(DEFAULT_THRESHOLDS);
+  const [itemThresholdOverrides, setItemThresholdOverrides] =
+    useState<ItemThresholdOverrides>({});
 
   // Dashboard inline filter state
   type DashboardInlineFilter = 'low-stock' | 'out-of-stock' | 'expiring-soon' | 'expired' | 'all-items' | null;
@@ -186,14 +194,9 @@ export function usePantryState() {
   }, []);
 
   const itemIsLowStock = useCallback(
-    (item: PantryItem): boolean => {
-      const threshold =
-        thresholdConfig[item.category] ??
-        DEFAULT_THRESHOLDS[item.category] ??
-        2;
-      return item.quantity > 0 && item.quantity <= threshold;
-    },
-    [thresholdConfig]
+    (item: PantryItem): boolean =>
+      isItemLowStock(item, thresholdConfig, itemThresholdOverrides),
+    [thresholdConfig, itemThresholdOverrides],
   );
 
   // Filtered and sorted inventory
@@ -269,6 +272,7 @@ export function usePantryState() {
   useEffect(() => {
     const savedList = localStorage.getItem('pantry_shopping_list');
     const savedThresholds = localStorage.getItem('pantry_threshold_config');
+    const savedItemThresholds = localStorage.getItem('pantry_item_threshold_overrides');
     
     if (savedList) {
       try {
@@ -291,6 +295,17 @@ export function usePantryState() {
         console.error('Failed to parse threshold config:', e);
       }
     }
+
+    if (savedItemThresholds) {
+      try {
+        const parsed = JSON.parse(savedItemThresholds) as ItemThresholdOverrides;
+        if (parsed != null && typeof parsed === "object") {
+          setItemThresholdOverrides(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to parse item threshold overrides:', e);
+      }
+    }
     
     // Mark as loaded so auto-generate can run safely
     setHasLoadedShoppingList(true);
@@ -301,22 +316,41 @@ export function usePantryState() {
     localStorage.setItem('pantry_shopping_list', JSON.stringify(shoppingList));
   }, [shoppingList]);
 
-  // Auto-generate shopping list when inventory changes (only after loading from localStorage)
-  useEffect(() => {
-    if (inventory.length > 0 && hasLoadedShoppingList) {
-      generateShoppingList();
-    }
-  }, [inventory, hasLoadedShoppingList]);
-
   // Save threshold config to localStorage
   useEffect(() => {
     localStorage.setItem('pantry_threshold_config', JSON.stringify(thresholdConfig));
   }, [thresholdConfig]);
 
-  // Get threshold for a category (with fallback to default)
-  const getThreshold = (category: string): number => {
-    return thresholdConfig[category] ?? DEFAULT_THRESHOLDS[category] ?? 2;
-  };
+  useEffect(() => {
+    localStorage.setItem(
+      'pantry_item_threshold_overrides',
+      JSON.stringify(itemThresholdOverrides),
+    );
+  }, [itemThresholdOverrides]);
+
+  const getThresholdForItem = useCallback(
+    (item: Pick<PantryItem, "id" | "category">): number =>
+      getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
+    [thresholdConfig, itemThresholdOverrides],
+  );
+
+  const getThreshold = useCallback(
+    (category: string): number =>
+      getCategoryThreshold(category, thresholdConfig),
+    [thresholdConfig],
+  );
+
+  const setItemThreshold = useCallback((itemId: string, threshold: number | null) => {
+    setItemThresholdOverrides((prev) => {
+      const next = { ...prev };
+      if (threshold == null || Number.isNaN(threshold)) {
+        delete next[itemId];
+      } else {
+        next[itemId] = Math.max(0, Math.floor(threshold));
+      }
+      return next;
+    });
+  }, []);
 
   // Calculate suggested quantity based on past consumption
   const calculateSuggestedQuantity = useCallback((item: PantryItem): number => {
@@ -325,13 +359,15 @@ export function usePantryState() {
     );
     
     if (itemActivities.length === 0) {
-      return Math.max(getThreshold(item.category) * 2, 1);
+      return Math.max(getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2, 1);
     }
     
     const totalUsed = itemActivities.reduce((sum, a) => sum + a.amount, 0);
     const avgUsage = totalUsed / itemActivities.length;
     
-    if (avgUsage === 0) return Math.max(getThreshold(item.category) * 2, 1);
+    if (avgUsage === 0) {
+      return Math.max(getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2, 1);
+    }
     
     const daysOfHistory = Math.max(
       1,
@@ -341,13 +377,13 @@ export function usePantryState() {
     const suggested = Math.ceil(dailyUsage * 14 / avgUsage) * Math.ceil(avgUsage);
     
     return Math.max(suggested, 1);
-  }, [safeActivities, thresholdConfig]);
+  }, [safeActivities, thresholdConfig, itemThresholdOverrides]);
 
-  // Check if item is low stock
-  const isLowStock = useCallback((item: PantryItem): boolean => {
-    const threshold = getThreshold(item.category);
-    return item.quantity <= threshold && item.quantity >= 0;
-  }, [thresholdConfig]);
+  const isLowStock = useCallback(
+    (item: PantryItem): boolean =>
+      isItemLowStock(item, thresholdConfig, itemThresholdOverrides),
+    [thresholdConfig, itemThresholdOverrides],
+  );
 
   // Check if item is out of stock
   const isOutOfStock = useCallback((item: PantryItem): boolean => {
@@ -377,7 +413,11 @@ export function usePantryState() {
         if (lastAdd == null) return false;
         
         const lastAddDate = new Date(lastAdd.timestamp);
-        return lastAddDate < thirtyDaysAgo && item.quantity > 0 && item.quantity <= getThreshold(item.category) * 2;
+        return (
+          lastAddDate < thirtyDaysAgo &&
+          item.quantity > 0 &&
+          item.quantity <= getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2
+        );
       });
       
       const newItems: ShoppingListItem[] = [
@@ -394,6 +434,8 @@ export function usePantryState() {
           isChecked: false,
           addedAt: new Date().toISOString(),
           reason: 'low_stock' as 'low_stock' | 'manual' | 'recommendation',
+          pantryItemId: item.id,
+          lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
         })),
         ...recommendationItems.map((item) => ({
           id: `rec-${item.id}-${Date.now()}`,
@@ -422,7 +464,28 @@ export function usePantryState() {
     } finally {
       setIsGeneratingList(false);
     }
-  }, [inventory, safeActivities, shoppingList, isLowStock, isOutOfStock, calculateSuggestedQuantity, getThreshold]);
+  }, [
+    inventory,
+    safeActivities,
+    shoppingList,
+    isLowStock,
+    isOutOfStock,
+    calculateSuggestedQuantity,
+    thresholdConfig,
+    itemThresholdOverrides,
+  ]);
+
+  useEffect(() => {
+    if (inventory.length > 0 && hasLoadedShoppingList) {
+      generateShoppingList();
+    }
+  }, [
+    inventory,
+    hasLoadedShoppingList,
+    thresholdConfig,
+    itemThresholdOverrides,
+    generateShoppingList,
+  ]);
 
   // Add manual item to shopping list
   const addManualShoppingItem = useCallback((name: string, category: string, quantity: number, unit: string) => {
@@ -970,6 +1033,9 @@ export function usePantryState() {
     statCardFilter, setStatCardFilter,
     pantryFilter, setPantryFilter,
     itemIsLowStock,
+    getThresholdForItem,
+    setItemThreshold,
+    itemThresholdOverrides,
     dashboardInlineFilter, setDashboardInlineFilter,
     clearStatCardFilter, clearDashboardInlineFilter,
     handleStatCardClick,

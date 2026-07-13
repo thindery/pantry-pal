@@ -6,6 +6,7 @@ import { EditItemModal } from "@/components/dashboard/edit-item-modal";
 import ProductInfoModal from "@/components/ProductInfoModal";
 import LinkBarcodeModal from "@/components/LinkBarcodeModal";
 import { ApiError } from "@/services/apiService";
+import { getCategoryThreshold } from "@/lib/threshold-utils";
 
 const emptyItem = {
   id: "",
@@ -22,6 +23,10 @@ export function DashboardModals() {
     setEditingItem,
     handleEditItem,
     isEditing,
+    getThresholdForItem,
+    setItemThreshold,
+    itemThresholdOverrides,
+    thresholdConfig,
     infoItem,
     setInfoItem,
     linkingBarcodeItem,
@@ -56,6 +61,22 @@ export function DashboardModals() {
         onClose={() => setEditingItem(null)}
         onSave={handleEditItem}
         isLoading={isEditing}
+        lowStockThreshold={
+          editingItem != null ? getThresholdForItem(editingItem) : 2
+        }
+        categoryDefaultThreshold={
+          editingItem != null
+            ? getCategoryThreshold(editingItem.category, thresholdConfig)
+            : 2
+        }
+        hasCustomThreshold={
+          editingItem != null && itemThresholdOverrides[editingItem.id] != null
+        }
+        onThresholdChange={(threshold) => {
+          if (editingItem != null) {
+            setItemThreshold(editingItem.id, threshold);
+          }
+        }}
       />
 
       <ProductInfoModal

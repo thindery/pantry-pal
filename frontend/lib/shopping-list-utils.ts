@@ -7,5 +7,9 @@ export function getShoppingItemReason(
   if (item.isManual) return "Added manually";
   if (item.currentQuantity === 0) return "Out of stock";
   if (item.reason === "recommendation") return "Running low — buy soon";
-  return `Need ${item.suggestedQuantity} · have ${item.currentQuantity} · ${item.category} threshold ${threshold}`;
+  const scope =
+    item.lowStockThreshold != null && item.pantryItemId != null
+      ? "your alert"
+      : `${item.category} default`;
+  return `Need ${item.suggestedQuantity} · have ${item.currentQuantity} · ${scope} ≤ ${threshold}`;
 }

@@ -112,6 +112,10 @@ export interface ShoppingListItem {
   reason: 'low_stock' | 'manual' | 'recommendation';
   priority?: ShoppingItemPriority;
   autoAddedAt?: string;
+  /** Source pantry item when auto-generated */
+  pantryItemId?: string;
+  /** Effective low-stock threshold when the list was built */
+  lowStockThreshold?: number;
 }
 
 export interface ShoppingList {

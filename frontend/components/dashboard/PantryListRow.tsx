@@ -6,6 +6,7 @@ import type { PantryItem } from "@/types";
 interface PantryListRowProps {
   item: PantryItem;
   isLowStock: boolean;
+  lowStockThreshold: number;
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onEdit: () => void;
   onInfo: () => void;
@@ -21,6 +22,7 @@ function quantityStep(unit: string): number {
 export function PantryListRow({
   item,
   isLowStock,
+  lowStockThreshold,
   onAdjustQuantity,
   onEdit,
   onInfo,
@@ -51,6 +53,12 @@ export function PantryListRow({
           {item.quantity} {item.unit}
           <span className="mx-1">·</span>
           <span className="capitalize">{item.category}</span>
+          {isLowStock && (
+            <>
+              <span className="mx-1">·</span>
+              <span>alert ≤ {lowStockThreshold}</span>
+            </>
+          )}
         </p>
       </button>
 

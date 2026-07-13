@@ -10,12 +10,28 @@ interface EditItemModalProps {
   onClose: () => void;
   onSave: (id: string, updates: Partial<PantryItem>) => Promise<void>;
   isLoading: boolean;
+  lowStockThreshold: number;
+  categoryDefaultThreshold: number;
+  hasCustomThreshold: boolean;
+  onThresholdChange: (threshold: number | null) => void;
 }
 
-export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: EditItemModalProps) {
+export function EditItemModal({
+  item,
+  isOpen,
+  onClose,
+  onSave,
+  isLoading,
+  lowStockThreshold,
+  categoryDefaultThreshold,
+  hasCustomThreshold,
+  onThresholdChange,
+}: EditItemModalProps) {
   const [name, setName] = useState(item.name);
   const [unit, setUnit] = useState(item.unit);
   const [category, setCategory] = useState(item.category);
+  const [useCustomThreshold, setUseCustomThreshold] = useState(hasCustomThreshold);
+  const [customThreshold, setCustomThreshold] = useState(String(lowStockThreshold));
   const [error, setError] = useState<string | null>(null);
   const isNameLocked = Boolean(item.barcode?.trim());
 
@@ -24,15 +40,24 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
       setName(item.name);
       setUnit(item.unit);
       setCategory(item.category);
+      setUseCustomThreshold(hasCustomThreshold);
+      setCustomThreshold(String(lowStockThreshold));
       setError(null);
     }
-  }, [isOpen, item.id, item.name, item.unit, item.category]);
+  }, [
+    isOpen,
+    item.id,
+    item.name,
+    item.unit,
+    item.category,
+    hasCustomThreshold,
+    lowStockThreshold,
+  ]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = originalOverflow;
       };
@@ -45,8 +70,19 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
     setError(null);
 
     if (!name.trim()) {
-      setError('Item name is required');
+      setError("Item name is required");
       return;
+    }
+
+    if (useCustomThreshold) {
+      const parsed = parseInt(customThreshold, 10);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        setError("Low stock alert must be 0 or higher");
+        return;
+      }
+      onThresholdChange(parsed);
+    } else {
+      onThresholdChange(null);
     }
 
     try {
@@ -57,13 +93,13 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
       await onSave(item.id, updates);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update item');
+      setError(err instanceof Error ? err.message : "Failed to update item");
     }
   };
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-slate-800">Edit Item</h2>
           <button
@@ -135,13 +171,53 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
             </select>
           </div>
 
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div>
+              <p className="text-sm font-medium text-slate-800">Low stock alert</p>
+              <p className="text-xs text-slate-500 mt-1">
+                We flag this item and add it to your shopping list when quantity is at
+                or below this number.
+              </p>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={!useCustomThreshold}
+                onChange={(e) => setUseCustomThreshold(!e.target.checked)}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              Use category default ({categoryDefaultThreshold} for {category})
+            </label>
+
+            {useCustomThreshold && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Alert when at or below
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={customThreshold}
+                  onChange={(e) => setCustomThreshold(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Set to 0 to only alert when completely out of stock.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
             <button
               onClick={handleSave}
               disabled={isLoading}
               className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-50"
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? "Saving..." : "Save Changes"}
             </button>
             <button
               onClick={onClose}
@@ -155,4 +231,4 @@ export function EditItemModal({ item, isOpen, onClose, onSave, isLoading }: Edit
       </div>
     </div>
   );
-};
+}

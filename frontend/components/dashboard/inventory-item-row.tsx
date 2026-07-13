@@ -5,6 +5,7 @@ import type { PantryItem } from "@/types";
 
 interface InventoryItemRowProps {
   item: PantryItem;
+  isLowStock: boolean;
   onAdjustQuantity: (id: string, delta: number) => Promise<void>;
   onSetToZero: (id: string) => Promise<void>;
   onEdit: () => void;
@@ -13,7 +14,7 @@ interface InventoryItemRowProps {
   isUpdating: boolean;
 }
 
-export function InventoryItemRow({ item, onAdjustQuantity, onSetToZero, onEdit, onInfo, onLinkBarcode, isUpdating }: InventoryItemRowProps) {
+export function InventoryItemRow({ item, isLowStock, onAdjustQuantity, onSetToZero, onEdit, onInfo, onLinkBarcode, isUpdating }: InventoryItemRowProps) {
   const isOutOfStock = item.quantity <= 0;
   const getStep = (unit: string) => {
     if (['lbs', 'kg', 'grams', 'oz'].includes(unit)) return 0.5;
@@ -74,7 +75,7 @@ export function InventoryItemRow({ item, onAdjustQuantity, onSetToZero, onEdit, 
             <span className="text-xs font-semibold px-2 py-1 rounded bg-slate-200 text-slate-500">
               Out of Stock
             </span>
-          ) : item.quantity < 3 ? (
+          ) : isLowStock ? (
             <span className="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600">
               Low
             </span>

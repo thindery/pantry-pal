@@ -20,8 +20,9 @@ export function ShoppingListView() {
   const {
     shoppingList,
     thresholdConfig,
-    setThresholdConfig,
     setShowThresholdSettings,
+    getThresholdForItem,
+    inventory,
     isGeneratingList,
     generateShoppingList,
     toggleItemChecked,
@@ -169,10 +170,19 @@ export function ShoppingListView() {
       ) : (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm divide-y divide-[var(--border)]">
           {shoppingList.map((item: ShoppingListItem) => {
+            const pantryItem =
+              item.pantryItemId != null
+                ? inventory.find((i) => i.id === item.pantryItemId)
+                : inventory.find(
+                    (i) => i.name.toLowerCase() === item.name.toLowerCase(),
+                  );
             const threshold =
-              thresholdConfig[item.category] ??
-              DEFAULT_THRESHOLDS[item.category] ??
-              2;
+              item.lowStockThreshold ??
+              (pantryItem != null
+                ? getThresholdForItem(pantryItem)
+                : thresholdConfig[item.category] ??
+                  DEFAULT_THRESHOLDS[item.category] ??
+                  2);
             return (
               <div
                 key={item.id}

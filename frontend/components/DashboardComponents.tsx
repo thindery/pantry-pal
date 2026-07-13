@@ -87,6 +87,7 @@ export const StatCardMini: React.FC<StatCardMiniProps> = ({ stats, onStatClick, 
 interface LowStockPreviewProps {
   items: PantryItem[];
   maxItems?: number;
+  isItemLowStock: (item: PantryItem) => boolean;
   onAdjustQuantity: (id: string, delta: number) => void;
   onViewAll: () => void;
 }
@@ -94,11 +95,12 @@ interface LowStockPreviewProps {
 export const LowStockPreview: React.FC<LowStockPreviewProps> = ({
   items,
   maxItems = 5,
+  isItemLowStock,
   onAdjustQuantity,
   onViewAll,
 }) => {
   const lowStockItems = items
-    .filter((item) => item.quantity > 0 && item.quantity < 3)
+    .filter((item) => isItemLowStock(item))
     .slice(0, maxItems);
 
   if (lowStockItems.length === 0) {
@@ -123,7 +125,7 @@ export const LowStockPreview: React.FC<LowStockPreviewProps> = ({
             ⚠️ Low Stock
           </h3>
           <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-1 rounded-full">
-            {items.filter((i) => i.quantity > 0 && i.quantity < 3).length} items
+            {items.filter((i) => isItemLowStock(i)).length} items
           </span>
         </div>
       </div>
