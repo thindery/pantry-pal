@@ -159,30 +159,52 @@ const TESTIMONIALS = [
   },
 ];
 
-// FAQ data
-const FAQS = [
+// FAQ data with schema markup support
+export const FAQS = [
   {
     question: 'How does the receipt scanning work?',
-    answer: 'Take a photo of your grocery receipt and our OCR engine extracts item names, quantities, and categories automatically.',
+    answer: 'Take a photo of your grocery receipt and our OCR engine extracts item names, quantities, and categories automatically. It uses advanced AI to recognize products, match them to our database, and add them directly to your inventory. No manual typing required.',
   },
   {
     question: `Can I use ${BRAND_NAME} with multiple devices?`,
-    answer: 'Yes! With a Pro or Family plan, your inventory syncs across all your devices in real-time. Free plan is limited to single device use.',
+    answer: 'Yes! With a Pro or Family plan, your inventory syncs across all your devices in real-time. Free plan is limited to single device use. Access your pantry from phone, tablet, or desktop - everything stays in sync.',
   },
   {
     question: 'Is there a limit on how many items I can track?',
-    answer: 'Free plans can track up to 50 items. Pro and Family plans offer unlimited item tracking.',
+    answer: 'Free plans can track up to 50 items. Pro and Family plans offer unlimited item tracking. You can add as many pantry items, household supplies, and personal items as you need.',
   },
-
   {
     question: 'Can I share my pantry with family members?',
-    answer: 'Absolutely! The Family plan supports up to 5 household members with shared inventory and individual shopping lists.',
+    answer: 'Absolutely! The Family plan supports up to 5 household members with shared inventory and individual shopping lists. Everyone sees updates in real-time, and you can control who has admin access.',
   },
   {
     question: 'What happens to my data if I cancel?',
-    answer: 'Your data remains accessible in read-only mode. You can export your inventory anytime, and if you re-subscribe, everything picks up where you left off.',
+    answer: 'Your data remains accessible in read-only mode. You can export your inventory anytime as CSV, and if you re-subscribe, everything picks up where you left off. We never delete your data - you own it.',
   },
 ];
+
+// FAQPage Schema Component
+function FAQPageSchema({ faqs }: { faqs: typeof FAQS }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
 
 const LandingPage: React.FC<LandingPageProps> = ({
   onGetStarted,
@@ -209,8 +231,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <button
             onClick={() => setShowFullPricing(false)}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+            aria-label="Close pricing"
           >
-            <X className="w-6 h-6 text-slate-500" />
+            <X className="w-6 h-6 text-slate-500" aria-hidden="true" />
           </button>
         </div>
         <PricingPreview 
@@ -224,11 +247,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
   }
 
   return (
-    <div className="marketing-page min-h-screen">
+    <div className="marketing-page min-h-screen" itemScope itemType="https://schema.org/WebPage">
+      {/* FAQ Schema */}
+      <FAQPageSchema faqs={FAQS} />
+      
       {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-[var(--marketing-bg)]/80 backdrop-blur-md border-b border-[var(--marketing-border)]">
+      <header className="sticky top-0 z-40 bg-[var(--marketing-bg)]/80 backdrop-blur-md border-b border-[var(--marketing-border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <nav className="flex justify-between items-center h-16" aria-label="Main navigation">
             <BrandMark />
             <div className="hidden md:flex items-center gap-8">
               <button onClick={() => scrollToSection('features')} className="text-slate-600 hover:text-slate-800 transition-colors">Features</button>
@@ -261,19 +287,19 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 </>
               )}
             </div>
-          </div>
+          </nav>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden" aria-labelledby="hero-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
           <div className="text-center max-w-4xl mx-auto">
             <div className="hero-enter inline-flex items-center gap-2 bg-[var(--marketing-surface)] px-4 py-2 rounded-full mb-6 animate-gentle-float">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" aria-hidden="true" />
               <span className="text-sm font-medium text-slate-700">Trusted by 50,000+ households</span>
             </div>
-            <h1 className="hero-enter hero-enter-delay-1 text-4xl md:text-6xl font-serif-heading font-bold text-slate-800 mb-6 leading-tight">
+            <h1 id="hero-heading" className="hero-enter hero-enter-delay-1 text-4xl md:text-6xl font-serif-heading font-bold text-slate-800 mb-6 leading-tight">
               Smart Inventory & Ledger for Your{' '}
               <span className="text-[var(--primary)]">Home</span>
             </h1>
@@ -286,7 +312,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 className="bg-[var(--primary)] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[var(--primary-hover)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
               >
                 {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </button>
               <button 
                 onClick={() => scrollToSection('how-it-works')}
@@ -310,10 +336,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-white" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+            <h2 id="features-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Everything You Need to Manage Your Pantry
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -323,13 +349,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {FEATURES.map((feature, index) => (
               <RevealOnScroll key={index} delay={index * 80}>
-                <div className="bg-[var(--marketing-bg)] rounded-2xl p-6 border border-[var(--marketing-border)] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 h-full">
+                <article className="bg-[var(--marketing-bg)] rounded-2xl p-6 border border-[var(--marketing-border)] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 h-full" itemScope itemType="https://schema.org/SoftwareApplication">
                   <div className="w-12 h-12 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center mb-4">
-                    <feature.icon className="w-6 h-6 text-[var(--primary)]" />
+                    <feature.icon className="w-6 h-6 text-[var(--primary)]" aria-hidden="true" />
                   </div>
-                  <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2">{feature.title}</h3>
-                  <p className="text-slate-600">{feature.description}</p>
-                </div>
+                  <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2" itemProp="name">{feature.title}</h3>
+                  <p className="text-slate-600" itemProp="description">{feature.description}</p>
+                </article>
               </RevealOnScroll>
             ))}
           </div>
@@ -337,10 +363,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-[var(--marketing-surface)]">
+      <section id="how-it-works" className="py-20 bg-[var(--marketing-surface)]" aria-labelledby="how-it-works-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+            <h2 id="how-it-works-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               How It Works
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -351,7 +377,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             {STEPS.map((step, index) => (
               <RevealOnScroll key={index} variant="fade-up" delay={index * 120}>
                 <div className="text-center">
-                  <div className="text-6xl font-serif-heading font-bold text-[var(--primary)]/20 mb-4">{step.number}</div>
+                  <div className="text-6xl font-serif-heading font-bold text-[var(--primary)]/20 mb-4" aria-hidden="true">{step.number}</div>
                   <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2">{step.title}</h3>
                   <p className="text-slate-600">{step.description}</p>
                 </div>
@@ -362,10 +388,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
+      <section id="pricing" className="py-20 bg-white" aria-labelledby="pricing-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+            <h2 id="pricing-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -383,17 +409,17 @@ const LandingPage: React.FC<LandingPageProps> = ({
               onClick={() => setShowFullPricing(true)}
               className="text-[var(--primary)] font-medium hover:underline inline-flex items-center gap-2"
             >
-              View full pricing details <ArrowRight className="w-4 h-4" />
+              View full pricing details <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </RevealOnScroll>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-[var(--marketing-bg)]">
+      <section className="py-20 bg-[var(--marketing-bg)]" aria-labelledby="testimonials-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+            <h2 id="testimonials-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Loved by Home Managers Everywhere
             </h2>
             <p className="text-lg text-slate-600">
@@ -403,18 +429,18 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {TESTIMONIALS.map((testimonial, index) => (
               <RevealOnScroll key={index} variant="scale" delay={index * 100}>
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--marketing-border)] h-full">
-                  <div className="flex gap-1 mb-4">
+                <article className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--marketing-border)] h-full" itemScope itemType="https://schema.org/Review">
+                  <div className="flex gap-1 mb-4" aria-label={`Rating: ${testimonial.rating} out of 5 stars`}>
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
+                      <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" aria-hidden="true" />
                     ))}
                   </div>
-                  <p className="text-slate-700 mb-4 italic">&ldquo;{testimonial.quote}&rdquo;</p>
-                  <div>
-                    <p className="font-semibold text-slate-800">{testimonial.author}</p>
+                  <p className="text-slate-700 mb-4 italic" itemProp="reviewBody">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div itemProp="author" itemScope itemType="https://schema.org/Person">
+                    <p className="font-semibold text-slate-800" itemProp="name">{testimonial.author}</p>
                     <p className="text-sm text-slate-500">{testimonial.role}</p>
                   </div>
-                </div>
+                </article>
               </RevealOnScroll>
             ))}
           </div>
@@ -422,10 +448,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-white">
+      <section id="faq" className="py-20 bg-white" aria-labelledby="faq-heading">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+            <h2 id="faq-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
               Frequently Asked Questions
             </h2>
           </RevealOnScroll>
@@ -436,14 +462,19 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   <button
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                     className="w-full flex justify-between items-center p-4 text-left bg-[var(--marketing-bg)] hover:bg-[var(--marketing-surface)] transition-colors"
+                    aria-expanded={openFaqIndex === index}
+                    aria-controls={`faq-answer-${index}`}
                   >
                     <span className="font-semibold text-slate-800">{faq.question}</span>
-                    <span className="text-2xl text-slate-400">
+                    <span className="text-2xl text-slate-400" aria-hidden="true">
                       {openFaqIndex === index ? '−' : '+'}
                     </span>
                   </button>
                   {openFaqIndex === index && (
-                    <div className="p-4 bg-white">
+                    <div 
+                      id={`faq-answer-${index}`}
+                      className="p-4 bg-white"
+                    >
                       <p className="text-slate-600">{faq.answer}</p>
                     </div>
                   )}
@@ -455,9 +486,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[var(--primary)]">
+      <section className="py-20 bg-[var(--primary)]" aria-labelledby="cta-heading">
         <RevealOnScroll className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-serif-heading font-bold text-white mb-4">
+          <h2 id="cta-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-white mb-4">
             Ready to Transform Your Pantry?
           </h2>
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
@@ -492,6 +523,7 @@ const PricingPreview: React.FC<{
               ? 'border-[var(--primary)] shadow-lg' 
               : 'border-[var(--marketing-border)] hover:border-[var(--primary)]/50'
           }`}
+          itemScope itemType="https://schema.org/Offer"
         >
           {tier.popular && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -501,16 +533,16 @@ const PricingPreview: React.FC<{
             </div>
           )}
           <div className="text-center mb-6">
-            <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-1">{tier.name}</h3>
+            <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-1" itemProp="name">{tier.name}</h3>
             <div className="mb-2">
-              <span className="text-4xl font-bold text-slate-800">{tier.price}</span>
+              <span className="text-4xl font-bold text-slate-800" itemProp="price" content={tier.price.replace('$', '')}>{tier.price}</span>
               <span className="text-slate-500 text-sm ml-1">{tier.period}</span>
             </div>
           </div>
           <ul className="space-y-3 mb-6">
             {tier.features.map((feature, index) => (
               <li key={index} className="flex items-start gap-3 text-sm">
-                <CheckCircle2 className="w-5 h-5 text-[var(--primary)] flex-shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-[var(--primary)] flex-shrink-0" aria-hidden="true" />
                 <span className="text-slate-700">{feature}</span>
               </li>
             ))}

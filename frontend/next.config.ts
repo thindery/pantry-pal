@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+  },
   async rewrites() {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
