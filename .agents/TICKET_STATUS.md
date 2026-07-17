@@ -71,9 +71,9 @@ Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
 | PP-030 | Rate limiting | ✅ Done (in-memory) |
 | PP-031 | SEO / social / AEO baseline | ✅ Done |
 | PP-032 | Pre-OVH security audit | ✅ Done |
-| PP-033 | Domain + Cloudflare DNS | 🔄 In progress |
-| PP-034 | OVH production cutover | 📋 Ready |
-| PP-035 | Decommission Railway | 📋 Ready — after PP-034 live |
+| PP-033 | Domain + Cloudflare DNS | ✅ Done |
+| PP-034 | OVH production cutover | ✅ Done |
+| PP-035 | Decommission Railway | ✅ Done |
 
 > **Note:** PP-021 and PP-026 are marked done for the core migration, but acceptance criteria remain incomplete — tracked in follow-up tickets PP-036 (missing FastAPI routes) and PP-039 (migration 013 + ticket sync).
 
