@@ -13,11 +13,11 @@ Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
 
 | | Count |
 |--|-------|
-| Done | 42 |
-| In progress | 1 (PP-033) |
-| Ready | 2 (PP-034, PP-035) |
-| Security open | 0 |
-| User action pending | Clerk/Stripe prod keys, `.env.prod` on OVH |
+|| Done | 43 |
+|| In progress | 0 |
+|| Ready | 0 |
+|| Security open | 0 |
+|| User action pending | None |
 
 ---
 

@@ -214,6 +214,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const handleConfirmProduct = () => {
     if (detectedProduct != null) {
       onBarcodeDetected(detectedProduct);
+      // Reset for next scan
+      setDetectedProduct(null);
+      setScannedBarcode(null);
+      startScanning();
     }
   };
 
