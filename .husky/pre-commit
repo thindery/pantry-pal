@@ -1,9 +1,43 @@
 #!/usr/bin/env sh
-# Pre-commit quality gate: typecheck → lint → unit tests
+# Pre-commit quality gate: typecheck → lint → unit tests + Ralph compliance
 # Failures abort the commit. Keep this fast enough to run on every commit.
 
 set -e
 
+# --- Ralph Compliance Check ---
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+TICKET_PATTERN="^(feature|fix|hotfix)/(PP-[0-9]+|PP-XXX)"
+
+if echo "$BRANCH" | grep -qE "$TICKET_PATTERN"; then
+    TICKET=$(echo "$BRANCH" | grep -oE "PP-[0-9]+|PP-XXX" | head -1)
+    echo "✅ Ralph: Branch '$BRANCH' references $TICKET"
+else
+    # Allow main branch and certain exception branches
+    if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "develop" ] || echo "$BRANCH" | grep -qE "^(renovate|dependabot)"; then
+        echo "✅ Ralph: Branch '$BRANCH' is an exception branch"
+    else
+        echo "❌ Ralph violation: Branch '$BRANCH' must match 'feature/PP-XXX-description' or 'fix/PP-XXX-description'"
+        echo "   Example: git checkout -b feature/PP-061-quick-scan-flow"
+        exit 1
+    fi
+fi
+
+# Check commit message format for the staged commit
+if [ -f "$1" ]; then
+    COMMIT_MSG=$(cat "$1")
+    if echo "$COMMIT_MSG" | head -1 | grep -qE "^(PP-[0-9]+|PP-XXX|PP-XXX):\s+.+"; then
+        echo "✅ Ralph: Commit message references ticket"
+    elif echo "$COMMIT_MSG" | head -1 | grep -qE "^(Merge|Revert|fixup|squash|WIP|docs|chore|style|refactor|test)"; then
+        echo "✅ Ralph: Commit message uses conventional format"
+    else
+        echo "⚠️  Ralph warning: Commit message should reference ticket"
+        echo "   Expected: 'PP-061: Description of changes'"
+        echo "   Got: $(echo "$COMMIT_MSG" | head -1)"
+        # Don't block, just warn for now
+    fi
+fi
+
+# --- Quality Gates ---
 echo "▶ pre-commit: npm run check (typecheck + lint + test:run)"
 npm run check
 echo "✅ pre-commit checks passed"

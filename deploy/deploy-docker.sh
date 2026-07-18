@@ -94,6 +94,21 @@ ssh ovh "
   git reset --hard origin/$TAG &&
   ln -sf .env.prod .env &&
 
+  # --- Ralph Compliance Check ---
+  echo 'Checking Ralph compliance...' &&
+  DEPLOYED_COMMIT=\$(git rev-parse HEAD) &&
+  DEPLOYED_MSG=\$(git log -1 --pretty=format:'%s' \$DEPLOYED_COMMIT) &&
+  echo \"  Commit: \$DEPLOYED_COMMIT\" &&
+  echo \"  Message: \$DEPLOYED_MSG\" &&
+  if echo \"\$DEPLOYED_MSG\" | grep -qE \"^(PP-[0-9]+|PP-XXX):\s+.+\"; then
+    TICKET=\$(echo \"\$DEPLOYED_MSG\" | grep -oE \"PP-[0-9]+|PP-XXX\" | head -1) &&
+    echo \"  ✅ Ralph: Deploy references \$TICKET\"
+  elif [ \"\$TAG\" = \"main\" ] || echo \"\$TAG\" | grep -qE \"^(hotfix|release)\"; then
+    echo \"  ✅ Ralph: Tag '\$TAG' is an exception\"
+  else
+    echo \"  ⚠️  Ralph warning: Commit message should reference ticket (PP-XXX: description)\"
+  fi &&
+
   echo 'Cleaning orphan containers...' &&
   docker ps -a --format '{{.Names}}' | grep '_pantry-pal' | xargs -r docker rm -f 2>/dev/null || true &&
 
