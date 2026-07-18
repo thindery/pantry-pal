@@ -5,6 +5,6 @@ describe("constants", () => {
   it("exports pantry categories and units", () => {
     expect(CATEGORIES).toContain("pantry");
     expect(UNITS).toContain("units");
-    expect(DEFAULT_THRESHOLDS.pantry).toBe(2);
+    expect(DEFAULT_THRESHOLDS.pantry).toBe(1);
   });
 });

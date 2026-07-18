@@ -25,12 +25,12 @@ export const CATEGORIES = [
 ] as const;
 
 export const DEFAULT_THRESHOLDS: ThresholdConfig = {
-  produce: 3,
-  pantry: 2,
-  dairy: 2,
+  produce: 1,
+  pantry: 1,
+  dairy: 1,
   frozen: 1,
   meat: 1,
-  beverages: 2,
-  snacks: 2,
-  other: 2,
+  beverages: 1,
+  snacks: 1,
+  other: 1,
 };

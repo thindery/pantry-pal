@@ -10,7 +10,7 @@ import type { PantryItem } from "@/types";
 const milk: PantryItem = {
   id: "milk-1",
   name: "Milk",
-  quantity: 2,
+  quantity: 1,
   unit: "bottles",
   category: "dairy",
   lastUpdated: new Date().toISOString(),
@@ -18,8 +18,8 @@ const milk: PantryItem = {
 
 describe("threshold-utils", () => {
   it("uses category default when no item override exists", () => {
-    expect(getCategoryThreshold("dairy", DEFAULT_THRESHOLDS)).toBe(2);
-    expect(getItemThreshold(milk, DEFAULT_THRESHOLDS, {})).toBe(2);
+    expect(getCategoryThreshold("dairy", DEFAULT_THRESHOLDS)).toBe(1);
+    expect(getItemThreshold(milk, DEFAULT_THRESHOLDS, {})).toBe(1);
     expect(isItemLowStock(milk, DEFAULT_THRESHOLDS, {})).toBe(true);
   });
 
