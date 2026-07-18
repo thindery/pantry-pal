@@ -17,7 +17,9 @@ export default function VersionUpdateToast() {
   const checkForUpdate = useCallback(async () => {
     const live = await fetchLiveBuildId();
     setLiveBuildId(live);
-    setVisible(isNewerBuildAvailable(live));
+    const shouldShow = isNewerBuildAvailable(live);
+    // Only update visibility if it should be shown, never hide if already shown
+    setVisible((prev) => prev || shouldShow);
   }, []);
 
   useEffect(() => {
