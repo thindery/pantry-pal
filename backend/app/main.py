@@ -39,6 +39,14 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
             print("⚠ Database connection failed at startup")
     except Exception as exc:
         print(f"⚠ Database pool init skipped: {exc}")
+    # Idempotent Stripe catalog sync (lookup_keys + metadata — no duplicate products)
+    try:
+        from backend.services.stripe_service import ensure_stripe_products
+
+        ensure_stripe_products()
+        print("✓ Stripe products synced")
+    except Exception as exc:
+        print(f"⚠ Stripe product sync skipped: {exc}")
     yield
     close_pool()
 
