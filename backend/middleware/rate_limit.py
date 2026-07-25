@@ -9,6 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.app.config import get_settings
 from backend.auth_session import resolve_authenticated_user
+from backend.lib.client_ip import get_client_ip
 from backend.models.responses import error_response
 from backend.services import rate_limit_service
 
@@ -49,8 +50,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if user_id:
             identifier = f"user:{user_id}"
         else:
-            host = request.client.host if request.client else "unknown"
-            identifier = f"ip:{host}"
+            identifier = f"ip:{get_client_ip(request)}"
 
         allowed, remaining_or_retry = rate_limit_service.check_rate_limit(
             identifier,

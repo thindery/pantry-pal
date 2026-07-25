@@ -53,15 +53,30 @@ pantry-pal/
 | `npm run test:sql-safety` | Static SQL safety guard |
 | `npm run openapi:export` | Regenerate `openapi.json` |
 
+### Local secret scan (PP-068)
+
+```bash
+# Docker (no local install required)
+docker run --rm -v "$PWD:/repo" -w /repo zricethezav/gitleaks:latest detect \
+  --source . --config .gitleaks.toml --verbose
+
+# Or install: https://github.com/gitleaks/gitleaks#installing
+# gitleaks detect --source . --config .gitleaks.toml
+```
+
+CI runs Gitleaks on every PR/push via `.github/workflows/secret-scan.yml`.
+
 ## Environment
 
 Use `./switch-env.sh dev|prod` to symlink `.env`. See `.env.example` (dev) and `.env.prod.example` (production).
 
 **Production domain:** [mypantryhub.com](https://www.mypantryhub.com) — cutover guide: [`deploy/CUTOVER.md`](deploy/CUTOVER.md).
 
-- `NEXT_PUBLIC_*` — frontend (Clerk, API URL, Gemini)
+- `AUTH_SECRET`, `AUTH_GOOGLE_*` — NextAuth (primary auth)
+- `NEXT_PUBLIC_*` — frontend (API URL, site URL)
 - `DATABASE_URL` — PostgreSQL (primary store)
-- `CLERK_SECRET_KEY`, `STRIPE_*` — backend secrets
+- `STRIPE_*` — billing secrets
+- `TRUST_PROXY=1` — production only (behind Cloudflare/nginx) for rate-limit client IPs
 
 ## Docker
 

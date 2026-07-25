@@ -1,11 +1,14 @@
 """
-Session verification — NextAuth JWT (primary) with Clerk fallback during cutover.
+Session verification — NextAuth HS256 bearer JWT only (PP-074).
+
+Clerk session-token fallback was removed after cutover to NextAuth.
+Admin helpers remain in backend.clerk_auth for ADMIN_EMAILS allowlists.
 """
 
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+from typing import Optional
 
 from fastapi import HTTPException, Request
 from jose import jwt
@@ -14,7 +17,6 @@ from jose.exceptions import JWTError
 from backend.clerk_auth import (
     _test_auth_enabled,
     error_detail,
-    verify_clerk_session_token,
 )
 
 
@@ -65,9 +67,6 @@ async def resolve_authenticated_user(request: Request) -> tuple[Optional[str], O
     token = extract_bearer_token(request)
     if token:
         user_id, email = verify_nextauth_token(token)
-        if user_id:
-            return user_id, email
-        user_id, email = verify_clerk_session_token(token)
         if user_id:
             return user_id, email
     if _test_auth_enabled():

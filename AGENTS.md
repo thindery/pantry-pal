@@ -6,16 +6,16 @@
 
 ## Product
 
-**Pantry Hub** (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger: inventory CRUD, activity ledger, barcode scanning, AI receipt/usage scanning, Clerk auth, Stripe subscriptions, admin dashboard.
+**Pantry Hub** (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger: inventory CRUD, activity ledger, barcode scanning, AI receipt/usage scanning, NextAuth, Stripe subscriptions, admin dashboard.
 
 ## Stack (current)
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js **16.2**, React **19**, Tailwind **4**, `@clerk/nextjs` |
+| Frontend | Next.js **16.2**, React **19**, Tailwind **4**, NextAuth v5 |
 | Backend | FastAPI + uvicorn (Python **3.11**) |
 | Database | PostgreSQL **16** (`DATABASE_URL`) |
-| Auth | Clerk JWT middleware |
+| Auth | NextAuth HS256 bearer JWT (middleware → FastAPI) |
 | Payments | Stripe checkout + webhooks |
 | Hosting (target) | OVH Docker + nginx — **mypantryhub.com** |
 

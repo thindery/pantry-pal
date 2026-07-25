@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-07-25 (security re-audit PP-065–074)
+Last updated: 2026-07-24 (PP-068/070/071/073/074 security hygiene)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,11 +13,11 @@ Last updated: 2026-07-25 (security re-audit PP-065–074)
 
 | | Count |
 |--|-------|
-|| Done | 46+ |
+|| Done | 51+ |
 || In progress | 0 |
 || Ready | 0 |
-|| Security open | 7 (PP-067–068, PP-070–074) |
-|| User action pending | Deploy security fixes to OVH |
+|| Security open | 2 (PP-067 CSP, PP-072 design-system) |
+|| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
 
 ---
 
@@ -133,15 +133,15 @@ Last updated: 2026-07-25 (security re-audit PP-065–074)
 | PP-065 | Shopping-session add-to-inventory tier limits | P1 | ✅ Done |
 | PP-066 | Shorten API bearer JWT TTL to 1h | P1 | ✅ Done |
 | PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | 📋 Open |
-| PP-068 | Gitleaks secret scan in CI | P2 | 📋 Open |
+| PP-068 | Gitleaks secret scan in CI | P2 | ✅ Done |
 | PP-069 | Sanitize Stripe webhook error responses | P2 | ✅ Done |
-| PP-070 | nginx require-cloudflare include (ops) | P2 | 📋 Open |
-| PP-071 | Trusted proxy IP for rate limiting | P2 | 📋 Open |
+| PP-070 | nginx require-cloudflare include (ops) | P2 | ✅ Done (template; host reload pending deploy) |
+| PP-071 | Trusted proxy IP for rate limiting | P2 | ✅ Done |
 | PP-072 | Gate public design-system | P3 | 📋 Open |
-| PP-073 | Add security.txt | P3 | 📋 Open |
-| PP-074 | Remove/harden Clerk JWT fallback | P3 | 📋 Open |
+| PP-073 | Add security.txt | P3 | ✅ Done (live 200 after deploy) |
+| PP-074 | Remove/harden Clerk JWT fallback | P3 | ✅ Done |
 
-**Ship:** Deploy main after PP-065/066/069 merge so production leaves build `253ee6b`.
+**Ship:** Deploy main so production picks up PP-065–074 (nginx require-cloudflare, TRUST_PROXY=1, security.txt).
 
 ---
 

@@ -1,6 +1,9 @@
 """
-Clerk session verification for FastAPI.
-Adapted from markdown-pdf/backend/clerk_auth.py (SEC-001).
+Auth helpers shared with NextAuth path (admin allowlists, error_detail, test auth).
+
+Clerk session JWT verification remains for reference only — production auth is
+NextAuth-only via backend.auth_session (PP-074). Do not re-enable the Clerk
+fallback without issuer/audience checks.
 """
 
 from __future__ import annotations
@@ -10,7 +13,6 @@ import time
 from typing import Any, Optional
 
 import httpx
-from fastapi import HTTPException, Request
 from jose import jwt
 from jose.exceptions import JWTError
 
@@ -114,6 +116,11 @@ def _get_signing_key(token: str) -> Optional[dict[str, Any]]:
 
 
 def verify_clerk_session_token(token: str) -> tuple[Optional[str], Optional[str]]:
+    """
+    Legacy Clerk session verify — not used by production auth (PP-074).
+
+    Kept for optional tooling/tests only. Prefer backend.auth_session.
+    """
     if not token:
         return None, None
     signing_key = _get_signing_key(token)
@@ -135,38 +142,6 @@ def verify_clerk_session_token(token: str) -> tuple[Optional[str], Optional[str]
     if not isinstance(email, str) or not email:
         email = None
     return sub, email
-
-
-def extract_bearer_token(request: Request) -> Optional[str]:
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
-        return None
-    token = auth_header[7:].strip()
-    return token or None
-
-
-async def resolve_authenticated_user(request: Request) -> tuple[Optional[str], Optional[str]]:
-    token = extract_bearer_token(request)
-    if token:
-        user_id, email = verify_clerk_session_token(token)
-        if user_id:
-            return user_id, email
-    if _test_auth_enabled():
-        test_user = request.headers.get("x-user-id")
-        if test_user:
-            test_email = request.headers.get("x-user-email")
-            return test_user, test_email if test_email else None
-    return None, None
-
-
-async def require_authenticated_user_id(request: Request) -> str:
-    user_id, _ = await resolve_authenticated_user(request)
-    if not user_id:
-        raise HTTPException(
-            status_code=401,
-            detail=error_detail("UNAUTHORIZED", "Authentication required. Please sign in."),
-        )
-    return user_id
 
 
 def error_detail(code: str, message: str) -> dict[str, Any]:

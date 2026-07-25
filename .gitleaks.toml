@@ -1,0 +1,40 @@
+# Gitleaks configuration for pantry-pal / Pantry Hub
+# https://github.com/gitleaks/gitleaks
+title = "pantry-pal"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "False positives and intentional placeholders"
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''\.env\.example$''',
+  '''\.env\.prod\.example$''',
+  '''\.env\.production\.template$''',
+  '''\.env\.dev$''',
+  '''.*\.example$''',
+  '''.*\.md$''',
+  '''docs/legacy/.*''',
+  '''backend-legacy/.*''',
+  # Local mkcert TLS only (gitignored now; residual history from pre-monorepo)
+  '''\.certs/.*''',
+  '''package-lock\.json$''',
+  '''frontend/package-lock\.json$''',
+]
+regexes = [
+  '''YOUR_.*''',
+  '''CHANGE_ME''',
+  '''GENERATE_WITH_.*''',
+  '''sk_test_YOUR_.*''',
+  '''sk_live_YOUR_.*''',
+  '''pk_test_YOUR_.*''',
+  '''pk_live_YOUR_.*''',
+  '''whsec_YOUR_.*''',
+  '''price_(test|live)_.*''',
+  '''example\.com''',
+  '''mypantryhub\.com''',
+  '''secure_password_placeholder''',
+  '''test-secret-key-for-jwt''',
+  '''change-me-long-random-.*''',
+]

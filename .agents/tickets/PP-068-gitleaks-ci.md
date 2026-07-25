@@ -1,10 +1,12 @@
 # PP-068: Add Gitleaks secret scan to CI
 
-**Status:** 📋 Open  
+**Status:** ✅ Done  
 **Priority:** P2  
 **Phase:** Security remediation (audit 2026-07-25)  
 **Finding:** SEC-204  
 **Created:** 2026-07-25  
+**Completed:** 2026-07-24  
+
 **Playbook:** `project-director/playbooks/github_actions_security_scanning.md`
 
 ---
@@ -15,11 +17,17 @@ CI runs typecheck/lint/tests only. No automated secret scanning (Gitleaks) on pu
 
 ## Fix Plan
 
-- [ ] Add `.github/workflows/secret-scan.yml` (gitleaks)  
-- [ ] Optional: fail PR on findings  
-- [ ] Document local scan command in README or AGENTS.md
+- [x] Add `.github/workflows/secret-scan.yml` (gitleaks)
+- [x] Optional: fail PR on findings
+- [x] Document local scan command in README or AGENTS.md
 
 ## Acceptance Criteria
 
-- [ ] Gitleaks runs on PR to main  
-- [ ] No false-positive noise from intentional placeholders in `.env.example`
+- [x] Gitleaks runs on PR to main
+- [x] No false-positive noise from intentional placeholders in `.env.example`
+
+## Implementation
+
+- `.github/workflows/secret-scan.yml` — gitleaks-action@v2, full history
+- `.gitleaks.toml` — allowlist env placeholders, docs/legacy, `.certs/` (mkcert history)
+- README: local `docker run zricethezav/gitleaks` command
