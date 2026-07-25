@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 from database.db import db_connection
-from backend.services import pantry_service
+from backend.services import pantry_service, subscription_service
 
 
 def _now() -> str:
@@ -304,18 +304,31 @@ def update_session_receipt(user_id: str, session_id: str, receipt_url: str) -> O
 
 
 def add_session_to_inventory(user_id: str, session_id: str) -> dict[str, Any]:
+    """Import inventory items from a completed session.
+
+    Enforces free-tier item caps (SEC-201 / PP-065) so shopping sessions
+    cannot bypass the same limit as POST /api/items.
+    """
     session = get_session_by_id(user_id, session_id)
     if not session:
         raise ValueError("Session not found")
     if session["status"] != "completed":
         raise ValueError("Session must be completed before adding to inventory")
 
+    to_add = [item for item in session.get("items", []) if item.get("barcode")]
+    existing_count = len(pantry_service.get_all_items(user_id))
+    tier_check = subscription_service.can_add_items(user_id, existing_count)
+    remaining = tier_check["remaining"]
+    if remaining != -1 and len(to_add) > remaining:
+        raise PermissionError(
+            f"Item limit reached for your plan. "
+            f"Session would add {len(to_add)} items but only {remaining} remaining."
+        )
+
     items_added: list[dict[str, Any]] = []
     activities: list[dict[str, Any]] = []
 
-    for item in session.get("items", []):
-        if not item.get("barcode"):
-            continue
+    for item in to_add:
         pantry_item = pantry_service.create_item(
             user_id,
             {

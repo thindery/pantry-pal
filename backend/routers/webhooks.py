@@ -20,6 +20,10 @@ async def stripe_webhook(request: Request):
         result = stripe_service.process_webhook(event["type"], event["data"])
         return result
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"received": False, "error": str(exc)})
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail={"received": False, "error": str(exc)})
+        # Known verification failures (missing secret, bad signature) — safe to surface code-level message
+        msg = str(exc)
+        safe = msg if "signature" in msg.lower() or "secret" in msg.lower() or "Webhook" in msg else "Invalid webhook"
+        raise HTTPException(status_code=400, detail={"received": False, "error": safe})
+    except Exception:
+        # Do not leak Stripe SDK / internal exception strings to clients
+        raise HTTPException(status_code=400, detail={"received": False, "error": "Webhook processing failed"})

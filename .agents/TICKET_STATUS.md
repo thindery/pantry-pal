@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
+Last updated: 2026-07-25 (security re-audit PP-065–074)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,11 +13,11 @@ Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
 
 | | Count |
 |--|-------|
-|| Done | 43 |
+|| Done | 46+ |
 || In progress | 0 |
 || Ready | 0 |
-|| Security open | 0 |
-|| User action pending | None |
+|| Security open | 7 (PP-067–068, PP-070–074) |
+|| User action pending | Deploy security fixes to OVH |
 
 ---
 
@@ -121,6 +121,27 @@ Last updated: 2026-07-11 (PP-052, PP-057, PP-059 complete)
 | PP-059 | Research voice/usage without AI tokens | P2 | ✅ Done |
 
 **Remaining:** Security remediation complete — schedule follow-up re-audit; optional PP-060/PP-061 from voice-usage research
+
+## Phase 3 — Security re-audit (2026-07-25)
+
+**Report:** `.agents/security_audit_2026-07-25.md`  
+**Playbook:** `agent_paige_security_audit.md` + `ovh_security_baseline.md`  
+**Risk posture:** LOW–MEDIUM (no IDOR; residual CSP/CI/ops)
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-065 | Shopping-session add-to-inventory tier limits | P1 | ✅ Done |
+| PP-066 | Shorten API bearer JWT TTL to 1h | P1 | ✅ Done |
+| PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | 📋 Open |
+| PP-068 | Gitleaks secret scan in CI | P2 | 📋 Open |
+| PP-069 | Sanitize Stripe webhook error responses | P2 | ✅ Done |
+| PP-070 | nginx require-cloudflare include (ops) | P2 | 📋 Open |
+| PP-071 | Trusted proxy IP for rate limiting | P2 | 📋 Open |
+| PP-072 | Gate public design-system | P3 | 📋 Open |
+| PP-073 | Add security.txt | P3 | 📋 Open |
+| PP-074 | Remove/harden Clerk JWT fallback | P3 | 📋 Open |
+
+**Ship:** Deploy main after PP-065/066/069 merge so production leaves build `253ee6b`.
 
 ---
 

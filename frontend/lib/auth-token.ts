@@ -5,6 +5,13 @@ import type { NextRequest } from "next/server";
 /** Audience claim for FastAPI bearer tokens (must match backend JWT_AUDIENCE). */
 export const JWT_AUDIENCE = process.env.JWT_AUDIENCE ?? "pantry-pal";
 
+/**
+ * Short-lived API bearer TTL (SEC-202). Middleware re-mints per request;
+ * client /api/auth/token is also re-fetched — long-lived tokens only increase
+ * impact of token theft via XSS or logs.
+ */
+export const BEARER_TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
+
 async function signBearerJwt(sub: string, email?: string | null): Promise<string | null> {
   const secret = process.env.AUTH_SECRET;
   if (!secret || !sub) return null;
@@ -17,7 +24,7 @@ async function signBearerJwt(sub: string, email?: string | null): Promise<string
     .setProtectedHeader({ alg: "HS256" })
     .setAudience(JWT_AUDIENCE)
     .setIssuedAt()
-    .setExpirationTime(Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60)
+    .setExpirationTime(Math.floor(Date.now() / 1000) + BEARER_TOKEN_TTL_SECONDS)
     .sign(key);
 }
 

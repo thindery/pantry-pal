@@ -107,6 +107,14 @@ async def add_to_inventory(session_id: str, user_id: str = Depends(require_authe
     try:
         result = shopping_sessions_service.add_session_to_inventory(user_id, session_id)
         return success_response(result, {"itemsAdded": len(result["items"]), "activitiesLogged": len(result["activities"])})
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail=error_response(
+                "TIER_LIMIT_EXCEEDED",
+                str(exc) or "Item limit reached for your plan. Upgrade to add more items.",
+            ),
+        ) from exc
     except ValueError as exc:
         msg = str(exc)
         if "not found" in msg.lower():
