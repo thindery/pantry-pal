@@ -26,9 +26,10 @@
 | **AUTH_SECRET** | ✅ Set | Auth redirects working |
 | **AUTH_GOOGLE_ID** | ✅ Set | Google OAuth configured |
 | **AUTH_GOOGLE_SECRET** | ✅ Set | Signin flow functional |
-| **STRIPE_SECRET_KEY** | ✅ Set | API calls to Stripe working |
-| **STRIPE_PUBLISHABLE_KEY** | ✅ Set | pk_live in CSP |
-| **STRIPE_WEBHOOK_SECRET** | ✅ Set | Webhook endpoint configured |
+| **STRIPE_SECRET_KEY** | ✅ Live (`sk_live_`) | Wired 2026-07-25 — Peak Collective dba Pantry Hub |
+| **STRIPE_PUBLISHABLE_KEY** | ✅ Live (`pk_live_`) | Checkout + CSP |
+| **STRIPE_WEBHOOK_SECRET** | ✅ Set | `we_…` → `/api/webhooks/stripe` |
+| **STRIPE_*_PRICE_ID** | ✅ Live prices | Pro $4.99/$39.99 · Family $7.99/$59.99 · lookup_keys prevent dupes on deploy |
 | **DATABASE_URL** | ✅ Set | App responding correctly |
 | **POSTGRES_PASSWORD** | ✅ Set | DB connections established |
 
