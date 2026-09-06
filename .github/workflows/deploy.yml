@@ -7,57 +7,51 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
+  HUSKY: '0'
 
 jobs:
   # ============================================
-  # Job 1: Test & Lint
+  # Job 1: Test & Lint (repo root is the app)
   # ============================================
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      # Test Frontend
-      - name: Install Frontend Dependencies
-        working-directory: ./pantry-pal
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
         run: npm ci
-      
-      - name: Type Check Frontend
-        working-directory: ./pantry-pal
-        run: npx tsc --noEmit
-      
-      - name: Build Frontend
-        working-directory: ./pantry-pal
-        run: npm run build:frontend
-      
-      - name: Lint Frontend
-        working-directory: ./pantry-pal
+
+      - name: Install Python dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
         run: npm run lint
-        continue-on-error: false
-      
-      # Test Backend
-      - name: Install Backend Dependencies
-        working-directory: ./pantry-pal-api
-        run: npm ci
-      
-      - name: Run Backend Tests
-        working-directory: ./pantry-pal-api
-        run: npm test
-        env:
-          NODE_ENV: test
-          DB_TYPE: sqlite
-          DB_PATH: ./test.db
-      
-      - name: Type Check Backend
-        working-directory: ./pantry-pal-api
-        run: npx tsc --noEmit
+
+      - name: Frontend tests
+        run: npm run test:run
+
+      - name: Backend contract tests
+        run: npm run test:backend
+
+      - name: Build frontend
+        run: npm run build:frontend
 
   # ============================================
   # Job 2: Database Migration Check
@@ -68,138 +62,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Get full history for comparison
-      
+          fetch-depth: 0
+
       - name: Check for migration files
         id: check-migrations
         run: |
-          # Check if any .sql files changed in migrations folder
-          if git diff --name-only HEAD~1 HEAD | grep -q "src/db/migrations/.*\.sql"; then
+          if git diff --name-only HEAD~1 HEAD | grep -q "database/migrations/.*\.sql"; then
             echo "has_migrations=true" >> $GITHUB_OUTPUT
-            echo "🚨 Database migrations detected!"
+            echo "Database migrations detected"
           else
             echo "has_migrations=false" >> $GITHUB_OUTPUT
             echo "No migrations detected"
           fi
-      
+
       - name: Verify migrations are backwards-compatible
         if: steps.check-migrations.outputs.has_migrations == 'true'
         run: |
-          echo "⚠️ Migrations detected. Verify they follow backwards-compatible rules:"
+          echo "Migrations detected. Verify they follow backwards-compatible rules:"
           echo "   1. Only ADD columns/tables, never REMOVE/RENAME"
           echo "   2. New columns must have DEFAULT values"
           echo "   3. Deploy code BEFORE migration when removing"
-          
-          # List changed migration files
           echo "Changed migration files:"
-          git diff --name-only HEAD~1 HEAD | grep "src/db/migrations/.*\.sql" || true
+          git diff --name-only HEAD~1 HEAD | grep "database/migrations/.*\.sql" || true
 
+  # Production cutover is SSH/OVH via deploy/deploy-docker.sh (PP-034).
+  # Railway and Vercel were decommissioned (PP-035) — do not invoke them here.
   # ============================================
-  # Job 3: Deploy to Staging
-  # ============================================
-  deploy-staging:
-    needs: [test, migration-check]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    environment:
-      name: staging
-      url: https://pantry-pal-staging.vercel.app
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      # Deploy Backend to Railway Staging
-      - name: Deploy to Railway (Staging)
-        uses: railway/cli-deploy@v1
-        with:
-          project_id: ${{ secrets.RAILWAY_STAGING_PROJECT_ID }}
-          service: pantry-pal-api-staging
-          environment: staging
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
-      
-      # Deploy Frontend to Vercel Preview
-      - name: Deploy Frontend to Vercel (Preview)
-        uses: vercel/action-deploy@v1
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-comment: true
-
-  # ============================================
-  # Job 4: Deploy to Production (Manual Approval)
-  # ============================================
-  deploy-production:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://pantry-pal.app
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      # Deploy Backend to Railway Production
-      - name: Deploy to Railway (Production)
-        uses: railway/cli-deploy@v1
-        with:
-          project_id: ${{ secrets.RAILWAY_PROD_PROJECT_ID }}
-          service: pantry-pal-api
-          environment: production
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_PROD_TOKEN }}
-      
-      # Deploy Frontend to Vercel Production
-      - name: Deploy Frontend to Vercel (Production)
-        uses: vercel/action-deploy@v1
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vergel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-      
-      # Create deployment notification
-      - name: Notify Deployment
-        run: |
-          echo "🚀 Production deployment completed!"
-          echo "   Time: $(date)"
-          echo "   Commit: ${{ github.sha }}"
-          echo "   Branch: ${{ github.ref }}"
-
-  # ============================================
-  # Job 5: Post-Deploy Health Check
+  # Job 3: Post-push production probe (main only)
   # ============================================
   health-check:
-    needs: [deploy-production]
+    needs: [test]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - name: Health Check - Frontend
+      - name: Health Check - Production site
         run: |
           for i in {1..5}; do
-            curl -sf https://pantry-pal.app/health && echo "✅ Frontend healthy" && exit 0
-            echo "Attempt $i/5: Frontend not ready, waiting 10s..."
+            if curl -sfI https://www.mypantryhub.com/ >/dev/null \
+              && BUILD_ID=$(curl -sf https://www.mypantryhub.com/build-id.txt) \
+              && [ -n "$BUILD_ID" ]; then
+              echo "Production reachable (build-id: $BUILD_ID)"
+              exit 0
+            fi
+            echo "Attempt $i/5: site not ready, waiting 10s..."
             sleep 10
           done
-          echo "❌ Frontend health check failed"
+          echo "Production health check failed"
           exit 1
-      
-      - name: Health Check - Backend
-        run: |
-          for i in {1..5}; do
-            curl -sf https://api.pantry-pal.com/health && echo "✅ API healthy" && exit 0
-            echo "Attempt $i/5: API not ready, waiting 10s..."
-            sleep 10
-          done
-          echo "❌ API health check failed"
-          exit 1
-      
-      - name: Smoke Test
-        run: |
-          # Basic smoke test - verify API returns expected structure
-          RESPONSE=$(curl -sf https://api.pantry-pal.com/health)
-          echo "$RESPONSE" | grep -q "healthy" && echo "✅ Smoke test passed" || exit 1
