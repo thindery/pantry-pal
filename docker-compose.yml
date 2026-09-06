@@ -1,7 +1,9 @@
+name: pantry-pal
 version: '3.8'
 
 # OVH: expose-only on app-network (no host publish). Uncommon ports avoid
 # collisions with agent-paige :3000, markdown-pdf :3001, userkudos :3003, etc.
+# Unique compose project name — never default to the directory ("deploy").
 services:
   db:
     image: postgres:16-alpine
