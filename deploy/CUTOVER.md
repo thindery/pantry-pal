@@ -47,10 +47,12 @@ cp /opt/pantry-pal/.env.prod.example /opt/pantry-pal/.env.prod   # after clone
 
 The deploy script will:
 - Clone to `/opt/pantry-pal` if missing
-- `docker compose up -d --build` on `app-network`
+- `docker compose -p pantry-pal up -d --build` on `app-network`
 - Run migrations
 - Copy `deploy/nginx/pantry-pal.conf` → `/opt/nginx/conf.d/`
 - Reload central nginx: `docker compose exec -T nginx nginx -s reload`
+
+**Shared-host safety:** compose project is always `pantry-pal` (`name:` in compose + `-p pantry-pal`). Never `--remove-orphans`, `compose down -v`, or volume prune — those can sweep sibling stacks or wipe this app's volumes. See [README.md](./README.md).
 
 ## Smoke
 

@@ -67,7 +67,9 @@ ssh ovh "
     local exit_code=\$?
     log_deploy_event failure \"Deploy failed (exit \$exit_code)\"
     echo 'Deploy failed — attempting to restore running containers...'
-    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose up -d --remove-orphans 2>/dev/null || true
+    # Unique project name pantry-pal — never default \"deploy\" from working_dir.
+    # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
+    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d 2>/dev/null || true
     exit \"\$exit_code\"
   }
   trap on_deploy_failure ERR
@@ -109,15 +111,19 @@ ssh ovh "
     echo \"  ⚠️  Ralph warning: Commit message should reference ticket (PP-XXX: description)\"
   fi &&
 
-  echo 'Cleaning orphan containers...' &&
+  echo 'Cleaning leftover pantry-pal compose names only...' &&
   docker ps -a --format '{{.Names}}' | grep '_pantry-pal' | xargs -r docker rm -f 2>/dev/null || true &&
 
   export BUILD_ID=\$(git rev-parse --short HEAD) &&
+  export COMPOSE_PROJECT_NAME=pantry-pal &&
   echo \"Build ID: \$BUILD_ID\" &&
-  docker compose up -d --build --remove-orphans &&
+  # Unique project name pantry-pal — never default \"deploy\" from working_dir.
+  # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
+  # Do NOT use compose down -v or volume prune (wipes this app's data).
+  docker compose -p pantry-pal up -d --build &&
 
   echo 'Running database migrations...' &&
-  docker compose run --rm backend python database/migrate.py migrate &&
+  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate &&
 
   echo 'Waiting for services to become healthy...' &&
   (
