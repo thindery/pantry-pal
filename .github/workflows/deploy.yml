@@ -85,27 +85,7 @@ jobs:
           echo "Changed migration files:"
           git diff --name-only HEAD~1 HEAD | grep "database/migrations/.*\.sql" || true
 
-  # Production cutover is SSH/OVH via deploy/deploy-docker.sh (PP-034).
-  # Railway and Vercel were decommissioned (PP-035) — do not invoke them here.
-  # ============================================
-  # Job 3: Post-push production probe (main only)
-  # ============================================
-  health-check:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Health Check - Production site
-        run: |
-          for i in {1..5}; do
-            if curl -sfI https://www.mypantryhub.com/ >/dev/null \
-              && BUILD_ID=$(curl -sf https://www.mypantryhub.com/build-id.txt) \
-              && [ -n "$BUILD_ID" ]; then
-              echo "Production reachable (build-id: $BUILD_ID)"
-              exit 0
-            fi
-            echo "Attempt $i/5: site not ready, waiting 10s..."
-            sleep 10
-          done
-          echo "Production health check failed"
-          exit 1
+  # Production ships via SSH/OVH (`./deploy/deploy-docker.sh`), not GitHub Actions.
+  # Railway/Vercel jobs and pantry-pal.app / api.pantry-pal.com probes were removed:
+  # those hosts are decommissioned (PP-035), and Cloudflare bot-fight challenges
+  # GitHub-hosted runners (403) so a live www.mypantryhub.com curl would false-fail.
