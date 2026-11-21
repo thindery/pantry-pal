@@ -387,10 +387,10 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
     if not subscription_id:
         return
     sub = stripe.Subscription.retrieve(subscription_id)
-    user_id = (sub.metadata or {}).get("userId")
+    user_id = _obj_get(_obj_get(sub, "metadata"), "userId")
     if not user_id:
         return
-    tier = (sub.metadata or {}).get("tier")
+    tier = _obj_get(_obj_get(sub, "metadata"), "tier")
     admin_service.record_transaction(
         {
             "userId": user_id,
@@ -411,10 +411,10 @@ def _handle_invoice_failed(invoice: dict[str, Any]) -> None:
     if not subscription_id:
         return
     sub = stripe.Subscription.retrieve(subscription_id)
-    user_id = (sub.metadata or {}).get("userId")
+    user_id = _obj_get(_obj_get(sub, "metadata"), "userId")
     if not user_id:
         return
-    tier = (sub.metadata or {}).get("tier")
+    tier = _obj_get(_obj_get(sub, "metadata"), "tier")
     admin_service.record_transaction(
         {
             "userId": user_id,
