@@ -73,6 +73,7 @@ describe("BarcodeScanner unknown product naming", () => {
         onBarcodeDetected={onBarcodeDetected}
         onCancel={vi.fn()}
         autoStart={false}
+        quickScan={false}
       />
     );
 
@@ -111,6 +112,7 @@ describe("BarcodeScanner unknown product naming", () => {
         onBarcodeDetected={onBarcodeDetected}
         onCancel={vi.fn()}
         autoStart={false}
+        quickScan={false}
       />
     );
 
@@ -132,6 +134,7 @@ describe("BarcodeScanner unknown product naming", () => {
         onBarcodeDetected={onBarcodeDetected}
         onCancel={vi.fn()}
         autoStart={false}
+        quickScan={false}
       />
     );
 
@@ -170,10 +173,30 @@ describe("BarcodeScanner Quick Scan toggle", () => {
     fireEvent.click(toggle);
     expect(onQuickScanChange).toHaveBeenCalledWith(false);
   });
+
+  it("hides Upload Image and Type Barcode when Quick Scan is on", () => {
+    renderWithToggle();
+    expect(screen.queryByRole("button", { name: /Upload Image/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Type Barcode/i })).not.toBeInTheDocument();
+  });
+
+  it("shows Upload Image and Type Barcode when Quick Scan is off", () => {
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={vi.fn()}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={false}
+        onQuickScanChange={vi.fn()}
+      />
+    );
+    expect(screen.getByRole("button", { name: /Upload Image/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Type Barcode/i })).toBeInTheDocument();
+  });
 });
 
-describe("BarcodeScanner manual entry with Quick Scan on", () => {
-  it("still shows the confirm-card preview for manually typed known barcodes", async () => {
+describe("BarcodeScanner manual entry in normal mode", () => {
+  it("shows the confirm-card preview for manually typed known barcodes", async () => {
     mockedLookup.mockResolvedValue({
       success: true,
       product: {
@@ -189,7 +212,7 @@ describe("BarcodeScanner manual entry with Quick Scan on", () => {
         onBarcodeDetected={onBarcodeDetected}
         onCancel={vi.fn()}
         autoStart={false}
-        quickScan={true}
+        quickScan={false}
       />
     );
 
@@ -230,6 +253,7 @@ describe("BarcodeScanner known product", () => {
         onBarcodeDetected={onBarcodeDetected}
         onCancel={vi.fn()}
         autoStart={false}
+        quickScan={false}
       />
     );
 

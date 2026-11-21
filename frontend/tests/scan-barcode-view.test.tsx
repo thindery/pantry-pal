@@ -11,6 +11,32 @@ const knownProduct: BarcodeProduct = {
   category: "pantry",
 };
 
+const otherProduct: BarcodeProduct = {
+  barcode: "5901234123457",
+  name: "Sparkling Water",
+  category: "beverages",
+};
+
+const cannedBeansItem = {
+  id: "item-beans",
+  name: "Canned Beans",
+  quantity: 1,
+  unit: "units",
+  category: "pantry",
+  lastUpdated: "2026-11-21",
+  barcode: "012345678905",
+};
+
+const sparklingWaterItem = {
+  id: "item-water",
+  name: "Sparkling Water",
+  quantity: 1,
+  unit: "units",
+  category: "beverages",
+  lastUpdated: "2026-11-21",
+  barcode: "5901234123457",
+};
+
 const unknownProduct: BarcodeProduct = {
   barcode: "070038626039",
   name: "",
@@ -64,6 +90,18 @@ vi.mock("@/components/BarcodeScanner", () => ({
               }}
             >
               Simulate known barcode
+            </button>
+            <button
+              data-testid="simulate-other-scan"
+              onClick={() => {
+                if (quickScan) {
+                  onBarcodeDetected(otherProduct);
+                } else {
+                  setPendingKnown(otherProduct);
+                }
+              }}
+            >
+              Simulate other barcode
             </button>
             <button
               data-testid="simulate-scan"
@@ -140,6 +178,7 @@ vi.mock("@/contexts/pantry-provider", () => ({
 }));
 
 const mockHandleSaveScannedProduct = vi.fn();
+const mockHandleAdjustQuantity = vi.fn();
 const mockSuccess = vi.fn();
 const mockError = vi.fn();
 const mockRouterPush = vi.fn();
@@ -166,10 +205,16 @@ Object.defineProperty(window, "localStorage", {
 });
 
 beforeEach(() => {
+  vi.useRealTimers();
   vi.clearAllMocks();
-  mockHandleSaveScannedProduct.mockResolvedValue(undefined);
+  mockHandleSaveScannedProduct.mockImplementation(async (product: BarcodeProduct) => {
+    if (product.barcode === otherProduct.barcode) return { ...sparklingWaterItem };
+    return { ...cannedBeansItem };
+  });
+  mockHandleAdjustQuantity.mockResolvedValue(undefined);
   (usePantry as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
     handleSaveScannedProduct: mockHandleSaveScannedProduct,
+    handleAdjustQuantity: mockHandleAdjustQuantity,
     success: mockSuccess,
     error: mockError,
     router: { push: mockRouterPush },
@@ -223,7 +268,13 @@ describe("ScanBarcodeView Quick Scan on", () => {
     );
 
     expect(screen.getByText("Added Canned Beans")).toBeInTheDocument();
-    expect(screen.getByText(/1 unit/i)).toBeInTheDocument();
+    expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
+    expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument();
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1");
+    expect(screen.getByTestId("session-row-012345678905")).toHaveAttribute(
+      "data-highlighted",
+      "true"
+    );
   });
 
   it("does not add the same barcode twice within the debounce window", async () => {
@@ -238,6 +289,94 @@ describe("ScanBarcodeView Quick Scan on", () => {
 
     // Second click should have been ignored by the 3-second debounce
     expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ScanBarcodeView session ledger", () => {
+  it("bumps the existing row instead of adding a duplicate after the debounce window", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1)
+    );
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1");
+
+    await vi.advanceTimersByTimeAsync(3000);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(2)
+    );
+
+    expect(screen.getAllByTestId("session-row-012345678905")).toHaveLength(1);
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("2");
+    vi.useRealTimers();
+  });
+
+  it("puts the newest scan at the top of the list", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument()
+    );
+
+    await vi.advanceTimersByTimeAsync(3000);
+    fireEvent.click(screen.getByTestId("simulate-other-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-row-5901234123457")).toBeInTheDocument()
+    );
+
+    const rows = screen.getAllByTestId(/session-row-/);
+    expect(rows[0]).toHaveAttribute("data-testid", "session-row-5901234123457");
+    expect(rows[1]).toHaveAttribute("data-testid", "session-row-012345678905");
+    vi.useRealTimers();
+  });
+
+  it("increments inventory and the row count when + is pressed", async () => {
+    render(<ScanBarcodeView />);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1")
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Increase Canned Beans/i }));
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(2)
+    );
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("2");
+  });
+
+  it("decrements inventory and removes the row when − reaches zero", async () => {
+    render(<ScanBarcodeView />);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Decrease Canned Beans/i }));
+    await waitFor(() =>
+      expect(mockHandleAdjustQuantity).toHaveBeenCalledWith("item-beans", -1, {
+        silent: true,
+        source: "BARCODE_SCAN",
+      })
+    );
+    expect(screen.queryByTestId("session-row-012345678905")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+  });
+
+  it("clears the session list without changing inventory", async () => {
+    render(<ScanBarcodeView />);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByTestId("clear-session-ledger"));
+    expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+    expect(mockHandleAdjustQuantity).not.toHaveBeenCalled();
   });
 });
 
@@ -264,6 +403,7 @@ describe("ScanBarcodeView Quick Scan off", () => {
       }),
       1
     );
+    expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
   });
 });
 

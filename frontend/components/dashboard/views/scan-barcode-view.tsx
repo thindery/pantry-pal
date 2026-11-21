@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { usePantry } from "@/contexts/pantry-provider";
-import type { BarcodeProduct } from "@/types";
+import type { BarcodeProduct, PantryItem } from "@/types";
 import { ApiError } from "@/services/apiService";
 
 const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
@@ -11,20 +11,33 @@ const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
 interface ScanToast {
   id: string;
   product: BarcodeProduct;
-  quantity: number;
+}
+
+interface SessionEntry {
+  key: string;
+  itemId: string;
+  product: BarcodeProduct;
+  sessionQty: number;
+}
+
+function sessionKey(product: BarcodeProduct): string {
+  return product.barcode || product.name.toLowerCase();
 }
 
 export function ScanBarcodeView() {
   const {
     handleSaveScannedProduct,
+    handleAdjustQuantity,
     success,
     error: showError,
     router,
-    inventory,
   } = usePantry();
 
   const [unknownProduct, setUnknownProduct] = useState<BarcodeProduct | null>(null);
   const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
+  const [sessionEntries, setSessionEntries] = useState<SessionEntry[]>([]);
+  const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
   const [isSavingUnknown, setIsSavingUnknown] = useState(false);
   const [unknownProductName, setUnknownProductName] = useState("");
   const [quickScan, setQuickScan] = useState<boolean>(() => {
@@ -36,9 +49,15 @@ export function ScanBarcodeView() {
       return true;
     }
   });
-  
+
   // Track recently scanned barcodes to prevent duplicates within 3 seconds
   const recentScansRef = useRef<Set<string>>(new Set());
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quickScanRef = useRef(quickScan);
+
+  useEffect(() => {
+    quickScanRef.current = quickScan;
+  }, [quickScan]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -49,9 +68,51 @@ export function ScanBarcodeView() {
     }
   }, [quickScan]);
 
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    };
+  }, []);
+
   const removeScanToast = useCallback((id: string) => {
     setScanToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const highlightEntry = useCallback((key: string) => {
+    setHighlightedKey(key);
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedKey((current) => (current === key ? null : current));
+    }, 1600);
+  }, []);
+
+  const bumpOrAddEntry = useCallback((product: BarcodeProduct, item: PantryItem) => {
+    const key = sessionKey(product);
+    setSessionEntries((prev) => {
+      const existing = prev.find((entry) => entry.key === key);
+      if (existing) {
+        return [
+          {
+            ...existing,
+            sessionQty: existing.sessionQty + 1,
+            product,
+            itemId: item.id,
+          },
+          ...prev.filter((entry) => entry.key !== key),
+        ];
+      }
+      return [{ key, itemId: item.id, product, sessionQty: 1 }, ...prev];
+    });
+    highlightEntry(key);
+  }, [highlightEntry]);
+
+  const showAddedToast = useCallback((product: BarcodeProduct) => {
+    const toastId = Math.random().toString(36).substring(2, 9);
+    setScanToasts((prev) => [...prev, { id: toastId, product }]);
+    setTimeout(() => {
+      removeScanToast(toastId);
+    }, 5000);
+  }, [removeScanToast]);
 
   const handleScan = useCallback(async (product: BarcodeProduct) => {
     // Prevent duplicate scans within 3 seconds
@@ -68,18 +129,12 @@ export function ScanBarcodeView() {
       return;
     }
 
-    // Known product - auto-save with qty 1 and show toast
     try {
-      await handleSaveScannedProduct(product, 1);
-      
-      // Add toast with the product
-      const toastId = Math.random().toString(36).substring(2, 9);
-      setScanToasts((prev) => [...prev, { id: toastId, product, quantity: 1 }]);
-      
-      // Auto-remove toast after 5 seconds
-      setTimeout(() => {
-        removeScanToast(toastId);
-      }, 5000);
+      const item = await handleSaveScannedProduct(product, 1);
+      if (quickScanRef.current && item?.id) {
+        bumpOrAddEntry(product, item);
+      }
+      showAddedToast(product);
     } catch (err) {
       showError(
         err instanceof ApiError
@@ -87,20 +142,54 @@ export function ScanBarcodeView() {
           : "Failed to add item. Please try again."
       );
     }
-  }, [handleSaveScannedProduct, showError, removeScanToast]);
+  }, [handleSaveScannedProduct, showError, bumpOrAddEntry, showAddedToast]);
 
-  const handleIncrement = useCallback(async (toastId: string, product: BarcodeProduct, currentQty: number) => {
+  const handleSessionIncrement = useCallback(async (entry: SessionEntry) => {
+    if (busyKey) return;
+    setBusyKey(entry.key);
     try {
-      await handleSaveScannedProduct(product, 1);
-      setScanToasts((prev) =>
-        prev.map((t) =>
-          t.id === toastId ? { ...t, quantity: currentQty + 1 } : t
-        )
-      );
+      const item = await handleSaveScannedProduct(entry.product, 1);
+      if (item?.id) {
+        bumpOrAddEntry(entry.product, item);
+      }
     } catch (_err) {
       showError("Failed to update quantity");
+    } finally {
+      setBusyKey(null);
     }
-  }, [handleSaveScannedProduct, showError]);
+  }, [busyKey, handleSaveScannedProduct, bumpOrAddEntry, showError]);
+
+  const handleSessionDecrement = useCallback(async (entry: SessionEntry) => {
+    if (busyKey || entry.sessionQty <= 0) return;
+    setBusyKey(entry.key);
+    try {
+      await handleAdjustQuantity(entry.itemId, -1, {
+        silent: true,
+        source: "BARCODE_SCAN",
+      });
+      setSessionEntries((prev) => {
+        const current = prev.find((row) => row.key === entry.key);
+        if (!current || current.sessionQty <= 1) {
+          return prev.filter((row) => row.key !== entry.key);
+        }
+        return prev.map((row) =>
+          row.key === entry.key ? { ...row, sessionQty: row.sessionQty - 1 } : row
+        );
+      });
+      if (entry.sessionQty > 1) {
+        highlightEntry(entry.key);
+      }
+    } catch (_err) {
+      showError("Failed to update quantity");
+    } finally {
+      setBusyKey(null);
+    }
+  }, [busyKey, handleAdjustQuantity, highlightEntry, showError]);
+
+  const handleClearSession = useCallback(() => {
+    setSessionEntries([]);
+    setHighlightedKey(null);
+  }, []);
 
   const handleSaveUnknownProduct = useCallback(async () => {
     if (!unknownProduct || !unknownProductName.trim()) return;
@@ -111,7 +200,11 @@ export function ScanBarcodeView() {
         ...unknownProduct,
         name: unknownProductName.trim(),
       };
-      await handleSaveScannedProduct(productWithName, 1);
+      const item = await handleSaveScannedProduct(productWithName, 1);
+      if (quickScanRef.current && item?.id) {
+        bumpOrAddEntry(productWithName, item);
+      }
+      showAddedToast(productWithName);
       success(`Added ${unknownProductName.trim()} to inventory`);
       setUnknownProduct(null);
       setUnknownProductName("");
@@ -124,7 +217,7 @@ export function ScanBarcodeView() {
     } finally {
       setIsSavingUnknown(false);
     }
-  }, [unknownProduct, unknownProductName, handleSaveScannedProduct, success, showError]);
+  }, [unknownProduct, unknownProductName, handleSaveScannedProduct, success, showError, bumpOrAddEntry, showAddedToast]);
 
   // Commit unknown-product name on explicit Enter key in the modal input
   const handleUnknownNameKeyDown = useCallback(
@@ -137,15 +230,85 @@ export function ScanBarcodeView() {
     [unknownProductName, handleSaveUnknownProduct]
   );
 
+  const leaveScan = useCallback(() => {
+    handleClearSession();
+    router.push("/dashboard/");
+  }, [handleClearSession, router]);
+
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen pb-8">
       <BarcodeScanner
         autoStart
         quickScan={quickScan}
         onQuickScanChange={setQuickScan}
         onBarcodeDetected={handleScan}
-        onCancel={() => router.push("/dashboard/")}
+        onCancel={leaveScan}
       />
+
+      {quickScan && sessionEntries.length > 0 && (
+        <div
+          className="max-w-lg mx-auto mt-4 px-1"
+          data-testid="quick-scan-ledger"
+        >
+          <div className="flex items-center justify-between mb-2 px-1">
+            <h3 className="text-sm font-semibold text-slate-700">This session</h3>
+            <button
+              type="button"
+              onClick={handleClearSession}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md"
+              data-testid="clear-session-ledger"
+            >
+              Clear
+            </button>
+          </div>
+          <ul className="max-h-40 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
+            {sessionEntries.map((entry) => {
+              const label = entry.product.name?.trim() || entry.product.barcode;
+              const isHighlighted = highlightedKey === entry.key;
+              return (
+                <li
+                  key={entry.key}
+                  data-testid={`session-row-${entry.key}`}
+                  data-highlighted={isHighlighted ? "true" : "false"}
+                  className={`flex items-center gap-2 px-3 py-1.5 ${
+                    isHighlighted ? "bg-emerald-50" : "bg-white"
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">{label}</p>
+                  </div>
+                  <span
+                    className="w-8 text-center text-sm font-semibold tabular-nums text-slate-800"
+                    data-testid={`session-qty-${entry.key}`}
+                  >
+                    {entry.sessionQty}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleSessionDecrement(entry)}
+                      disabled={busyKey === entry.key || entry.sessionQty <= 0}
+                      className="w-11 h-11 rounded-xl bg-slate-100 text-slate-800 text-xl font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
+                      aria-label={`Decrease ${label}`}
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSessionIncrement(entry)}
+                      disabled={busyKey === entry.key}
+                      className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-40 transition-colors"
+                      aria-label={`Increase ${label}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Scan Toasts - Floating at bottom */}
       <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
@@ -169,26 +332,14 @@ export function ScanBarcodeView() {
               <p className="font-medium text-sm truncate">
                 Added {toast.product.name}
               </p>
-              <p className="text-xs text-slate-400">
-                {toast.quantity} {toast.quantity === 1 ? "unit" : "units"}
-              </p>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => handleIncrement(toast.id, toast.product, toast.quantity)}
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-lg transition-colors"
-                title="Add 1 more"
-              >
-                +
-              </button>
-              <button
-                onClick={() => removeScanToast(toast.id)}
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-lg transition-colors"
-                title="Dismiss"
-              >
-                ×
-              </button>
-            </div>
+            <button
+              onClick={() => removeScanToast(toast.id)}
+              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-lg transition-colors"
+              title="Dismiss"
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>

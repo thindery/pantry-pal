@@ -450,12 +450,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             <span className="text-lg">⚠️</span>
             <div>
               <p className="font-semibold">{error}</p>
-              {hasCameraPermission === false && (
+              {hasCameraPermission === false && !quickScan && (
                 <p className="mt-2 text-sm">You can also try uploading a barcode image or typing the barcode number manually.</p>
+              )}
+              {hasCameraPermission === false && quickScan && (
+                <p className="mt-2 text-sm">Turn off Quick Scan to upload an image or type a barcode.</p>
               )}
             </div>
           </div>
-          {hasCameraPermission === false && (
+          {hasCameraPermission === false && !quickScan && (
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -553,8 +556,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         </div>
       )}
 
-      {/* Fallback Options */}
-      {detectedProduct == null && (
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+
+      {/* Fallback Options — hidden in Quick Scan; still available in normal mode */}
+      {detectedProduct == null && !quickScan && (
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -563,13 +574,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             <div className="text-2xl mb-2">📁</div>
             <p className="text-sm font-semibold text-slate-600">Upload Image</p>
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
 
           <button
             onClick={() => setShowManualEntry(true)}
