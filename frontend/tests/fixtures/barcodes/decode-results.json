@@ -1,0 +1,128 @@
+{
+  "beforePass": 6,
+  "afterPass": 9,
+  "total": 11,
+  "rows": [
+    {
+      "file": "upc-a-clean.png",
+      "format": "UPC-A",
+      "degraded": false,
+      "degradation": "clean",
+      "expected": "012345678905",
+      "before": "012345678905",
+      "after": "012345678905",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "ean-13-clean.png",
+      "format": "EAN-13",
+      "degraded": false,
+      "degradation": "clean",
+      "expected": "5901234123457",
+      "before": "5901234123457",
+      "after": "5901234123457",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "ean-8-clean.png",
+      "format": "EAN-8",
+      "degraded": false,
+      "degradation": "clean",
+      "expected": "96385074",
+      "before": "96385074",
+      "after": "96385074",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "upc-e-clean.png",
+      "format": "UPC-E",
+      "degraded": false,
+      "degradation": "clean",
+      "expected": "01234565",
+      "before": "FAIL",
+      "after": "FAIL",
+      "beforeOk": false,
+      "afterOk": false
+    },
+    {
+      "file": "upc-a-shadow.png",
+      "format": "UPC-A",
+      "degraded": true,
+      "degradation": "shadow",
+      "expected": "012345678905",
+      "before": "FAIL",
+      "after": "012345678905",
+      "beforeOk": false,
+      "afterOk": true
+    },
+    {
+      "file": "ean-13-shadow.png",
+      "format": "EAN-13",
+      "degraded": true,
+      "degradation": "shadow",
+      "expected": "5901234123457",
+      "before": "FAIL",
+      "after": "5901234123457",
+      "beforeOk": false,
+      "afterOk": true
+    },
+    {
+      "file": "ean-13-blur.png",
+      "format": "EAN-13",
+      "degraded": true,
+      "degradation": "blur",
+      "expected": "5901234123457",
+      "before": "5901234123457",
+      "after": "5901234123457",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "upc-a-low-contrast.png",
+      "format": "UPC-A",
+      "degraded": true,
+      "degradation": "low-contrast",
+      "expected": "012345678905",
+      "before": "012345678905",
+      "after": "012345678905",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "upc-e-low-contrast.png",
+      "format": "UPC-E",
+      "degraded": true,
+      "degradation": "low-contrast",
+      "expected": "01234565",
+      "before": "FAIL",
+      "after": "FAIL",
+      "beforeOk": false,
+      "afterOk": false
+    },
+    {
+      "file": "ean-8-curved.png",
+      "format": "EAN-8",
+      "degraded": true,
+      "degradation": "curved",
+      "expected": "96385074",
+      "before": "96385074",
+      "after": "96385074",
+      "beforeOk": true,
+      "afterOk": true
+    },
+    {
+      "file": "upc-a-shadow-low-contrast.png",
+      "format": "UPC-A",
+      "degraded": true,
+      "degradation": "shadow+low-contrast",
+      "expected": "012345678905",
+      "before": "FAIL",
+      "after": "012345678905",
+      "beforeOk": false,
+      "afterOk": true
+    }
+  ]
+}

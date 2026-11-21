@@ -1,7 +1,21 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { BrowserMultiFormatReader } from '@zxing/browser';
+import type { BrowserMultiFormatReader } from '@zxing/browser';
 import type { BarcodeProduct } from '../types';
 import { lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
+import {
+  acceptCameraCandidate,
+  createNativeBarcodeDetector,
+  createRetailReader,
+  decodeRetailTextFromCanvas,
+  drawEnhancedBarcodeFrame,
+  type NativeBarcodeDetector,
+} from '../lib/retail-barcode';
+
+type VideoTrackCaps = MediaTrackCapabilities & {
+  torch?: boolean;
+  focusMode?: string[];
+  pointsOfInterest?: boolean | { x: number; y: number }[];
+};
 
 interface BarcodeScannerProps {
   onBarcodeDetected: (product: BarcodeProduct) => void;
@@ -36,6 +50,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const isLoadingRef = useRef(false);
   const quickScanRef = useRef(quickScan);
   const lastCameraScanRef = useRef<{ barcode: string; at: number } | null>(null);
+  const pendingCodeRef = useRef<string | null>(null);
+  const enhanceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const enhanceCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const nativeDetectorRef = useRef<NativeBarcodeDetector | null>(null);
+  const enhanceInFlightRef = useRef(false);
+  const [torchSupported, setTorchSupported] = useState(false);
 
   useEffect(() => {
     quickScanRef.current = quickScan;
@@ -70,7 +90,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
+  const stopEnhanceLoop = useCallback(() => {
+    if (enhanceTimerRef.current != null) {
+      clearInterval(enhanceTimerRef.current);
+      enhanceTimerRef.current = null;
+    }
+    enhanceInFlightRef.current = false;
+  }, []);
+
   const stopScanning = useCallback(() => {
+    stopEnhanceLoop();
+    pendingCodeRef.current = null;
+    nativeDetectorRef.current = null;
     // Stop the media stream (ZXing reader stops automatically when stream ends)
     if (streamRef.current != null) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -79,7 +110,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     // Clear the reader reference (ZXing BrowserMultiFormatReader has no stop/reset method)
     readerRef.current = null;
     setIsScanning(false);
-  }, []);
+    setTorchOn(false);
+    setTorchSupported(false);
+  }, [stopEnhanceLoop]);
 
   const startScanning = async () => {
     setError(null);
@@ -93,12 +126,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         return;
       }
 
-      // Request camera with rear camera preference
+      // Request a high-res rear camera. Autofocus is applied after the
+      // stream starts so an unsupported focusMode constraint cannot fail getUserMedia.
       const constraints = {
         video: {
           facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
       };
 
@@ -110,25 +144,85 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         await videoRef.current.play();
       }
 
+      const track = stream.getVideoTracks()[0];
+      const capabilities = (track?.getCapabilities?.() ?? {}) as VideoTrackCaps;
+      setTorchSupported(Boolean(capabilities.torch));
+      setTorchOn(false);
+      try {
+        if (track && Array.isArray(capabilities.focusMode) && capabilities.focusMode.includes('continuous')) {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
+          });
+        }
+      } catch {
+        // Some browsers advertise focusMode but still reject it.
+      }
+
       setHasCameraPermission(true);
       setIsScanning(true);
+      pendingCodeRef.current = null;
 
-      // Initialize ZXing reader
-      const reader = new BrowserMultiFormatReader();
+      const reader = createRetailReader();
       readerRef.current = reader;
+      nativeDetectorRef.current = await createNativeBarcodeDetector();
 
-      // Start continuous scanning
-      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
+      const considerRawText = (raw: string) => {
         // Ignore results if we're no longer scanning or already processing
-        // Use refs here to avoid stale closure issues
         if (!isScanningRef.current || isLoadingRef.current) return;
+        const next = acceptCameraCandidate(pendingCodeRef.current, raw);
+        pendingCodeRef.current = next.pending;
+        if (next.accepted) {
+          console.log('Camera scan accepted barcode:', next.accepted);
+          handleBarcodeDetected(next.accepted, true);
+        }
+      };
 
+      // Start continuous scanning (ZXing). Partial / invalid reads are dropped
+      // in considerRawText and never shown as errors.
+      reader.decodeFromVideoElement(videoRef.current!, (result: unknown, _err: unknown) => {
+        if (!isScanningRef.current || isLoadingRef.current) return;
         if (result != null && (result as { getText(): string }).getText() != null) {
-          const barcode = (result as { getText(): string }).getText();
-          console.log('Camera scan detected barcode:', barcode);
-          handleBarcodeDetected(barcode, true);
+          considerRawText((result as { getText(): string }).getText());
         }
       });
+
+      // Parallel pass: native BarcodeDetector (when available) plus a
+      // contrast/grayscale canvas decode to help with shadows and low contrast.
+      stopEnhanceLoop();
+      if (!enhanceCanvasRef.current) {
+        enhanceCanvasRef.current = document.createElement('canvas');
+      }
+      enhanceTimerRef.current = setInterval(() => {
+        if (enhanceInFlightRef.current) return;
+        if (!isScanningRef.current || isLoadingRef.current) return;
+        const video = videoRef.current;
+        const canvas = enhanceCanvasRef.current;
+        if (video == null || canvas == null || video.readyState < 2 || !video.videoWidth) return;
+        enhanceInFlightRef.current = true;
+        const finish = () => {
+          enhanceInFlightRef.current = false;
+        };
+        const run = async () => {
+          const detector = nativeDetectorRef.current;
+          if (detector) {
+            try {
+              const found = await detector.detect(video);
+              const raw = found[0]?.rawValue;
+              if (raw) {
+                considerRawText(raw);
+                return;
+              }
+            } catch {
+              // Fall through to the enhanced ZXing canvas pass.
+            }
+          }
+          if (drawEnhancedBarcodeFrame(video, canvas)) {
+            const decoded = decodeRetailTextFromCanvas(reader, canvas);
+            if (decoded) considerRawText(decoded);
+          }
+        };
+        void run().finally(finish);
+      }, 150);
     } catch {
       // If this was an auto-start attempt, just fail silently — user can click Start Scanning
       // Only show permanent error if user explicitly clicked the button
@@ -269,7 +363,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     if (track == null) return;
 
     try {
-      const capabilities = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+      const capabilities = track.getCapabilities() as VideoTrackCaps;
       if (capabilities.torch) {
         await track.applyConstraints({
           advanced: [{ torch: !torchOn }] as unknown as MediaTrackConstraints['advanced'],
@@ -278,6 +372,44 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       }
     } catch (err) {
       console.error('Failed to toggle torch:', err);
+    }
+  };
+
+  const handleCameraPointer = async (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track == null || !isScanning) return;
+    const capabilities = (track.getCapabilities?.() ?? {}) as VideoTrackCaps;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const y = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+    const advanced: Record<string, unknown> = {};
+    if (capabilities.pointsOfInterest) {
+      advanced.pointsOfInterest = [{ x, y }];
+    }
+    if (Array.isArray(capabilities.focusMode)) {
+      if (capabilities.focusMode.includes('single-shot')) advanced.focusMode = 'single-shot';
+      else if (capabilities.focusMode.includes('manual')) advanced.focusMode = 'manual';
+    }
+    if (Object.keys(advanced).length === 0) return;
+    try {
+      await track.applyConstraints({
+        advanced: [advanced as unknown as MediaTrackConstraintSet],
+      });
+      window.setTimeout(() => {
+        const current = streamRef.current?.getVideoTracks()[0];
+        if (!current) return;
+        const caps = (current.getCapabilities?.() ?? {}) as VideoTrackCaps;
+        if (Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+          current
+            .applyConstraints({
+              advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
+            })
+            .catch(() => {});
+        }
+      }, 1500);
+    } catch {
+      // Tap-to-focus is best-effort; keep scanning if the device rejects it.
     }
   };
 
@@ -344,13 +476,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
       {/* Camera View */}
       {detectedProduct == null && hasCameraPermission !== false && (
-        <div className="relative bg-black rounded-2xl overflow-hidden aspect-square">
+        <div
+          className="relative bg-black rounded-2xl overflow-hidden aspect-square cursor-pointer"
+          onPointerDown={handleCameraPointer}
+        >
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
             playsInline
             muted
           />
+          {isScanning && (
+            <p className="absolute top-3 left-0 right-0 text-center text-white/80 text-xs font-medium pointer-events-none">
+              Tap the image to focus
+            </p>
+          )}
 
           {/* Scan overlay */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -399,13 +539,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               {isScanning ? '⏹ Stop Scanning' : '▶ Start Scanning'}
             </button>
 
-            <button
-              onClick={toggleTorch}
-              className="p-3 bg-slate-700/80 text-white rounded-full hover:bg-slate-600 transition-colors"
-              title="Toggle flashlight"
-            >
-              {torchOn ? '🔦' : '💡'}
-            </button>
+            {torchSupported && (
+              <button
+                onClick={toggleTorch}
+                className="p-3 bg-slate-700/80 text-white rounded-full hover:bg-slate-600 transition-colors"
+                title="Toggle flashlight"
+                aria-label="Toggle flashlight"
+              >
+                {torchOn ? '🔦' : '💡'}
+              </button>
+            )}
           </div>
         </div>
       )}

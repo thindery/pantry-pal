@@ -1,0 +1,97 @@
+[
+  {
+    "file": "upc-a-clean.png",
+    "expected": "012345678905",
+    "format": "UPC-A",
+    "degraded": false,
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "ean-13-clean.png",
+    "expected": "5901234123457",
+    "format": "EAN-13",
+    "degraded": false,
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "ean-8-clean.png",
+    "expected": "96385074",
+    "format": "EAN-8",
+    "degraded": false,
+    "width": 361,
+    "height": 282
+  },
+  {
+    "file": "upc-e-clean.png",
+    "expected": "01234565",
+    "format": "UPC-E",
+    "degraded": false,
+    "width": 300,
+    "height": 260
+  },
+  {
+    "file": "upc-a-shadow.png",
+    "expected": "012345678905",
+    "format": "UPC-A",
+    "degraded": true,
+    "degradation": "shadow",
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "ean-13-shadow.png",
+    "expected": "5901234123457",
+    "format": "EAN-13",
+    "degraded": true,
+    "degradation": "shadow",
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "ean-13-blur.png",
+    "expected": "5901234123457",
+    "format": "EAN-13",
+    "degraded": true,
+    "degradation": "blur",
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "upc-a-low-contrast.png",
+    "expected": "012345678905",
+    "format": "UPC-A",
+    "degraded": true,
+    "degradation": "low-contrast",
+    "width": 449,
+    "height": 282
+  },
+  {
+    "file": "upc-e-low-contrast.png",
+    "expected": "01234565",
+    "format": "UPC-E",
+    "degraded": true,
+    "degradation": "low-contrast",
+    "width": 300,
+    "height": 260
+  },
+  {
+    "file": "ean-8-curved.png",
+    "expected": "96385074",
+    "format": "EAN-8",
+    "degraded": true,
+    "degradation": "curved",
+    "width": 361,
+    "height": 282
+  },
+  {
+    "file": "upc-a-shadow-low-contrast.png",
+    "expected": "012345678905",
+    "format": "UPC-A",
+    "degraded": true,
+    "degradation": "shadow+low-contrast",
+    "width": 449,
+    "height": 282
+  }
+]

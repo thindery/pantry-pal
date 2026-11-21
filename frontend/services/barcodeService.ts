@@ -1,6 +1,12 @@
 import type { BarcodeProduct } from '../types';
 import { ApiError } from '@/lib/api-error';
 import { fetchApi } from './apiService';
+import {
+  createRetailReader,
+  decodeRetailTextFromCanvas,
+  drawEnhancedBarcodeFrame,
+  normalizeRetailBarcode,
+} from '@/lib/retail-barcode';
 
 const OPEN_FOOD_FACTS_API = 'https://world.openfoodfacts.org/api/v0/product';
 const UPC_ITEM_DB_API = 'https://api.upcitemdb.com/prod/trial/lookup';
@@ -329,28 +335,36 @@ export async function scanBarcodeFromImage(imageFile: File): Promise<BarcodeLook
       return { success: false, error: 'Image is too large. Max size is 10MB.' };
     }
 
-    // Dynamically import ZXing to avoid issues if camera not available
-    const { BrowserMultiFormatReader } = await import('@zxing/browser');
-
-    const reader = new BrowserMultiFormatReader();
+    const reader = createRetailReader();
     imageUrl = URL.createObjectURL(imageFile);
 
     // Preload the image to ensure it's ready for decoding
-    await preloadImage(imageUrl);
+    const image = await preloadImage(imageUrl);
+    const canvas = document.createElement('canvas');
 
-    // Try to decode the barcode
-    let result;
-    try {
-      result = await reader.decodeFromImageUrl(imageUrl);
-    } catch (_decodeErr) {
-      // If decodeFromImageUrl fails, try again with a small delay
-      // This helps with race conditions where the image isn't fully processed
-      await new Promise(resolve => setTimeout(resolve, 100));
-      result = await reader.decodeFromImageUrl(imageUrl);
+    const tryDecode = async (): Promise<string | null> => {
+      try {
+        const result = await reader.decodeFromImageUrl(imageUrl!);
+        const text = result?.getText();
+        return text ? normalizeRetailBarcode(text) : null;
+      } catch {
+        return null;
+      }
+    };
+
+    let barcode = await tryDecode();
+    if (!barcode) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      barcode = await tryDecode();
+    }
+    if (!barcode && drawEnhancedBarcodeFrame(image, canvas)) {
+      barcode = decodeRetailTextFromCanvas(reader, canvas);
+    }
+    if (!barcode && drawEnhancedBarcodeFrame(image, canvas, { invert: true })) {
+      barcode = decodeRetailTextFromCanvas(reader, canvas);
     }
 
-    if (result != null && result.getText() != null) {
-      const barcode = result.getText();
+    if (barcode) {
       console.log('Barcode detected from image:', barcode);
       return await lookupBarcode(barcode);
     }

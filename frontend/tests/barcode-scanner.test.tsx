@@ -254,12 +254,14 @@ describe("BarcodeScanner known product", () => {
 });
 
 describe("BarcodeScanner camera Quick Scan", () => {
-  async function startCameraAndEmit(barcode: string) {
+  async function startCameraAndEmit(barcode: string, times = 2) {
     fireEvent.click(screen.getByRole("button", { name: /Start Scanning/i }));
     await waitFor(() => {
       expect(zxing.callback).not.toBeNull();
     });
-    zxing.emit(barcode);
+    for (let i = 0; i < times; i++) {
+      zxing.emit(barcode);
+    }
   }
 
   it("auto-adds a recognized camera scan without an Add to Inventory card", async () => {
@@ -353,6 +355,62 @@ describe("BarcodeScanner camera Quick Scan", () => {
     fireEvent.click(screen.getByRole("button", { name: /Add to Inventory/i }));
     expect(onBarcodeDetected).toHaveBeenCalledWith(
       expect.objectContaining({ barcode: "070038626039", name: "Flour" })
+    );
+  });
+
+  it("ignores a partial camera read without looking up or showing an error", async () => {
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    await startCameraAndEmit("0123456789", 3);
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockedLookup).not.toHaveBeenCalled();
+    expect(onBarcodeDetected).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Failed to look up|Invalid barcode|error/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add to Inventory/i })).not.toBeInTheDocument();
+  });
+
+  it("does not accept a valid camera barcode until the same code is seen twice", async () => {
+    mockedLookup.mockResolvedValue({
+      success: true,
+      product: {
+        barcode: "012345678905",
+        name: "French Style Green Beans",
+        category: "pantry",
+      },
+    });
+
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    await startCameraAndEmit("012345678905", 1);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockedLookup).not.toHaveBeenCalled();
+    expect(onBarcodeDetected).not.toHaveBeenCalled();
+
+    zxing.emit("012345678905");
+    await waitFor(() =>
+      expect(onBarcodeDetected).toHaveBeenCalledWith(
+        expect.objectContaining({
+          barcode: "012345678905",
+          name: "French Style Green Beans",
+        })
+      )
     );
   });
 });
