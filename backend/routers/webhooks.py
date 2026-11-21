@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, HTTPException, Request
 
 from backend.services import stripe_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/webhooks", tags=["Webhooks"])
 
@@ -26,4 +30,5 @@ async def stripe_webhook(request: Request):
         raise HTTPException(status_code=400, detail={"received": False, "error": safe})
     except Exception:
         # Do not leak Stripe SDK / internal exception strings to clients
+        logger.exception("Webhook processing failed")
         raise HTTPException(status_code=400, detail={"received": False, "error": "Webhook processing failed"})

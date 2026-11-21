@@ -100,6 +100,7 @@ def get_price_ids() -> dict[str, Any]:
     }
 
 
+
 def _obj_get(obj: Any, key: str, default: Any = None) -> Any:
     """Read attribute from StripeObject or dict."""
     if obj is None:
@@ -107,6 +108,48 @@ def _obj_get(obj: Any, key: str, default: Any = None) -> Any:
     if isinstance(obj, dict):
         return obj.get(key, default)
     return getattr(obj, key, default)
+
+
+def _subscription_item(sub: Any) -> Any:
+    items = _obj_get(sub, "items")
+    data = _obj_get(items, "data") or []
+    return data[0] if data else None
+
+
+def _period_unix(sub: Any) -> tuple[Any, Any]:
+    """Period start/end live on the subscription item in current Stripe API versions."""
+    start = _obj_get(sub, "current_period_start")
+    end = _obj_get(sub, "current_period_end")
+    if not start or not end:
+        item = _subscription_item(sub)
+        start = start or _obj_get(item, "current_period_start")
+        end = end or _obj_get(item, "current_period_end")
+    return start, end
+
+
+def _iso_from_unix(ts: Any) -> Optional[str]:
+    if not ts:
+        return None
+    return datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat()
+
+
+def _price_id_from_sub(sub: Any) -> Optional[str]:
+    item = _subscription_item(sub)
+    price = _obj_get(item, "price")
+    if isinstance(price, str):
+        return price
+    return _obj_get(price, "id")
+
+
+def _subscription_id_from_invoice(invoice: dict[str, Any]) -> Optional[str]:
+    sub = invoice.get("subscription")
+    if isinstance(sub, dict):
+        return sub.get("id")
+    if sub:
+        return sub
+    parent = invoice.get("parent") or {}
+    details = parent.get("subscription_details") or {}
+    return details.get("subscription")
 
 
 def _find_product_for_tier(tier: str) -> Optional[Any]:
@@ -325,26 +368,22 @@ def _handle_checkout_completed(session: dict[str, Any]) -> None:
     if not user_id or not tier or not subscription_id:
         return
     sub = stripe.Subscription.retrieve(subscription_id)
-    price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else None
+    period_start, period_end = _period_unix(sub)
     update_user_subscription(
         user_id,
         {
             "tier": tier,
-            "stripeSubscriptionId": sub.id,
-            "stripePriceId": price_id,
-            "subscriptionStatus": sub.status,
-            "subscriptionStartDate": datetime.fromtimestamp(
-                sub.current_period_start, tz=timezone.utc
-            ).isoformat(),
-            "subscriptionEndDate": datetime.fromtimestamp(
-                sub.current_period_end, tz=timezone.utc
-            ).isoformat(),
+            "stripeSubscriptionId": _obj_get(sub, "id"),
+            "stripePriceId": _price_id_from_sub(sub),
+            "subscriptionStatus": _obj_get(sub, "status"),
+            "subscriptionStartDate": _iso_from_unix(period_start),
+            "subscriptionEndDate": _iso_from_unix(period_end),
         },
     )
 
 
 def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
-    subscription_id = invoice.get("subscription")
+    subscription_id = _subscription_id_from_invoice(invoice)
     if not subscription_id:
         return
     sub = stripe.Subscription.retrieve(subscription_id)
@@ -368,7 +407,7 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
 
 
 def _handle_invoice_failed(invoice: dict[str, Any]) -> None:
-    subscription_id = invoice.get("subscription")
+    subscription_id = _subscription_id_from_invoice(invoice)
     if not subscription_id:
         return
     sub = stripe.Subscription.retrieve(subscription_id)
@@ -399,21 +438,14 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
     if not user_id:
         return
     tier = (subscription.get("metadata") or {}).get("tier")
-    price_id = None
-    items = subscription.get("items", {}).get("data", [])
-    if items:
-        price_id = items[0].get("price", {}).get("id")
+    _period_start, period_end = _period_unix(subscription)
     update_user_subscription(
         user_id,
         {
             "tier": tier,
-            "stripePriceId": price_id,
+            "stripePriceId": _price_id_from_sub(subscription),
             "subscriptionStatus": subscription.get("status"),
-            "subscriptionEndDate": datetime.fromtimestamp(
-                subscription["current_period_end"], tz=timezone.utc
-            ).isoformat()
-            if subscription.get("current_period_end")
-            else None,
+            "subscriptionEndDate": _iso_from_unix(period_end),
         },
     )
 
