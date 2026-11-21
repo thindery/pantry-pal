@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Lora } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import VersionUpdateToast from "@/components/VersionUpdateToast";
@@ -16,15 +16,20 @@ import {
   WebSiteSchema,
 } from "@/components/SchemaMarkup";
 
-const inter = Inter({
+const inter = localFont({
+  src: "../fonts/inter-latin-variable.woff2",
   variable: "--font-sans",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
 });
 
-const lora = Lora({
+const lora = localFont({
+  src: [
+    { path: "../fonts/lora-latin-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/lora-latin-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-serif",
-  subsets: ["latin"],
-  weight: ["600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-078 webhook period fields)
+Last updated: 2026-11-21 (PP-079 self-host fonts + fail-loud deploy)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -154,6 +154,7 @@ Last updated: 2026-11-21 (PP-078 webhook period fields)
 | PP-076 | Quick Scan mode on the Scan Barcode screen | P1 | ✅ Done |
 | PP-077 | Enable Stripe promotion codes on Checkout | P1 | ✅ Done |
 | PP-078 | Fix Stripe webhook crash on current period fields | P0 | ✅ Done |
+| PP-079 | Self-host fonts and fail loudly on deploy build errors | P1 | ✅ Done |
 
 ## Verification
 

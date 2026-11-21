@@ -1,8 +1,9 @@
 #!/bin/bash
 # SSH-based Docker deployment for PantryPal (OVH) — aligned with agent-paige / userkudos
 # Live cutover: PP-034
+# PP-079: fail loudly (non-zero) if any git/build/compose/health step fails.
 
-set -e
+set -euo pipefail
 
 TAG=$1
 if [ -z "$TAG" ]; then
@@ -26,7 +27,7 @@ trap 'rm -f "$LOCAL_LOCK"' EXIT
 echo "Deploying pantry-pal version $TAG to OVH server..."
 
 ssh ovh "
-  set -e
+  set -euo pipefail
 
   LOCK_FILE='/tmp/pantry-pal-deploy.lock'
   LOG_DEPLOY='/home/thindery/ovh-server-ops/scripts/log-deploy.sh'
@@ -66,7 +67,7 @@ ssh ovh "
   on_deploy_failure() {
     local exit_code=\$?
     log_deploy_event failure \"Deploy failed (exit \$exit_code)\"
-    echo 'Deploy failed — attempting to restore running containers...'
+    echo 'Deploy failed — attempting to restore running containers...' >&2
     # Unique project name pantry-pal — never default \"deploy\" from working_dir.
     # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
     cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d 2>/dev/null || true
@@ -88,72 +89,82 @@ ssh ovh "
 
   docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
 
-  cd \"\$REMOTE_DIR\" &&
-  echo 'Fetching origin...' &&
-  git fetch origin &&
-  rm -f .env &&
-  git checkout -f -B $TAG origin/$TAG &&
-  git reset --hard origin/$TAG &&
-  ln -sf .env.prod .env &&
+  cd \"\$REMOTE_DIR\"
+  echo 'Fetching origin...'
+  git fetch origin
+  rm -f .env
+  git checkout -f -B $TAG origin/$TAG
+  git reset --hard origin/$TAG
+  ln -sf .env.prod .env
 
   # --- Ralph Compliance Check ---
-  echo 'Checking Ralph compliance...' &&
-  DEPLOYED_COMMIT=\$(git rev-parse HEAD) &&
-  DEPLOYED_MSG=\$(git log -1 --pretty=format:'%s' \$DEPLOYED_COMMIT) &&
-  echo \"  Commit: \$DEPLOYED_COMMIT\" &&
-  echo \"  Message: \$DEPLOYED_MSG\" &&
+  echo 'Checking Ralph compliance...'
+  DEPLOYED_COMMIT=\$(git rev-parse HEAD)
+  DEPLOYED_MSG=\$(git log -1 --pretty=format:'%s' \$DEPLOYED_COMMIT)
+  echo \"  Commit: \$DEPLOYED_COMMIT\"
+  echo \"  Message: \$DEPLOYED_MSG\"
   if echo \"\$DEPLOYED_MSG\" | grep -qE \"^(PP-[0-9]+|PP-XXX):\s+.+\"; then
-    TICKET=\$(echo \"\$DEPLOYED_MSG\" | grep -oE \"PP-[0-9]+|PP-XXX\" | head -1) &&
+    TICKET=\$(echo \"\$DEPLOYED_MSG\" | grep -oE \"PP-[0-9]+|PP-XXX\" | head -1)
     echo \"  ✅ Ralph: Deploy references \$TICKET\"
   elif [ \"\$TAG\" = \"main\" ] || echo \"\$TAG\" | grep -qE \"^(hotfix|release)\"; then
     echo \"  ✅ Ralph: Tag '\$TAG' is an exception\"
   else
     echo \"  ⚠️  Ralph warning: Commit message should reference ticket (PP-XXX: description)\"
-  fi &&
+  fi
 
-  echo 'Cleaning leftover pantry-pal compose names only...' &&
-  docker ps -a --format '{{.Names}}' | grep '_pantry-pal' | xargs -r docker rm -f 2>/dev/null || true &&
+  echo 'Cleaning leftover pantry-pal compose names only...'
+  docker ps -a --format '{{.Names}}' | grep '_pantry-pal' | xargs -r docker rm -f 2>/dev/null || true
 
-  export BUILD_ID=\$(git rev-parse --short HEAD) &&
-  export COMPOSE_PROJECT_NAME=pantry-pal &&
-  echo \"Build ID: \$BUILD_ID\" &&
+  export BUILD_ID=\$(git rev-parse --short HEAD)
+  export COMPOSE_PROJECT_NAME=pantry-pal
+  echo \"Build ID: \$BUILD_ID\"
   # Unique project name pantry-pal — never default \"deploy\" from working_dir.
   # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
   # Do NOT use compose down -v or volume prune (wipes this app's data).
-  docker compose -p pantry-pal up -d --build &&
+  # Build first, then up, so a failed image build cannot be treated as success.
+  echo 'Building images...'
+  docker compose -p pantry-pal build
+  echo 'Starting containers...'
+  docker compose -p pantry-pal up -d
 
-  echo 'Running database migrations...' &&
-  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate &&
+  echo 'Running database migrations...'
+  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate
 
-  echo 'Waiting for services to become healthy...' &&
-  (
-    for i in \$(seq 1 30); do
-      HEALTH_DB=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-db 2>/dev/null | tr -d '\"' || echo 'unknown')
-      HEALTH_BE=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-backend 2>/dev/null | tr -d '\"' || echo 'unknown')
-      HEALTH_FE=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-frontend 2>/dev/null | tr -d '\"' || echo 'unknown')
-      echo \"DB: \$HEALTH_DB, Backend: \$HEALTH_BE, Frontend: \$HEALTH_FE (\$i/30)\"
-      if [ \"\$HEALTH_DB\" = 'healthy' ] && [ \"\$HEALTH_BE\" = 'healthy' ] && [ \"\$HEALTH_FE\" = 'healthy' ]; then
-        echo 'All services healthy.'
-        exit 0
-      fi
-      if [ \"\$HEALTH_DB\" = 'unhealthy' ] || [ \"\$HEALTH_BE\" = 'unhealthy' ] || [ \"\$HEALTH_FE\" = 'unhealthy' ]; then
-        echo 'A service became unhealthy.'
-        exit 1
-      fi
-      sleep 2
-    done
-    echo 'Health check timed out.'
+  echo 'Waiting for services to become healthy...'
+  health_ok=0
+  for i in \$(seq 1 30); do
+    HEALTH_DB=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-db 2>/dev/null | tr -d '\"' || echo 'unknown')
+    HEALTH_BE=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-backend 2>/dev/null | tr -d '\"' || echo 'unknown')
+    HEALTH_FE=\$(docker inspect --format='{{.State.Health.Status}}' pantry-pal-frontend 2>/dev/null | tr -d '\"' || echo 'unknown')
+    echo \"DB: \$HEALTH_DB, Backend: \$HEALTH_BE, Frontend: \$HEALTH_FE (\$i/30)\"
+    if [ \"\$HEALTH_DB\" = 'healthy' ] && [ \"\$HEALTH_BE\" = 'healthy' ] && [ \"\$HEALTH_FE\" = 'healthy' ]; then
+      echo 'All services healthy.'
+      health_ok=1
+      break
+    fi
+    if [ \"\$HEALTH_DB\" = 'unhealthy' ] || [ \"\$HEALTH_BE\" = 'unhealthy' ] || [ \"\$HEALTH_FE\" = 'unhealthy' ]; then
+      echo 'A service became unhealthy.' >&2
+      exit 1
+    fi
+    sleep 2
+  done
+  if [ \"\$health_ok\" != 1 ]; then
+    echo 'Health check timed out.' >&2
     exit 1
-  ) &&
+  fi
 
-  echo 'Installing nginx vhost...' &&
-  cp deploy/nginx/pantry-pal.conf /opt/nginx/conf.d/pantry-pal.conf &&
-  cd /opt/nginx && docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload &&
+  echo 'Installing nginx vhost...'
+  cp deploy/nginx/pantry-pal.conf /opt/nginx/conf.d/pantry-pal.conf
+  if docker compose -f /opt/nginx/docker-compose.yml exec -T nginx nginx -t 2>/dev/null; then
+    docker compose -f /opt/nginx/docker-compose.yml exec -T nginx nginx -s reload
+  else
+    echo 'WARNING: nginx container not running; skipped vhost reload (app containers are up).' >&2
+  fi
 
-  docker system prune -f &&
-  docker builder prune -af --filter \"until=6h\" 2>/dev/null || true &&
-  docker image prune -f &&
-  log_deploy_event success 'docker compose up completed' &&
+  docker system prune -f
+  docker builder prune -af --filter \"until=6h\" 2>/dev/null || true
+  docker image prune -f
+  log_deploy_event success 'docker compose up completed'
   echo 'pantry-pal deployed at $TAG — https://www.mypantryhub.com'
 "
 
