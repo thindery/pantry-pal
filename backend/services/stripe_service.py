@@ -274,6 +274,7 @@ async def create_checkout_session(
         customer=customer_id,
         line_items=[{"price": price_id, "quantity": 1}],
         mode="subscription",
+        allow_promotion_codes=True,
         subscription_data={"metadata": {"userId": user_id, "tier": tier}},
         success_url=success_url,
         cancel_url=cancel_url,

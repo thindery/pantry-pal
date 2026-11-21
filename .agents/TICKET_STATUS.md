@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-075 name fix + PP-076 quick scan)
+Last updated: 2026-11-21 (PP-077 checkout promotion codes)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -152,6 +152,7 @@ Last updated: 2026-11-21 (PP-075 name fix + PP-076 quick scan)
 |--------|-------|----------|--------|
 | PP-075 | Barcode scan manual name commits after first letter | P1 | ✅ Done |
 | PP-076 | Quick Scan mode on the Scan Barcode screen | P1 | ✅ Done |
+| PP-077 | Enable Stripe promotion codes on Checkout | P1 | ✅ Done |
 
 ## Verification
 
