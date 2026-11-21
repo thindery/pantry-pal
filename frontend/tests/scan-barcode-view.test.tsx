@@ -1,41 +1,135 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ScanBarcodeView } from "@/components/dashboard/views/scan-barcode-view";
 import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct } from "@/types";
 
+const knownProduct: BarcodeProduct = {
+  barcode: "012345678905",
+  name: "Canned Beans",
+  category: "pantry",
+};
+
+const unknownProduct: BarcodeProduct = {
+  barcode: "070038626039",
+  name: "",
+  category: "other",
+};
+
 vi.mock("@/components/BarcodeScanner", () => ({
   default: function BarcodeScannerMock({
     onBarcodeDetected,
+    quickScan = true,
+    onQuickScanChange,
+    onCancel,
   }: {
     onBarcodeDetected: (product: BarcodeProduct) => void;
+    quickScan?: boolean;
+    onQuickScanChange?: (enabled: boolean) => void;
+    onCancel?: () => void;
   }) {
+    const [pendingKnown, setPendingKnown] = React.useState<BarcodeProduct | null>(null);
+    const [showUnknownInput, setShowUnknownInput] = React.useState(false);
+    const [unknownName, setUnknownName] = React.useState("");
+
     return (
       <div data-testid="barcode-scanner">
-        <button
-          data-testid="simulate-scan"
-          onClick={() =>
-            onBarcodeDetected({
-              barcode: "070038626039",
-              name: "",
-              category: "other",
-            })
-          }
-        >
-          Simulate unknown barcode
-        </button>
-        <button
-          data-testid="simulate-known-scan"
-          onClick={() =>
-            onBarcodeDetected({
-              barcode: "012345678905",
-              name: "Canned Beans",
-              category: "pantry",
-            })
-          }
-        >
-          Simulate known barcode
-        </button>
+        {onCancel && (
+          <button data-testid="cancel-scan" onClick={onCancel}>
+            Cancel
+          </button>
+        )}
+
+        <label>
+          <input
+            type="checkbox"
+            data-testid="quick-scan-toggle"
+            checked={quickScan}
+            onChange={(e) => onQuickScanChange?.(e.target.checked)}
+          />
+          Quick Scan
+        </label>
+
+        {!pendingKnown && !showUnknownInput && (
+          <>
+            <button
+              data-testid="simulate-known-scan"
+              onClick={() => {
+                if (quickScan) {
+                  onBarcodeDetected(knownProduct);
+                } else {
+                  setPendingKnown(knownProduct);
+                }
+              }}
+            >
+              Simulate known barcode
+            </button>
+            <button
+              data-testid="simulate-scan"
+              onClick={() => setShowUnknownInput(true)}
+            >
+              Simulate unknown barcode
+            </button>
+          </>
+        )}
+
+        {pendingKnown && (
+          <div data-testid="confirm-card">
+            <p>{pendingKnown.name}</p>
+            <button
+              data-testid="confirm-add"
+              onClick={() => {
+                onBarcodeDetected(pendingKnown);
+                setPendingKnown(null);
+              }}
+            >
+              Add to Inventory
+            </button>
+            <button
+              data-testid="rescan"
+              onClick={() => setPendingKnown(null)}
+            >
+              Scan Again
+            </button>
+          </div>
+        )}
+
+        {showUnknownInput && (
+          <div data-testid="unknown-name-card">
+            <input
+              data-testid="unknown-name-input"
+              value={unknownName}
+              onChange={(e) => setUnknownName(e.target.value)}
+              placeholder="Enter product name"
+            />
+            <div className="flex gap-2">
+              <button
+                data-testid="add-unknown"
+                disabled={!unknownName.trim()}
+                onClick={() => {
+                  onBarcodeDetected({
+                    ...unknownProduct,
+                    name: unknownName.trim(),
+                  });
+                  setShowUnknownInput(false);
+                  setUnknownName("");
+                }}
+              >
+                Add to Inventory
+              </button>
+              <button
+                data-testid="unknown-rescan"
+                onClick={() => {
+                  setShowUnknownInput(false);
+                  setUnknownName("");
+                }}
+              >
+                Scan Again
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   },
@@ -50,14 +144,126 @@ const mockSuccess = vi.fn();
 const mockError = vi.fn();
 const mockRouterPush = vi.fn();
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  writable: true,
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
+  mockHandleSaveScannedProduct.mockResolvedValue(undefined);
   (usePantry as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
     handleSaveScannedProduct: mockHandleSaveScannedProduct,
     success: mockSuccess,
     error: mockError,
     router: { push: mockRouterPush },
     inventory: [],
+  });
+  localStorage.clear();
+});
+
+describe("ScanBarcodeView Quick Scan persistence", () => {
+  it("defaults Quick Scan to ON for first-time visitors", () => {
+    render(<ScanBarcodeView />);
+    expect(screen.getByTestId("quick-scan-toggle")).toBeChecked();
+  });
+
+  it("restores the saved Quick Scan preference from localStorage", () => {
+    localStorage.setItem("pantry-quick-scan", "false");
+    render(<ScanBarcodeView />);
+    expect(screen.getByTestId("quick-scan-toggle")).not.toBeChecked();
+  });
+
+  it("persists Quick Scan changes to localStorage", () => {
+    render(<ScanBarcodeView />);
+    const toggle = screen.getByTestId("quick-scan-toggle");
+    expect(toggle).toBeChecked();
+
+    fireEvent.click(toggle);
+    expect(localStorage.getItem("pantry-quick-scan")).toBe("false");
+
+    fireEvent.click(toggle);
+    expect(localStorage.getItem("pantry-quick-scan")).toBe("true");
+  });
+});
+
+describe("ScanBarcodeView Quick Scan on", () => {
+  it("auto-adds a known product and shows a toast", async () => {
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1)
+    );
+
+    expect(mockHandleSaveScannedProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barcode: "012345678905",
+        name: "Canned Beans",
+        category: "pantry",
+      }),
+      1
+    );
+
+    expect(screen.getByText("Added Canned Beans")).toBeInTheDocument();
+    expect(screen.getByText(/1 unit/i)).toBeInTheDocument();
+  });
+
+  it("does not add the same barcode twice within the debounce window", async () => {
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1)
+    );
+
+    // Second click should have been ignored by the 3-second debounce
+    expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ScanBarcodeView Quick Scan off", () => {
+  it("shows a confirm card for known products instead of auto-adding", async () => {
+    localStorage.setItem("pantry-quick-scan", "false");
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+
+    expect(await screen.findByTestId("confirm-card")).toBeInTheDocument();
+    expect(mockHandleSaveScannedProduct).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId("confirm-add"));
+
+    await waitFor(() =>
+      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1)
+    );
+    expect(mockHandleSaveScannedProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barcode: "012345678905",
+        name: "Canned Beans",
+        category: "pantry",
+      }),
+      1
+    );
   });
 });
 
@@ -67,7 +273,7 @@ describe("ScanBarcodeView unknown product naming", () => {
 
     fireEvent.click(screen.getByTestId("simulate-scan"));
 
-    const input = await screen.findByPlaceholderText("Enter product name");
+    const input = await screen.findByTestId("unknown-name-input");
     expect(input).toBeInTheDocument();
 
     fireEvent.change(input, { target: { value: "F" } });
@@ -78,7 +284,7 @@ describe("ScanBarcodeView unknown product naming", () => {
 
     expect(mockHandleSaveScannedProduct).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: /Add Product/i }));
+    fireEvent.click(screen.getByTestId("add-unknown"));
 
     await waitFor(() =>
       expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1)
@@ -98,9 +304,9 @@ describe("ScanBarcodeView unknown product naming", () => {
     render(<ScanBarcodeView />);
 
     fireEvent.click(screen.getByTestId("simulate-scan"));
-    await screen.findByPlaceholderText("Enter product name");
+    await screen.findByTestId("unknown-name-input");
 
-    const addButton = screen.getByRole("button", { name: /Add Product/i });
+    const addButton = screen.getByTestId("add-unknown");
     expect(addButton).toBeDisabled();
 
     fireEvent.click(addButton);
@@ -111,13 +317,13 @@ describe("ScanBarcodeView unknown product naming", () => {
     render(<ScanBarcodeView />);
 
     fireEvent.click(screen.getByTestId("simulate-scan"));
-    const input = await screen.findByPlaceholderText("Enter product name");
+    const input = await screen.findByTestId("unknown-name-input");
 
     fireEvent.change(input, { target: { value: "Flour" } });
-    fireEvent.click(screen.getByRole("button", { name: /Cancel/i }));
+    fireEvent.click(screen.getByTestId("unknown-rescan"));
 
     await waitFor(() =>
-      expect(screen.queryByPlaceholderText("Enter product name")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("unknown-name-card")).not.toBeInTheDocument()
     );
 
     expect(mockHandleSaveScannedProduct).not.toHaveBeenCalled();
@@ -139,6 +345,6 @@ describe("ScanBarcodeView unknown product naming", () => {
       }),
       1
     );
-    expect(screen.queryByPlaceholderText("Enter product name")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("unknown-name-card")).not.toBeInTheDocument();
   });
 });

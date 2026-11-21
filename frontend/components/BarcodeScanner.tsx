@@ -7,12 +7,19 @@ interface BarcodeScannerProps {
   onBarcodeDetected: (product: BarcodeProduct) => void;
   onCancel: () => void;
   autoStart?: boolean;
+  quickScan?: boolean;
+  onQuickScanChange?: (enabled: boolean) => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCancel, autoStart = false }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
+  onBarcodeDetected,
+  onCancel,
+  autoStart = false,
+  quickScan = true,
+  onQuickScanChange,
+}) => {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [manualBarcode, setManualBarcode] = useState('');
@@ -27,6 +34,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const streamRef = useRef<MediaStream | null>(null);
   const isScanningRef = useRef(false);
   const isLoadingRef = useRef(false);
+  const quickScanRef = useRef(quickScan);
+  const lastCameraScanRef = useRef<{ barcode: string; at: number } | null>(null);
+
+  useEffect(() => {
+    quickScanRef.current = quickScan;
+  }, [quickScan]);
 
   // Auto-start scanning when component mounts with autoStart
   // Browsers require a user gesture for getUserMedia, so we try once on mount
@@ -70,7 +83,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
   const startScanning = async () => {
     setError(null);
-    setScannedBarcode(null);
     setDetectedProduct(null);
 
     try {
@@ -114,7 +126,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         if (result != null && (result as { getText(): string }).getText() != null) {
           const barcode = (result as { getText(): string }).getText();
           console.log('Camera scan detected barcode:', barcode);
-          handleBarcodeDetected(barcode);
+          handleBarcodeDetected(barcode, true);
         }
       });
     } catch {
@@ -127,12 +139,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     }
   };
 
-  const handleBarcodeDetected = async (barcode: string) => {
-    // Prevent multiple scans of the same barcode
-    if (scannedBarcode === barcode || isLoading) return;
+  const handleBarcodeDetected = async (barcode: string, fromCamera = false) => {
+    // Prevent multiple scans of the same barcode while the camera is active.
+    // Manual entry is intentional, so allow repeats there. Use refs so a stale
+    // startScanning closure cannot skip the debounce or ignore a toggle change.
+    if (fromCamera) {
+      if (isLoadingRef.current) return;
+      const last = lastCameraScanRef.current;
+      if (last && last.barcode === barcode && Date.now() - last.at < 3000) return;
+      lastCameraScanRef.current = { barcode, at: Date.now() };
+    }
 
     console.log('Processing barcode:', barcode);
-    setScannedBarcode(barcode);
     setIsLoading(true);
     setError(null);
     setUnknownNameInput('');
@@ -145,6 +163,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       console.log('Barcode lookup result:', result);
 
       if (Boolean(result.success) && result.product != null) {
+        if (quickScanRef.current && fromCamera) {
+          // Quick Scan: add known products immediately and resume scanning
+          onBarcodeDetected(result.product);
+          startScanning();
+          return;
+        }
         setDetectedProduct(result.product);
       } else {
         // Unknown barcode - allow manual entry
@@ -177,7 +201,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     console.log('Processing image upload:', file.name, file.type, file.size);
     setError(null);
     setIsLoading(true);
-    setScannedBarcode(null);
     setDetectedProduct(null);
 
     try {
@@ -213,7 +236,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     if (!manualBarcode.trim()) return;
 
     setShowManualEntry(false);
-    await handleBarcodeDetected(manualBarcode.trim());
+    await handleBarcodeDetected(manualBarcode.trim(), false);
   };
 
   const handleConfirmProduct = () => {
@@ -229,14 +252,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     // Reset for next scan
     setDetectedProduct(null);
     setUnknownNameInput('');
-    setScannedBarcode(null);
     startScanning();
   };
 
   const handleRescan = () => {
     setDetectedProduct(null);
     setUnknownNameInput('');
-    setScannedBarcode(null);
     setError(null);
     startScanning();
   };
@@ -273,9 +294,22 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
 
       <div className="text-center">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">📱 Scan Barcode</h2>
-        <p className="text-slate-500">
+        <p className="text-slate-500 mb-4">
           Point camera at a barcode to add an item
         </p>
+
+        {/* Quick Scan toggle */}
+        <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+          <span className="text-sm font-medium text-slate-700">Quick Scan</span>
+          <input
+            type="checkbox"
+            checked={quickScan}
+            onChange={(e) => onQuickScanChange?.(e.target.checked)}
+            className="sr-only peer"
+            aria-label="Toggle Quick Scan"
+          />
+          <div className="relative w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+        </label>
       </div>
 
       {error != null && (
@@ -349,7 +383,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
           {/* Controls */}
           <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
             <button
-              onClick={isScanning ? stopScanning : startScanning}
+              onClick={() => {
+                if (isScanning) {
+                  stopScanning();
+                } else {
+                  startScanning();
+                }
+              }}
               className={`px-6 py-3 rounded-full font-bold transition-all ${
                 isScanning
                   ? 'bg-rose-500 text-white hover:bg-rose-600'

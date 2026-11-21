@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-075 barcode manual name)
+Last updated: 2026-11-21 (PP-075 name fix + PP-076 quick scan)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -151,6 +151,7 @@ Last updated: 2026-11-21 (PP-075 barcode manual name)
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-075 | Barcode scan manual name commits after first letter | P1 | ✅ Done |
+| PP-076 | Quick Scan mode on the Scan Barcode screen | P1 | ✅ Done |
 
 ## Verification
 

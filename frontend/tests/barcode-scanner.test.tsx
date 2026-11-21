@@ -1,11 +1,29 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { lookupBarcode } from "@/services/barcodeService";
 
+const zxing = vi.hoisted(() => {
+  const state: {
+    callback: ((result: { getText: () => string } | null, err: unknown) => void) | null;
+    emit: (text: string) => void;
+  } = {
+    callback: null,
+    emit: (text: string) => {
+      state.callback?.({ getText: () => text }, null);
+    },
+  };
+  return state;
+});
+
 vi.mock("@zxing/browser", () => ({
   BrowserMultiFormatReader: class {
-    decodeFromVideoElement() {}
+    decodeFromVideoElement(
+      _el: unknown,
+      cb: (result: { getText: () => string } | null, err: unknown) => void
+    ) {
+      zxing.callback = cb;
+    }
   },
 }));
 
@@ -18,7 +36,24 @@ const mockedLookup = lookupBarcode as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  zxing.callback = null;
   mockedLookup.mockResolvedValue({ success: false, product: null });
+  vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+  Object.defineProperty(navigator, "mediaDevices", {
+    configurable: true,
+    value: {
+      getUserMedia: vi.fn().mockResolvedValue({
+        getTracks: () => [{ stop: vi.fn() }],
+        getVideoTracks: () => [
+          { stop: vi.fn(), getCapabilities: () => ({}), applyConstraints: vi.fn() },
+        ],
+      }),
+    },
+  });
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 async function lookupUnknownBarcode() {
@@ -107,6 +142,77 @@ describe("BarcodeScanner unknown product naming", () => {
   });
 });
 
+describe("BarcodeScanner Quick Scan toggle", () => {
+  function renderWithToggle() {
+    const onQuickScanChange = vi.fn();
+    const result = render(
+      <BarcodeScanner
+        onBarcodeDetected={vi.fn()}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+        onQuickScanChange={onQuickScanChange}
+      />
+    );
+    return { ...result, onQuickScanChange };
+  }
+
+  it("renders a Quick Scan toggle that defaults to on", () => {
+    renderWithToggle();
+    const toggle = screen.getByRole("checkbox", { name: /Toggle Quick Scan/i });
+    expect(toggle).toBeChecked();
+  });
+
+  it("notifies the parent when the toggle is changed", () => {
+    const { onQuickScanChange } = renderWithToggle();
+    const toggle = screen.getByRole("checkbox", { name: /Toggle Quick Scan/i });
+
+    fireEvent.click(toggle);
+    expect(onQuickScanChange).toHaveBeenCalledWith(false);
+  });
+});
+
+describe("BarcodeScanner manual entry with Quick Scan on", () => {
+  it("still shows the confirm-card preview for manually typed known barcodes", async () => {
+    mockedLookup.mockResolvedValue({
+      success: true,
+      product: {
+        barcode: "012345678905",
+        name: "Canned Beans",
+        category: "pantry",
+      },
+    });
+
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Type Barcode/i }));
+    fireEvent.change(screen.getByPlaceholderText("e.g., 012345678905"), {
+      target: { value: "012345678905" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Look Up Product/i }));
+
+    expect(await screen.findByText("Canned Beans")).toBeInTheDocument();
+    expect(onBarcodeDetected).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Add to Inventory/i }));
+    expect(onBarcodeDetected).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barcode: "012345678905",
+        name: "Canned Beans",
+        category: "pantry",
+      })
+    );
+  });
+});
+
 describe("BarcodeScanner known product", () => {
   it("shows the looked-up name and confirms without a custom-name field", async () => {
     mockedLookup.mockResolvedValue({
@@ -146,3 +252,108 @@ describe("BarcodeScanner known product", () => {
     );
   });
 });
+
+describe("BarcodeScanner camera Quick Scan", () => {
+  async function startCameraAndEmit(barcode: string) {
+    fireEvent.click(screen.getByRole("button", { name: /Start Scanning/i }));
+    await waitFor(() => {
+      expect(zxing.callback).not.toBeNull();
+    });
+    zxing.emit(barcode);
+  }
+
+  it("auto-adds a recognized camera scan without an Add to Inventory card", async () => {
+    mockedLookup.mockResolvedValue({
+      success: true,
+      product: {
+        barcode: "012345678905",
+        name: "French Style Green Beans",
+        category: "pantry",
+      },
+    });
+
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    await startCameraAndEmit("012345678905");
+
+    await waitFor(() =>
+      expect(onBarcodeDetected).toHaveBeenCalledWith(
+        expect.objectContaining({
+          barcode: "012345678905",
+          name: "French Style Green Beans",
+        })
+      )
+    );
+    expect(screen.queryByRole("button", { name: /Add to Inventory/i })).not.toBeInTheDocument();
+  });
+
+  it("debounces the same camera barcode within 3 seconds", async () => {
+    mockedLookup.mockResolvedValue({
+      success: true,
+      product: {
+        barcode: "012345678905",
+        name: "French Style Green Beans",
+        category: "pantry",
+      },
+    });
+
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    await startCameraAndEmit("012345678905");
+    await waitFor(() => expect(onBarcodeDetected).toHaveBeenCalledTimes(1));
+
+    // Camera resumes; emit the same code again immediately
+    await waitFor(() => {
+      expect(zxing.callback).not.toBeNull();
+    });
+    zxing.emit("012345678905");
+
+    // Give the lookup a chance to run if debounce failed
+    await new Promise((r) => setTimeout(r, 50));
+    expect(onBarcodeDetected).toHaveBeenCalledTimes(1);
+  });
+
+  it("pauses for a full manual name when the camera hits an unknown barcode", async () => {
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+      />
+    );
+
+    await startCameraAndEmit("070038626039");
+
+    const input = await screen.findByPlaceholderText("Enter product name");
+    fireEvent.change(input, { target: { value: "F" } });
+    expect(screen.getByPlaceholderText("Enter product name")).toHaveValue("F");
+    fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+      target: { value: "Flour" },
+    });
+    expect(onBarcodeDetected).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Add to Inventory/i }));
+    expect(onBarcodeDetected).toHaveBeenCalledWith(
+      expect.objectContaining({ barcode: "070038626039", name: "Flour" })
+    );
+  });
+});
+

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct } from "@/types";
 import { ApiError } from "@/services/apiService";
+
+const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
 
 interface ScanToast {
   id: string;
@@ -25,9 +27,27 @@ export function ScanBarcodeView() {
   const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
   const [isSavingUnknown, setIsSavingUnknown] = useState(false);
   const [unknownProductName, setUnknownProductName] = useState("");
+  const [quickScan, setQuickScan] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const stored = localStorage.getItem(QUICK_SCAN_STORAGE_KEY);
+      return stored !== "false";
+    } catch {
+      return true;
+    }
+  });
   
   // Track recently scanned barcodes to prevent duplicates within 3 seconds
   const recentScansRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(QUICK_SCAN_STORAGE_KEY, String(quickScan));
+    } catch {
+      // Ignore storage errors (e.g. private mode)
+    }
+  }, [quickScan]);
 
   const removeScanToast = useCallback((id: string) => {
     setScanToasts((prev) => prev.filter((t) => t.id !== id));
@@ -77,7 +97,7 @@ export function ScanBarcodeView() {
           t.id === toastId ? { ...t, quantity: currentQty + 1 } : t
         )
       );
-    } catch (err) {
+    } catch (_err) {
       showError("Failed to update quantity");
     }
   }, [handleSaveScannedProduct, showError]);
@@ -121,6 +141,8 @@ export function ScanBarcodeView() {
     <div className="relative min-h-screen">
       <BarcodeScanner
         autoStart
+        quickScan={quickScan}
+        onQuickScanChange={setQuickScan}
         onBarcodeDetected={handleScan}
         onCancel={() => router.push("/dashboard/")}
       />
@@ -145,10 +167,10 @@ export function ScanBarcodeView() {
             )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">
-                {toast.product.name}
+                Added {toast.product.name}
               </p>
               <p className="text-xs text-slate-400">
-                Added {toast.quantity} {toast.quantity === 1 ? "unit" : "units"}
+                {toast.quantity} {toast.quantity === 1 ? "unit" : "units"}
               </p>
             </div>
             <div className="flex items-center gap-1">
