@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-07-24 (PP-068/070/071/073/074 security hygiene)
+Last updated: 2026-11-21 (PP-075 barcode manual name)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -144,6 +144,13 @@ Last updated: 2026-07-24 (PP-068/070/071/073/074 security hygiene)
 **Ship:** Deploy main so production picks up PP-065–074 (nginx require-cloudflare, TRUST_PROXY=1, security.txt).
 
 ---
+
+
+## User-reported bugs
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-075 | Barcode scan manual name commits after first letter | P1 | ✅ Done |
 
 ## Verification
 

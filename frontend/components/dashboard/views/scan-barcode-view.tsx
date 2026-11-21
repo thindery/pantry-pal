@@ -41,8 +41,9 @@ export function ScanBarcodeView() {
     recentScansRef.current.add(product.barcode);
     setTimeout(() => recentScansRef.current.delete(product.barcode), 3000);
 
-    // Unknown product (no name) - show modal
+    // Unknown product (no name) - show modal and reset any stale name
     if (!product.name || product.name.trim() === "") {
+      setUnknownProductName("");
       setUnknownProduct(product);
       return;
     }
@@ -104,6 +105,17 @@ export function ScanBarcodeView() {
       setIsSavingUnknown(false);
     }
   }, [unknownProduct, unknownProductName, handleSaveScannedProduct, success, showError]);
+
+  // Commit unknown-product name on explicit Enter key in the modal input
+  const handleUnknownNameKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && unknownProductName.trim()) {
+        e.preventDefault();
+        handleSaveUnknownProduct();
+      }
+    },
+    [unknownProductName, handleSaveUnknownProduct]
+  );
 
   return (
     <div className="relative min-h-screen">
@@ -194,6 +206,7 @@ export function ScanBarcodeView() {
               type="text"
               value={unknownProductName}
               onChange={(e) => setUnknownProductName(e.target.value)}
+              onKeyDown={handleUnknownNameKeyDown}
               placeholder="Enter product name"
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none mb-4"
               autoFocus

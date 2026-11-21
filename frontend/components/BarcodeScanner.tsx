@@ -19,6 +19,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [detectedProduct, setDetectedProduct] = useState<BarcodeProduct | null>(null);
   const [torchOn, setTorchOn] = useState(false);
+  const [unknownNameInput, setUnknownNameInput] = useState('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,6 +135,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
     setScannedBarcode(barcode);
     setIsLoading(true);
     setError(null);
+    setUnknownNameInput('');
 
     // Pause scanning temporarily
     stopScanning();
@@ -146,6 +148,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         setDetectedProduct(result.product);
       } else {
         // Unknown barcode - allow manual entry
+        setUnknownNameInput('');
         setDetectedProduct({
           barcode,
           name: '',
@@ -156,6 +159,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
       console.error('Error looking up barcode:', err);
       setError('Failed to look up product information. Please check your connection and try again.');
       // Still allow manual entry with the barcode
+      setUnknownNameInput('');
       setDetectedProduct({
         barcode,
         name: '',
@@ -184,6 +188,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
         setDetectedProduct(result.product);
       } else if (result.product?.barcode) {
         // Barcode found but lookup failed
+        setUnknownNameInput('');
         setDetectedProduct({
           barcode: result.product!.barcode,
           name: '',
@@ -212,17 +217,25 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
   };
 
   const handleConfirmProduct = () => {
-    if (detectedProduct != null) {
-      onBarcodeDetected(detectedProduct);
-      // Reset for next scan
-      setDetectedProduct(null);
-      setScannedBarcode(null);
-      startScanning();
-    }
+    if (detectedProduct == null) return;
+
+    const finalProduct = detectedProduct.name
+      ? detectedProduct
+      : { ...detectedProduct, name: unknownNameInput.trim() };
+
+    if (!finalProduct.name) return;
+
+    onBarcodeDetected(finalProduct);
+    // Reset for next scan
+    setDetectedProduct(null);
+    setUnknownNameInput('');
+    setScannedBarcode(null);
+    startScanning();
   };
 
   const handleRescan = () => {
     setDetectedProduct(null);
+    setUnknownNameInput('');
     setScannedBarcode(null);
     setError(null);
     startScanning();
@@ -422,7 +435,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
             {detectedProduct.image ? (
               <img
                 src={detectedProduct.image}
-                alt={detectedProduct.name}
+                alt={detectedProduct.name || 'Unknown Product'}
                 className="w-24 h-24 object-contain bg-slate-50 rounded-xl"
               />
             ) : (
@@ -460,8 +473,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
               </p>
               <input
                 type="text"
-                value={detectedProduct.name}
-                onChange={(e) => setDetectedProduct({ ...detectedProduct, name: e.target.value })}
+                value={unknownNameInput}
+                onChange={(e) => setUnknownNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && unknownNameInput.trim()) {
+                    e.preventDefault();
+                    handleConfirmProduct();
+                  }
+                }}
                 placeholder="Enter product name"
                 className="w-full mt-2 px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
               />
@@ -471,7 +490,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onBarcodeDetected, onCa
           <div className="flex gap-3">
             <button
               onClick={handleConfirmProduct}
-              disabled={!detectedProduct.name}
+              disabled={!detectedProduct.name && !unknownNameInput.trim()}
               className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               ✅ Add to Inventory
