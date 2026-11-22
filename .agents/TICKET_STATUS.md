@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (billing/email PP-090–PP-100; SEO/AEO audit PP-101–PP-111)
+Last updated: 2026-11-22 (PP-090 sync Pro entitlement on invoice.paid)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -174,7 +174,7 @@ Each hardening item and each missing transactional email is its own ticket.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-090 | Sync Pro entitlement when invoice.paid arrives | P0 | 📋 Open |
+| PP-090 | Sync Pro entitlement when invoice.paid arrives | P0 | ✅ Done |
 | PP-091 | Persist and de-duplicate Stripe webhook events | P1 | 📋 Open |
 | PP-092 | Set the Stripe customer email from the signed-in user | P1 | 📋 Open |
 | PP-093 | Keep Pro access until cancel-at-period-end actually ends | P1 | 📋 Open |

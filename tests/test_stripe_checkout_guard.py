@@ -122,3 +122,82 @@ def test_process_webhook_downgrades_only_the_linked_subscription():
         stripe_service.process_webhook("customer.subscription.deleted", data)
 
     mock_down.assert_called_once_with("user-1")
+
+
+def test_invoice_paid_alone_grants_pro():
+    invoice = {
+        "id": "in_test_paid",
+        "customer": "cus_new",
+        "amount_paid": 499,
+        "currency": "usd",
+        "parent": {"subscription_details": {"subscription": "sub_new"}},
+    }
+    sub = {
+        "id": "sub_new",
+        "customer": "cus_new",
+        "status": "active",
+        "metadata": {"userId": "user-new", "tier": "pro"},
+        "items": {
+            "data": [
+                {
+                    "price": {"id": "price_pro_month"},
+                    "current_period_start": 1795292965,
+                    "current_period_end": 1797884965,
+                }
+            ]
+        },
+    }
+    with patch("backend.services.stripe_service.admin_service.record_transaction") as mock_txn, patch(
+        "backend.services.stripe_service.stripe.Subscription.retrieve",
+        return_value=sub,
+    ), patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value={"tier": "free", "subscriptionStatus": "incomplete"},
+    ), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook("invoice.paid", {"object": invoice})
+
+    mock_txn.assert_called_once()
+    mock_update.assert_called_once()
+    updates = mock_update.call_args.args[1]
+    assert mock_update.call_args.args[0] == "user-new"
+    assert updates["tier"] == "pro"
+    assert updates["stripeSubscriptionId"] == "sub_new"
+    assert updates["subscriptionStatus"] == "active"
+    assert updates["subscriptionEndDate"] == "2026-12-21T20:29:25+00:00"
+
+
+def test_invoice_paid_does_not_replace_a_different_active_subscription():
+    invoice = {
+        "id": "in_extra",
+        "customer": "cus_1",
+        "amount_paid": 499,
+        "currency": "usd",
+        "subscription": "sub_extra",
+    }
+    sub = {
+        "id": "sub_extra",
+        "customer": "cus_1",
+        "status": "active",
+        "metadata": {"userId": "user-1", "tier": "pro"},
+    }
+    existing = {
+        "stripeSubscriptionId": "sub_kept",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+        "stripeCustomerId": "cus_1",
+    }
+    with patch("backend.services.stripe_service.admin_service.record_transaction") as mock_txn, patch(
+        "backend.services.stripe_service.stripe.Subscription.retrieve",
+        return_value=sub,
+    ), patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value=existing,
+    ), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook("invoice.paid", {"object": invoice})
+
+    mock_txn.assert_called_once()
+    mock_update.assert_not_called()

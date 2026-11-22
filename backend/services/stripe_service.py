@@ -440,23 +440,29 @@ def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
     return {"received": True}
 
 
-def _handle_checkout_completed(session: dict[str, Any]) -> None:
-    user_id = (session.get("metadata") or {}).get("userId")
-    tier = (session.get("metadata") or {}).get("tier")
-    subscription_id = session.get("subscription")
-    if not user_id or not tier or not subscription_id:
-        return
+
+def _apply_subscription_entitlement(user_id: str, tier: Optional[str], sub: dict[str, Any]) -> bool:
+    """Grant or refresh Pro/Family from a Stripe subscription.
+
+    Does not replace a different subscription the account is already linked to
+    when that stored subscription is still active or trialing.
+    """
+    if not user_id or not sub.get("id"):
+        return False
     existing = get_user_subscription(user_id)
     stored_id = (existing or {}).get("stripeSubscriptionId")
-    # Do not replace a subscription the account is already linked to.
-    if stored_id and stored_id != subscription_id and _is_active_or_trialing((existing or {}).get("subscriptionStatus")):
-        return
-    sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+    if (
+        stored_id
+        and stored_id != sub.get("id")
+        and _is_active_or_trialing((existing or {}).get("subscriptionStatus"))
+    ):
+        return False
     period_start, period_end = _period_unix(sub)
     update_user_subscription(
         user_id,
         {
-            "tier": tier,
+            "tier": tier or (sub.get("metadata") or {}).get("tier") or "pro",
+            "stripeCustomerId": sub.get("customer") or (existing or {}).get("stripeCustomerId"),
             "stripeSubscriptionId": sub.get("id"),
             "stripePriceId": _price_id_from_sub(sub),
             "subscriptionStatus": sub.get("status"),
@@ -464,21 +470,32 @@ def _handle_checkout_completed(session: dict[str, Any]) -> None:
             "subscriptionEndDate": _iso_from_unix(period_end),
         },
     )
+    return True
+
+
+def _handle_checkout_completed(session: dict[str, Any]) -> None:
+    user_id = (session.get("metadata") or {}).get("userId")
+    tier = (session.get("metadata") or {}).get("tier")
+    subscription_id = session.get("subscription")
+    if not user_id or not tier or not subscription_id:
+        return
+    sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+    _apply_subscription_entitlement(user_id, tier, sub)
 
 
 def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
     subscription_id = _subscription_id_from_invoice(invoice)
     if not subscription_id:
         return
-    sub = stripe.Subscription.retrieve(subscription_id)
-    user_id = _obj_get(_obj_get(sub, "metadata"), "userId")
+    sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+    user_id = (sub.get("metadata") or {}).get("userId")
     if not user_id:
         return
-    tier = _obj_get(_obj_get(sub, "metadata"), "tier")
+    tier = (sub.get("metadata") or {}).get("tier")
     admin_service.record_transaction(
         {
             "userId": user_id,
-            "stripeCustomerId": invoice.get("customer"),
+            "stripeCustomerId": invoice.get("customer") or sub.get("customer"),
             "stripeSubscriptionId": subscription_id,
             "stripeInvoiceId": invoice.get("id"),
             "amountCents": invoice.get("amount_paid", 0),
@@ -488,6 +505,9 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
             "stripeEventId": invoice.get("id"),
         }
     )
+    # Renewals and first invoices both grant/refresh entitlement, even at $0
+    # (promotion codes). Checkout.session.completed is no longer the only path.
+    _apply_subscription_entitlement(user_id, tier, sub)
 
 
 def _handle_invoice_failed(invoice: dict[str, Any]) -> None:

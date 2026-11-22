@@ -1,9 +1,10 @@
 # PP-090: Sync Pro entitlement when invoice.paid arrives
 
-**Status:** 📋 Open  
+**Status:** ✅ Done  
 **Priority:** P0  
 **Phase:** Billing & email audit (2026-11-22)  
-**Created:** 2026-11-22  
+**Created:** 2026-11-22
+**Completed:** 2026-11-22  
 **Depends on:** Stripe webhooks (PP-028, PP-078, PP-089)
 
 ---
@@ -16,12 +17,12 @@ If `checkout.session.completed` fails or is skipped (the 2026-11-21 incidents in
 
 ## Fix Plan
 
-- [ ] On `invoice.paid`, resolve the subscription and `userId` / `tier` metadata, then upsert the same entitlement fields used by `_handle_checkout_completed` (tier, Stripe ids, status, period start/end)
-- [ ] Keep writing the admin transaction
-- [ ] Add a pytest covering “invoice.paid alone grants Pro”
+- [x] On `invoice.paid`, resolve the subscription and `userId` / `tier` metadata, then upsert the same entitlement fields used by `_handle_checkout_completed` (tier, Stripe ids, status, period start/end)
+- [x] Keep writing the admin transaction
+- [x] Add a pytest covering “invoice.paid alone grants Pro”
 
 ## Acceptance Criteria
 
-- [ ] A signed-in user becomes Pro when only `invoice.paid` is processed
-- [ ] Existing `checkout.session.completed` behavior is unchanged
-- [ ] Tests cover the invoice-only path
+- [x] A signed-in user becomes Pro when only `invoice.paid` is processed
+- [x] Existing `checkout.session.completed` behavior is unchanged
+- [x] Tests cover the invoice-only path
