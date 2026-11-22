@@ -12,5 +12,6 @@ Audit notes, research, and long-form findings for PantryPal refactor work.
 | Directory listing drafts (2026-11-22, submit nothing) | PP-111 — `pp-directory-drafts.md` |
 | Analytics and Search Console (2026-11-22) | PP-109 split into PP-117–PP-122 — `analytics-and-search-console.md` |
 | Marketing dashboard (email + funnel visibility, 2026-11-22) | PP-123–PP-129 — `marketing-dashboard.md` |
+| Revenue options (2026-11-22, no signups) | PP-138–PP-140 — `revenue-options.md` |
 
 Ticket sources of truth live in `../tickets/`. Status dashboard: `../TICKET_STATUS.md`.

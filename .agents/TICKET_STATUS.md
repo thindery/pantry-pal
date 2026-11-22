@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 4:45 PM CT (PP-131–PP-137 email design plan; hello@ footer fix, needs next deploy)
+Last updated: 2026-11-22, 4:50 PM CT (PP-138–PP-140 revenue options research; no signups)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-22, 4:45 PM CT (PP-131–PP-137 email design plan; hello@ 
 |--|-------|
 | Done | 87 (includes PP-088–PP-096, PP-097–PP-100, PP-102, PP-112, PP-113; PP-101 reopened for copy follow-up) |
 | In progress | 0 |
-| Ready | 28 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-131–PP-137 email design) |
+| Ready | 31 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-131–PP-137 email design; PP-138–PP-140 revenue options) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
@@ -255,6 +255,17 @@ Tylor liked the first live payment-confirmation mail but found it visually bare,
 | PP-135 | Cancellation and win-back email design | P2 | 📋 Open |
 | PP-136 | Promo or trial-ending reminder (only if relevant) | P2 | 📋 Open |
 | PP-137 | Low-stock or expiring-items digest (only if relevant) | P3 | 📋 Open |
+
+## Revenue options (2026-11-22)
+
+**Doc:** `.agents/docs/revenue-options.md`  
+Tylor asked for more revenue ideas (saved recipes, first-party recipes with affiliate links, ads on the free tier and on recipe pages) and to look at what Bragle did. Research only in this pass: no code, no deploy, and no program signups. Official program terms are cited in the doc; dollar figures are published rates or labeled estimates, not forecasts.
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-138 | Saved recipes and cook-from-pantry | P1 | 📋 Open |
+| PP-139 | Public first-party recipes and affiliate links | P2 | 📋 Open |
+| PP-140 | Free-tier and public-recipe ads (Bragle rules) | P2 | 📋 Open |
 
 ## Future / backlog
 
