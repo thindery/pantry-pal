@@ -44,7 +44,6 @@ const TIERS: PricingTier[] = [
       'Shopping list',
     ],
     disabledFeatures: [
-      'Voice assistant',
       'Multi-device sync',
       'Household sharing',
       'Advanced analytics',
@@ -65,7 +64,6 @@ const TIERS: PricingTier[] = [
     features: [
       'Unlimited pantry items',
       'Unlimited AI receipt scans',
-      'Voice assistant with Gemini',
       'Cloud sync across devices',
       'Advanced analytics',
       'Push notifications',

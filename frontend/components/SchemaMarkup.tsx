@@ -88,16 +88,11 @@ export function SoftwareApplicationSchema() {
         priceValidUntil: "2027-12-31",
       },
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "50000",
-      bestRating: "5",
-    },
     featureList: [
       "AI Receipt Scanning",
-      "Voice Assistant",
       "Barcode Scanner",
+      "Quick Scan",
+      "Inventory Ledger",
       "Smart Analytics",
       "Shopping Lists",
       "Household Sharing",
@@ -169,21 +164,3 @@ export function BreadcrumbSchema({ items }: { items: Breadcrumb[] }) {
   );
 }
 
-// Review/Rating Schema for Testimonials
-export function AggregateRatingSchema() {
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    reviewCount: "50000",
-    bestRating: "5",
-    worstRating: "1",
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
-}

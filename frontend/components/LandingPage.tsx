@@ -7,14 +7,18 @@ import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { BRAND_NAME } from '@/lib/site-content';
 import { 
   ShoppingCart,
-  Mic, 
+  ClipboardList, 
   Smartphone, 
   BarChart3, 
   Users, 
   Receipt, 
   CheckCircle2, 
   ArrowRight,
-  Star,
+  Home,
+  ScanLine,
+  CreditCard,
+  Database,
+  Shield,
   X
 } from 'lucide-react';
 
@@ -25,12 +29,12 @@ interface LandingPageProps {
   onGoToDashboard?: () => void;
 }
 
-// Stats data
-const STATS = [
-  { value: '50K+', label: 'Active Users' },
-  { value: '2M+', label: 'Items Tracked' },
-  { value: '99.9%', label: 'Uptime' },
-  { value: '4.8★', label: 'App Store Rating' },
+// Honest proof points — no invented user counts, ratings, or quotes (PP-101)
+const PROOF_POINTS = [
+  { icon: Home, title: 'Built by a home cook', detail: 'An independent app made for real pantries.' },
+  { icon: ScanLine, title: 'Scan a barcode, done in seconds', detail: 'Quick Scan updates your counts as you put groceries away.' },
+  { icon: CreditCard, title: 'Free to start', detail: 'No credit card required to create an account.' },
+  { icon: Database, title: 'Looks up 3M+ products', detail: 'Barcode data from Open Food Facts, a public product database.' },
 ];
 
 // Features data
@@ -41,9 +45,9 @@ const FEATURES = [
     description: 'Snap a photo of your receipt and our AI automatically adds items to your inventory. No manual entry needed.',
   },
   {
-    icon: Mic,
-    title: 'Voice Assistant',
-    description: `Just say "I used 3 eggs" and ${BRAND_NAME} updates your stock. Hands-free management while you cook.`,
+    icon: ClipboardList,
+    title: 'Inventory Ledger',
+    description: 'Every add and use is recorded in one running list, so you always know what is on the shelf.',
   },
   {
     icon: Smartphone,
@@ -137,25 +141,22 @@ const PRICING_TIERS = [
   },
 ];
 
-// Testimonials
-const TESTIMONIALS = [
+// Feature and benefit proof — no invented testimonials or ratings (PP-101)
+const PROOF_CARDS = [
   {
-    quote: `${BRAND_NAME} has completely changed how we manage our kitchen. No more duplicate purchases or running out of essentials!`,
-    author: 'Sarah M.',
-    role: 'Home Cook & Mom of 3',
-    rating: 5,
+    icon: Home,
+    title: 'Built for real pantries',
+    body: 'Pantry Hub is an independently built kitchen inventory app, made by a home cook who needed a faster way to keep stock.',
   },
   {
-    quote: 'The receipt scanning is magic. I just take a photo after grocery shopping and everything is organized instantly.',
-    author: 'James K.',
-    role: 'Busy Professional',
-    rating: 5,
+    icon: Shield,
+    title: 'Your data stays yours',
+    body: 'You can export your inventory anytime. If you cancel, your data stays accessible, and it is still there if you come back.',
   },
   {
-    quote: 'Finally convinced my roommates to use this. Now we all know what\'s in the fridge and who ate the last yogurt!',
-    author: 'Alex T.',
-    role: 'College Student',
-    rating: 5,
+    icon: ScanLine,
+    title: 'Scan, track, and shop',
+    body: 'Look up barcodes in seconds, add items from a receipt photo, and build a shopping list from what is running low.',
   },
 ];
 
@@ -296,8 +297,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
           <div className="text-center max-w-4xl mx-auto">
             <div className="hero-enter inline-flex items-center gap-2 bg-[var(--marketing-surface)] px-4 py-2 rounded-full mb-6 animate-gentle-float">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" aria-hidden="true" />
-              <span className="text-sm font-medium text-slate-700">Trusted by 50,000+ households</span>
+              <Home className="w-4 h-4 text-[var(--primary)]" aria-hidden="true" />
+              <span className="text-sm font-medium text-slate-700">Built by a home cook for real pantries</span>
             </div>
             <h1 id="hero-heading" className="hero-enter hero-enter-delay-1 text-4xl md:text-6xl font-serif-heading font-bold text-slate-800 mb-6 leading-tight">
               Smart Inventory & Ledger for Your{' '}
@@ -322,12 +323,15 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
 
-            {/* Stats */}
-            <div className="hero-enter hero-enter-delay-4 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto">
-              {STATS.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-serif-heading font-bold text-[var(--primary)]">{stat.value}</div>
-                  <div className="text-sm text-slate-500">{stat.label}</div>
+            {/* Honest proof points */}
+            <div className="hero-enter hero-enter-delay-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 max-w-4xl mx-auto text-left">
+              {PROOF_POINTS.map((point, index) => (
+                <div key={index} className="bg-white/80 border border-[var(--marketing-border)] rounded-2xl p-4">
+                  <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center mb-3">
+                    <point.icon className="w-5 h-5 text-[var(--primary)]" aria-hidden="true" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-800 mb-1">{point.title}</div>
+                  <div className="text-sm text-slate-500">{point.detail}</div>
                 </div>
               ))}
             </div>
@@ -343,7 +347,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               Everything You Need to Manage Your Pantry
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              From AI-powered scanning to household sharing, {BRAND_NAME} has all the tools you need.
+              From barcode and receipt scanning to shopping lists, {BRAND_NAME} has the tools you need.
             </p>
           </RevealOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -415,31 +419,26 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-[var(--marketing-bg)]" aria-labelledby="testimonials-heading">
+      {/* Honest proof section — no reviews or ratings markup (PP-101) */}
+      <section className="py-20 bg-[var(--marketing-bg)]" aria-labelledby="proof-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
-            <h2 id="testimonials-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
-              Loved by Home Managers Everywhere
+            <h2 id="proof-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
+              Built honestly, for real kitchens
             </h2>
             <p className="text-lg text-slate-600">
-              See what our users are saying about {BRAND_NAME}.
+              An independent pantry app with useful tools and a free way to start.
             </p>
           </RevealOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((testimonial, index) => (
+            {PROOF_CARDS.map((card, index) => (
               <RevealOnScroll key={index} variant="scale" delay={index * 100}>
-                <article className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--marketing-border)] h-full" itemScope itemType="https://schema.org/Review">
-                  <div className="flex gap-1 mb-4" aria-label={`Rating: ${testimonial.rating} out of 5 stars`}>
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" aria-hidden="true" />
-                    ))}
+                <article className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--marketing-border)] h-full">
+                  <div className="w-12 h-12 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center mb-4">
+                    <card.icon className="w-6 h-6 text-[var(--primary)]" aria-hidden="true" />
                   </div>
-                  <p className="text-slate-700 mb-4 italic" itemProp="reviewBody">&ldquo;{testimonial.quote}&rdquo;</p>
-                  <div itemProp="author" itemScope itemType="https://schema.org/Person">
-                    <p className="font-semibold text-slate-800" itemProp="name">{testimonial.author}</p>
-                    <p className="text-sm text-slate-500">{testimonial.role}</p>
-                  </div>
+                  <h3 className="font-semibold text-slate-800 mb-2">{card.title}</h3>
+                  <p className="text-slate-700">{card.body}</p>
                 </article>
               </RevealOnScroll>
             ))}
@@ -489,10 +488,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <section className="py-20 bg-[var(--primary)]" aria-labelledby="cta-heading">
         <RevealOnScroll className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 id="cta-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-white mb-4">
-            Ready to Transform Your Pantry?
+            Ready to get your pantry in order?
           </h2>
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of households who&apos;ve simplified their kitchen management. Start free today.
+            Start free today — no credit card required.
           </p>
           <button
             onClick={goToApp}

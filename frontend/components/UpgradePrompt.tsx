@@ -4,7 +4,7 @@ import { PRO_PLAN_NAME } from '@/lib/site-content';
 interface UpgradePromptProps {
   title: string;
   message: string;
-  feature: 'items' | 'receipts' | 'voice';
+  feature: 'items' | 'receipts';
   onClose: () => void;
   onUpgrade: () => void;
 }
@@ -22,8 +22,6 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
         return '📦';
       case 'receipts':
         return '📄';
-      case 'voice':
-        return '🎙️';
       default:
         return '⭐';
     }
@@ -35,8 +33,6 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
         return 'Unlimited Items';
       case 'receipts':
         return 'AI Receipt Scanning';
-      case 'voice':
-        return 'Voice Assistant';
       default:
         return 'Pro Features';
     }
@@ -206,49 +202,6 @@ export const ProBadge: React.FC<{ className?: string }> = ({ className = '' }) =
     </svg>
     PRO
   </span>
-);
-
-/**
- * Voice assistant lock screen
- */
-export const VoiceAssistantLock: React.FC<{
-  onUpgrade: () => void;
-}> = ({ onUpgrade }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
-    <div className="bg-white rounded-3xl w-full max-w-sm p-8 flex flex-col items-center gap-6 shadow-2xl mx-4 text-center">
-      <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-4xl shadow-lg">
-        🎙️
-      </div>
-
-      <div>
-        <h3 className="text-xl font-bold text-slate-800 mb-2">Voice Assistant</h3>
-        <p className="text-slate-600">
-          Upgrade to <span className="font-semibold text-emerald-600">Pro</span> to control your pantry with your voice.
-        </p>
-      </div>
-
-      <div className="bg-slate-50 rounded-xl p-4 w-full">
-        <p className="text-sm text-slate-600 mb-2">Try saying:</p>
-        <p className="text-slate-800 font-medium italic">"I used 3 eggs"</p>
-        <p className="text-slate-800 font-medium italic">"Add milk to my list"</p>
-      </div>
-
-      <button
-        onClick={onUpgrade}
-        className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-      >
-        <span>✨</span>
-        Upgrade to Pro
-      </button>
-
-      <button
-        onClick={() => window.history.back()}
-        className="text-slate-500 hover:text-slate-700 text-sm"
-      >
-        Go Back
-      </button>
-    </div>
-  </div>
 );
 
 export default UpgradePrompt;

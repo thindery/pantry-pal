@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-112 Stripe-vs-DB reconciliation; PP-113 deploy TAG fix; PP-096–PP-100 emails live, no-op until a Resend key is set)
+Last updated: 2026-11-22 (PP-101/PP-102 honest landing proof and voice claims removed; PP-114/PP-115 filed as backlog)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,9 +13,10 @@ Last updated: 2026-11-22 (PP-112 Stripe-vs-DB reconciliation; PP-113 deploy TAG 
 
 | | Count |
 |--|-------|
-| Done | 85 (includes PP-088–PP-094, PP-096–PP-100, PP-112, PP-113) |
+| Done | 87 (includes PP-088–PP-094, PP-096–PP-100, PP-101, PP-102, PP-112, PP-113) |
 | In progress | 0 |
-| Ready | 12 (PP-095 Resend DNS; PP-101–PP-111 SEO/AEO) |
+| Ready | 10 (PP-095 Resend DNS; PP-103–PP-111 SEO/AEO) |
+| Backlog | 2 (PP-114 real social proof; PP-115 nearby grocery ads) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
 
@@ -196,8 +197,8 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open |
-| PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | 📋 Open |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | ✅ Done |
+| PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
 | PP-104 | Allow public OG images and add favicon/logo assets | P0 | 📋 Open |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 📋 Open |
@@ -207,6 +208,15 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 | PP-109 | Add Search Console and $0 analytics (needs Tylor’s yes) | P1 | 📋 Open |
 | PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open |
+
+## Future / backlog
+
+Documented for later; no implementation in this pass.
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
+| PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
 
 ## Verification
 

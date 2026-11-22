@@ -1,9 +1,10 @@
 # PP-102: Stop advertising the decommissioned Voice Assistant / Gemini
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
+**Completed:** 2026-11-22
 **Depends on:** PP-058 (voice/Gemini already removed from the app)
 **Blocks:** PP-108 landing rewrite, PP-111 public listings
 **Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk, 2026-11-22)
@@ -29,6 +30,17 @@ Advertising a removed Gemini voice feature is misleading for users and for answe
 
 ## Acceptance Criteria
 
-- [ ] No public page, pricing tier list, or JSON-LD `featureList` mentions Voice Assistant or Gemini
-- [ ] `UpgradePrompt` and other in-app upgrade surfaces no longer sell a removed voice feature
-- [ ] A repo search for marketing-facing “Voice Assistant” / “Gemini” on public copy is clean (historical tickets/docs may remain)
+- [x] No public page, pricing tier list, or JSON-LD `featureList` mentions Voice Assistant or Gemini
+- [x] `UpgradePrompt` and other in-app upgrade surfaces no longer sell a removed voice feature
+- [x] A repo search for marketing-facing “Voice Assistant” / “Gemini” on public copy is clean (historical tickets/docs may remain)
+
+## Resolution (2026-11-22)
+
+Voice/Gemini is not in the shipped app (PP-058). Removed marketing claims from:
+
+- Landing feature card (replaced with Inventory Ledger)
+- Pricing Free disabled-features and Pro feature list
+- `SoftwareApplication` JSON-LD `featureList`
+- `UpgradePrompt` voice feature case and unused `VoiceAssistantLock`
+
+Left unused API/type stubs in `frontend/services/subscription.ts` and `frontend/types.ts` alone (not public copy; avoid colliding with billing work). Historical tickets/docs/legacy code may still mention voice.
