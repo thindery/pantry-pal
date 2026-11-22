@@ -1,9 +1,10 @@
 # PP-094: Handle Stripe refund webhooks
 
-**Status:** 📋 Open  
+**Status:** ✅ Done  
 **Priority:** P2  
 **Phase:** Billing & email audit (2026-11-22)  
-**Created:** 2026-11-22  
+**Created:** 2026-11-22
+**Completed:** 2026-11-22  
 **Depends on:** PP-089, PP-091
 
 ---
@@ -14,14 +15,14 @@ The 2026-11-21 duplicate-charge incident (PP-089) required manual refunds. Webho
 
 ## Fix Plan
 
-- [ ] Handle the current Stripe refund event(s) used by this account (likely `charge.refunded`; confirm against the API version in use)
-- [ ] Record a refunded admin transaction (or update the existing invoice transaction) with the refunded amount
-- [ ] If the refund is for the subscription that grants access and no other active/trialing subscription remains, downgrade according to the same rules as deletion
-- [ ] Do not undo PP-089’s “keep the earliest subscription” rule when a refund is only for a duplicate that is already canceled
+- [x] Handle the current Stripe refund event(s) used by this account (likely `charge.refunded`; confirm against the API version in use)
+- [x] Record a refunded admin transaction (or update the existing invoice transaction) with the refunded amount
+- [x] If the refund is for the subscription that grants access and no other active/trialing subscription remains, downgrade according to the same rules as deletion
+- [x] Do not undo PP-089’s “keep the earliest subscription” rule when a refund is only for a duplicate that is already canceled
 
 ## Acceptance Criteria
 
-- [ ] A refund event updates admin transactions
-- [ ] A full refund of the only entitlement-granting subscription downgrades the user
-- [ ] Refund of a non-linked duplicate does not strip Pro
-- [ ] Pytest covers those cases
+- [x] A refund event updates admin transactions
+- [x] A full refund of the only entitlement-granting subscription downgrades the user
+- [x] Refund of a non-linked duplicate does not strip Pro
+- [x] Pytest covers those cases

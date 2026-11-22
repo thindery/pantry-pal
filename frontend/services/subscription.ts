@@ -36,6 +36,7 @@ export interface UserTierInfo {
     stripeCustomerId: string;
     stripeSubscriptionId: string;
     subscriptionEndDate: string;
+    cancelAtPeriodEnd?: boolean;
   } | null;
 }
 
@@ -143,6 +144,22 @@ export async function createCustomerPortal(returnUrl: string): Promise<{ url: st
     method: 'POST',
     body: JSON.stringify({ returnUrl }),
   });
+  return response.data;
+}
+
+export async function cancelSubscription(): Promise<UserTierInfo> {
+  const response = await fetchApi<{ success: boolean; data: UserTierInfo }>(
+    '/api/subscription/cancel',
+    { method: 'POST' },
+  );
+  return response.data;
+}
+
+export async function reactivateSubscription(): Promise<UserTierInfo> {
+  const response = await fetchApi<{ success: boolean; data: UserTierInfo }>(
+    '/api/subscription/reactivate',
+    { method: 'POST' },
+  );
   return response.data;
 }
 

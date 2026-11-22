@@ -59,6 +59,7 @@ def _map_subscription(row: dict[str, Any]) -> dict[str, Any]:
         "subscriptionStatus": row.get("subscription_status"),
         "subscriptionStartDate": row.get("subscription_start_date"),
         "subscriptionEndDate": row.get("subscription_end_date"),
+        "cancelAtPeriodEnd": bool(row.get("cancel_at_period_end")),
         "createdAt": str(row.get("created_at", "")),
         "updatedAt": str(row.get("updated_at", "")),
     }
@@ -90,6 +91,7 @@ def get_or_create_user_subscription(user_id: str) -> dict[str, Any]:
         "subscriptionStatus": None,
         "subscriptionStartDate": None,
         "subscriptionEndDate": None,
+        "cancelAtPeriodEnd": False,
         "createdAt": now,
         "updatedAt": now,
     }
@@ -115,6 +117,7 @@ def update_user_subscription(user_id: str, updates: dict[str, Any]) -> Optional[
         "subscriptionStatus": "subscription_status",
         "subscriptionStartDate": "subscription_start_date",
         "subscriptionEndDate": "subscription_end_date",
+        "cancelAtPeriodEnd": "cancel_at_period_end",
     }
     fields = []
     params: list[Any] = []
@@ -220,6 +223,7 @@ def get_user_tier_info(user_id: str, current_item_count: int) -> dict[str, Any]:
                 "stripeCustomerId": subscription["stripeCustomerId"],
                 "stripeSubscriptionId": subscription["stripeSubscriptionId"],
                 "subscriptionEndDate": subscription["subscriptionEndDate"],
+                "cancelAtPeriodEnd": bool(subscription.get("cancelAtPeriodEnd")),
             }
             if subscription["stripeCustomerId"]
             else None

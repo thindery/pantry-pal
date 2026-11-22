@@ -1,9 +1,10 @@
 # PP-092: Set the Stripe customer email from the signed-in user
 
-**Status:** 📋 Open  
+**Status:** ✅ Done  
 **Priority:** P1  
 **Phase:** Billing & email audit (2026-11-22)  
-**Created:** 2026-11-22  
+**Created:** 2026-11-22
+**Completed:** 2026-11-22  
 **Depends on:** PP-028, PP-096 (for app-sent mail; still needed for Stripe receipts)
 
 ---
@@ -14,12 +15,12 @@
 
 ## Fix Plan
 
-- [ ] Pass the authenticated user’s email (and name when present) into `Customer.create`
-- [ ] If a customer already exists without email, `Customer.modify` when the email is first known (checkout, portal, or webhook)
-- [ ] Never log full email addresses at info/debug in production
+- [x] Pass the authenticated user’s email (and name when present) into `Customer.create`
+- [x] If a customer already exists without email, `Customer.modify` when the email is first known (checkout, portal, or webhook)
+- [x] Never log full email addresses at info/debug in production
 
 ## Acceptance Criteria
 
-- [ ] New Checkout customers in Stripe have the signed-in email
-- [ ] Existing customers missing email are backfilled on the next billing action
-- [ ] Tests cover create and backfill; no secrets or raw PII dumps in assertions beyond a fixture address
+- [x] New Checkout customers in Stripe have the signed-in email
+- [x] Existing customers missing email are backfilled on the next billing action
+- [x] Tests cover create and backfill; no secrets or raw PII dumps in assertions beyond a fixture address

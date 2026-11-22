@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
-from backend.auth_session import require_authenticated_user_id
+from backend.auth_session import require_authenticated_user_id, resolve_authenticated_user
+from backend.services.user_profile import merge_contact
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import CheckoutRequest, PortalRequest
 from backend.lib.url_validation import validate_redirect_url
@@ -72,7 +73,7 @@ async def get_subscription(user_id: str = Depends(require_authenticated_user_id)
 
 
 @router.post("/checkout")
-async def checkout(body: CheckoutRequest, user_id: str = Depends(require_authenticated_user_id)):
+async def checkout(body: CheckoutRequest, request: Request, user_id: str = Depends(require_authenticated_user_id)):
     try:
         for field_name, url in (("successUrl", body.successUrl), ("cancelUrl", body.cancelUrl)):
             try:
@@ -82,12 +83,16 @@ async def checkout(body: CheckoutRequest, user_id: str = Depends(require_authent
                     status_code=400,
                     detail=error_response("VALIDATION_ERROR", f"Invalid {field_name}", {"reason": str(exc)}),
                 ) from exc
+        _, jwt_email = await resolve_authenticated_user(request)
+        contact = merge_contact(user_id, email=jwt_email)
         session = await stripe_service.create_checkout_session(
             user_id,
             body.tier,
             body.billingInterval,
             body.successUrl,
             body.cancelUrl,
+            email=contact.get("email"),
+            name=contact.get("name"),
         )
         return success_response(session)
     except HTTPException:
@@ -100,7 +105,7 @@ async def checkout(body: CheckoutRequest, user_id: str = Depends(require_authent
 
 
 @router.post("/portal")
-async def portal(body: PortalRequest, user_id: str = Depends(require_authenticated_user_id)):
+async def portal(body: PortalRequest, request: Request, user_id: str = Depends(require_authenticated_user_id)):
     try:
         try:
             validate_redirect_url(body.returnUrl)
@@ -109,7 +114,14 @@ async def portal(body: PortalRequest, user_id: str = Depends(require_authenticat
                 status_code=400,
                 detail=error_response("VALIDATION_ERROR", "Invalid returnUrl", {"reason": str(exc)}),
             ) from exc
-        session = await stripe_service.create_portal_session(user_id, body.returnUrl)
+        _, jwt_email = await resolve_authenticated_user(request)
+        contact = merge_contact(user_id, email=jwt_email)
+        session = await stripe_service.create_portal_session(
+            user_id,
+            body.returnUrl,
+            email=contact.get("email"),
+            name=contact.get("name"),
+        )
         return success_response(session)
     except HTTPException:
         raise
@@ -127,9 +139,19 @@ async def cancel_subscription(user_id: str = Depends(require_authenticated_user_
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "No active subscription"))
     import stripe
 
-    stripe.Subscription.modify(sub["stripeSubscriptionId"], cancel_at_period_end=True)
-    subscription_service.update_user_subscription(user_id, {"subscriptionStatus": "canceled"})
-    return success_response({"cancelled": True})
+    updated = stripe.Subscription.modify(sub["stripeSubscriptionId"], cancel_at_period_end=True)
+    period_end = stripe_service._iso_from_unix(stripe_service._period_unix(updated)[1])
+    status = getattr(updated, "status", None) or (updated.get("status") if isinstance(updated, dict) else None)
+    subscription_service.update_user_subscription(
+        user_id,
+        {
+            "cancelAtPeriodEnd": True,
+            "subscriptionEndDate": period_end or sub.get("subscriptionEndDate"),
+            "subscriptionStatus": status if status in {"active", "trialing", "past_due"} else (sub.get("subscriptionStatus") or "active"),
+        },
+    )
+    items = pantry_service.get_all_items(user_id)
+    return success_response(subscription_service.get_user_tier_info(user_id, len(items)))
 
 
 @router.post("/reactivate")
@@ -139,7 +161,14 @@ async def reactivate_subscription(user_id: str = Depends(require_authenticated_u
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "No subscription to reactivate"))
     import stripe
 
-    stripe.Subscription.modify(sub["stripeSubscriptionId"], cancel_at_period_end=False)
-    subscription_service.update_user_subscription(user_id, {"subscriptionStatus": "active"})
+    updated = stripe.Subscription.modify(sub["stripeSubscriptionId"], cancel_at_period_end=False)
+    status = getattr(updated, "status", None) or (updated.get("status") if isinstance(updated, dict) else None)
+    subscription_service.update_user_subscription(
+        user_id,
+        {
+            "cancelAtPeriodEnd": False,
+            "subscriptionStatus": status or "active",
+        },
+    )
     items = pantry_service.get_all_items(user_id)
     return success_response(subscription_service.get_user_tier_info(user_id, len(items)))

@@ -11,7 +11,14 @@ import {
   Settings,
   Sparkles,
 } from "lucide-react";
+import { useState } from "react";
 import { usePantry } from "@/contexts/pantry-provider";
+import {
+  cancelSubscription,
+  createCustomerPortal,
+  reactivateSubscription,
+  useSubscription,
+} from "@/services/subscription";
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
 
 export function AccountView() {
@@ -26,6 +33,32 @@ export function AccountView() {
   const email = session?.user?.email ?? "";
   const name = session?.user?.name ?? email;
   const isAdmin = (session?.user as { isAdmin?: boolean } | undefined)?.isAdmin === true;
+  const { tierInfo, refresh } = useSubscription();
+  const [billingBusy, setBillingBusy] = useState(false);
+  const [billingError, setBillingError] = useState<string | null>(null);
+  const subscription = tierInfo?.subscription;
+  const cancelAtPeriodEnd = Boolean(subscription?.cancelAtPeriodEnd);
+  const accessEnd = subscription?.subscriptionEndDate
+    ? new Date(subscription.subscriptionEndDate).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  const runBilling = async (action: () => Promise<unknown>) => {
+    if (billingBusy) return;
+    setBillingBusy(true);
+    setBillingError(null);
+    try {
+      await action();
+      await refresh();
+    } catch (err) {
+      setBillingError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBillingBusy(false);
+    }
+  };
 
   const menuItems = [
     {
@@ -62,6 +95,16 @@ export function AccountView() {
             {isPaid ? PRO_PLAN_NAME : "Free"}
           </span>
         </p>
+        {isPaid && accessEnd && (
+          <p className="text-sm text-[var(--muted)] mt-1">
+            {cancelAtPeriodEnd
+              ? `Cancellation scheduled. Access continues until ${accessEnd}.`
+              : `Access through ${accessEnd}.`}
+          </p>
+        )}
+        {billingError && (
+          <p className="text-sm text-red-600 mt-2">{billingError}</p>
+        )}
         {!isPaid && (
           <button
             type="button"
@@ -71,6 +114,42 @@ export function AccountView() {
             <Sparkles size={16} />
             Upgrade
           </button>
+        )}
+        {isPaid && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={billingBusy}
+              onClick={() =>
+                runBilling(async () => {
+                  const portal = await createCustomerPortal(`${window.location.origin}/dashboard/account/`);
+                  window.location.href = portal.url;
+                })
+              }
+              className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--border)] hover:bg-[var(--surface-muted)] disabled:opacity-50"
+            >
+              Manage billing
+            </button>
+            {cancelAtPeriodEnd ? (
+              <button
+                type="button"
+                disabled={billingBusy}
+                onClick={() => runBilling(() => reactivateSubscription())}
+                className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              >
+                Keep my plan
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={billingBusy}
+                onClick={() => runBilling(() => cancelSubscription())}
+                className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--border)] text-[var(--muted)] hover:bg-[var(--surface-muted)] disabled:opacity-50"
+              >
+                Cancel at period end
+              </button>
+            )}
+          </div>
         )}
       </div>
 

@@ -56,6 +56,27 @@ def record_transaction(data: dict[str, Any]) -> None:
             )
 
 
+def record_refund(data: dict[str, Any]) -> None:
+    """Mark an existing succeeded invoice transaction as refunded, or insert one."""
+    invoice_id = data.get("stripeInvoiceId")
+    amount = data.get("amountCents", 0)
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            if invoice_id:
+                cur.execute(
+                    """
+                    UPDATE admin_transactions
+                    SET status = 'refunded', amount_cents = %s, stripe_event_id = COALESCE(%s, stripe_event_id)
+                    WHERE stripe_invoice_id = %s AND status = 'succeeded'
+                    RETURNING id
+                    """,
+                    (amount, data.get("stripeEventId"), invoice_id),
+                )
+                if cur.fetchone():
+                    return
+    record_transaction({**data, "status": "refunded", "amountCents": amount})
+
+
 def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
     dates = _period_dates(period)
     with db_connection() as conn:

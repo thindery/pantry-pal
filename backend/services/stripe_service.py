@@ -15,12 +15,18 @@ from typing import Any, Optional
 
 import stripe
 
+import uuid
+
+from psycopg2.extras import Json
+
 from backend.services import admin_service
 from backend.services.subscription_service import (
     downgrade_to_free,
     get_user_subscription,
     update_user_subscription,
 )
+from backend.services.user_profile import get_user_id_by_customer
+from database.db import db_connection
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 
@@ -344,12 +350,39 @@ def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
     return {"sessionId": _obj_get(session, "id") or "", "url": session.url}
 
 
+def _create_customer(user_id: str, email: Optional[str] = None, name: Optional[str] = None) -> str:
+    params: dict[str, Any] = {"metadata": {"userId": user_id}}
+    if email:
+        params["email"] = email
+    if name:
+        params["name"] = name
+    customer = stripe.Customer.create(**params)
+    return customer.id
+
+
+def _ensure_customer_email(customer_id: Optional[str], email: Optional[str] = None, name: Optional[str] = None) -> None:
+    if not customer_id:
+        return
+    if not email and not name:
+        return
+    customer = _to_dict(stripe.Customer.retrieve(customer_id))
+    updates: dict[str, str] = {}
+    if email and not customer.get("email"):
+        updates["email"] = email
+    if name and not customer.get("name"):
+        updates["name"] = name
+    if updates:
+        stripe.Customer.modify(customer_id, **updates)
+
+
 async def create_checkout_session(
     user_id: str,
     tier: str,
     billing_interval: str,
     success_url: str,
     cancel_url: str,
+    email: Optional[str] = None,
+    name: Optional[str] = None,
 ) -> dict[str, str]:
     price_id = PRICE_IDS.get(tier, {}).get(billing_interval, "")
     if not price_id:
@@ -358,9 +391,9 @@ async def create_checkout_session(
     existing = get_user_subscription(user_id)
     if existing and existing.get("stripeCustomerId"):
         customer_id = existing["stripeCustomerId"]
+        _ensure_customer_email(customer_id, email=email, name=name)
     else:
-        customer = stripe.Customer.create(metadata={"userId": user_id})
-        customer_id = customer.id
+        customer_id = _create_customer(user_id, email=email, name=name)
         update_user_subscription(user_id, {"stripeCustomerId": customer_id})
 
     # Never start a second subscription if one is already active or trialing.
@@ -404,15 +437,74 @@ async def create_checkout_session(
     return {"sessionId": session.id, "url": session.url}
 
 
-async def create_portal_session(user_id: str, return_url: str) -> dict[str, str]:
+async def create_portal_session(
+    user_id: str,
+    return_url: str,
+    email: Optional[str] = None,
+    name: Optional[str] = None,
+) -> dict[str, str]:
     subscription = get_user_subscription(user_id)
     if not subscription or not subscription.get("stripeCustomerId"):
         raise ValueError("No Stripe customer found for this user")
+    _ensure_customer_email(subscription["stripeCustomerId"], email=email, name=name)
     session = stripe.billingPortal.Session.create(
         customer=subscription["stripeCustomerId"],
         return_url=return_url,
     )
     return {"url": session.url}
+
+
+def _event_user_id(event: dict[str, Any]) -> Optional[str]:
+    data = event.get("data") or {}
+    obj = data.get("object") or {}
+    if not isinstance(obj, dict):
+        obj = _to_dict(obj) or {}
+    meta = obj.get("metadata") or {}
+    return meta.get("userId") or get_user_id_by_customer(obj.get("customer") or "")
+
+
+def should_handle_webhook_event(event: Any) -> bool:
+    """Return False if this Stripe event id was already processed successfully."""
+    payload = _to_dict(event) or {}
+    event_id = payload.get("id")
+    if not event_id:
+        return True
+    event_type = payload.get("type") or ""
+    user_id = _event_user_id(payload)
+    stored = {key: payload[key] for key in ("id", "type") if key in payload}
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO stripe_webhook_events (id, stripe_event_id, event_type, user_id, processed, payload)
+                VALUES (%s, %s, %s, %s, FALSE, %s)
+                ON CONFLICT (stripe_event_id) DO NOTHING
+                RETURNING id
+                """,
+                (str(uuid.uuid4()), event_id, event_type, user_id, Json(stored)),
+            )
+            inserted = cur.fetchone()
+            if inserted:
+                return True
+            cur.execute(
+                "SELECT processed FROM stripe_webhook_events WHERE stripe_event_id = %s",
+                (event_id,),
+            )
+            row = cur.fetchone()
+    return not bool(row and row["processed"])
+
+
+def mark_webhook_event_processed(event: Any) -> None:
+    payload = _to_dict(event) or {}
+    event_id = payload.get("id")
+    if not event_id:
+        return
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE stripe_webhook_events SET processed = TRUE WHERE stripe_event_id = %s",
+                (event_id,),
+            )
 
 
 def verify_webhook(payload: bytes, signature: str) -> dict[str, Any]:
@@ -437,6 +529,8 @@ def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
         _handle_subscription_updated(obj)
     elif event_type == "customer.subscription.deleted":
         _handle_subscription_deleted(obj)
+    elif event_type in {"charge.refunded", "charge.refund.updated"}:
+        _handle_charge_refunded(obj)
     return {"received": True}
 
 
@@ -468,6 +562,7 @@ def _apply_subscription_entitlement(user_id: str, tier: Optional[str], sub: dict
             "subscriptionStatus": sub.get("status"),
             "subscriptionStartDate": _iso_from_unix(period_start),
             "subscriptionEndDate": _iso_from_unix(period_end),
+            "cancelAtPeriodEnd": bool(sub.get("cancel_at_period_end")),
         },
     )
     return True
@@ -550,15 +645,18 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
         return
     tier = (subscription.get("metadata") or {}).get("tier")
     _period_start, period_end = _period_unix(subscription)
-    update_user_subscription(
-        user_id,
-        {
-            "tier": tier,
-            "stripePriceId": _price_id_from_sub(subscription),
-            "subscriptionStatus": subscription.get("status"),
-            "subscriptionEndDate": _iso_from_unix(period_end),
-        },
-    )
+    updates: dict[str, Any] = {
+        "tier": tier,
+        "stripePriceId": _price_id_from_sub(subscription),
+        "subscriptionEndDate": _iso_from_unix(period_end),
+        "cancelAtPeriodEnd": bool(subscription.get("cancel_at_period_end")),
+    }
+    status = subscription.get("status")
+    # Keep Pro until the subscription actually ends. Stripe still reports
+    # active/trialing while cancel_at_period_end is set.
+    if _is_active_or_trialing(status) or status == "past_due":
+        updates["subscriptionStatus"] = status
+    update_user_subscription(user_id, updates)
 
 
 def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
@@ -585,5 +683,53 @@ def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
                 "subscriptionEndDate": _iso_from_unix(period_end),
             },
         )
+        return
+    downgrade_to_free(user_id)
+
+
+def _handle_charge_refunded(charge: dict[str, Any]) -> None:
+    amount = int(charge.get("amount") or 0)
+    refunded_amount = int(charge.get("amount_refunded") or 0)
+    if not charge.get("refunded") and refunded_amount <= 0:
+        return
+    invoice_id = charge.get("invoice")
+    customer_id = charge.get("customer")
+    subscription_id = None
+    if invoice_id:
+        invoice = _to_dict(stripe.Invoice.retrieve(invoice_id))
+        subscription_id = _subscription_id_from_invoice(invoice)
+        customer_id = customer_id or invoice.get("customer")
+    user_id = None
+    sub = None
+    if subscription_id:
+        sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+        user_id = (sub.get("metadata") or {}).get("userId")
+    if not user_id:
+        user_id = get_user_id_by_customer(customer_id or "")
+    if user_id:
+        admin_service.record_refund(
+            {
+                "userId": user_id,
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": subscription_id,
+                "stripeInvoiceId": invoice_id,
+                "amountCents": refunded_amount or amount,
+                "currency": charge.get("currency", "usd"),
+                "status": "refunded",
+                "tier": (sub or {}).get("metadata", {}).get("tier") if sub else None,
+                "stripeEventId": charge.get("id"),
+            }
+        )
+    if not user_id or not subscription_id:
+        return
+    existing = get_user_subscription(user_id)
+    stored_id = (existing or {}).get("stripeSubscriptionId")
+    # A refund for a non-linked duplicate must not strip Pro (PP-089).
+    if stored_id and stored_id != subscription_id:
+        return
+    is_full = bool(charge.get("refunded")) or (amount > 0 and refunded_amount >= amount)
+    if not is_full:
+        return
+    if _first_active_subscription(customer_id, exclude_id=subscription_id):
         return
     downgrade_to_free(user_id)

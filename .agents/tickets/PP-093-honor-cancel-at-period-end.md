@@ -1,9 +1,10 @@
 # PP-093: Keep Pro access until cancel-at-period-end actually ends
 
-**Status:** 📋 Open  
+**Status:** ✅ Done  
 **Priority:** P1  
 **Phase:** Billing & email audit (2026-11-22)  
-**Created:** 2026-11-22  
+**Created:** 2026-11-22
+**Completed:** 2026-11-22  
 **Depends on:** PP-028, PP-089
 
 ---
@@ -16,14 +17,14 @@ Tier stays Pro (limits still use `tier`), but Settings can show canceled while t
 
 ## Fix Plan
 
-- [ ] Keep Stripe status `active` (or `trialing`) in the database until the subscription actually ends
-- [ ] Persist `cancelAtPeriodEnd` (or equivalent) and the period end date so the UI can say access continues until that date
-- [ ] Downgrade only on `customer.subscription.deleted` (already handled) or when status is no longer entitled
-- [ ] Reactivate should clear `cancelAtPeriodEnd` (already calls Stripe `cancel_at_period_end=False`)
+- [x] Keep Stripe status `active` (or `trialing`) in the database until the subscription actually ends
+- [x] Persist `cancelAtPeriodEnd` (or equivalent) and the period end date so the UI can say access continues until that date
+- [x] Downgrade only on `customer.subscription.deleted` (already handled) or when status is no longer entitled
+- [x] Reactivate should clear `cancelAtPeriodEnd` (already calls Stripe `cancel_at_period_end=False`)
 
 ## Acceptance Criteria
 
-- [ ] After cancel-at-period-end, the user keeps Pro until the period end
-- [ ] Settings shows that cancellation is scheduled, with the end date
-- [ ] Checkout still will not open a second subscription while the current one is active
-- [ ] Tests cover cancel, reactivate, and the deleted-subscription downgrade
+- [x] After cancel-at-period-end, the user keeps Pro until the period end
+- [x] Settings shows that cancellation is scheduled, with the end date
+- [x] Checkout still will not open a second subscription while the current one is active
+- [x] Tests cover cancel, reactivate, and the deleted-subscription downgrade

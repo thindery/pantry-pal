@@ -21,7 +21,13 @@ async def stripe_webhook(request: Request):
         raise HTTPException(status_code=400, detail={"received": False, "error": "Missing stripe-signature header"})
     try:
         event = stripe_service.verify_webhook(payload, signature)
-        result = stripe_service.process_webhook(event["type"], event["data"])
+        if not stripe_service.should_handle_webhook_event(event):
+            return {"received": True}
+        result = stripe_service.process_webhook(
+            event["type"] if isinstance(event, dict) else event["type"],
+            event["data"] if isinstance(event, dict) else event["data"],
+        )
+        stripe_service.mark_webhook_event_processed(event)
         return result
     except ValueError as exc:
         # Known verification failures (missing secret, bad signature) — safe to surface code-level message
@@ -30,5 +36,6 @@ async def stripe_webhook(request: Request):
         raise HTTPException(status_code=400, detail={"received": False, "error": safe})
     except Exception:
         # Do not leak Stripe SDK / internal exception strings to clients
+        # Failed events stay unprocessed so Stripe can retry.
         logger.exception("Webhook processing failed")
         raise HTTPException(status_code=400, detail={"received": False, "error": "Webhook processing failed"})

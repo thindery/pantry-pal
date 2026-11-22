@@ -201,3 +201,236 @@ def test_invoice_paid_does_not_replace_a_different_active_subscription():
 
     mock_txn.assert_called_once()
     mock_update.assert_not_called()
+
+
+def test_should_handle_skips_already_processed_event():
+    processed_rows = iter(
+        [
+            None,  # INSERT ON CONFLICT DO NOTHING returned no row
+            {"processed": True},
+        ]
+    )
+
+    class FakeCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def execute(self, sql, params=None):
+            self.sql = sql
+
+        def fetchone(self):
+            try:
+                return next(processed_rows)
+            except StopIteration:
+                return {"processed": True}
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    with patch("backend.services.stripe_service.db_connection") as mock_db:
+        mock_db.return_value.__enter__.return_value = FakeConn()
+        # First call: INSERT returns nothing (conflict), SELECT processed=True
+        assert (
+            stripe_service.should_handle_webhook_event(
+                {"id": "evt_done", "type": "invoice.paid", "data": {"object": {}}}
+            )
+            is False
+        )
+
+
+def test_should_handle_retries_unprocessed_event():
+    class FakeCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def execute(self, sql, params=None):
+            self.sql = sql
+
+        def fetchone(self):
+            if "INSERT" in (self.sql or ""):
+                return None
+            return {"processed": False}
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    with patch("backend.services.stripe_service.db_connection") as mock_db:
+        mock_db.return_value.__enter__.return_value = FakeConn()
+        assert (
+            stripe_service.should_handle_webhook_event(
+                {"id": "evt_retry", "type": "invoice.paid", "data": {"object": {}}}
+            )
+            is True
+        )
+
+
+def test_new_checkout_customer_includes_email():
+    existing = {"stripeCustomerId": None}
+    created = type("C", (), {"id": "cus_new"})()
+    session = type("S", (), {"id": "cs_new", "url": "https://checkout.stripe.com/c"})()
+    with patch.dict("backend.services.stripe_service.PRICE_IDS", {"pro": {"month": "price_test"}}, clear=False), patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value=existing,
+    ), patch(
+        "backend.services.stripe_service.update_user_subscription",
+    ), patch(
+        "backend.services.stripe_service._first_active_subscription",
+        return_value=None,
+    ), patch(
+        "backend.services.stripe_service._open_checkout_session",
+        return_value=None,
+    ), patch(
+        "backend.services.stripe_service.stripe.Customer.create",
+        return_value=created,
+    ) as mock_create, patch(
+        "backend.services.stripe_service.stripe.checkout.Session.create",
+        return_value=session,
+    ):
+        import asyncio
+
+        asyncio.run(
+            stripe_service.create_checkout_session(
+                "user-1",
+                "pro",
+                "month",
+                "https://www.mypantryhub.com/checkout/success",
+                "https://www.mypantryhub.com/checkout/cancel",
+                email="member@example.com",
+                name="Member Example",
+            )
+        )
+    kwargs = mock_create.call_args.kwargs
+    assert kwargs["email"] == "member@example.com"
+    assert kwargs["name"] == "Member Example"
+    assert kwargs["metadata"]["userId"] == "user-1"
+
+
+def test_existing_customer_without_email_is_backfilled():
+    with patch(
+        "backend.services.stripe_service.stripe.Customer.retrieve",
+        return_value={"id": "cus_1", "email": None, "name": None},
+    ), patch(
+        "backend.services.stripe_service.stripe.Customer.modify"
+    ) as mock_modify:
+        stripe_service._ensure_customer_email("cus_1", email="member@example.com", name="Member")
+    mock_modify.assert_called_once_with("cus_1", email="member@example.com", name="Member")
+
+
+def test_subscription_updated_keeps_active_status_when_cancel_at_period_end():
+    event = {
+        "object": {
+            "id": "sub_kept",
+            "status": "active",
+            "cancel_at_period_end": True,
+            "metadata": {"userId": "user-1", "tier": "pro"},
+            "items": {"data": [{"current_period_end": 1797884965, "price": {"id": "price_1"}}]},
+        }
+    }
+    existing = {
+        "stripeSubscriptionId": "sub_kept",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+    }
+    with patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value=existing,
+    ), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook("customer.subscription.updated", event)
+    updates = mock_update.call_args.args[1]
+    assert updates["subscriptionStatus"] == "active"
+    assert updates["cancelAtPeriodEnd"] is True
+    assert updates["subscriptionEndDate"] == "2026-12-21T20:29:25+00:00"
+
+
+def test_refund_of_linked_subscription_downgrades_when_no_other_active_sub():
+    charge = {
+        "id": "ch_linked",
+        "customer": "cus_1",
+        "invoice": "in_1",
+        "amount": 499,
+        "amount_refunded": 499,
+        "refunded": True,
+        "currency": "usd",
+    }
+    invoice = {"id": "in_1", "subscription": "sub_kept", "customer": "cus_1"}
+    sub = {"id": "sub_kept", "metadata": {"userId": "user-1", "tier": "pro"}}
+    existing = {
+        "stripeSubscriptionId": "sub_kept",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+        "stripeCustomerId": "cus_1",
+    }
+    with patch("backend.services.stripe_service.admin_service.record_refund") as mock_refund, patch(
+        "backend.services.stripe_service.stripe.Invoice.retrieve",
+        return_value=invoice,
+    ), patch(
+        "backend.services.stripe_service.stripe.Subscription.retrieve",
+        return_value=sub,
+    ), patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value=existing,
+    ), patch(
+        "backend.services.stripe_service._first_active_subscription",
+        return_value=None,
+    ), patch(
+        "backend.services.stripe_service.downgrade_to_free"
+    ) as mock_down:
+        stripe_service.process_webhook("charge.refunded", {"object": charge})
+    mock_refund.assert_called_once()
+    mock_down.assert_called_once_with("user-1")
+
+
+def test_refund_of_duplicate_subscription_does_not_downgrade():
+    charge = {
+        "id": "ch_extra",
+        "customer": "cus_1",
+        "invoice": "in_extra",
+        "amount": 499,
+        "amount_refunded": 499,
+        "refunded": True,
+        "currency": "usd",
+    }
+    invoice = {"id": "in_extra", "subscription": "sub_extra", "customer": "cus_1"}
+    sub = {"id": "sub_extra", "metadata": {"userId": "user-1", "tier": "pro"}}
+    existing = {
+        "stripeSubscriptionId": "sub_kept",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+        "stripeCustomerId": "cus_1",
+    }
+    with patch("backend.services.stripe_service.admin_service.record_refund"), patch(
+        "backend.services.stripe_service.stripe.Invoice.retrieve",
+        return_value=invoice,
+    ), patch(
+        "backend.services.stripe_service.stripe.Subscription.retrieve",
+        return_value=sub,
+    ), patch(
+        "backend.services.stripe_service.get_user_subscription",
+        return_value=existing,
+    ), patch(
+        "backend.services.stripe_service.downgrade_to_free"
+    ) as mock_down:
+        stripe_service.process_webhook("charge.refunded", {"object": charge})
+    mock_down.assert_not_called()
