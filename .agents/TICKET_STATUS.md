@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 5:05 PM CT (PP-141–PP-143 implemented, pending deploy)
+Last updated: 2026-11-22, 5:01 PM CT (PP-147–PP-155 e2e test backlog filed)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -18,9 +18,9 @@ Last updated: 2026-11-22, 5:05 PM CT (PP-141–PP-143 implemented, pending deplo
 | Done | 94 (previous plus PP-141–PP-143; pending deploy) |
 | In progress | 0 |
 | Ready | 30 (PP-144–PP-146 still open; PP-141–PP-143 done pending deploy) |
-| Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
+| Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 3 · P1: 12 · P2: 17 · P3: 3 (35 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 18 · P2: 18 · P3: 3 (44 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
 
 ---
@@ -30,15 +30,17 @@ Last updated: 2026-11-22, 5:05 PM CT (PP-141–PP-143 implemented, pending deplo
 
 Triage board for work that is not done. Area inventories later in this file stay as historical context. PP-109 was split into PP-117–PP-122 and is not listed here.
 
-### P0 — broken or blocking revenue/customers now (3)
+### P0 — broken or blocking revenue/customers now (5)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
 | PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
+| PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (12)
+### P1 — next up, high impact (18)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -54,8 +56,14 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
 | PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
+| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
+| PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
+| PP-149 | E2E: barcode scan including Quick Scan | 📋 Backlog | E2E |
+| PP-150 | E2E: inventory quantity +/- | 📋 Backlog | E2E |
+| PP-151 | E2E: shopping list | 📋 Backlog | E2E |
+| PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
-### P2 — soon (17)
+### P2 — soon (18)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -76,6 +84,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
 | PP-145 | Desktop Pantry layout and 44px icon targets | 📋 Open | Design review |
 | PP-146 | Refresh `/design-system` to the shipped UI and brand guide | 📋 Open | Design review |
+| PP-155 | E2E: analytics consent path | 📋 Backlog | E2E |
 
 ### P3 — someday (3)
 
@@ -346,6 +355,23 @@ Tylor asked for a designer-style review of every screen, in the same spirit as B
 | PP-145 | Desktop Pantry layout and 44px icon targets | P2 | 📋 Open |
 | PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | 📋 Open |
 
+
+## E2E regression suite (2026-11-22)
+
+Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in this pass (no implementation, no installs, no deploys). Coding later is agy or Hermes. All path tickets depend on the PP-147 harness. Billing/entitlement paths (PP-152, PP-153) are P0. Stripe keys are TEST mode from server/CI env only; Resend assertions use a mock or test sink and must never email real customers.
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
+| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
+| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
+| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
+| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
+
 ## Future / backlog
 
 Documented for later; no implementation in this pass.
@@ -355,6 +381,15 @@ Documented for later; no implementation in this pass.
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
 | PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
 | PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
+| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
+| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
+| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
+| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
+| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
 
 ## Verification
 
