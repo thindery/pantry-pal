@@ -124,11 +124,11 @@ WHERE id IN (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pantry_items_user_canon_barcode
 ON pantry_items (
     user_id,
-    CASE
-        WHEN barcode ~ '^[0-9]+$' AND length(barcode) = 13 AND barcode LIKE '0%'
+    (CASE
+        WHEN barcode ~ '^[0-9]+$' AND length(barcode) = 13 AND left(barcode, 1) = '0'
             THEN substring(barcode FROM 2)
         ELSE barcode
-    END
+    END)
 )
 WHERE barcode IS NOT NULL AND barcode <> '';
 
