@@ -22,6 +22,9 @@ The green toast comes from `success()` inside `handleSaveScannedProduct`. The da
 - Do not fire the global green `success()` toast for Quick Scan adds (including + and unknown-name saves).
 - Normal (non-Quick Scan) mode can keep the existing green success toast; do not also show the image toast there.
 - Keep the session ledger and PP-080/PP-081 behavior otherwise unchanged.
+- Ledger +/− is optimistic: the count updates instantly, buttons stay tappable, and one API call is sent ~800ms after the last tap with the net delta. Revert and show a small error toast if that save fails.
+- Cheap latency fix: cache the bearer token in memory so each adjust does not first wait on `/api/auth/token` (this was the likely ~5s per-tap stall on a phone, compounded by buttons staying disabled until the previous save finished).
+
 
 ## Acceptance Criteria
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { ScanBarcodeView } from "@/components/dashboard/views/scan-barcode-view";
 import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct } from "@/types";
@@ -340,42 +340,76 @@ describe("ScanBarcodeView session ledger", () => {
     vi.useRealTimers();
   });
 
-  it("increments inventory and the row count when + is pressed", async () => {
+  it("updates the count instantly and saves the net delta after a short pause", async () => {
     render(<ScanBarcodeView />);
     fireEvent.click(screen.getByTestId("simulate-known-scan"));
     await waitFor(() =>
       expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1")
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Increase Canned Beans/i }));
-    await waitFor(() =>
-      expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(2)
-    );
-    expect(mockHandleSaveScannedProduct).toHaveBeenLastCalledWith(
-      expect.objectContaining({ barcode: "012345678905" }),
-      1,
-      { silent: true }
-    );
-    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("2");
-    expect(screen.getByTestId("quick-scan-image-toast")).toHaveTextContent(/2 units/i);
+    vi.useFakeTimers();
+    const plus = screen.getByRole("button", { name: /Increase Canned Beans/i });
+    fireEvent.click(plus);
+    fireEvent.click(plus);
+    fireEvent.click(plus);
+    fireEvent.click(plus);
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("5");
+    expect(screen.getByTestId("quick-scan-image-toast")).toHaveTextContent(/5 units/i);
+    expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(1);
+    expect(mockHandleAdjustQuantity).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+    expect(mockHandleAdjustQuantity).toHaveBeenCalledTimes(1);
+    expect(mockHandleAdjustQuantity).toHaveBeenCalledWith("item-beans", 4, {
+      silent: true,
+      source: "BARCODE_SCAN",
+    });
+    vi.useRealTimers();
   });
 
-  it("decrements inventory and removes the row when − reaches zero", async () => {
+  it("decrements immediately and removes the row when − reaches zero", async () => {
     render(<ScanBarcodeView />);
     fireEvent.click(screen.getByTestId("simulate-known-scan"));
     await waitFor(() =>
       expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument()
     );
 
+    vi.useFakeTimers();
     fireEvent.click(screen.getByRole("button", { name: /Decrease Canned Beans/i }));
-    await waitFor(() =>
-      expect(mockHandleAdjustQuantity).toHaveBeenCalledWith("item-beans", -1, {
-        silent: true,
-        source: "BARCODE_SCAN",
-      })
-    );
     expect(screen.queryByTestId("session-row-012345678905")).not.toBeInTheDocument();
     expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+    expect(mockHandleAdjustQuantity).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+    expect(mockHandleAdjustQuantity).toHaveBeenCalledWith("item-beans", -1, {
+      silent: true,
+      source: "BARCODE_SCAN",
+    });
+    vi.useRealTimers();
+  });
+
+  it("reverts the count and shows an error if the delayed save fails", async () => {
+    mockHandleAdjustQuantity.mockRejectedValueOnce(new Error("nope"));
+    render(<ScanBarcodeView />);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1")
+    );
+
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: /Increase Canned Beans/i }));
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("2");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+    expect(mockError).toHaveBeenCalledWith("Failed to update quantity");
+    expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1");
+    vi.useRealTimers();
   });
 
   it("clears the session list without changing inventory", async () => {

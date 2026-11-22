@@ -7,6 +7,7 @@ import type { BarcodeProduct, PantryItem } from "@/types";
 import { ApiError } from "@/services/apiService";
 
 const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
+const SESSION_FLUSH_MS = 800;
 
 interface ScanToast {
   id: string;
@@ -19,6 +20,7 @@ interface SessionEntry {
   itemId: string;
   product: BarcodeProduct;
   sessionQty: number;
+  savedQty: number;
 }
 
 function sessionKey(product: BarcodeProduct): string {
@@ -37,7 +39,6 @@ export function ScanBarcodeView() {
   const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
   const [sessionEntries, setSessionEntries] = useState<SessionEntry[]>([]);
   const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
-  const [busyKey, setBusyKey] = useState<string | null>(null);
   const [isSavingUnknown, setIsSavingUnknown] = useState(false);
   const [unknownProductName, setUnknownProductName] = useState("");
   const [quickScan, setQuickScan] = useState<boolean>(() => {
@@ -56,10 +57,19 @@ export function ScanBarcodeView() {
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quickScanRef = useRef(quickScan);
   const sessionEntriesRef = useRef<SessionEntry[]>([]);
+  const flushTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const flushingKeysRef = useRef<Set<string>>(new Set());
+  const handleAdjustQuantityRef = useRef(handleAdjustQuantity);
+  const showErrorRef = useRef(showError);
 
   useEffect(() => {
     quickScanRef.current = quickScan;
   }, [quickScan]);
+
+  useEffect(() => {
+    handleAdjustQuantityRef.current = handleAdjustQuantity;
+    showErrorRef.current = showError;
+  }, [handleAdjustQuantity, showError]);
 
   useEffect(() => {
     sessionEntriesRef.current = sessionEntries;
@@ -74,10 +84,13 @@ export function ScanBarcodeView() {
     }
   }, [quickScan]);
 
+  const flushAllPendingRef = useRef<() => void>(() => {});
+
   useEffect(() => {
     return () => {
       if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      flushAllPendingRef.current();
     };
   }, []);
 
@@ -93,25 +106,34 @@ export function ScanBarcodeView() {
     }, 1600);
   }, []);
 
+  const setEntries = useCallback((updater: (prev: SessionEntry[]) => SessionEntry[]) => {
+    setSessionEntries((prev) => {
+      const next = updater(prev);
+      sessionEntriesRef.current = next;
+      return next;
+    });
+  }, []);
+
   const bumpOrAddEntry = useCallback((product: BarcodeProduct, item: PantryItem) => {
     const key = sessionKey(product);
-    setSessionEntries((prev) => {
+    setEntries((prev) => {
       const existing = prev.find((entry) => entry.key === key);
       if (existing) {
         return [
           {
             ...existing,
             sessionQty: existing.sessionQty + 1,
+            savedQty: existing.savedQty + 1,
             product,
             itemId: item.id,
           },
           ...prev.filter((entry) => entry.key !== key),
         ];
       }
-      return [{ key, itemId: item.id, product, sessionQty: 1 }, ...prev];
+      return [{ key, itemId: item.id, product, sessionQty: 1, savedQty: 1 }, ...prev];
     });
     highlightEntry(key);
-  }, [highlightEntry]);
+  }, [highlightEntry, setEntries]);
 
   const showAddedToast = useCallback((product: BarcodeProduct, quantity: number) => {
     const toastId = Math.random().toString(36).substring(2, 9);
@@ -163,54 +185,113 @@ export function ScanBarcodeView() {
     }
   }, [handleSaveScannedProduct, showError, bumpOrAddEntry, showAddedToast]);
 
-  const handleSessionIncrement = useCallback(async (entry: SessionEntry) => {
-    if (busyKey) return;
-    setBusyKey(entry.key);
-    try {
-      const item = await handleSaveScannedProduct(entry.product, 1, { silent: true });
-      if (item?.id) {
-        const quantity = nextSessionQty(entry.product);
-        bumpOrAddEntry(entry.product, item);
-        showAddedToast(entry.product, quantity);
-      }
-    } catch (_err) {
-      showError("Failed to update quantity");
-    } finally {
-      setBusyKey(null);
+  const flushSessionKey = useCallback(async (key: string) => {
+    const pendingTimer = flushTimersRef.current.get(key);
+    if (pendingTimer) {
+      clearTimeout(pendingTimer);
+      flushTimersRef.current.delete(key);
     }
-  }, [busyKey, handleSaveScannedProduct, bumpOrAddEntry, showAddedToast, showError]);
-
-  const handleSessionDecrement = useCallback(async (entry: SessionEntry) => {
-    if (busyKey || entry.sessionQty <= 0) return;
-    setBusyKey(entry.key);
+    const entry = sessionEntriesRef.current.find((row) => row.key === key);
+    if (!entry) return;
+    const delta = entry.sessionQty - entry.savedQty;
+    if (delta === 0) return;
+    if (flushingKeysRef.current.has(key)) return;
+    flushingKeysRef.current.add(key);
+    const flushTarget = entry.sessionQty;
     try {
-      await handleAdjustQuantity(entry.itemId, -1, {
+      await handleAdjustQuantityRef.current(entry.itemId, delta, {
         silent: true,
         source: "BARCODE_SCAN",
       });
-      setSessionEntries((prev) => {
-        const current = prev.find((row) => row.key === entry.key);
-        if (!current || current.sessionQty <= 1) {
-          return prev.filter((row) => row.key !== entry.key);
+      setEntries((prev) =>
+        prev
+          .map((row) => (row.key === key ? { ...row, savedQty: flushTarget } : row))
+          .filter((row) => row.sessionQty > 0 || row.savedQty > 0)
+      );
+    } catch {
+      setEntries((prev) => {
+        const current = prev.find((row) => row.key === key);
+        if (!current) {
+          return entry.savedQty > 0
+            ? [{ ...entry, sessionQty: entry.savedQty }, ...prev]
+            : prev;
         }
-        return prev.map((row) =>
-          row.key === entry.key ? { ...row, sessionQty: row.sessionQty - 1 } : row
-        );
+        return prev
+          .map((row) =>
+            row.key === key ? { ...row, sessionQty: row.savedQty } : row
+          )
+          .filter((row) => row.sessionQty > 0);
       });
-      if (entry.sessionQty > 1) {
-        highlightEntry(entry.key);
-      }
-    } catch (_err) {
-      showError("Failed to update quantity");
+      showErrorRef.current("Failed to update quantity");
     } finally {
-      setBusyKey(null);
+      flushingKeysRef.current.delete(key);
+      const latest = sessionEntriesRef.current.find((row) => row.key === key);
+      if (latest && latest.sessionQty !== latest.savedQty) {
+        const later = setTimeout(() => {
+          flushTimersRef.current.delete(key);
+          void flushSessionKey(key);
+        }, SESSION_FLUSH_MS);
+        flushTimersRef.current.set(key, later);
+      }
     }
-  }, [busyKey, handleAdjustQuantity, highlightEntry, showError]);
+  }, [setEntries]);
+
+  const scheduleFlush = useCallback((key: string) => {
+    const existingTimer = flushTimersRef.current.get(key);
+    if (existingTimer) clearTimeout(existingTimer);
+    const timer = setTimeout(() => {
+      flushTimersRef.current.delete(key);
+      void flushSessionKey(key);
+    }, SESSION_FLUSH_MS);
+    flushTimersRef.current.set(key, timer);
+  }, [flushSessionKey]);
+
+  const flushAllPending = useCallback(() => {
+    const keys = new Set<string>([
+      ...sessionEntriesRef.current.map((row) => row.key),
+      ...flushTimersRef.current.keys(),
+    ]);
+    for (const key of keys) {
+      void flushSessionKey(key);
+    }
+  }, [flushSessionKey]);
+
+  const applyOptimisticDelta = useCallback((entry: SessionEntry, delta: number) => {
+    const current = sessionEntriesRef.current.find((row) => row.key === entry.key) ?? entry;
+    if (delta < 0 && current.sessionQty <= 0) return;
+    const nextQty = Math.max(0, current.sessionQty + delta);
+    setEntries((prev) => {
+      const existing = prev.find((row) => row.key === entry.key);
+      if (!existing) return prev;
+      const updated = { ...existing, sessionQty: nextQty };
+      const rest = prev.filter((row) => row.key !== entry.key);
+      if (delta > 0) return [updated, ...rest];
+      return [...prev.map((row) => (row.key === entry.key ? updated : row))];
+    });
+    if (nextQty > 0) {
+      highlightEntry(entry.key);
+      showAddedToast(entry.product, nextQty);
+    }
+    scheduleFlush(entry.key);
+  }, [setEntries, highlightEntry, showAddedToast, scheduleFlush]);
+
+  const handleSessionIncrement = useCallback((entry: SessionEntry) => {
+    applyOptimisticDelta(entry, 1);
+  }, [applyOptimisticDelta]);
+
+  const handleSessionDecrement = useCallback((entry: SessionEntry) => {
+    applyOptimisticDelta(entry, -1);
+  }, [applyOptimisticDelta]);
 
   const handleClearSession = useCallback(() => {
-    setSessionEntries([]);
+    flushAllPending();
+    setEntries(() => []);
     setHighlightedKey(null);
-  }, []);
+  }, [flushAllPending, setEntries]);
+
+  useEffect(() => {
+    flushAllPendingRef.current = flushAllPending;
+  }, [flushAllPending]);
 
   const handleSaveUnknownProduct = useCallback(async () => {
     if (!unknownProduct || !unknownProductName.trim()) return;
@@ -270,7 +351,7 @@ export function ScanBarcodeView() {
         onCancel={leaveScan}
       />
 
-      {quickScan && sessionEntries.length > 0 && (
+      {quickScan && sessionEntries.some((entry) => entry.sessionQty > 0) && (
         <div
           className="max-w-lg mx-auto mt-4 px-1"
           data-testid="quick-scan-ledger"
@@ -287,7 +368,7 @@ export function ScanBarcodeView() {
             </button>
           </div>
           <ul className="max-h-40 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
-            {sessionEntries.map((entry) => {
+            {sessionEntries.filter((entry) => entry.sessionQty > 0).map((entry) => {
               const label = entry.product.name?.trim() || entry.product.barcode;
               const isHighlighted = highlightedKey === entry.key;
               return (
@@ -312,7 +393,7 @@ export function ScanBarcodeView() {
                     <button
                       type="button"
                       onClick={() => handleSessionDecrement(entry)}
-                      disabled={busyKey === entry.key || entry.sessionQty <= 0}
+                      disabled={entry.sessionQty <= 0}
                       className="w-11 h-11 rounded-xl bg-slate-100 text-slate-800 text-xl font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
                       aria-label={`Decrease ${label}`}
                     >
@@ -321,8 +402,7 @@ export function ScanBarcodeView() {
                     <button
                       type="button"
                       onClick={() => handleSessionIncrement(entry)}
-                      disabled={busyKey === entry.key}
-                      className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-40 transition-colors"
+                      className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
                       aria-label={`Increase ${label}`}
                     >
                       +

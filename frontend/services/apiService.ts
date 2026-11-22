@@ -2,7 +2,7 @@ import type { PantryItem, Activity, TierInfo, BarcodeProduct, ShoppingSession, S
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { getApiBaseUrl } from '@/lib/env';
-import { getBearerToken } from '@/lib/get-bearer-token';
+import { clearCachedBearerToken, getBearerToken } from '@/lib/get-bearer-token';
 import { ApiError, parseApiErrorBody } from '@/lib/api-error';
 
 export { ApiError };
@@ -21,7 +21,11 @@ async function resolveAuthToken(): Promise<string | null> {
 }
 
 // Helper for API calls
-export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function fetchApi<T>(
+  endpoint: string,
+  options?: RequestInit,
+  retryOnAuth = true,
+): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -36,6 +40,11 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
     headers,
     ...options,
   });
+
+  if (response.status === 401 && retryOnAuth) {
+    clearCachedBearerToken();
+    return fetchApi<T>(endpoint, options, false);
+  }
 
   if (!response.ok) {
     let body: unknown = null;
