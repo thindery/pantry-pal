@@ -4,6 +4,7 @@
 **Priority:** P2
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
+**Updated:** 2026-11-22, 4:26 PM America/Chicago — directory drafts written, nothing submitted
 **Depends on:** PP-101, PP-102 (honest public copy first), preferably PP-104 and PP-108
 **Blocks:** —
 **Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk, 2026-11-22)
@@ -25,7 +26,16 @@ Pantry Hub has no listed presence on the usual free launch/SaaS directories and 
 
 ## Acceptance Criteria
 
-- [ ] Tracker file exists in the repo with the planned first wave (status: idea/qualified, not submitted)
-- [ ] Draft blurbs for the first-wave directories are in the repo or attached to this ticket
-- [ ] No live submissions, posts, or outreach have been made from this ticket
-- [ ] A short “needs Tylor’s yes” checklist is included (PH timing, AlternativeTo, any named community post)
+- [x] Tracker table and first-wave drafts are in `.agents/docs/pp-directory-drafts.md` (and `/workspace/pantry-hub/directory-drafts.md`); statuses are idea/qualified only, no `link_url`s
+- [x] Draft blurbs (name, tagline, short + long, category, tags, pricing, alternatives) for AlternativeTo, SaaSHub, Indie Hackers, SourceForge, Uneed, Peerlist, Fazier, plus Microlaunch, OpenHunts, Tiny Launch, and Slant
+- [x] No live submissions, posts, or outreach have been made from this ticket
+- [x] “Needs Tylor’s yes” checklist is in that doc (including PH timing and any community post)
+- [ ] Tylor approves the copy and, separately, each submission when it is time
+
+---
+
+## Drafts (2026-11-22, ~4:30 PM America/Chicago)
+
+Copy is in `.agents/docs/pp-directory-drafts.md`. Shared blurb is truthful only: barcode-scan pantry inventory, Quick Scan, receipt photo, shopping list, web app, Free / Pro $4.99/mo or $39.99/yr / Family $7.99/mo or $59.99/yr (verified from the live pricing page). No voice/Gemini, no expiration tracking, no fake stats. Alternatives to list: Pantry Check, NoWaste, Grocy, KitchenPal.
+
+Nothing has been submitted.

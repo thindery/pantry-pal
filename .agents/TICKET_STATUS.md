@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-123–PP-129 marketing dashboard tickets filed; PP-117–PP-122 analytics / Search Console already filed)
+Last updated: 2026-11-22, 4:26 PM CT (Tylor SEO follow-up: PP-101 wording + item count, expiry rule, PP-109 methods, PP-111 drafts)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,12 +13,12 @@ Last updated: 2026-11-22 (PP-123–PP-129 marketing dashboard tickets filed; PP-
 
 | | Count |
 |--|-------|
-| Done | 87 (includes PP-088–PP-094, PP-096–PP-100, PP-101, PP-102, PP-112, PP-113) |
+| Done | 86 (includes PP-088–PP-094, PP-096–PP-100, PP-102, PP-112, PP-113; PP-101 reopened for copy follow-up) |
 | In progress | 0 |
-| Ready | 21 (PP-095 Resend DNS; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard) |
+| Ready | 22 (PP-095 Resend DNS; PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Google sign-in for PP-117 GA4, PP-118 Search Console, PP-119 Bing |
+| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
 
 ---
 
@@ -198,7 +198,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | ✅ Done |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open (Tylor copy follow-up; 206 items counted) |
 | PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
 | PP-104 | Allow public OG images and add favicon/logo assets | P0 | 📋 Open |
@@ -208,7 +208,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
 | PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
 | PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
-| PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open |
+| PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open (drafts in `.agents/docs/pp-directory-drafts.md`; nothing submitted) |
 
 
 ## Analytics / Search Console (2026-11-22)

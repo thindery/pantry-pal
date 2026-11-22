@@ -4,6 +4,7 @@
 **Priority:** P1
 **Phase:** Analytics / Search Console (audit 2026-11-22)
 **Created:** 2026-11-22
+**Updated:** 2026-11-22, 4:26 PM America/Chicago — Tylor yes; DNS TXT / sc-domain confirmed
 **Owner:** Tylor (Google sign-in to add the property and click verify / submit); agent can add the DNS TXT record once Tylor pastes the token
 **Needs Tylor sign-in:** Yes — [search.google.com/search-console](https://search.google.com/search-console) on `thindery@gmail.com`
 **Depends on:** Prefer submitting the sitemap after PP-105 (auth/signin is in the live sitemap today and should be noindexed / removed first)
@@ -41,3 +42,13 @@ Root layout has only a commented Google Search Console placeholder (`frontend/ap
 - [ ] `google-site-verification` TXT is present on the apex (and only that verification value)
 - [ ] Sitemap is submitted after PP-105 hygiene is live, or Tylor has accepted submitting the current one
 - [ ] No invented GSC metrics in tickets, docs, or marketing
+
+---
+
+## Confirmation (SEO desk, 2026-11-22, ~4:30 PM America/Chicago)
+
+- Public NS for `mypantryhub.com`: `ivy.ns.cloudflare.com` and `newt.ns.cloudflare.com` (Cloudflare).
+- Connected Search Console (`list_sites`) has `sc-domain:justwithai.com`, `sc-domain:shipinaday.com`, `sc-domain:staffingplusspringfield.com`, and `https://bragle.app/`. **No mypantryhub.com property yet.**
+- Recommendation stays: **Domain property** `sc-domain:mypantryhub.com` verified with a **DNS TXT** record (no HTML meta / no `layout.tsx` change). This matches the other Peak Collective custom domains.
+- Tylor approved GSC setup at 4:26 PM CT. Do **not** add the property via the connector in this pass; the parent desk will add it once this method is set. Tylor still has to create the Domain property in the GSC UI, paste/send the TXT token, and click **Verify** after the record is in Cloudflare.
+- Full step list also recorded on parent ticket PP-109.

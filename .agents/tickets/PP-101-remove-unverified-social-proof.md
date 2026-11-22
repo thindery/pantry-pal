@@ -1,10 +1,11 @@
 # PP-101: Remove unverifiable social proof, ratings schema, and placeholder testimonials
 
-**Status:** ✅ Done
+**Status:** 📋 Open (Tylor copy follow-up, 2026-11-22 4:26 PM CT)
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
-**Completed:** 2026-11-22
+**Completed (original fake-proof removal):** 2026-11-22
+**Updated:** 2026-11-22, 4:26 PM America/Chicago — Tylor copy + item-count follow-up
 **Depends on:** —
 **Blocks:** PP-111 (no public listings while fake proof is live), Product Hunt / review directories
 **Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk, 2026-11-22)
@@ -43,3 +44,41 @@ Removed every invented number, rating, testimonial, and review/AggregateRating J
 - Footer CTA: “Start free today — no credit card required.”
 
 Privacy and terms had none of the fake claims. Follow-up for real testimonials, real counts, and Review schema only after there is first-party evidence: **PP-114**.
+
+---
+
+## Follow-up (Tylor, 2026-11-22, 4:26 PM America/Chicago)
+
+The original invented stats, testimonials, and review / `aggregateRating` JSON-LD are already gone on the live homepage (commit `5bde620`). Do not put them back. Tylor asked for generic replacement lines, and for a production item count before “Hundreds of items tracked” goes live.
+
+### Production item count (read-only)
+
+- When: Sunday, Nov 22, 2026, about 4:29 PM America/Chicago
+- How: `ssh ovh`, then `docker exec` into `pantry-pal-db` as `pantry_pal_user` / `pantry_pal_prod`. Query only: `SELECT COUNT(*) AS pantry_item_rows, COUNT(DISTINCT user_id) AS users_with_items FROM pantry_items;` No writes. Credentials were not printed.
+- Result: **206** `pantry_items` rows, **2** users with items.
+
+206 is just over the ~200 bar, so the approved line **“Hundreds of items tracked”** may be used. If a later count falls under ~200, switch to the softer line: “Tracking pantry items for households across the country.” Do not invent a more precise public number than “hundreds.”
+
+### Approved public wording (not live yet — no product-code change in this ticket update)
+
+- “Used by households across the country”
+- “Hundreds of items tracked”
+
+Current live/repo proof still uses “Built by a home cook for real pantries,” “Looks up 3M+ products” (Open Food Facts catalog size, not Pantry Hub’s own item count), and does not yet use Tylor’s two lines. A later code change should add those lines and keep review / `aggregateRating` schema **entirely removed**.
+
+### Expiration tracking is not on the roadmap
+
+**Hard rule:** expiration tracking, expiry dates, “expiring soon,” and similar claims must not appear in marketing copy, FAQs, schema, or directory blurbs. Do not imply the app tracks waste via expiry.
+
+Live and repo homepage still have this Smart Analytics line, which must be removed or rewritten in the same copy pass:
+
+> Track usage patterns, identify waste, and get insights on your household consumption.
+
+That is a waste/expiry-adjacent claim. Rephrase to shipped behavior only (for example usage patterns or shopping lists from low stock). Dashboard “Expiring Soon” / “Expired” filters are not a marketing feature.
+
+### Follow-up acceptance
+
+- [ ] Homepage (and any other public surface) uses “Used by households across the country” and “Hundreds of items tracked” (or the softer line if a new count is under ~200)
+- [ ] Review / `aggregateRating` JSON-LD stays completely absent
+- [ ] No expiration, expiry, “expiring soon,” or “identify waste” claims remain on the marketing site
+- [ ] This follow-up is product copy only after this ticket update; implement via the usual code path, do not sneak it into a tickets-only commit

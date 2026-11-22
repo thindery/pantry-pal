@@ -4,6 +4,7 @@
 **Priority:** P2
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
+**Updated:** 2026-11-22, 4:26 PM America/Chicago — expiry is not on the roadmap
 **Depends on:** PP-108 (first pages and truthful landing), PP-101–PP-106 (honesty + schema)
 **Blocks:** —
 **Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk, 2026-11-22)
@@ -21,7 +22,7 @@ Volumes are unknown; do not invent them. Target questions are qualitative (see t
 
 - Expand visible FAQs (all answers in HTML) with questions people actually ask, including an honest “is there a native iOS/Android app?” (mobile web) and “what if a barcode is not found?”
 - Add one careful comparison page at a time, only claiming shipped features. Name collision note: a different product is called Pantry Pal — always say Pantry Hub in public copy.
-- Hold “how Pantry Hub tracks expiration dates / food waste” until expiry is a real feature. A general education article is allowed only if it does not imply the app tracks expiry today.
+- **Expiration tracking is not on the roadmap** (Tylor, 2026-11-22, 4:26 PM CT). Do not publish “how Pantry Hub tracks expiration dates” or food-waste guides that imply the app identifies waste or tracks expiry. Comparison pages must not list expiry as a Pantry Hub feature. A general education article is not worth doing if it would be read as a product claim.
 - If a blog is added, use Article/Breadcrumb schema, unique titles, and sitemap inclusion with real lastmod. Quality over a 2-posts-per-week calendar.
 - Internal-link the cluster from the homepage, footer, and related guides.
 
@@ -29,5 +30,5 @@ Volumes are unknown; do not invent them. Target questions are qualitative (see t
 
 - [ ] At least one comparison page and one additional answer-style guide are live, accurate, and internally linked
 - [ ] No invented search volumes, ratings, or competitor prices unless cited from a page opened at write time
-- [ ] No unshipped features (voice, native apps, expiry) presented as current
+- [ ] No unshipped features (voice, native apps) and no expiration / “identify waste” claims, even as roadmap copy
 - [ ] FAQ / schema on new pages matches visible text character for character
