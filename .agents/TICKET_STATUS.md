@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-091–PP-094 webhook idempotency, customer email, cancel-at-period-end, refunds)
+Last updated: 2026-11-22 (PP-096–PP-100 Resend helper and billing emails; sends no-op until a key is set)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -180,11 +180,11 @@ Each hardening item and each missing transactional email is its own ticket.
 | PP-093 | Keep Pro access until cancel-at-period-end actually ends | P1 | ✅ Done |
 | PP-094 | Handle Stripe refund webhooks | P2 | ✅ Done |
 | PP-095 | Finish Resend DNS — DKIM, apex SPF, and tighter DMARC | P2 | 📋 Open |
-| PP-096 | Wire a Resend send helper and env keys | P1 | 📋 Open |
-| PP-097 | Send a welcome email on first sign-in | P2 | 📋 Open |
-| PP-098 | Send a payment / subscription confirmation email | P1 | 📋 Open |
-| PP-099 | Send a payment-failed email | P1 | 📋 Open |
-| PP-100 | Send a cancellation confirmation email | P2 | 📋 Open |
+| PP-096 | Wire a Resend send helper and env keys | P1 | ✅ Done |
+| PP-097 | Send a welcome email on first sign-in | P2 | ✅ Done |
+| PP-098 | Send a payment / subscription confirmation email | P1 | ✅ Done |
+| PP-099 | Send a payment-failed email | P1 | ✅ Done |
+| PP-100 | Send a cancellation confirmation email | P2 | ✅ Done |
 
 
 ## SEO / AEO / marketing audit (2026-11-22)

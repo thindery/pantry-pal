@@ -19,13 +19,13 @@ import uuid
 
 from psycopg2.extras import Json
 
-from backend.services import admin_service
+from backend.services import admin_service, email_service
 from backend.services.subscription_service import (
     downgrade_to_free,
     get_user_subscription,
     update_user_subscription,
 )
-from backend.services.user_profile import get_user_id_by_customer
+from backend.services.user_profile import get_user_contact, get_user_id_by_customer
 from database.db import db_connection
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
@@ -535,6 +535,24 @@ def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
 
 
 
+def _recipient_email(user_id: str, customer_id: Optional[str] = None) -> Optional[str]:
+    try:
+        email = get_user_contact(user_id).get("email")
+        if email:
+            return email
+    except Exception:
+        logger = __import__("logging").getLogger(__name__)
+        logger.exception("Could not load user contact for email delivery")
+    if customer_id:
+        try:
+            customer = _to_dict(stripe.Customer.retrieve(customer_id))
+            return customer.get("email")
+        except Exception:
+            logger = __import__("logging").getLogger(__name__)
+            logger.exception("Could not load Stripe customer for email delivery")
+    return None
+
+
 def _apply_subscription_entitlement(user_id: str, tier: Optional[str], sub: dict[str, Any]) -> bool:
     """Grant or refresh Pro/Family from a Stripe subscription.
 
@@ -600,9 +618,19 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
             "stripeEventId": invoice.get("id"),
         }
     )
-    # Renewals and first invoices both grant/refresh entitlement, even at $0
-    # (promotion codes). Checkout.session.completed is no longer the only path.
-    _apply_subscription_entitlement(user_id, tier, sub)
+    applied = _apply_subscription_entitlement(user_id, tier, sub)
+    existing = get_user_subscription(user_id)
+    if applied or (existing or {}).get("stripeSubscriptionId") == subscription_id:
+        email_service.send_payment_confirmation(
+            user_id=user_id,
+            email=_recipient_email(user_id, invoice.get("customer") or sub.get("customer")),
+            invoice_id=invoice.get("id") or "",
+            tier=tier,
+            amount_cents=int(invoice.get("amount_paid") or 0),
+            currency=invoice.get("currency") or "usd",
+            period_end=(existing or {}).get("subscriptionEndDate"),
+            is_free_invoice=int(invoice.get("amount_paid") or 0) == 0,
+        )
 
 
 def _handle_invoice_failed(invoice: dict[str, Any]) -> None:
@@ -630,6 +658,17 @@ def _handle_invoice_failed(invoice: dict[str, Any]) -> None:
         }
     )
     update_user_subscription(user_id, {"subscriptionStatus": "past_due"})
+    customer_id = invoice.get("customer")
+    if not isinstance(sub, dict):
+        sub = _to_dict(sub)
+        customer_id = customer_id or sub.get("customer")
+    email_service.send_payment_failed(
+        user_id=user_id,
+        email=_recipient_email(user_id, customer_id),
+        invoice_id=invoice.get("id") or "",
+        amount_cents=int(invoice.get("amount_due") or 0),
+        currency=invoice.get("currency") or "usd",
+    )
 
 
 def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
@@ -656,7 +695,15 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
     # active/trialing while cancel_at_period_end is set.
     if _is_active_or_trialing(status) or status == "past_due":
         updates["subscriptionStatus"] = status
+    previously = bool((existing or {}).get("cancelAtPeriodEnd"))
     update_user_subscription(user_id, updates)
+    if updates.get("cancelAtPeriodEnd") and not previously:
+        email_service.send_cancellation_scheduled(
+            user_id=user_id,
+            email=_recipient_email(user_id, subscription.get("customer")),
+            subscription_id=event_id or "",
+            period_end=updates.get("subscriptionEndDate"),
+        )
 
 
 def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
@@ -685,6 +732,11 @@ def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
         )
         return
     downgrade_to_free(user_id)
+    email_service.send_subscription_ended(
+        user_id=user_id,
+        email=_recipient_email(user_id, customer_id),
+        subscription_id=deleted_id or "",
+    )
 
 
 def _handle_charge_refunded(charge: dict[str, Any]) -> None:

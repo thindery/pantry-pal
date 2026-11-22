@@ -5,7 +5,31 @@ from __future__ import annotations
 from unittest.mock import patch
 import asyncio
 
+import pytest
+
 from backend.services import stripe_service
+
+
+@pytest.fixture(autouse=True)
+def _noop_transactional_email():
+    with patch("backend.services.stripe_service.email_service.send_payment_confirmation", return_value={"skipped": True}), patch(
+        "backend.services.stripe_service.email_service.send_payment_failed",
+        return_value={"skipped": True},
+    ), patch(
+        "backend.services.stripe_service.email_service.send_cancellation_scheduled",
+        return_value={"skipped": True},
+    ), patch(
+        "backend.services.stripe_service.email_service.send_subscription_ended",
+        return_value={"skipped": True},
+    ), patch(
+        "backend.services.stripe_service.email_service.send_welcome",
+        return_value={"skipped": True},
+    ), patch(
+        "backend.services.stripe_service.get_user_contact",
+        return_value={"email": None, "name": None},
+    ):
+        yield
+
 
 
 class FakeStripeObject:

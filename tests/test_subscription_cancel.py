@@ -16,6 +16,8 @@ SAMPLE_SUB = {
 TIER_INFO = {"tier": "pro", "subscription": {"status": "active", "cancelAtPeriodEnd": True}}
 
 
+@patch("backend.routers.subscription.merge_contact", return_value={"email": "tylor@example.com", "name": "Tylor"})
+@patch("backend.routers.subscription.email_service.send_cancellation_scheduled", return_value={"skipped": True})
 @patch("backend.routers.subscription.pantry_service.get_all_items", return_value=[])
 @patch(
     "backend.routers.subscription.subscription_service.get_user_tier_info",
@@ -36,7 +38,7 @@ TIER_INFO = {"tier": "pro", "subscription": {"status": "active", "cancelAtPeriod
         current_period_start=None,
     ),
 )
-def test_cancel_keeps_active_status(mock_modify, mock_get, mock_update, mock_tier, mock_items, client, auth_headers):
+def test_cancel_keeps_active_status(mock_modify, mock_get, mock_update, mock_tier, mock_items, mock_email, mock_contact, client, auth_headers):
     response = client.post("/api/subscription/cancel", headers=auth_headers)
     assert response.status_code == 200
     mock_modify.assert_called_once()

@@ -18,6 +18,7 @@ from backend.routers import (
     admin,
     barcode,
     client_errors,
+    emails,
     health,
     items,
     receipts,
@@ -105,6 +106,7 @@ def create_app() -> FastAPI:
     app.include_router(admin.router)
     app.include_router(client_errors.router)
     app.include_router(scan.router)
+    app.include_router(emails.router)
 
     return app
 

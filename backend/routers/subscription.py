@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.auth_session import require_authenticated_user_id, resolve_authenticated_user
@@ -9,7 +11,9 @@ from backend.services.user_profile import merge_contact
 from backend.models.responses import error_response, success_response
 from backend.models.schemas import CheckoutRequest, PortalRequest
 from backend.lib.url_validation import validate_redirect_url
-from backend.services import pantry_service, stripe_service, subscription_service
+from backend.services import email_service, pantry_service, stripe_service, subscription_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/subscription", tags=["Subscription"])
 
@@ -151,7 +155,18 @@ async def cancel_subscription(user_id: str = Depends(require_authenticated_user_
         },
     )
     items = pantry_service.get_all_items(user_id)
-    return success_response(subscription_service.get_user_tier_info(user_id, len(items)))
+    info = subscription_service.get_user_tier_info(user_id, len(items))
+    try:
+        contact = merge_contact(user_id)
+        email_service.send_cancellation_scheduled(
+            user_id=user_id,
+            email=contact.get("email"),
+            subscription_id=sub["stripeSubscriptionId"],
+            period_end=period_end or sub.get("subscriptionEndDate"),
+        )
+    except Exception:
+        logger.exception("Cancellation email failed after the subscription was updated")
+    return success_response(info)
 
 
 @router.post("/reactivate")

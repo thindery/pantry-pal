@@ -36,6 +36,7 @@ ssh ovh "
   DEPLOY_START=\$(date +%s)
   DEPLOY_SITE='pantry-pal'
   DEPLOY_TAG='$TAG'
+  TAG="\$DEPLOY_TAG"
 
   if [ -f \"\$LOCK_FILE\" ]; then
     LOCK_PID=\$(cat \"\$LOCK_FILE\" 2>/dev/null || echo '')

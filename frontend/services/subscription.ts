@@ -163,6 +163,14 @@ export async function reactivateSubscription(): Promise<UserTierInfo> {
   return response.data;
 }
 
+export async function requestWelcomeEmail(): Promise<void> {
+  try {
+    await fetchApi('/api/emails/welcome', { method: 'POST' });
+  } catch {
+    // Welcome mail must never break the signed-in app.
+  }
+}
+
 // React Hook for subscription status
 export function useSubscription() {
   const { status } = useSession();

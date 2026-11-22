@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { requestWelcomeEmail } from "@/services/subscription";
 import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/components/Toast";
@@ -12,6 +14,15 @@ import { PantryProvider, usePantry } from "@/contexts/pantry-provider";
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isScanBarcode = pathname.replace(/\/+$/, "") === "/dashboard/scan-barcode";
+  const { status } = useSession();
+  const welcomeRequested = useRef(false);
+
+  useEffect(() => {
+    if (status !== "authenticated" || welcomeRequested.current) return;
+    welcomeRequested.current = true;
+    void requestWelcomeEmail();
+  }, [status]);
+
   const {
     toasts,
     removeToast,
