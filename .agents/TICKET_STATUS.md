@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (billing/email audit tickets PP-090–PP-100 + billing-and-email.md)
+Last updated: 2026-11-22 (billing/email PP-090–PP-100; SEO/AEO audit PP-101–PP-111)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-22 (billing/email audit tickets PP-090–PP-100 + billing-
 |--|-------|
 | Done | 51+ (includes PP-089) |
 | In progress | 0 |
-| Ready | 11 (PP-090–PP-100) |
+| Ready | 22 (PP-090–PP-100 billing/email; PP-101–PP-111 SEO/AEO) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
 
@@ -185,6 +185,26 @@ Each hardening item and each missing transactional email is its own ticket.
 | PP-098 | Send a payment / subscription confirmation email | P1 | 📋 Open |
 | PP-099 | Send a payment-failed email | P1 | 📋 Open |
 | PP-100 | Send a cancellation confirmation email | P2 | 📋 Open |
+
+
+## SEO / AEO / marketing audit (2026-11-22)
+
+**Doc:** `.agents/docs/seo-aeo-audit-2026-11-22.md`  
+Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July PP-031 / REMY-610–616 were marked complete; several of those items are still wrong or broken on the live site. These tickets supersede that “done” claim for marketing SEO/AEO. No deploy and no public posts from this audit.
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open |
+| PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | 📋 Open |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
+| PP-104 | Allow public OG images and add favicon/logo assets | P0 | 📋 Open |
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 📋 Open |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 📋 Open |
+| PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
+| PP-109 | Add Search Console and $0 analytics (needs Tylor’s yes) | P1 | 📋 Open |
+| PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
+| PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open |
 
 ## Verification
 
