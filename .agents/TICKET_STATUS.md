@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 4:50 PM CT (PP-138–PP-140 revenue options research; no signups)
+Last updated: 2026-11-22, 4:52 PM CT (PP-131–PP-134 branded emails shipped to main, previews in Inbox, need next deploy; PP-138–PP-140 revenue options research filed)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,9 +13,9 @@ Last updated: 2026-11-22, 4:50 PM CT (PP-138–PP-140 revenue options research; 
 
 | | Count |
 |--|-------|
-| Done | 87 (includes PP-088–PP-096, PP-097–PP-100, PP-102, PP-112, PP-113; PP-101 reopened for copy follow-up) |
+| Done | 91 (includes PP-088–PP-096, PP-097–PP-100, PP-102, PP-112, PP-113, PP-131–PP-134; PP-101 reopened for copy follow-up) |
 | In progress | 0 |
-| Ready | 31 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-131–PP-137 email design; PP-138–PP-140 revenue options) |
+| Ready | 27 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-135–PP-137 remaining email design; PP-138–PP-140 revenue options) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
@@ -244,14 +244,14 @@ Tylor asked for the same email-send visibility another project already has in ad
 ## Email design (2026-11-22)
 
 **Doc:** `.agents/docs/email-design-plan.md`  
-Tylor liked the first live payment-confirmation mail but found it visually bare, and asked that contact be `hello@mypantryhub.com` (not `info@`). The footer constant is fixed on `main` after this commit; it needs the next production deploy. Bragle’s reference is the table-based Supabase auth templates (Brevo), not React Email. PP-130 is reserved for another worker’s privacy ticket and is not part of this set.
+Tylor liked the first live payment-confirmation mail but found it visually bare, and asked that contact be `hello@mypantryhub.com` (not `info@`). The branded layout and P1 templates are on `main`; they need the next production deploy (not deployed in this pass). Bragle’s reference is the table-based Supabase auth templates (Brevo), not React Email. PP-130 is reserved for another worker’s privacy ticket and is not part of this set.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-131 | Shared branded email layout | P1 | 📋 Open |
-| PP-132 | Welcome / onboarding email with first-scan tips | P1 | 📋 Open |
-| PP-133 | Payment confirmation — what the plan unlocks | P1 | 📋 Open |
-| PP-134 | Payment-failed email design | P1 | 📋 Open |
+| PP-131 | Shared branded email layout | P1 | ✅ Done |
+| PP-132 | Welcome / onboarding email with first-scan tips | P1 | ✅ Done |
+| PP-133 | Payment confirmation — what the plan unlocks | P1 | ✅ Done |
+| PP-134 | Payment-failed email design | P1 | ✅ Done |
 | PP-135 | Cancellation and win-back email design | P2 | 📋 Open |
 | PP-136 | Promo or trial-ending reminder (only if relevant) | P2 | 📋 Open |
 | PP-137 | Low-stock or expiring-items digest (only if relevant) | P3 | 📋 Open |

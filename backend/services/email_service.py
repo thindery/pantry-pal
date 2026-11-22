@@ -133,29 +133,216 @@ def send_email(
             logger.exception("Could not release email send claim %s", template)
         return {"skipped": True, "reason": "send_failed"}
 
+# Brand tokens from frontend/app/globals.css. Button uses the darker green for contrast.
+COLOR_WASH = "#fefdf9"
+COLOR_SURFACE = "#ffffff"
+COLOR_HAIRLINE = "#f5f0e6"
+COLOR_TEXT = "#0f172a"
+COLOR_MUTED = "#64748b"
+COLOR_BUTTON = "#689f38"
+COLOR_BUTTON_TEXT = "#ffffff"
+COLOR_ACCENT = "#f59e0b"
+COLOR_DANGER = "#f43f5e"
+COLOR_DARK_WASH = "#0f172a"
+COLOR_DARK_CARD = "#1e293b"
+COLOR_DARK_TEXT = "#e2e8f0"
 
-def _wrap(title: str, body_html: str, body_text: str) -> tuple[str, str]:
+# Copied from the live pricing page (frontend/components/PricingPage.tsx). Do not invent extras.
+PRO_FEATURES = [
+    "Unlimited pantry items",
+    "Unlimited AI receipt scans",
+    "Cloud sync across devices",
+    "Advanced analytics",
+    "Push notifications",
+    "CSV export",
+    "Priority support",
+]
+FAMILY_FEATURES = [
+    "Everything in Pro",
+    "Up to 5 household members",
+    "Shared household inventory",
+    "Personal + shared lists",
+    "Activity feed (who used what)",
+    "Admin controls",
+    "Family meal planning",
+]
+FREE_FEATURES = [
+    "Up to 50 pantry items",
+    "5 AI receipt scans/month",
+    "Manual item entry",
+    "Basic categories",
+    "Single device",
+    "Shopping list",
+]
+
+
+def _html_escape(value: str) -> str:
+    return (
+        value.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def _plan_features(tier: Optional[str]) -> list[str]:
+    name = (tier or "pro").strip().lower()
+    if name == "family":
+        return list(FAMILY_FEATURES)
+    if name == "free":
+        return list(FREE_FEATURES)
+    return list(PRO_FEATURES)
+
+
+def _format_period_end(period_end: Optional[str]) -> Optional[str]:
+    if not period_end:
+        return None
+    raw = period_end.strip()
+    try:
+        from datetime import datetime
+
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return parsed.strftime("%B %d, %Y")
+    except Exception:
+        return raw
+
+
+def _cta_rows(label: str, url: str) -> str:
+    safe_label = _html_escape(label)
+    safe_url = _html_escape(url)
+    return f"""
+        <tr>
+          <td style="padding:8px 0 8px 0;">
+            <a href="{safe_url}" style="display:inline-block;background-color:{COLOR_BUTTON};color:{COLOR_BUTTON_TEXT};font-size:16px;font-weight:700;text-decoration:none;padding:14px 24px;border-radius:8px;">{safe_label}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 16px 0;font-size:13px;line-height:1.5;color:{COLOR_MUTED};word-break:break-all;">
+            If the button does not work, copy this link into your browser:<br>
+            <a href="{safe_url}" style="color:{COLOR_TEXT};text-decoration:underline;">{safe_url}</a>
+          </td>
+        </tr>
+    """
+
+
+def _feature_list_html(items: list[str]) -> str:
+    rows = "".join(
+        f'<tr><td style="padding:0 0 6px 0;font-size:15px;line-height:1.5;color:{COLOR_TEXT};">• {_html_escape(item)}</td></tr>'
+        for item in items
+    )
+    return f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{rows}</table>'
+
+
+def _wrap(
+    *,
+    title: str,
+    preheader: str,
+    body_html: str,
+    body_text: str,
+    cta_label: Optional[str] = None,
+    cta_url: Optional[str] = None,
+) -> tuple[str, str]:
+    """Shared branded shell (PP-131). Table-based HTML plus a plain-text fallback."""
+    safe_title = _html_escape(title)
+    safe_preheader = _html_escape(preheader)
+    cta_html = _cta_rows(cta_label, cta_url) if cta_label and cta_url else ""
     html = f"""<!doctype html>
-<html><body style="font-family:system-ui,sans-serif;color:#0f172a;line-height:1.5">
-  <h1 style="font-size:20px">{title}</h1>
-  {body_html}
-  <p style="color:#64748b;font-size:13px">Questions? Contact {CONTACT_EMAIL}.</p>
-</body></html>"""
-    text = f"{title}\n\n{body_text}\n\nQuestions? Contact {CONTACT_EMAIL}."
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{safe_title}</title>
+<style>
+  @media (prefers-color-scheme: dark) {{
+    .ph-wash {{ background-color: {COLOR_DARK_WASH} !important; }}
+    .ph-card {{ background-color: {COLOR_DARK_CARD} !important; }}
+    .ph-text, .ph-title, .ph-wordmark {{ color: {COLOR_DARK_TEXT} !important; }}
+    .ph-muted, .ph-footer {{ color: #94a3b8 !important; }}
+    .ph-link {{ color: {COLOR_DARK_TEXT} !important; }}
+  }}
+</style>
+</head>
+<body class="ph-wash" style="margin:0;padding:0;background-color:{COLOR_WASH};">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{safe_preheader}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="ph-wash" style="background-color:{COLOR_WASH};">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="ph-card" style="max-width:520px;background-color:{COLOR_SURFACE};border:2px solid {COLOR_HAIRLINE};border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:{COLOR_TEXT};">
+          <tr>
+            <td class="ph-wordmark" style="padding:28px 28px 8px 28px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;line-height:1.2;color:{COLOR_TEXT};">
+              Pantry Hub
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 28px 0 28px;">
+              <h1 class="ph-title" style="margin:0 0 12px 0;font-size:22px;font-weight:700;line-height:1.3;color:{COLOR_TEXT};">{safe_title}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="ph-text" style="padding:0 28px 8px 28px;font-size:16px;line-height:1.5;color:{COLOR_TEXT};">
+              {body_html}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 28px 8px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                {cta_html}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="ph-footer" style="padding:8px 28px 28px 28px;font-size:13px;line-height:1.5;color:{COLOR_MUTED};">
+              Questions? Reply to this email or write <a class="ph-link" href="mailto:{CONTACT_EMAIL}" style="color:{COLOR_TEXT};text-decoration:underline;">{CONTACT_EMAIL}</a>.<br>
+              <a class="ph-link" href="https://www.mypantryhub.com" style="color:{COLOR_MUTED};text-decoration:underline;">www.mypantryhub.com</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    cta_text = ""
+    if cta_label and cta_url:
+        cta_text = f"\n\n{cta_label}:\n{cta_url}"
+    text = (
+        f"Pantry Hub\n\n{title}\n\n{body_text}{cta_text}"
+        f"\n\nQuestions? Reply to this email or write {CONTACT_EMAIL}."
+        f"\nwww.mypantryhub.com"
+    )
     return html, text
 
 
 def send_welcome(user_id: str, email: Optional[str], name: Optional[str] = None) -> dict[str, Any]:
-    greeting = f"Hi {name}," if name else "Hi,"
-    url = _app_url()
+    greeting = f"Hi {_html_escape(name)}," if name else "Hi,"
+    greeting_text = f"Hi {name}," if name else "Hi,"
+    url = f"{_app_url()}/dashboard/"
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">{greeting}</p>
+      <p style="margin:0 0 16px 0;">Welcome to Pantry Hub. Here is a simple way to get started:</p>
+      <p style="margin:0 0 8px 0;">1. Open Scan Barcode or Quick Scan and add what's in the cupboard.</p>
+      <p style="margin:0 0 8px 0;">2. Build a shopping list from what you're low on.</p>
+      <p style="margin:0 0 16px 0;">3. Optional: snap a receipt later. The Free plan includes 5 AI receipt scans per month.</p>
+    """
+    body_text = (
+        f"{greeting_text}\n\nWelcome to Pantry Hub. Here is a simple way to get started:\n\n"
+        "1. Open Scan Barcode or Quick Scan and add what's in the cupboard.\n"
+        "2. Build a shopping list from what you're low on.\n"
+        "3. Optional: snap a receipt later. The Free plan includes 5 AI receipt scans per month."
+    )
     html, text = _wrap(
-        "Welcome to Pantry Hub",
-        f"<p>{greeting}</p><p>Thanks for joining Pantry Hub. Sign in any time at <a href=\"{url}\">{url.replace('https://','')}</a> to keep track of what's in your pantry.</p>",
-        f"{greeting}\n\nThanks for joining Pantry Hub. Sign in any time at {url} to keep track of what's in your pantry.",
+        title="Welcome to Pantry Hub",
+        preheader="Scan your first item and start a shopping list.",
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Open your pantry",
+        cta_url=url,
     )
     return send_email(
         to=email,
-        subject="Welcome to Pantry Hub",
+        subject="Welcome to Pantry Hub — scan your first item",
         html=html,
         text=text,
         template="welcome",
@@ -177,18 +364,40 @@ def send_payment_confirmation(
 ) -> dict[str, Any]:
     amount = f"{(amount_cents or 0) / 100:.2f} {(currency or 'usd').upper()}"
     plan = (tier or "pro").title()
-    end_line = f" Your access continues through {period_end}." if period_end else ""
+    pretty_end = _format_period_end(period_end)
+    end_html = f" Your access continues through {_html_escape(pretty_end)}." if pretty_end else ""
+    end_text = f" Your access continues through {pretty_end}." if pretty_end else ""
     portal = f"{_app_url()}/dashboard/account/"
+    pantry = f"{_app_url()}/dashboard/"
     if is_free_invoice or amount_cents == 0:
         subject = f"Your Pantry Hub {plan} plan is active"
-        lead = f"Your {plan} plan is now active.{end_line}"
+        lead = f"Your {plan} plan is now active.{end_text}"
+        lead_html = f"Your {_html_escape(plan)} plan is now active.{end_html}"
+        preheader = f"Your {plan} plan is active" + (f" through {pretty_end}." if pretty_end else ".")
     else:
         subject = f"Payment received for your Pantry Hub {plan} plan"
-        lead = f"We received your payment of {amount} for Pantry Hub {plan}.{end_line}"
+        lead = f"We received your payment of {amount} for Pantry Hub {plan}.{end_text}"
+        lead_html = (
+            f"We received your payment of {_html_escape(amount)} for Pantry Hub {_html_escape(plan)}.{end_html}"
+        )
+        preheader = f"Payment of {amount} received for your {plan} plan."
+    features = _plan_features(tier)
+    feature_heading = f"What's included with {plan}"
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">{lead_html}</p>
+      <p style="margin:0 0 8px 0;font-weight:700;">{_html_escape(feature_heading)}</p>
+      {_feature_list_html(features)}
+      <p style="margin:16px 0 0 0;font-size:14px;color:{COLOR_MUTED};">You can also <a href="{_html_escape(portal)}" style="color:{COLOR_TEXT};text-decoration:underline;">manage billing</a> from your account page.</p>
+    """
+    feature_text = "\n".join(f"- {item}" for item in features)
+    body_text = f"{lead}\n\n{feature_heading}:\n{feature_text}\n\nManage billing: {portal}"
     html, text = _wrap(
-        subject,
-        f"<p>{lead}</p><p>You can manage billing at <a href=\"{portal}\">your account page</a>.</p>",
-        f"{lead}\n\nManage billing: {portal}",
+        title=subject,
+        preheader=preheader,
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Go to your pantry",
+        cta_url=pantry,
     )
     return send_email(
         to=email,
@@ -211,10 +420,21 @@ def send_payment_failed(
 ) -> dict[str, Any]:
     amount = f"{(amount_cents or 0) / 100:.2f} {(currency or 'usd').upper()}"
     portal = f"{_app_url()}/dashboard/account/"
+    body_html = f"""
+      <p style="margin:0 0 12px 0;"><span style="display:inline-block;background-color:{COLOR_ACCENT};color:{COLOR_TEXT};font-size:12px;font-weight:700;letter-spacing:0.02em;padding:4px 8px;border-radius:4px;">Action needed</span></p>
+      <p style="margin:0 0 16px 0;">A payment of {_html_escape(amount)} for your Pantry Hub subscription did not go through. Please update your card so your plan stays active.</p>
+    """
+    body_text = (
+        f"A payment of {amount} for your Pantry Hub subscription did not go through. "
+        "Please update your card so your plan stays active."
+    )
     html, text = _wrap(
-        "We couldn't process your Pantry Hub payment",
-        f"<p>A payment of {amount} for your Pantry Hub subscription did not go through. Please update your card so your plan stays active.</p><p><a href=\"{portal}\">Update your payment method</a></p>",
-        f"A payment of {amount} for your Pantry Hub subscription did not go through. Update your payment method at {portal}",
+        title="We couldn't process your Pantry Hub payment",
+        preheader="Update your payment method so your plan stays active.",
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Update payment method",
+        cta_url=portal,
     )
     return send_email(
         to=email,
@@ -234,12 +454,27 @@ def send_cancellation_scheduled(
     subscription_id: str,
     period_end: Optional[str] = None,
 ) -> dict[str, Any]:
-    end_line = f" You'll keep access until {period_end}." if period_end else " You'll keep access until the end of the current period."
+    pretty_end = _format_period_end(period_end)
+    end_line = (
+        f" You'll keep access until {pretty_end}."
+        if pretty_end
+        else " You'll keep access until the end of the current period."
+    )
+    end_html = (
+        f" You'll keep access until {_html_escape(pretty_end)}."
+        if pretty_end
+        else " You'll keep access until the end of the current period."
+    )
     account = f"{_app_url()}/dashboard/account/"
+    body_html = f'<p style="margin:0 0 16px 0;">We\'ve scheduled your cancellation.{end_html}</p>'
+    body_text = f"We've scheduled your cancellation.{end_line}"
     html, text = _wrap(
-        "Your Pantry Hub cancellation is scheduled",
-        f"<p>We've scheduled your cancellation.{end_line}</p><p>You can resume the plan from <a href=\"{account}\">your account page</a>.</p>",
-        f"We've scheduled your cancellation.{end_line}\n\nResume your plan: {account}",
+        title="Your Pantry Hub cancellation is scheduled",
+        preheader="You'll keep access until the end of the current period.",
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Keep my plan",
+        cta_url=account,
     )
     return send_email(
         to=email,
@@ -259,10 +494,23 @@ def send_subscription_ended(
     subscription_id: str,
 ) -> dict[str, Any]:
     pricing = f"{_app_url()}/pricing/"
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">Your Pantry Hub paid plan has ended and this account is now on the Free plan.</p>
+      <p style="margin:0 0 8px 0;font-weight:700;">On Free you still have</p>
+      {_feature_list_html(FREE_FEATURES)}
+    """
+    feature_text = "\n".join(f"- {item}" for item in FREE_FEATURES)
+    body_text = (
+        "Your Pantry Hub paid plan has ended and this account is now on the Free plan.\n\n"
+        f"On Free you still have:\n{feature_text}"
+    )
     html, text = _wrap(
-        "Your Pantry Hub subscription has ended",
-        f"<p>Your Pantry Hub paid plan has ended and this account is now on the Free plan.</p><p>You can resubscribe any time from the <a href=\"{pricing}\">pricing page</a>.</p>",
-        f"Your Pantry Hub paid plan has ended and this account is now on the Free plan.\n\nResubscribe: {pricing}",
+        title="Your Pantry Hub subscription has ended",
+        preheader="Your account is now on the Free plan. You can resubscribe any time.",
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Resubscribe",
+        cta_url=pricing,
     )
     return send_email(
         to=email,
