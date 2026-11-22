@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 5:01 PM CT (PP-147–PP-155 e2e test backlog filed)
+Last updated: 2026-11-22, 5:04 PM CT (PP-147: official Playwright, not Flashwright)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -56,7 +56,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
 | PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
-| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
 | PP-149 | E2E: barcode scan including Quick Scan | 📋 Backlog | E2E |
 | PP-150 | E2E: inventory quantity +/- | 📋 Backlog | E2E |
@@ -362,7 +362,7 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
 | PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
@@ -381,7 +381,7 @@ Documented for later; no implementation in this pass.
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
 | PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
 | PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
-| PP-147 | E2E harness (Playwright via Flashwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
 | PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
