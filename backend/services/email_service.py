@@ -12,7 +12,7 @@ from database.db import db_connection
 logger = logging.getLogger(__name__)
 
 DEFAULT_FROM = "Pantry Hub <noreply@mypantryhub.com>"
-CONTACT_EMAIL = "info@mypantryhub.com"
+CONTACT_EMAIL = "hello@mypantryhub.com"
 
 
 def _app_url() -> str:

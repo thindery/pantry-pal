@@ -1,0 +1,29 @@
+# PP-131: Shared branded email layout
+
+**Status:** 📋 Open
+**Priority:** P1
+**Phase:** Email design (2026-11-22)
+**Created:** 2026-11-22
+**Depends on:** PP-095, PP-096
+**Doc:** `.agents/docs/email-design-plan.md`
+
+---
+
+## Problem
+
+Every transactional email shares a bare `_wrap()` in `backend/services/email_service.py`: system-ui, a heading, and a gray contact line. No wordmark, no brand colors, no card, no dark-mode safety. Tylor called the first live message visually boring.
+
+## Fix Plan
+
+- [ ] Replace `_wrap()` with a table-based layout (Bragle-style: 520px card, wordmark header, one CTA style, footer). Keep sending in Python; do not add React Email for v1.
+- [ ] Use site colors from `frontend/app/globals.css` (`#fefdf9` wash, `#689f38` buttons, `#0f172a` text). Text wordmark “Pantry Hub”; do not depend on a missing `/logo.png`.
+- [ ] Footer contact is `hello@mypantryhub.com`. Unsubscribe only on future marketing/digest mail, never on transactional mail.
+- [ ] Explicit colors + a dark `prefers-color-scheme` block so clients do not invert the cream palette.
+- [ ] Keep a first-class plain-text part.
+- [ ] Preview sends to `thindery@gmail.com` only (`design-preview:{template}:{date}`). Never invent social proof.
+
+## Acceptance Criteria
+
+- [ ] All five current templates render inside the new shell
+- [ ] Unit tests assert wordmark, `hello@mypantryhub.com`, and a text fallback
+- [ ] A preview to Tylor’s address only is documented and used before shipping
