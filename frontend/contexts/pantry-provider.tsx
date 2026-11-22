@@ -797,6 +797,7 @@ export function usePantryState() {
   const handleSaveScannedProduct = async (
     product: BarcodeProduct,
     quantity: number,
+    options?: { silent?: boolean },
   ): Promise<PantryItem> => {
     const displayName =
       product.name.charAt(0).toUpperCase() + product.name.slice(1);
@@ -819,7 +820,9 @@ export function usePantryState() {
         quantity === 1
           ? existing.unit.replace(/s$/, "")
           : existing.unit;
-      success(`Added ${quantity} ${unitText} to ${existing.name}`);
+      if (!options?.silent) {
+        success(`Added ${quantity} ${unitText} to ${existing.name}`);
+      }
       return {
         ...existing,
         quantity: existing.quantity + quantity,
@@ -848,7 +851,9 @@ export function usePantryState() {
       prependActivity(result.activity);
     }
     const unitText = quantity === 1 ? "unit" : "units";
-    success(`${displayName} (${quantity} ${unitText}) added to inventory`);
+    if (!options?.silent) {
+      success(`${displayName} (${quantity} ${unitText}) added to inventory`);
+    }
     return result.item;
   };
 

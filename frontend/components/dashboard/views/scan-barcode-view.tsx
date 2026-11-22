@@ -11,6 +11,7 @@ const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
 interface ScanToast {
   id: string;
   product: BarcodeProduct;
+  quantity: number;
 }
 
 interface SessionEntry {
@@ -28,7 +29,6 @@ export function ScanBarcodeView() {
   const {
     handleSaveScannedProduct,
     handleAdjustQuantity,
-    success,
     error: showError,
     router,
   } = usePantry();
@@ -53,11 +53,17 @@ export function ScanBarcodeView() {
   // Track recently scanned barcodes to prevent duplicates within 3 seconds
   const recentScansRef = useRef<Set<string>>(new Set());
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quickScanRef = useRef(quickScan);
+  const sessionEntriesRef = useRef<SessionEntry[]>([]);
 
   useEffect(() => {
     quickScanRef.current = quickScan;
   }, [quickScan]);
+
+  useEffect(() => {
+    sessionEntriesRef.current = sessionEntries;
+  }, [sessionEntries]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -71,6 +77,7 @@ export function ScanBarcodeView() {
   useEffect(() => {
     return () => {
       if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
 
@@ -106,13 +113,20 @@ export function ScanBarcodeView() {
     highlightEntry(key);
   }, [highlightEntry]);
 
-  const showAddedToast = useCallback((product: BarcodeProduct) => {
+  const showAddedToast = useCallback((product: BarcodeProduct, quantity: number) => {
     const toastId = Math.random().toString(36).substring(2, 9);
-    setScanToasts((prev) => [...prev, { id: toastId, product }]);
-    setTimeout(() => {
+    // One image toast at a time, with the latest session count.
+    setScanToasts([{ id: toastId, product, quantity }]);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
       removeScanToast(toastId);
     }, 5000);
   }, [removeScanToast]);
+
+  const nextSessionQty = (product: BarcodeProduct) => {
+    const key = sessionKey(product);
+    return (sessionEntriesRef.current.find((entry) => entry.key === key)?.sessionQty ?? 0) + 1;
+  };
 
   const handleScan = useCallback(async (product: BarcodeProduct) => {
     // Prevent duplicate scans within 3 seconds
@@ -130,11 +144,16 @@ export function ScanBarcodeView() {
     }
 
     try {
-      const item = await handleSaveScannedProduct(product, 1);
-      if (quickScanRef.current && item?.id) {
-        bumpOrAddEntry(product, item);
+      if (quickScanRef.current) {
+        const item = await handleSaveScannedProduct(product, 1, { silent: true });
+        if (item?.id) {
+          const quantity = nextSessionQty(product);
+          bumpOrAddEntry(product, item);
+          showAddedToast(product, quantity);
+        }
+      } else {
+        await handleSaveScannedProduct(product, 1);
       }
-      showAddedToast(product);
     } catch (err) {
       showError(
         err instanceof ApiError
@@ -148,16 +167,18 @@ export function ScanBarcodeView() {
     if (busyKey) return;
     setBusyKey(entry.key);
     try {
-      const item = await handleSaveScannedProduct(entry.product, 1);
+      const item = await handleSaveScannedProduct(entry.product, 1, { silent: true });
       if (item?.id) {
+        const quantity = nextSessionQty(entry.product);
         bumpOrAddEntry(entry.product, item);
+        showAddedToast(entry.product, quantity);
       }
     } catch (_err) {
       showError("Failed to update quantity");
     } finally {
       setBusyKey(null);
     }
-  }, [busyKey, handleSaveScannedProduct, bumpOrAddEntry, showError]);
+  }, [busyKey, handleSaveScannedProduct, bumpOrAddEntry, showAddedToast, showError]);
 
   const handleSessionDecrement = useCallback(async (entry: SessionEntry) => {
     if (busyKey || entry.sessionQty <= 0) return;
@@ -200,12 +221,16 @@ export function ScanBarcodeView() {
         ...unknownProduct,
         name: unknownProductName.trim(),
       };
-      const item = await handleSaveScannedProduct(productWithName, 1);
-      if (quickScanRef.current && item?.id) {
-        bumpOrAddEntry(productWithName, item);
+      if (quickScanRef.current) {
+        const item = await handleSaveScannedProduct(productWithName, 1, { silent: true });
+        if (item?.id) {
+          const quantity = nextSessionQty(productWithName);
+          bumpOrAddEntry(productWithName, item);
+          showAddedToast(productWithName, quantity);
+        }
+      } else {
+        await handleSaveScannedProduct(productWithName, 1);
       }
-      showAddedToast(productWithName);
-      success(`Added ${unknownProductName.trim()} to inventory`);
       setUnknownProduct(null);
       setUnknownProductName("");
     } catch (err) {
@@ -217,7 +242,7 @@ export function ScanBarcodeView() {
     } finally {
       setIsSavingUnknown(false);
     }
-  }, [unknownProduct, unknownProductName, handleSaveScannedProduct, success, showError, bumpOrAddEntry, showAddedToast]);
+  }, [unknownProduct, unknownProductName, handleSaveScannedProduct, showError, bumpOrAddEntry, showAddedToast]);
 
   // Commit unknown-product name on explicit Enter key in the modal input
   const handleUnknownNameKeyDown = useCallback(
@@ -310,21 +335,27 @@ export function ScanBarcodeView() {
         </div>
       )}
 
-      {/* Scan Toasts - Floating at bottom */}
-      <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+      {/* Single Quick Scan image toast — top of the screen, above the bottom nav */}
+      <div
+        className="fixed left-3 right-3 z-[200] flex flex-col items-center pointer-events-none"
+        style={{ top: "max(0.75rem, env(safe-area-inset-top, 0px))" }}
+        data-testid="quick-scan-toast-region"
+      >
         {scanToasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto mx-auto max-w-md w-full bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl animate-in slide-in-from-bottom-2 duration-200 flex items-center gap-3"
+            data-testid="quick-scan-image-toast"
+            className="pointer-events-auto mx-auto max-w-md w-full bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl animate-in slide-in-from-top-2 duration-200 flex items-center gap-3"
+            role="status"
           >
             {toast.product.image ? (
               <img
                 src={toast.product.image}
                 alt={toast.product.name}
-                className="w-10 h-10 object-cover rounded-lg bg-slate-800"
+                className="w-11 h-11 object-cover rounded-lg bg-slate-800 flex-shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-lg">
+              <div className="w-11 h-11 bg-slate-800 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
                 📦
               </div>
             )}
@@ -332,11 +363,15 @@ export function ScanBarcodeView() {
               <p className="font-medium text-sm truncate">
                 Added {toast.product.name}
               </p>
+              <p className="text-xs text-slate-300">
+                {toast.quantity} {toast.quantity === 1 ? "unit" : "units"}
+              </p>
             </div>
             <button
               onClick={() => removeScanToast(toast.id)}
-              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-lg transition-colors"
+              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-lg transition-colors flex-shrink-0"
               title="Dismiss"
+              aria-label="Dismiss"
             >
               ×
             </button>

@@ -264,10 +264,15 @@ describe("ScanBarcodeView Quick Scan on", () => {
         name: "Canned Beans",
         category: "pantry",
       }),
-      1
+      1,
+      { silent: true }
     );
 
-    expect(screen.getByText("Added Canned Beans")).toBeInTheDocument();
+    const toast = screen.getByTestId("quick-scan-image-toast");
+    expect(toast).toBeInTheDocument();
+    expect(toast).toHaveTextContent("Added Canned Beans");
+    expect(toast).toHaveTextContent(/1 unit/i);
+    expect(screen.getByTestId("quick-scan-toast-region")).toBeInTheDocument();
     expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
     expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument();
     expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1");
@@ -346,7 +351,13 @@ describe("ScanBarcodeView session ledger", () => {
     await waitFor(() =>
       expect(mockHandleSaveScannedProduct).toHaveBeenCalledTimes(2)
     );
+    expect(mockHandleSaveScannedProduct).toHaveBeenLastCalledWith(
+      expect.objectContaining({ barcode: "012345678905" }),
+      1,
+      { silent: true }
+    );
     expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("2");
+    expect(screen.getByTestId("quick-scan-image-toast")).toHaveTextContent(/2 units/i);
   });
 
   it("decrements inventory and removes the row when − reaches zero", async () => {
@@ -404,6 +415,7 @@ describe("ScanBarcodeView Quick Scan off", () => {
       1
     );
     expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("quick-scan-image-toast")).not.toBeInTheDocument();
   });
 });
 
@@ -436,7 +448,8 @@ describe("ScanBarcodeView unknown product naming", () => {
         name: "Flour",
         category: "other",
       }),
-      1
+      1,
+      { silent: true }
     );
   });
 
@@ -483,7 +496,8 @@ describe("ScanBarcodeView unknown product naming", () => {
         name: "Canned Beans",
         category: "pantry",
       }),
-      1
+      1,
+      { silent: true }
     );
     expect(screen.queryByTestId("unknown-name-card")).not.toBeInTheDocument();
   });
