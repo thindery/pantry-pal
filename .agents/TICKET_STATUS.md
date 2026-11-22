@@ -1,11 +1,13 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 4:52 PM CT (PP-131–PP-134 branded emails shipped to main, previews in Inbox, need next deploy; PP-138–PP-140 revenue options research filed)
+Last updated: 2026-11-22, 4:54 PM CT (open board grouped by P0–P3; ticket priority convention documented)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
 **Stack:** Next 16 + FastAPI + PG 16 monorepo → OVH Docker  
 **Gold standards:** `markdown-pdf`, `userkudos`, `agent-paige`
+
+**Priority:** P0 = broken or blocking revenue/customers now. P1 = next up, high impact. P2 = soon. P3 = someday. Every open ticket needs a `Priority: P0|P1|P2|P3` header line; see `.agents/docs/ticket-template.md`.
 
 ---
 
@@ -18,9 +20,67 @@ Last updated: 2026-11-22, 4:52 PM CT (PP-131–PP-134 branded emails shipped to 
 | Ready | 27 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-135–PP-137 remaining email design; PP-138–PP-140 revenue options) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
+| Open by priority | P0: 3 · P1: 11 · P2: 15 · P3: 3 (32 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
 
 ---
+
+
+## Open tickets by priority
+
+Triage board for work that is not done. Area inventories later in this file stay as historical context. PP-109 was split into PP-117–PP-122 and is not listed here.
+
+### P0 — broken or blocking revenue/customers now (3)
+
+| Ticket | Title | Status | Area |
+|--------|-------|--------|------|
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
+| PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
+
+### P1 — next up, high impact (11)
+
+| Ticket | Title | Status | Area |
+|--------|-------|--------|------|
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
+| PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
+| PP-117 | Create a GA4 property and add a consent-safe tag with key events | 📋 Open — needs Tylor sign-in | Analytics / GSC |
+| PP-118 | Verify mypantryhub.com in Search Console and submit the sitemap | 📋 Open — needs Tylor sign-in | Analytics / GSC |
+| PP-120 | Ship the Cloudflare Web Analytics beacon and allow it in CSP | 📋 Open | Analytics / GSC |
+| PP-122 | Update the privacy policy to disclose analytics | 📋 Open | Analytics / GSC |
+| PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
+| PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
+| PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
+
+### P2 — soon (15)
+
+| Ticket | Title | Status | Area |
+|--------|-------|--------|------|
+| PP-067 | Tighten CSP (unsafe-eval/inline) | 📋 Open | Security |
+| PP-110 | AEO content cluster and comparison pages | 📋 Open | SEO / AEO |
+| PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
+| PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |
+| PP-115 | Nearby grocery weekly ads / deals search | 📋 Backlog | Features |
+| PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | 📋 Open — needs Tylor sign-in | Analytics / GSC |
+| PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | 📋 Open (CF token done) | Analytics / GSC |
+| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | 📋 Open | Marketing dashboard |
+| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | 📋 Open | Marketing dashboard |
+| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | 📋 Open | Marketing dashboard |
+| PP-128 | Admin auth hardening leftovers | 📋 Open | Marketing dashboard |
+| PP-135 | Cancellation and win-back email design | 📋 Open | Email design |
+| PP-136 | Promo or trial-ending reminder (only if relevant) | 📋 Open | Email design |
+| PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
+| PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
+
+### P3 — someday (3)
+
+| Ticket | Title | Status | Area |
+|--------|-------|--------|------|
+| PP-072 | Gate public design-system | 📋 Open | Security |
+| PP-129 | Optional full-access Resend read key | 📋 Backlog — needs Tylor’s yes | Marketing dashboard |
+| PP-137 | Low-stock or expiring-items digest (only if relevant) | 📋 Open | Email design |
 
 ## Phase 0 — Bootstrap
 
