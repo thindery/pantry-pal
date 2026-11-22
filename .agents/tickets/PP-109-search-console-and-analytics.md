@@ -1,12 +1,13 @@
 # PP-109: Add Search Console and $0 analytics (needs Tylor’s yes)
 
-**Status:** 📋 Open
+**Status:** 📋 Split into PP-117–PP-122
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
-**Depends on:** Tylor’s explicit yes and Google account access
+**Updated:** 2026-11-22 — split after the analytics / Search Console audit
+**Depends on:** Tylor’s Google sign-in for GA4 / GSC / Bing (see child tickets)
 **Blocks:** Verified click/impression reporting; indexing requests
-**Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk, 2026-11-22)
+**Audit:** `.agents/docs/seo-aeo-audit-2026-11-22.md` (SEO desk) and `.agents/docs/analytics-and-search-console.md` (2026-11-22 follow-up)
 
 ---
 
@@ -27,3 +28,21 @@ Root layout has a commented Google Search Console verification placeholder. Live
 - [ ] GSC property is verified; sitemap is submitted
 - [ ] A $0 analytics tag is live (or a documented decision to defer) and CSP allows only what that tag needs
 - [ ] Privacy policy mentions the chosen analytics, if any, accurately
+
+---
+
+## Split (2026-11-22)
+
+Do not implement this umbrella ticket directly. Use the child tickets (one gap each):
+
+| Ticket | Gap | Needs Tylor sign-in? |
+|--------|-----|----------------------|
+| PP-117 | GA4 property, consent-safe tag, key events | Yes — create the property |
+| PP-118 | Search Console domain verification and sitemap submit | Yes — create / click verify |
+| PP-119 | Bing Webmaster import from GSC | Yes — after PP-118 |
+| PP-120 | Cloudflare Web Analytics beacon + CSP | No, but deploy from a clean worktree |
+| PP-121 | Read-only analytics API keys (CF done; GA4 SA still open) | Yes — add the GA4 Viewer |
+| PP-122 | Privacy policy disclosure for the chosen tools | No (code); ship with the tags |
+
+Close this ticket when the children that Tylor wants are done. Tylor’s 2026-11-22 request (“ensure all analytics and search console is setup under tickets too”) is the yes to file and do $0 setup; it is not a Google login.
+

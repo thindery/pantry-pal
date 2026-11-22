@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-101/PP-102 honest landing proof and voice claims removed; PP-114/PP-115 filed as backlog)
+Last updated: 2026-11-22 (PP-117–PP-122 analytics / Search Console tickets filed; PP-109 split)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,10 +15,10 @@ Last updated: 2026-11-22 (PP-101/PP-102 honest landing proof and voice claims re
 |--|-------|
 | Done | 87 (includes PP-088–PP-094, PP-096–PP-100, PP-101, PP-102, PP-112, PP-113) |
 | In progress | 0 |
-| Ready | 10 (PP-095 Resend DNS; PP-103–PP-111 SEO/AEO) |
+| Ready | 15 (PP-095 Resend DNS; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC) |
 | Backlog | 2 (PP-114 real social proof; PP-115 nearby grocery ads) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
+| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Google sign-in for PP-117 GA4, PP-118 Search Console, PP-119 Bing |
 
 ---
 
@@ -188,6 +188,7 @@ Each hardening item and each missing transactional email is its own ticket.
 | PP-100 | Send a cancellation confirmation email | P2 | ✅ Done |
 | PP-112 | Reconcile Stripe subscriptions with the app DB after the webhook outage | P0 | ✅ Done |
 | PP-113 | Fix deploy abort when the Ralph ticket regex misses | P1 | ✅ Done |
+| PP-116 | Compact shopping list rows, slimmer chrome, and fix suggested-qty formula | P1 | ✅ Done |
 
 
 ## SEO / AEO / marketing audit (2026-11-22)
@@ -205,9 +206,24 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 📋 Open |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
-| PP-109 | Add Search Console and $0 analytics (needs Tylor’s yes) | P1 | 📋 Open |
+| PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
 | PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open |
+
+
+## Analytics / Search Console (2026-11-22)
+
+**Doc:** `.agents/docs/analytics-and-search-console.md`  
+Follow-up to PP-109 after Tylor asked to put analytics and Search Console under tickets. One ticket per gap. No app deploy in this pass (PP-116 shopping-list worktree was dirty). Cloudflare read-only API token is already in the Mini Keychain (PP-121 partial).
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-117 | Create a GA4 property and add a consent-safe tag with key events | P1 | 📋 Open — needs Tylor sign-in |
+| PP-118 | Verify mypantryhub.com in Search Console and submit the sitemap | P1 | 📋 Open — needs Tylor sign-in |
+| PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | P2 | 📋 Open — needs Tylor sign-in |
+| PP-120 | Ship the Cloudflare Web Analytics beacon and allow it in CSP | P1 | 📋 Open |
+| PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | P2 | 📋 Open (CF token done) |
+| PP-122 | Update the privacy policy to disclose analytics | P1 | 📋 Open |
 
 ## Future / backlog
 
