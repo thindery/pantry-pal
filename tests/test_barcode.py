@@ -30,8 +30,8 @@ CACHED_PRODUCT = {
 
 def test_lookup_barcode_returns_cached_product(client, auth_headers):
     with patch(
-        "backend.routers.barcode.barcode_service.get_product_by_barcode",
-        side_effect=[CACHED_PRODUCT, None],
+        "backend.routers.barcode.barcode_service.get_cached_product",
+        return_value=CACHED_PRODUCT,
     ):
         response = client.get("/api/barcode/012345678905", headers=auth_headers)
 
@@ -113,3 +113,107 @@ def test_create_item_rejects_extra_product_info(client, auth_headers):
         },
     )
     assert response.status_code == 422
+
+def test_barcode_variants_include_upc_and_ean():
+    from backend.services.barcode_service import barcode_variants
+
+    assert barcode_variants("074305001161") == ["074305001161", "0074305001161"]
+    assert barcode_variants("0074305001161") == ["0074305001161", "074305001161"]
+
+
+def test_vinegar_category_maps_to_pantry():
+    from backend.services.barcode_service import _map_category
+
+    assert (
+        _map_category("Food, Beverages & Tobacco > Food Items > Condiments & Sauces", "")
+        == "pantry"
+    )
+
+
+def test_lookup_falls_back_to_upcitemdb_when_off_times_out(client, auth_headers):
+    product = {
+        "barcode": "074305001161",
+        "name": "ORGANIC APPLE CIDER VINEGAR WITH THE 'MOTHER'",
+        "brand": "Bragg",
+        "category": "pantry",
+        "imageUrl": "https://example.com/acv.jpg",
+        "ingredients": None,
+        "nutrition": None,
+        "source": "upcitemdb",
+        "infoLastSynced": "2026-11-21T18:00:00Z",
+    }
+    with patch("backend.routers.barcode.barcode_service.get_cached_product", return_value=None), patch(
+        "backend.routers.barcode.barcode_service.lookup_external_product",
+        return_value={"success": True, "cached": False, "product": product},
+    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save:
+        response = client.get("/api/barcode/074305001161", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["cached"] is False
+    assert data["product"]["name"] == product["name"]
+    assert data["product"]["brand"] == "Bragg"
+    mock_save.assert_called_once_with(product)
+
+
+def test_lookup_timeout_is_not_cached_as_not_found(client, auth_headers):
+    with patch("backend.routers.barcode.barcode_service.get_cached_product", return_value=None), patch(
+        "backend.routers.barcode.barcode_service.lookup_external_product",
+        return_value={"success": False, "cached": False, "timeout": True, "error": "Request timed out"},
+    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save:
+        response = client.get("/api/barcode/074305001161", headers=auth_headers)
+
+    assert response.status_code == 404
+    mock_save.assert_not_called()
+
+
+def test_lookup_cached_product_skips_external_sources(client, auth_headers):
+    with patch(
+        "backend.routers.barcode.barcode_service.get_cached_product",
+        return_value=CACHED_PRODUCT,
+    ), patch(
+        "backend.routers.barcode.barcode_service.lookup_external_product"
+    ) as mock_lookup, patch(
+        "backend.routers.barcode.barcode_service.save_product"
+    ) as mock_save:
+        response = client.get("/api/barcode/012345678905", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["cached"] is True
+    mock_lookup.assert_not_called()
+    mock_save.assert_not_called()
+
+
+def test_lookup_external_product_uses_upcitemdb_after_off_timeout():
+    import asyncio
+    from backend.services import barcode_service
+
+    async def fake_off(_barcode: str):
+        return {"success": False, "cached": False, "timeout": True, "error": "Request timed out"}
+
+    async def fake_upc(barcode: str):
+        return {
+            "success": True,
+            "cached": False,
+            "product": {
+                "barcode": barcode,
+                "name": "ORGANIC APPLE CIDER VINEGAR WITH THE 'MOTHER'",
+                "brand": "Bragg",
+                "category": "pantry",
+                "imageUrl": "https://example.com/acv.jpg",
+                "source": "upcitemdb",
+            },
+        }
+
+    async def run():
+        with patch.object(barcode_service, "lookup_open_food_facts", side_effect=fake_off), patch.object(
+            barcode_service, "lookup_upcitemdb", side_effect=fake_upc
+        ):
+            return await barcode_service.lookup_external_product("074305001161")
+
+    result = asyncio.run(run())
+    assert result["success"] is True
+    assert result["product"]["brand"] == "Bragg"
+    assert result["product"]["barcode"] == "074305001161"
+    assert result["product"]["source"] == "upcitemdb"

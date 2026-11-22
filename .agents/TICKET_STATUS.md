@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-086 compact camera controls + wrapping ledger names)
+Last updated: 2026-11-21 (PP-087 barcode lookup fallback while Open Food Facts is down)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -162,6 +162,7 @@ Last updated: 2026-11-21 (PP-086 compact camera controls + wrapping ledger names
 | PP-084 | Fix oversized Scan camera hiding the session ledger | P1 | ✅ Done |
 | PP-085 | Compact pantry list, thumbnails, and sort options | P1 | 🔄 In progress |
 | PP-086 | Compact camera controls and wrapping session names | P1 | ✅ Done |
+| PP-087 | Barcode lookup fallback when Open Food Facts is down | P0 | ✅ Done |
 
 ## Verification
 

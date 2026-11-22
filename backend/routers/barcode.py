@@ -25,16 +25,16 @@ async def lookup_barcode(barcode: str, user_id: str = Depends(require_authentica
     if len(clean) < 8:
         raise HTTPException(status_code=400, detail={"success": False, "cached": False, "error": "Invalid barcode format"})
 
-    cached = barcode_service.get_product_by_barcode(clean, barcode_service.PRODUCT_CACHE_MAX_AGE_DAYS)
+    cached = barcode_service.get_cached_product(clean, barcode_service.PRODUCT_CACHE_MAX_AGE_DAYS)
     if cached:
         return {"success": True, "cached": True, "product": cached}
 
-    stale = barcode_service.get_product_by_barcode(clean)
+    stale = barcode_service.get_cached_product(clean)
     if stale:
         asyncio.create_task(_refresh_barcode(clean))
         return {"success": True, "cached": True, "stale": True, "product": stale}
 
-    result = await barcode_service.lookup_open_food_facts(clean)
+    result = await barcode_service.lookup_external_product(clean)
     if not result.get("success") or not result.get("product"):
         raise HTTPException(status_code=404, detail=result)
     barcode_service.save_product(result["product"])
@@ -42,7 +42,7 @@ async def lookup_barcode(barcode: str, user_id: str = Depends(require_authentica
 
 
 async def _refresh_barcode(barcode: str) -> None:
-    result = await barcode_service.lookup_open_food_facts(barcode)
+    result = await barcode_service.lookup_external_product(barcode)
     if result.get("success") and result.get("product"):
         barcode_service.save_product(result["product"])
     else:
