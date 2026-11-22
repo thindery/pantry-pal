@@ -49,11 +49,15 @@ vi.mock("@/components/BarcodeScanner", () => ({
     quickScan = true,
     onQuickScanChange,
     onCancel,
+    collapsed = false,
+    onCollapsedChange,
   }: {
     onBarcodeDetected: (product: BarcodeProduct) => void;
     quickScan?: boolean;
     onQuickScanChange?: (enabled: boolean) => void;
     onCancel?: () => void;
+    collapsed?: boolean;
+    onCollapsedChange?: (collapsed: boolean) => void;
   }) {
     const [pendingKnown, setPendingKnown] = React.useState<BarcodeProduct | null>(null);
     const [showUnknownInput, setShowUnknownInput] = React.useState(false);
@@ -61,6 +65,17 @@ vi.mock("@/components/BarcodeScanner", () => ({
 
     return (
       <div data-testid="barcode-scanner">
+        {collapsed ? (
+          <button
+            type="button"
+            data-testid="scan-camera-collapsed-bar"
+            onClick={() => onCollapsedChange?.(false)}
+          >
+            Camera paused · Tap to show
+          </button>
+        ) : (
+          <div data-testid="scan-camera-box">Camera</div>
+        )}
         {onCancel && (
           <button data-testid="cancel-scan" onClick={onCancel}>
             Cancel
@@ -443,6 +458,25 @@ describe("ScanBarcodeView session ledger", () => {
       "Scanned items appear here"
     );
     expect(screen.queryByTestId("clear-session-ledger")).not.toBeInTheDocument();
+    expect(screen.getByTestId("scan-camera-box")).toBeInTheDocument();
+  });
+
+  it("expands the session list and collapses the camera, then restores it", async () => {
+    render(<ScanBarcodeView />);
+    fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    await waitFor(() =>
+      expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument()
+    );
+
+    expect(screen.getByTestId("scan-camera-box")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("toggle-ledger-expand"));
+    expect(screen.queryByTestId("scan-camera-box")).not.toBeInTheDocument();
+    expect(screen.getByTestId("scan-camera-collapsed-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("scan-camera-collapsed-bar"));
+    expect(screen.getByTestId("scan-camera-box")).toBeInTheDocument();
+    expect(screen.queryByTestId("scan-camera-collapsed-bar")).not.toBeInTheDocument();
   });
 });
 

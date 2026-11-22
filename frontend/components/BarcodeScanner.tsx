@@ -24,6 +24,8 @@ interface BarcodeScannerProps {
   quickScan?: boolean;
   onQuickScanChange?: (enabled: boolean) => void;
   className?: string;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
@@ -33,6 +35,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   quickScan = true,
   onQuickScanChange,
   className,
+  collapsed = false,
+  onCollapsedChange,
 }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -75,6 +79,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const wasCollapsedRef = useRef(false);
+  useEffect(() => {
+    if (collapsed) {
+      wasCollapsedRef.current = true;
+      stopScanning();
+      return;
+    }
+    if (wasCollapsedRef.current) {
+      wasCollapsedRef.current = false;
+      if (autoStart) {
+        startScanning().catch(() => {});
+      }
+    }
+  }, [collapsed, autoStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
@@ -474,7 +493,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       )}
 
       {/* Camera View */}
-      {detectedProduct == null && hasCameraPermission !== false && (
+      {collapsed && detectedProduct == null && (
+        <button
+          type="button"
+          data-testid="scan-camera-collapsed-bar"
+          onClick={() => onCollapsedChange?.(false)}
+          className="shrink-0 h-9 w-full rounded-xl bg-slate-900 text-white text-xs font-medium hover:bg-slate-800 transition-colors"
+        >
+          Camera paused · Tap to show
+        </button>
+      )}
+      {!collapsed && detectedProduct == null && hasCameraPermission !== false && (
         <div
           data-testid="scan-camera-box"
           className="relative shrink-0 w-full overflow-hidden rounded-2xl bg-black cursor-pointer h-[clamp(12.5rem,33dvh,18.75rem)]"

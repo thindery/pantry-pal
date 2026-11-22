@@ -336,14 +336,17 @@ export function ScanBarcodeView() {
     [unknownProductName, handleSaveUnknownProduct]
   );
 
+  const [ledgerExpanded, setLedgerExpanded] = useState(false);
+
   const leaveScan = useCallback(() => {
     handleClearSession();
+    setLedgerExpanded(false);
     router.push("/dashboard/");
   }, [handleClearSession, router]);
 
   return (
     <div
-      className="relative flex flex-col h-full min-h-0 overflow-hidden"
+      className="relative flex flex-col h-full min-h-0 overflow-hidden overscroll-none"
       data-testid="scan-barcode-screen"
     >
       <BarcodeScanner
@@ -352,6 +355,8 @@ export function ScanBarcodeView() {
         onQuickScanChange={setQuickScan}
         onBarcodeDetected={handleScan}
         onCancel={leaveScan}
+        collapsed={ledgerExpanded}
+        onCollapsedChange={setLedgerExpanded}
       />
 
       {quickScan && (
@@ -361,16 +366,29 @@ export function ScanBarcodeView() {
         >
           <div className="flex items-center justify-between mb-1.5 px-1 shrink-0">
             <h3 className="text-sm font-semibold text-slate-700">This session</h3>
-            {sessionEntries.some((entry) => entry.sessionQty > 0) && (
+            <div className="flex items-center gap-1">
+              {sessionEntries.some((entry) => entry.sessionQty > 0) && (
+                <button
+                  type="button"
+                  onClick={handleClearSession}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md"
+                  data-testid="clear-session-ledger"
+                >
+                  Clear
+                </button>
+              )}
               <button
                 type="button"
-                onClick={handleClearSession}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md"
-                data-testid="clear-session-ledger"
+                onClick={() => setLedgerExpanded((open) => !open)}
+                className="w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                aria-label={ledgerExpanded ? "Show camera" : "Expand session list"}
+                aria-expanded={ledgerExpanded}
+                data-testid="toggle-ledger-expand"
+                title={ledgerExpanded ? "Show camera" : "Expand session list"}
               >
-                Clear
+                {ledgerExpanded ? "▾" : "▴"}
               </button>
-            )}
+            </div>
           </div>
           {sessionEntries.some((entry) => entry.sessionQty > 0) ? (
             <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/components/Toast";
@@ -10,7 +11,7 @@ import { PantryProvider, usePantry } from "@/contexts/pantry-provider";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isScanBarcode = pathname === "/dashboard/scan-barcode";
+  const isScanBarcode = pathname.replace(/\/+$/, "") === "/dashboard/scan-barcode";
   const {
     toasts,
     removeToast,
@@ -21,12 +22,29 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     setThresholdConfig,
   } = usePantry();
 
+  useEffect(() => {
+    if (!isScanBarcode) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverscroll = html.style.overscrollBehavior;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      html.style.overscrollBehavior = prevHtmlOverscroll;
+    };
+  }, [isScanBarcode]);
+
   return (
     <>
       <div
         className={
           isScanBarcode
-            ? "relative z-0 h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] overflow-hidden md:h-auto md:min-h-screen md:overflow-visible md:pt-16 max-w-5xl mx-auto px-3 sm:px-6"
+            ? "relative z-0 h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] overflow-hidden overscroll-none md:h-[calc(100dvh-4rem)] md:pt-16 max-w-5xl mx-auto px-3 sm:px-6"
             : "relative z-0 min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6"
         }
       >
@@ -45,7 +63,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
 
         <DashboardModals />
-        <main className={isScanBarcode ? "h-full overflow-hidden py-0 md:py-8" : "py-6 md:py-8"}>{children}</main>
+        <main className={isScanBarcode ? "h-full min-h-0 overflow-hidden py-0" : "py-6 md:py-8"}>{children}</main>
       </div>
       <DashboardNavbar />
       {showThresholdSettings && (
