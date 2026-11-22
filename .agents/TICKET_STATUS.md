@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-089 refund extra Stripe charges and fix duplicate checkout)
+Last updated: 2026-11-22 (billing/email audit tickets PP-090–PP-100 + billing-and-email.md)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,11 +13,11 @@ Last updated: 2026-11-22 (PP-089 refund extra Stripe charges and fix duplicate c
 
 | | Count |
 |--|-------|
-|| Done | 51+ |
-|| In progress | 0 |
-|| Ready | 0 |
-|| Security open | 2 (PP-067 CSP, PP-072 design-system) |
-|| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
+| Done | 51+ (includes PP-089) |
+| In progress | 0 |
+| Ready | 11 (PP-090–PP-100) |
+| Security open | 2 (PP-067 CSP, PP-072 design-system) |
+| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
 
 ---
 
@@ -164,6 +164,27 @@ Last updated: 2026-11-22 (PP-089 refund extra Stripe charges and fix duplicate c
 | PP-086 | Compact camera controls and wrapping session names | P1 | ✅ Done |
 | PP-087 | Barcode lookup fallback when Open Food Facts is down | P0 | ✅ Done |
 | PP-088 | One pantry row per product, quantities summed | P0 | ✅ Done |
+| PP-089 | Refund extra Stripe charges and stop duplicate checkouts | P0 | ✅ Done |
+
+## Billing & email audit (2026-11-22)
+
+**Doc:** `.agents/docs/billing-and-email.md`  
+Provider: Stripe billing, Resend for app email (SDK present, no send path yet).  
+Each hardening item and each missing transactional email is its own ticket.
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-090 | Sync Pro entitlement when invoice.paid arrives | P0 | 📋 Open |
+| PP-091 | Persist and de-duplicate Stripe webhook events | P1 | 📋 Open |
+| PP-092 | Set the Stripe customer email from the signed-in user | P1 | 📋 Open |
+| PP-093 | Keep Pro access until cancel-at-period-end actually ends | P1 | 📋 Open |
+| PP-094 | Handle Stripe refund webhooks | P2 | 📋 Open |
+| PP-095 | Finish Resend DNS — DKIM, apex SPF, and tighter DMARC | P2 | 📋 Open |
+| PP-096 | Wire a Resend send helper and env keys | P1 | 📋 Open |
+| PP-097 | Send a welcome email on first sign-in | P2 | 📋 Open |
+| PP-098 | Send a payment / subscription confirmation email | P1 | 📋 Open |
+| PP-099 | Send a payment-failed email | P1 | 📋 Open |
+| PP-100 | Send a cancellation confirmation email | P2 | 📋 Open |
 
 ## Verification
 
