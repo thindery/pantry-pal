@@ -1,7 +1,8 @@
 # PP-120: Ship the Cloudflare Web Analytics beacon and allow it in CSP
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P1
+**Updated:** 2026-11-22, 5:03 PM America/Chicago — shipped in production deploy `db0ef3e` (analytics commit `4d58e1f`)
 **Phase:** Analytics / Search Console (audit 2026-11-22)
 **Created:** 2026-11-22
 **Owner:** Pantry Hub Lead / agy (code); Dev Ops deploys from a clean worktree
@@ -45,3 +46,11 @@ $0 only. Do not enable paid Cloudflare Application Services / Zaraz products.
 - [ ] CSP allows the beacon (`script-src` / `connect-src` for the insights hosts) and nothing extra
 - [ ] Privacy policy discloses Cloudflare Web Analytics (PP-122)
 - [ ] A first empty dashboard is treated as normal until traffic is collected
+
+## Shipped
+
+Live on https://www.mypantryhub.com as of 2026-11-22, 5:03 PM America/Chicago (build `db0ef3e`, code `4d58e1f`).
+
+- Beacon `https://static.cloudflareinsights.com/beacon.min.js` with site tag `a1ab471f80614de994b2058dd378aa26` (zone RUM site_tag; site_info API still 403).
+- CSP allows `https://www.googletagmanager.com`, `https://www.google-analytics.com`, `https://static.cloudflareinsights.com`, and `https://cloudflareinsights.com`.
+- Cookieless beacon stays loaded even when GA is skipped (GPC / EEA decline).

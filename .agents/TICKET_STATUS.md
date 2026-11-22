@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 5:04 PM CT (PP-147: official Playwright, not Flashwright)
+Last updated: 2026-11-22, 5:04 PM CT (PP-117/118/120/122/130 shipped in deploy db0ef3e; PP-119 and PP-121 remain open)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,13 +15,13 @@ Last updated: 2026-11-22, 5:04 PM CT (PP-147: official Playwright, not Flashwrig
 
 | | Count |
 |--|-------|
-| Done | 94 (previous plus PP-141–PP-143; pending deploy) |
+| Done | 99 (previous plus PP-117, PP-118, PP-120, PP-122, PP-130 in deploy db0ef3e) |
 | In progress | 0 |
-| Ready | 30 (PP-144–PP-146 still open; PP-141–PP-143 done pending deploy) |
+| Ready | 26 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 18 · P2: 18 · P3: 3 (44 including backlog and security-open) |
-| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
+| Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
+| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
 
@@ -40,7 +40,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (18)
+### P1 — next up, high impact (14)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -48,10 +48,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
-| PP-117 | Create a GA4 property and add a consent-safe tag with key events | 📋 Open — needs Tylor sign-in | Analytics / GSC |
-| PP-118 | Verify mypantryhub.com in Search Console and submit the sitemap | 📋 Open — needs Tylor sign-in | Analytics / GSC |
-| PP-120 | Ship the Cloudflare Web Analytics beacon and allow it in CSP | 📋 Open | Analytics / GSC |
-| PP-122 | Update the privacy policy to disclose analytics | 📋 Open | Analytics / GSC |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
 | PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
@@ -286,16 +282,17 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 ## Analytics / Search Console (2026-11-22)
 
 **Doc:** `.agents/docs/analytics-and-search-console.md`  
-Follow-up to PP-109 after Tylor asked to put analytics and Search Console under tickets. One ticket per gap. No app deploy in this pass (PP-116 shopping-list worktree was dirty). Cloudflare read-only API token is already in the Mini Keychain (PP-121 partial).
+Follow-up to PP-109 after Tylor asked to put analytics and Search Console under tickets. Shipped to production in deploy `db0ef3e` on 2026-11-22 (analytics commit `4d58e1f`). Cloudflare read-only API token is in the Mini Keychain (PP-121 still needs the GA4 Viewer).
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-117 | Create a GA4 property and add a consent-safe tag with key events | P1 | 📋 Open — needs Tylor sign-in |
-| PP-118 | Verify mypantryhub.com in Search Console and submit the sitemap | P1 | 📋 Open — needs Tylor sign-in |
-| PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | P2 | 📋 Open — needs Tylor sign-in |
-| PP-120 | Ship the Cloudflare Web Analytics beacon and allow it in CSP | P1 | 📋 Open |
-| PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | P2 | 📋 Open (CF token done) |
-| PP-122 | Update the privacy policy to disclose analytics | P1 | 📋 Open |
+| PP-117 | Create a GA4 property and add a consent-safe tag with key events | P1 | ✅ Done |
+| PP-118 | Verify mypantryhub.com in Search Console and submit the sitemap | P1 | ✅ Done |
+| PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | P2 | 📋 Open — needs Tylor Microsoft login |
+| PP-120 | Ship the Cloudflare Web Analytics beacon and allow it in CSP | P1 | ✅ Done |
+| PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | P2 | 📋 Open (CF token done; GA4 SA still open) |
+| PP-122 | Update the privacy policy to disclose analytics | P1 | ✅ Done |
+| PP-130 | Privacy compliance (CCPA/CPRA, GPC, EU consent) | P1 | ✅ Done |
 
 
 ## Marketing dashboard (2026-11-22)
@@ -316,7 +313,7 @@ Tylor asked for the same email-send visibility another project already has in ad
 ## Email design (2026-11-22)
 
 **Doc:** `.agents/docs/email-design-plan.md`  
-Tylor liked the first live payment-confirmation mail but found it visually bare, and asked that contact be `hello@mypantryhub.com` (not `info@`). The branded layout and P1 templates are on `main`; they need the next production deploy (not deployed in this pass). Bragle’s reference is the table-based Supabase auth templates (Brevo), not React Email. PP-130 is reserved for another worker’s privacy ticket and is not part of this set.
+Tylor liked the first live payment-confirmation mail but found it visually bare, and asked that contact be `hello@mypantryhub.com` (not `info@`). The branded layout and P1 templates shipped to production in deploy `db0ef3e` on 2026-11-22 (commits `4a37701` and `9aeb045`). Bragle’s reference is the table-based Supabase auth templates (Brevo), not React Email. PP-130 is reserved for another worker’s privacy ticket and is not part of this set.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|

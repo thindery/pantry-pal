@@ -1,10 +1,10 @@
 # PP-118: Verify mypantryhub.com in Search Console and submit the sitemap
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P1
 **Phase:** Analytics / Search Console (audit 2026-11-22)
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 4:26 PM America/Chicago — Tylor yes; DNS TXT / sc-domain confirmed
+**Updated:** 2026-11-22, 5:03 PM America/Chicago — Domain property verified; sitemap submitted
 **Owner:** Tylor (Google sign-in to add the property and click verify / submit); agent can add the DNS TXT record once Tylor pastes the token
 **Needs Tylor sign-in:** Yes — [search.google.com/search-console](https://search.google.com/search-console) on `thindery@gmail.com`
 **Depends on:** Prefer submitting the sitemap after PP-105 (auth/signin is in the live sitemap today and should be noindexed / removed first)
@@ -52,3 +52,7 @@ Root layout has only a commented Google Search Console placeholder (`frontend/ap
 - Recommendation stays: **Domain property** `sc-domain:mypantryhub.com` verified with a **DNS TXT** record (no HTML meta / no `layout.tsx` change). This matches the other Peak Collective custom domains.
 - Tylor approved GSC setup at 4:26 PM CT. Do **not** add the property via the connector in this pass; the parent desk will add it once this method is set. Tylor still has to create the Domain property in the GSC UI, paste/send the TXT token, and click **Verify** after the record is in Cloudflare.
 - Full step list also recorded on parent ticket PP-109.
+
+## Shipped
+
+Tylor verified the Search Console Domain property `mypantryhub.com` via DNS TXT and submitted `https://www.mypantryhub.com/sitemap.xml` (Success, 5 pages) on 2026-11-22. No further agent action. PP-105 sitemap hygiene (auth/signin URL) can still improve what is in the sitemap later.

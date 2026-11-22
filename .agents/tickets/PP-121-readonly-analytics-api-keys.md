@@ -55,3 +55,7 @@ $0 only. Stop if anything asks for billing.
 - [ ] Tylor has added the SA as GA4 Viewer
 - [ ] A runReport call succeeds (empty rows are OK)
 - [ ] No key values are in git, client code, or chat
+
+## Progress (2026-11-22 deploy)
+
+PP-117 is live (property **Pantry Hub** `565428577`, Measurement ID `G-LEW78LC3EF`). The Cloudflare read-only token was already in Keychain. Still open: create the GA4 service account in a reused GCP project and have Tylor add it as **Viewer**. **Priority:** P2.

@@ -1,7 +1,8 @@
 # PP-130: Privacy compliance (CCPA/CPRA, GPC, EU consent)
 
-**Status:** 📋 Ready for Review (Shipped in PP-117, PP-120, PP-122)
+**Status:** ✅ Done
 **Priority:** P1
+**Updated:** 2026-11-22, 5:03 PM America/Chicago — shipped in production deploy `db0ef3e` (analytics commit `4d58e1f`)
 **Phase:** Privacy & Compliance (audit 2026-11-22)
 **Created:** 2026-11-22
 **Owner:** Pantry Hub Lead / agy
@@ -73,3 +74,7 @@ Under the ePrivacy Directive (Article 5(3)) and GDPR, storing or accessing non-e
 
 - **Consent Management Platform (CMP):** The current lightweight in-house banner and Consent Mode v2 integration fulfills all zero-cost requirements without third-party vendor overhead. If future advertising or third-party marketing tools are introduced, evaluation of an IAB TCF v2.2-compliant CMP (e.g. Cookiebot, Klaro, or Didomi) may be scheduled.
 - **DSR Workflow:** Data Subject Requests (access, deletion, correction) sent to `hello@mypantryhub.com` are manually fulfilled via admin database queries and Stripe portal controls.
+
+## Shipped
+
+Implemented and deployed with PP-117 / PP-120 / PP-122 in production build `db0ef3e` (2026-11-22, 5:03 PM America/Chicago). Remaining follow-ups (richer CMP, formal DSR workflow) stay documented above and are not required at current thresholds.

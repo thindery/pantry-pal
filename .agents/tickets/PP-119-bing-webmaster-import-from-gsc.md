@@ -30,3 +30,7 @@ Do not buy Microsoft Advertising or any paid webmaster add-on.
 - [ ] `mypantryhub.com` is a verified site in Bing Webmaster Tools
 - [ ] Sitemap is present in Bing (imported or submitted)
 - [ ] If import fails, a fallback verification method is documented and then applied
+
+## Unblocked
+
+PP-118 is done: the Search Console Domain property `mypantryhub.com` is verified and the sitemap was submitted. This ticket still needs Tylor's Microsoft / Google login to import into Bing Webmaster Tools. **Priority:** P2.

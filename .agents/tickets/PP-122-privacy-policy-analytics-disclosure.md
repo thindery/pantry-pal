@@ -1,7 +1,8 @@
 # PP-122: Update the privacy policy to disclose analytics
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P1
+**Updated:** 2026-11-22, 5:03 PM America/Chicago — shipped in production deploy `db0ef3e` (analytics commit `4d58e1f`)
 **Phase:** Analytics / Search Console (audit 2026-11-22)
 **Created:** 2026-11-22
 **Owner:** Pantry Hub Lead / agy
@@ -41,3 +42,7 @@ Do not invent compliance badges, certifications, or “we never use cookies” c
 - [ ] Cloudflare is described as DNS, CDN, and Web Analytics if the beacon is live
 - [ ] “Last updated” date reflects the change
 - [ ] Wording stays accurate if only one of the two tools ships first
+
+## Shipped
+
+Live on https://www.mypantryhub.com/privacy/ as of 2026-11-22, 5:03 PM America/Chicago (build `db0ef3e`). Last updated date is November 22, 2026. Discloses GA4, cookieless Cloudflare Web Analytics, GPC, EEA/UK/CH consent, and a Your Privacy Choices section (`#privacy-choices`) with contact `hello@mypantryhub.com`. Footer Legal column links to that anchor.

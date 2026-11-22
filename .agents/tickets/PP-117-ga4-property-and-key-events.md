@@ -1,7 +1,8 @@
 # PP-117: Create a GA4 property and add a consent-safe tag with key events
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P1
+**Updated:** 2026-11-22, 5:03 PM America/Chicago — shipped in production deploy `db0ef3e` (analytics commit `4d58e1f`)
 **Phase:** Analytics / Search Console (audit 2026-11-22)
 **Created:** 2026-11-22
 **Owner:** Tylor (Google sign-in to create the property and web stream); Pantry Hub Lead / agy for the tag and events
@@ -57,3 +58,12 @@ $0 only. Do not buy GA 360 or any paid SEO/analytics tool.
 - [ ] The five key events above are implemented and marked as key events in GA4
 - [ ] Privacy policy already discloses GA4 (PP-122) in the same release
 - [ ] A first “no data yet” view is treated as normal (GA4 can lag hours)
+
+## Shipped
+
+Live on https://www.mypantryhub.com as of 2026-11-22, 5:03 PM America/Chicago (build `db0ef3e`, code `4d58e1f`).
+
+- GA4 property Pantry Hub (565428577), web stream Pantry Hub Web, Measurement ID `G-LEW78LC3EF` is in the client bundle.
+- Consent Mode v2: ads storage / user data / personalization denied; analytics granted outside EEA/UK/CH; GPC skips GA; EEA/UK/CH banner via `CF-IPCountry`.
+- Key events: `sign_up`, `first_scan`, `begin_checkout`, `purchase`, `unsubscribe`.
+- Privacy disclosure shipped in the same release (PP-122).
