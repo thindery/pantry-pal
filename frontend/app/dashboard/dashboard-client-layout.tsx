@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/components/Toast";
 import { DashboardNavbar } from "@/components/dashboard/navbar";
@@ -8,6 +9,8 @@ import { ThresholdSettingsModal } from "@/components/dashboard/ThresholdSettings
 import { PantryProvider, usePantry } from "@/contexts/pantry-provider";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isScanBarcode = pathname === "/dashboard/scan-barcode";
   const {
     toasts,
     removeToast,
@@ -20,7 +23,13 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="relative z-0 min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6">
+      <div
+        className={
+          isScanBarcode
+            ? "relative z-0 h-[100dvh] overflow-hidden pb-20 md:h-auto md:min-h-screen md:overflow-visible md:pb-0 md:pt-16 max-w-5xl mx-auto px-3 sm:px-6"
+            : "relative z-0 min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6"
+        }
+      >
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {toast != null && toast.visible && (
@@ -36,7 +45,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
 
         <DashboardModals />
-        <main className="py-6 md:py-8">{children}</main>
+        <main className={isScanBarcode ? "h-full overflow-hidden py-0 md:py-8" : "py-6 md:py-8"}>{children}</main>
       </div>
       <DashboardNavbar />
       {showThresholdSettings && (

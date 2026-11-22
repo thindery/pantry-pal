@@ -23,6 +23,7 @@ interface BarcodeScannerProps {
   autoStart?: boolean;
   quickScan?: boolean;
   onQuickScanChange?: (enabled: boolean) => void;
+  className?: string;
 }
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
@@ -31,6 +32,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   autoStart = false,
   quickScan = true,
   onQuickScanChange,
+  className,
 }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -414,25 +416,19 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   };
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-300">
-      <div className="flex items-center gap-2">
+    <div className={`max-w-lg mx-auto w-full flex flex-col min-h-0 flex-1 gap-2 ${className ?? ""}`}>
+      <header className="flex items-center h-11 shrink-0 gap-1">
         <button
+          type="button"
           onClick={onCancel}
-          className="text-slate-400 hover:text-slate-600 text-sm flex items-center gap-1"
+          aria-label="Back to Inventory"
+          className="flex items-center justify-center w-11 h-11 -ml-1.5 text-xl text-slate-600 hover:text-slate-800"
         >
-          ← Back to Inventory
+          ←
         </button>
-      </div>
-
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">📱 Scan Barcode</h2>
-        <p className="text-slate-500 mb-4">
-          Point camera at a barcode to add an item
-        </p>
-
-        {/* Quick Scan toggle */}
-        <label className="inline-flex items-center gap-3 cursor-pointer select-none">
-          <span className="text-sm font-medium text-slate-700">Quick Scan</span>
+        <h2 className="text-base font-semibold text-slate-800 truncate">Scan</h2>
+        <label className="ml-auto inline-flex items-center gap-1.5 cursor-pointer select-none pr-0.5">
+          <span className="text-xs font-medium text-slate-600">Quick Scan</span>
           <input
             type="checkbox"
             checked={quickScan}
@@ -440,9 +436,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             className="sr-only peer"
             aria-label="Toggle Quick Scan"
           />
-          <div className="relative w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+          <div className="relative w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
         </label>
-      </div>
+      </header>
 
       {error != null && (
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm">
@@ -480,7 +476,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       {/* Camera View */}
       {detectedProduct == null && hasCameraPermission !== false && (
         <div
-          className="relative bg-black rounded-2xl overflow-hidden aspect-square cursor-pointer"
+          className="relative bg-black rounded-2xl overflow-hidden flex-1 min-h-48 w-full cursor-pointer"
           onPointerDown={handleCameraPointer}
         >
           <video
@@ -491,7 +487,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           />
           {isScanning && (
             <p className="absolute top-3 left-0 right-0 text-center text-white/80 text-xs font-medium pointer-events-none">
-              Tap the image to focus
+              Point at a barcode · Tap to focus
             </p>
           )}
 

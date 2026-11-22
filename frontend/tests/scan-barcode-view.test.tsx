@@ -379,7 +379,10 @@ describe("ScanBarcodeView session ledger", () => {
     vi.useFakeTimers();
     fireEvent.click(screen.getByRole("button", { name: /Decrease Canned Beans/i }));
     expect(screen.queryByTestId("session-row-012345678905")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+    expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
+    expect(screen.getByTestId("session-ledger-empty")).toHaveTextContent(
+      "Scanned items appear here"
+    );
     expect(mockHandleAdjustQuantity).not.toHaveBeenCalled();
 
     await act(async () => {
@@ -420,8 +423,21 @@ describe("ScanBarcodeView session ledger", () => {
     );
 
     fireEvent.click(screen.getByTestId("clear-session-ledger"));
-    expect(screen.queryByTestId("quick-scan-ledger")).not.toBeInTheDocument();
+    expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
+    expect(screen.queryByTestId("session-row-012345678905")).not.toBeInTheDocument();
+    expect(screen.getByTestId("session-ledger-empty")).toHaveTextContent(
+      "Scanned items appear here"
+    );
     expect(mockHandleAdjustQuantity).not.toHaveBeenCalled();
+  });
+
+  it("keeps the empty session panel visible under the camera", () => {
+    render(<ScanBarcodeView />);
+    expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
+    expect(screen.getByTestId("session-ledger-empty")).toHaveTextContent(
+      "Scanned items appear here"
+    );
+    expect(screen.queryByTestId("clear-session-ledger")).not.toBeInTheDocument();
   });
 });
 

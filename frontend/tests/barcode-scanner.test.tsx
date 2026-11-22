@@ -145,6 +145,26 @@ describe("BarcodeScanner unknown product naming", () => {
   });
 });
 
+describe("BarcodeScanner compact header", () => {
+  it("renders a slim back + Scan + Quick Scan row without the old subtitle", () => {
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={vi.fn()}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+        onQuickScanChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Back to Inventory/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Scan$/i })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: /Toggle Quick Scan/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Scan Barcode/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Point camera at a barcode to add an item/i)).not.toBeInTheDocument();
+  });
+});
+
 describe("BarcodeScanner Quick Scan toggle", () => {
   function renderWithToggle() {
     const onQuickScanChange = vi.fn();

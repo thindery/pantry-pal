@@ -342,7 +342,10 @@ export function ScanBarcodeView() {
   }, [handleClearSession, router]);
 
   return (
-    <div className="relative min-h-screen pb-8">
+    <div
+      className="relative flex flex-col h-full min-h-0 overflow-hidden"
+      data-testid="scan-barcode-screen"
+    >
       <BarcodeScanner
         autoStart
         quickScan={quickScan}
@@ -351,67 +354,78 @@ export function ScanBarcodeView() {
         onCancel={leaveScan}
       />
 
-      {quickScan && sessionEntries.some((entry) => entry.sessionQty > 0) && (
+      {quickScan && (
         <div
-          className="max-w-lg mx-auto mt-4 px-1"
+          className="shrink-0 w-full max-w-lg mx-auto flex flex-col max-h-[40dvh] pt-2"
           data-testid="quick-scan-ledger"
         >
-          <div className="flex items-center justify-between mb-2 px-1">
+          <div className="flex items-center justify-between mb-1.5 px-1 shrink-0">
             <h3 className="text-sm font-semibold text-slate-700">This session</h3>
-            <button
-              type="button"
-              onClick={handleClearSession}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md"
-              data-testid="clear-session-ledger"
-            >
-              Clear
-            </button>
+            {sessionEntries.some((entry) => entry.sessionQty > 0) && (
+              <button
+                type="button"
+                onClick={handleClearSession}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md"
+                data-testid="clear-session-ledger"
+              >
+                Clear
+              </button>
+            )}
           </div>
-          <ul className="max-h-40 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
-            {sessionEntries.filter((entry) => entry.sessionQty > 0).map((entry) => {
-              const label = entry.product.name?.trim() || entry.product.barcode;
-              const isHighlighted = highlightedKey === entry.key;
-              return (
-                <li
-                  key={entry.key}
-                  data-testid={`session-row-${entry.key}`}
-                  data-highlighted={isHighlighted ? "true" : "false"}
-                  className={`flex items-center gap-2 px-3 py-1.5 ${
-                    isHighlighted ? "bg-emerald-50" : "bg-white"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">{label}</p>
-                  </div>
-                  <span
-                    className="w-8 text-center text-sm font-semibold tabular-nums text-slate-800"
-                    data-testid={`session-qty-${entry.key}`}
+          {sessionEntries.some((entry) => entry.sessionQty > 0) ? (
+            <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
+              {sessionEntries.filter((entry) => entry.sessionQty > 0).map((entry) => {
+                const label = entry.product.name?.trim() || entry.product.barcode;
+                const isHighlighted = highlightedKey === entry.key;
+                return (
+                  <li
+                    key={entry.key}
+                    data-testid={`session-row-${entry.key}`}
+                    data-highlighted={isHighlighted ? "true" : "false"}
+                    className={`flex items-center gap-2 px-3 py-1.5 ${
+                      isHighlighted ? "bg-emerald-50" : "bg-white"
+                    }`}
                   >
-                    {entry.sessionQty}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleSessionDecrement(entry)}
-                      disabled={entry.sessionQty <= 0}
-                      className="w-11 h-11 rounded-xl bg-slate-100 text-slate-800 text-xl font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
-                      aria-label={`Decrease ${label}`}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{label}</p>
+                    </div>
+                    <span
+                      className="w-8 text-center text-sm font-semibold tabular-nums text-slate-800"
+                      data-testid={`session-qty-${entry.key}`}
                     >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSessionIncrement(entry)}
-                      className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
-                      aria-label={`Increase ${label}`}
-                    >
-                      +
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                      {entry.sessionQty}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSessionDecrement(entry)}
+                        disabled={entry.sessionQty <= 0}
+                        className="w-11 h-11 rounded-xl bg-slate-100 text-slate-800 text-xl font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
+                        aria-label={`Decrease ${label}`}
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSessionIncrement(entry)}
+                        className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
+                        aria-label={`Increase ${label}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p
+              className="px-3 py-2.5 text-xs text-slate-400 text-center rounded-xl border border-dashed border-slate-200 bg-white"
+              data-testid="session-ledger-empty"
+            >
+              Scanned items appear here
+            </p>
+          )}
         </div>
       )}
 

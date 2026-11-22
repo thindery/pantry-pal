@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-082 optimistic ledger +/− + token cache)
+Last updated: 2026-11-21 (PP-083 compact scan header + pinned ledger)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -158,6 +158,7 @@ Last updated: 2026-11-21 (PP-082 optimistic ledger +/− + token cache)
 | PP-080 | Improve barcode scanner reliability (partial reads, focus, shadows) | P1 | ✅ Done |
 | PP-081 | Quick Scan running session ledger with +/− | P1 | ✅ Done |
 | PP-082 | Single top image toast in Quick Scan | P1 | ✅ Done |
+| PP-083 | Compact Scan header and pinned session ledger | P1 | ✅ Done |
 
 ## Verification
 
