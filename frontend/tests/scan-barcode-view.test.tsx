@@ -276,6 +276,8 @@ describe("ScanBarcodeView Quick Scan on", () => {
     expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
     expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument();
     expect(screen.getByTestId("session-qty-012345678905")).toHaveTextContent("1");
+    expect(screen.getByText("Canned Beans").className).toContain("line-clamp-2");
+    expect(screen.getByRole("button", { name: /Increase Canned Beans/i })).toHaveClass("w-8", "h-8");
     expect(screen.getByTestId("session-row-012345678905")).toHaveAttribute(
       "data-highlighted",
       "true"

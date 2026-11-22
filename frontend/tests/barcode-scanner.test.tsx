@@ -145,6 +145,29 @@ describe("BarcodeScanner unknown product naming", () => {
   });
 });
 
+describe("BarcodeScanner camera controls", () => {
+  it("pins compact start/stop and leaves the hint clear of the viewfinder", () => {
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={vi.fn()}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={true}
+        onQuickScanChange={vi.fn()}
+      />
+    );
+
+    const start = screen.getByRole("button", { name: /Start scanning/i });
+    expect(start).toBeInTheDocument();
+    expect(start).toHaveClass("w-9", "h-9");
+    expect(screen.queryByText(/Stop Scanning/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("scan-camera-controls").className).toContain("top-2");
+    expect(screen.getByTestId("scan-camera-controls").className).toContain("right-2");
+    expect(screen.getByTestId("scan-viewfinder").className).toContain("inset-x-16");
+    expect(screen.getByTestId("scan-viewfinder").className).toContain("inset-y-12");
+  });
+});
+
 describe("BarcodeScanner compact header", () => {
   it("renders a slim back + Scan + Quick Scan row without the old subtitle", () => {
     render(

@@ -382,25 +382,25 @@ export function ScanBarcodeView() {
                     key={entry.key}
                     data-testid={`session-row-${entry.key}`}
                     data-highlighted={isHighlighted ? "true" : "false"}
-                    className={`flex items-center gap-2 px-3 py-1.5 ${
+                    className={`flex items-center gap-2 px-2.5 py-1.5 ${
                       isHighlighted ? "bg-emerald-50" : "bg-white"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">{label}</p>
+                      <p className="text-sm font-medium leading-snug text-slate-800 line-clamp-2">{label}</p>
                     </div>
                     <span
-                      className="w-8 text-center text-sm font-semibold tabular-nums text-slate-800"
+                      className="w-6 shrink-0 text-center text-sm font-semibold tabular-nums text-slate-800"
                       data-testid={`session-qty-${entry.key}`}
                     >
                       {entry.sessionQty}
                     </span>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => handleSessionDecrement(entry)}
                         disabled={entry.sessionQty <= 0}
-                        className="w-11 h-11 rounded-xl bg-slate-100 text-slate-800 text-xl font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
+                        className="w-8 h-8 rounded-lg bg-slate-100 text-slate-800 text-lg font-bold hover:bg-slate-200 active:bg-slate-300 disabled:opacity-40 transition-colors"
                         aria-label={`Decrease ${label}`}
                       >
                         −
@@ -408,7 +408,7 @@ export function ScanBarcodeView() {
                       <button
                         type="button"
                         onClick={() => handleSessionIncrement(entry)}
-                        className="w-11 h-11 rounded-xl bg-emerald-600 text-white text-xl font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
+                        className="w-8 h-8 rounded-lg bg-emerald-600 text-white text-lg font-bold hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
                         aria-label={`Increase ${label}`}
                       >
                         +

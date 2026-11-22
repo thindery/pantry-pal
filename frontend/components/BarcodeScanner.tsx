@@ -487,19 +487,25 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             muted
           />
           {isScanning && (
-            <p className="absolute top-3 left-0 right-0 text-center text-white/80 text-xs font-medium pointer-events-none">
+            <p
+              data-testid="scan-camera-hint"
+              className="absolute top-2 left-2 z-10 max-w-[calc(100%-4.25rem)] pointer-events-none rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium leading-tight text-white/95"
+            >
               Point at a barcode · Tap to focus
             </p>
           )}
 
-          {/* Scan overlay */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-64 h-48 border-2 border-emerald-400 rounded-lg relative">
+          {/* Scan overlay — inset so it stays clear of the hint and side controls */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div
+              data-testid="scan-viewfinder"
+              className="absolute inset-x-16 inset-y-12 border-2 border-emerald-400 rounded-lg"
+            >
               {/* Corner markers */}
-              <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
-              <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
-              <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
+              <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
+              <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
 
               {/* Scan line animation */}
               {isScanning && (
@@ -520,9 +526,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             </div>
           )}
 
-          {/* Controls */}
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+          {/* Controls — compact icons pinned to the top-right */}
+          <div
+            data-testid="scan-camera-controls"
+            className="absolute top-2 right-2 z-10 flex flex-col gap-1.5"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
             <button
+              type="button"
               onClick={() => {
                 if (isScanning) {
                   stopScanning();
@@ -530,23 +542,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                   startScanning();
                 }
               }}
-              className={`px-6 py-3 rounded-full font-bold transition-all ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm backdrop-blur-sm transition-colors ${
                 isScanning
-                  ? 'bg-rose-500 text-white hover:bg-rose-600'
-                  : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                  ? "bg-rose-600/80 hover:bg-rose-600"
+                  : "bg-black/55 hover:bg-black/70"
               }`}
+              aria-label={isScanning ? "Stop scanning" : "Start scanning"}
+              title={isScanning ? "Stop scanning" : "Start scanning"}
             >
-              {isScanning ? '⏹ Stop Scanning' : '▶ Start Scanning'}
+              {isScanning ? "■" : "▶"}
             </button>
 
             {torchSupported && (
               <button
+                type="button"
                 onClick={toggleTorch}
-                className="p-3 bg-slate-700/80 text-white rounded-full hover:bg-slate-600 transition-colors"
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-black/55 text-white text-sm backdrop-blur-sm hover:bg-black/70 transition-colors"
                 title="Toggle flashlight"
                 aria-label="Toggle flashlight"
               >
-                {torchOn ? '🔦' : '💡'}
+                {torchOn ? "🔦" : "💡"}
               </button>
             )}
           </div>
