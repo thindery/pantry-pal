@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 import { BrandMark } from '@/components/BrandMark';
@@ -101,6 +101,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const upgradeInFlight = useRef(false);
   const { status } = useSession();
   const isSignedIn = status === 'authenticated';
   const { tierInfo: _tierInfo, isFree, isPro, isFamily } = useSubscription();
@@ -110,7 +111,10 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
       setError('Please sign in to upgrade');
       return;
     }
-
+    if (upgradeInFlight.current || isLoading) {
+      return;
+    }
+    upgradeInFlight.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -125,12 +129,13 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
         cancelUrl
       );
 
-      // Redirect to Stripe checkout
+      // Redirect to Stripe checkout or the billing portal
       // eslint-disable-next-line react-hooks/immutability
       window.location.href = checkout.url;
     } catch (err) {
       console.error('Checkout failed:', err);
       setError(err instanceof Error ? err.message : 'Failed to start checkout');
+      upgradeInFlight.current = false;
       setIsLoading(false);
     }
   };

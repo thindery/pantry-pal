@@ -294,6 +294,56 @@ def ensure_stripe_products() -> dict[str, dict[str, str]]:
         return get_price_ids()
 
 
+def _to_dict(obj: Any) -> Any:
+    """Normalize Stripe objects so webhook handlers can use dict .get()."""
+    if obj is None or isinstance(obj, (str, int, float, bool)):
+        return obj
+    if isinstance(obj, dict):
+        return {key: _to_dict(value) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [_to_dict(value) for value in obj]
+    to_dict_recursive = getattr(obj, "to_dict_recursive", None)
+    if callable(to_dict_recursive):
+        return to_dict_recursive()
+    to_dict = getattr(obj, "to_dict", None)
+    if callable(to_dict):
+        return _to_dict(to_dict())
+    return obj
+
+
+def _is_active_or_trialing(status: Any) -> bool:
+    return str(status or "").lower() in {"active", "trialing"}
+
+
+def _first_active_subscription(customer_id: Optional[str], exclude_id: Optional[str] = None) -> Optional[dict[str, Any]]:
+    if not customer_id:
+        return None
+    for status in ("active", "trialing"):
+        listed = stripe.Subscription.list(customer=customer_id, status=status, limit=20)
+        for raw in listed.auto_paging_iter():
+            sub = _to_dict(raw)
+            if exclude_id and sub.get("id") == exclude_id:
+                continue
+            if _is_active_or_trialing(sub.get("status")):
+                return sub
+    return None
+
+
+def _open_checkout_session(customer_id: str, price_id: str) -> Optional[dict[str, str]]:
+    listed = stripe.checkout.Session.list(customer=customer_id, status="open", limit=10)
+    for raw in listed.auto_paging_iter():
+        session = _to_dict(raw)
+        if session.get("mode") != "subscription" or not session.get("url"):
+            continue
+        return {"sessionId": session["id"], "url": session["url"]}
+    return None
+
+
+def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
+    session = stripe.billingPortal.Session.create(customer=customer_id, return_url=return_url)
+    return {"sessionId": _obj_get(session, "id") or "", "url": session.url}
+
+
 async def create_checkout_session(
     user_id: str,
     tier: str,
@@ -313,6 +363,31 @@ async def create_checkout_session(
         customer_id = customer.id
         update_user_subscription(user_id, {"stripeCustomerId": customer_id})
 
+    # Never start a second subscription if one is already active or trialing.
+    stored_status = (existing or {}).get("subscriptionStatus")
+    stored_sub_id = (existing or {}).get("stripeSubscriptionId")
+    if stored_sub_id and _is_active_or_trialing(stored_status):
+        return _portal_redirect(customer_id, cancel_url or success_url)
+    live_sub = _first_active_subscription(customer_id)
+    if live_sub:
+        period_start, period_end = _period_unix(live_sub)
+        update_user_subscription(
+            user_id,
+            {
+                "tier": (live_sub.get("metadata") or {}).get("tier") or tier,
+                "stripeSubscriptionId": live_sub.get("id"),
+                "stripePriceId": _price_id_from_sub(live_sub),
+                "subscriptionStatus": live_sub.get("status"),
+                "subscriptionStartDate": _iso_from_unix(period_start),
+                "subscriptionEndDate": _iso_from_unix(period_end),
+            },
+        )
+        return _portal_redirect(customer_id, cancel_url or success_url)
+
+    reused = _open_checkout_session(customer_id, price_id)
+    if reused:
+        return reused
+
     session = stripe.checkout.Session.create(
         customer=customer_id,
         line_items=[{"price": price_id, "quantity": 1}],
@@ -322,6 +397,7 @@ async def create_checkout_session(
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"userId": user_id, "tier": tier},
+        idempotency_key=f"pantryhub-checkout-{user_id}-{tier}-{billing_interval}",
     )
     if not session.url:
         raise ValueError("Checkout session created without URL")
@@ -346,8 +422,11 @@ def verify_webhook(payload: bytes, signature: str) -> dict[str, Any]:
     return stripe.Webhook.construct_event(payload, signature, secret)
 
 
-def process_webhook(event_type: str, data: dict[str, Any]) -> dict[str, Any]:
-    obj = data.get("object", {})
+def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
+    payload = _to_dict(data) or {}
+    obj = payload.get("object") or {}
+    if not isinstance(obj, dict):
+        obj = _to_dict(obj) or {}
     if event_type == "checkout.session.completed":
         _handle_checkout_completed(obj)
     elif event_type == "invoice.paid":
@@ -367,15 +446,20 @@ def _handle_checkout_completed(session: dict[str, Any]) -> None:
     subscription_id = session.get("subscription")
     if not user_id or not tier or not subscription_id:
         return
-    sub = stripe.Subscription.retrieve(subscription_id)
+    existing = get_user_subscription(user_id)
+    stored_id = (existing or {}).get("stripeSubscriptionId")
+    # Do not replace a subscription the account is already linked to.
+    if stored_id and stored_id != subscription_id and _is_active_or_trialing((existing or {}).get("subscriptionStatus")):
+        return
+    sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
     period_start, period_end = _period_unix(sub)
     update_user_subscription(
         user_id,
         {
             "tier": tier,
-            "stripeSubscriptionId": _obj_get(sub, "id"),
+            "stripeSubscriptionId": sub.get("id"),
             "stripePriceId": _price_id_from_sub(sub),
-            "subscriptionStatus": _obj_get(sub, "status"),
+            "subscriptionStatus": sub.get("status"),
             "subscriptionStartDate": _iso_from_unix(period_start),
             "subscriptionEndDate": _iso_from_unix(period_end),
         },
@@ -437,6 +521,13 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
     user_id = (subscription.get("metadata") or {}).get("userId")
     if not user_id:
         return
+    existing = get_user_subscription(user_id)
+    stored_id = (existing or {}).get("stripeSubscriptionId")
+    event_id = subscription.get("id")
+    # Ignore updates for extra subscriptions so canceling a duplicate cannot
+    # mark the user's kept subscription canceled.
+    if stored_id and event_id and stored_id != event_id:
+        return
     tier = (subscription.get("metadata") or {}).get("tier")
     _period_start, period_end = _period_unix(subscription)
     update_user_subscription(
@@ -452,5 +543,27 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
 
 def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
     user_id = (subscription.get("metadata") or {}).get("userId")
-    if user_id:
-        downgrade_to_free(user_id)
+    if not user_id:
+        return
+    deleted_id = subscription.get("id")
+    existing = get_user_subscription(user_id)
+    stored_id = (existing or {}).get("stripeSubscriptionId")
+    if stored_id and deleted_id and stored_id != deleted_id:
+        return
+    customer_id = subscription.get("customer") or (existing or {}).get("stripeCustomerId")
+    replacement = _first_active_subscription(customer_id, exclude_id=deleted_id)
+    if replacement:
+        period_start, period_end = _period_unix(replacement)
+        update_user_subscription(
+            user_id,
+            {
+                "tier": (replacement.get("metadata") or {}).get("tier") or (existing or {}).get("tier") or "pro",
+                "stripeSubscriptionId": replacement.get("id"),
+                "stripePriceId": _price_id_from_sub(replacement),
+                "subscriptionStatus": replacement.get("status"),
+                "subscriptionStartDate": _iso_from_unix(period_start),
+                "subscriptionEndDate": _iso_from_unix(period_end),
+            },
+        )
+        return
+    downgrade_to_free(user_id)

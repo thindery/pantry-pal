@@ -40,7 +40,7 @@ export interface UserTierInfo {
 }
 
 export interface CheckoutResponse {
-  sessionId: string;
+  sessionId?: string;
   url: string;
 }
 
