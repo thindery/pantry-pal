@@ -39,11 +39,14 @@ resource "cloudflare_record" "wildcard" {
   proxied = true
 }
 
-# Resend / DMARC (DKIM via Resend dashboard after domain verify)
+# Resend (dedicated mypantryhub.com account) + DMARC.
+# Live apex SPF is Cloudflare Email Routing only — do not add amazonses.com
+# at the apex (sending uses the send/rsend Forge CNAMEs, not apex SPF).
+# Apex MX stays Cloudflare Email Routing; do not add a Resend receiving MX.
 resource "cloudflare_record" "spf" {
   zone_id = data.cloudflare_zone.zone.id
   name    = "@"
-  content = "v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all"
+  content = "v=spf1 include:_spf.mx.cloudflare.net ~all"
   type    = "TXT"
 }
 
@@ -54,17 +57,25 @@ resource "cloudflare_record" "dmarc" {
   type    = "TXT"
 }
 
-resource "cloudflare_record" "resend_send_spf" {
+resource "cloudflare_record" "resend_dkim" {
   zone_id = data.cloudflare_zone.zone.id
-  name    = "send"
-  content = "v=spf1 include:amazonses.com ~all"
+  name    = "resend._domainkey"
+  content = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDNns3JEtiWRZSDyr2W3WAvGatJFJbJxwCRoskN5yX8khOQqfOt8SLFWPPSJkn4FlLm0ENS5uhKqSzVHnGWFuZ9NA9aYtJNhj3BjCo7o6Vl52X5gAb2OZNjQYgk+BV6b15x+pWjrAYdg0EQWzH9+3EmiH+4XTGCWICT6VSdsckQJQIDAQAB"
   type    = "TXT"
 }
 
-resource "cloudflare_record" "resend_send_mx" {
-  zone_id  = data.cloudflare_zone.zone.id
-  name     = "send"
-  content  = "feedback-smtp.us-east-1.amazonses.com"
-  type     = "MX"
-  priority = 10
+resource "cloudflare_record" "resend_send" {
+  zone_id = data.cloudflare_zone.zone.id
+  name    = "send"
+  content = "send.forge.rmta.net"
+  type    = "CNAME"
+  proxied = false
+}
+
+resource "cloudflare_record" "resend_rsend" {
+  zone_id = data.cloudflare_zone.zone.id
+  name    = "rsend"
+  content = "rsend.forge.rmta.net"
+  type    = "CNAME"
+  proxied = false
 }

@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 4:26 PM CT (Tylor SEO follow-up: PP-101 wording + item count, expiry rule, PP-109 methods, PP-111 drafts)
+Last updated: 2026-11-22, 4:38 PM CT (PP-095 Resend DNS verified; test mail passed SPF/DKIM/DMARC in Inbox)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,9 +13,9 @@ Last updated: 2026-11-22, 4:26 PM CT (Tylor SEO follow-up: PP-101 wording + item
 
 | | Count |
 |--|-------|
-| Done | 86 (includes PP-088–PP-094, PP-096–PP-100, PP-102, PP-112, PP-113; PP-101 reopened for copy follow-up) |
+| Done | 87 (includes PP-088–PP-096, PP-097–PP-100, PP-102, PP-112, PP-113; PP-101 reopened for copy follow-up) |
 | In progress | 0 |
-| Ready | 22 (PP-095 Resend DNS; PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard) |
+| Ready | 21 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
@@ -170,7 +170,7 @@ Last updated: 2026-11-22, 4:26 PM CT (Tylor SEO follow-up: PP-101 wording + item
 ## Billing & email audit (2026-11-22)
 
 **Doc:** `.agents/docs/billing-and-email.md`  
-Provider: Stripe billing, Resend for app email (SDK present, no send path yet).  
+Provider: Stripe billing, Resend for app email (dedicated mypantryhub.com account; domain verified; send helper live).  
 Each hardening item and each missing transactional email is its own ticket.
 
 | Ticket | Title | Priority | Status |
@@ -180,7 +180,7 @@ Each hardening item and each missing transactional email is its own ticket.
 | PP-092 | Set the Stripe customer email from the signed-in user | P1 | ✅ Done |
 | PP-093 | Keep Pro access until cancel-at-period-end actually ends | P1 | ✅ Done |
 | PP-094 | Handle Stripe refund webhooks | P2 | ✅ Done |
-| PP-095 | Finish Resend DNS — DKIM, apex SPF, and tighter DMARC | P2 | 📋 Open |
+| PP-095 | Finish Resend DNS — DKIM, apex SPF, and tighter DMARC | P2 | ✅ Done |
 | PP-096 | Wire a Resend send helper and env keys | P1 | ✅ Done |
 | PP-097 | Send a welcome email on first sign-in | P2 | ✅ Done |
 | PP-098 | Send a payment / subscription confirmation email | P1 | ✅ Done |

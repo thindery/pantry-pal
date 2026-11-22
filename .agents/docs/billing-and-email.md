@@ -7,9 +7,9 @@ Short operator reference for Pantry Hub (`www.mypantryhub.com`). Key **names** o
 | Concern | Provider | Notes |
 |---------|----------|--------|
 | Billing | **Stripe** | Checkout, Customer Portal, subscriptions, webhooks. Catalog is provisioned in `backend/services/stripe_service.py` (Pro / Family, monthly / yearly). |
-| App email | **Resend** | Intended provider: `resend==2.6.0` in `requirements.txt`, `send.mypantryhub.com` MX/SPF in `deploy/terraform/main.tf`. **No send path is wired yet** (the SDK is never imported). |
+| App email | **Resend** | Dedicated free account for `mypantryhub.com` only (not the `user-Resend` connector account). Domain verified 2026-11-22 4:21 PM America/Chicago. App helper in `backend/services/email_service.py` (`resend==2.6.0`). From: `Pantry Hub <hello@mypantryhub.com>` (`RESEND_FROM_EMAIL`). |
 | Sign-in | **NextAuth v5 + Google OAuth** | No app-sent magic-link, verification, or password-reset email. Google may email the Google account on its own. Clerk is legacy and unused in production. |
-| Public contact | `info@mypantryhub.com` | Footer, legal pages, `security.txt`. Not an automated From address until PP-096. |
+| Public contact | `info@mypantryhub.com` | Footer, legal pages, `security.txt`. Transactional From is `hello@mypantryhub.com` (Cloudflare Email Routing to Tylor). |
 
 Stripe can also email receipts or dunning from the Stripe Dashboard, but `Customer.create` currently sets only `metadata.userId` (no `email`), so those messages often cannot be delivered until PP-092.
 
@@ -51,10 +51,12 @@ Templates (placeholders only): repo-root `.env.example` and `.env.prod.example`.
 - `STRIPE_FAMILY_MONTHLY_PRICE_ID`
 - `STRIPE_FAMILY_YEARLY_PRICE_ID`
 
-### Resend (not in templates yet — add in PP-096)
+### Resend (placeholders in `.env.example` / `.env.prod.example`; real values only on OVH)
 
-- `RESEND_API_KEY`
-- A From-address variable (recommended name: `RESEND_FROM_EMAIL`), on the verified `mypantryhub.com` domain
+- `RESEND_API_KEY` — send-only key named `pantry-hub-backend`, restricted to `mypantryhub.com`. Never print or commit the value. Production: `/opt/pantry-pal/.env.prod` (`.env` symlinks there).
+- `RESEND_FROM_EMAIL` — `Pantry Hub <hello@mypantryhub.com>`
+
+If either is unset, `email_service.send_email` no-ops and logs (error in production). Do not use the old `user-Resend` account (justwithai / peak-collective / getmd2pdf) for this app.
 
 ### Auth and admin allowlist (not used to send mail)
 
@@ -70,4 +72,16 @@ Templates (placeholders only): repo-root `.env.example` and `.env.prod.example`.
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_API_URL`
 
-Terraform uses `cloudflare_api_token` to manage DNS (SPF, DMARC, Resend `send` records). DKIM and live apex SPF still need work (PP-095).
+## DNS (PP-095, live 2026-11-22)
+
+Terraform (`deploy/terraform/main.tf`) now matches live Cloudflare DNS. **Do not `terraform apply` as part of a random deploy** unless you intend to touch DNS; the records are already live.
+
+- Apex MX: Cloudflare Email Routing (do not add a Resend receiving MX)
+- Apex SPF: `v=spf1 include:_spf.mx.cloudflare.net ~all` (no `amazonses.com` at the apex)
+- `_dmarc`: `v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@mypantryhub.com` — stay at `p=none` until a clean stretch of mail, then quarantine / reject
+- `TXT resend._domainkey` — Resend DKIM
+- `CNAME send` → `send.forge.rmta.net` (DNS only, not proxied)
+- `CNAME rsend` → `rsend.forge.rmta.net` (DNS only, not proxied)
+
+A 2026-11-22 test of `send_payment_confirmation` to Tylor landed in Gmail Inbox with `spf=pass`, `dkim=pass` (`@mypantryhub.com` / `s=resend`), and `dmarc=pass`.
+

@@ -1,34 +1,38 @@
 # PP-095: Finish Resend DNS — DKIM, apex SPF, and tighter DMARC
 
-**Status:** 📋 Open  
-**Priority:** P2  
-**Phase:** Billing & email audit (2026-11-22)  
-**Created:** 2026-11-22  
+**Status:** ✅ Done
+**Priority:** P2
+**Phase:** Billing & email audit (2026-11-22)
+**Created:** 2026-11-22
+**Completed:** 2026-11-22
 **Depends on:** PP-096 (send a test message after DNS)
 
 ---
 
 ## Problem
 
-Resend is the intended provider (`resend` in `requirements.txt`, `send.mypantryhub.com` MX/SPF in `deploy/terraform/main.tf`). Live public DNS as of 2026-11-22 (America/Chicago):
+Resend is the intended provider (`resend` in `requirements.txt`). Live public DNS as of the morning of 2026-11-22 (America/Chicago) was incomplete: no Resend DKIM, apex SPF was Cloudflare-only (terraform still listed `amazonses.com`), and `send.mypantryhub.com` still had Amazon SES MX/TXT from an earlier setup.
 
-- Apex SPF is `v=spf1 include:_spf.mx.cloudflare.net ~all` — it does **not** include `amazonses.com`, even though the terraform file does
-- `send.mypantryhub.com` SPF + MX (SES feedback) are in place
-- `_dmarc.mypantryhub.com` is `p=none`
-- No DKIM TXT/CNAME was published for common selectors (`resend._domainkey`, `s1._domainkey`, `s2._domainkey`, `send._domainkey`)
+## What shipped
 
-Terraform comments say DKIM is added from the Resend dashboard after domain verify. Until DKIM and apex SPF are correct, messages from `@mypantryhub.com` can fail or land in spam.
+- A **new, separate free Resend account** for `mypantryhub.com` only (owner `hello@mypantryhub.com`, which forwards to Tylor via Cloudflare Email Routing). The existing `user-Resend` connector account (`justwithai.com`, `peak-collective.com`, `getmd2pdf.com`) was not used.
+- Cloudflare DNS (DNS-only / not proxied):
+  - `TXT resend._domainkey` — Resend DKIM
+  - `CNAME send` → `send.forge.rmta.net`
+  - `CNAME rsend` → `rsend.forge.rmta.net`
+- Removed the conflicting SES records on `send` (MX `feedback-smtp.us-east-1.amazonses.com` and TXT `v=spf1 include:amazonses.com ~all`) so the Forge CNAME could exist. Apex MX (Cloudflare Email Routing), apex SPF (`include:_spf.mx.cloudflare.net` only), existing `_dmarc` (`p=none`), and `cf2024-1._domainkey` were left alone. No Resend receiving MX was added.
+- Domain verified in Resend at 4:21 PM America/Chicago (DKIM + both Forge CNAMEs).
+- Production env on OVH (names only): `RESEND_API_KEY` (send-only key `pantry-hub-backend`, restricted to `mypantryhub.com`) and `RESEND_FROM_EMAIL=Pantry Hub <hello@mypantryhub.com>`. Backend recreated; healthy.
+- One test `send_payment_confirmation` (idempotency `invoice.paid:pp095-resend-test-20261122`) to `thindery@gmail.com` at 4:38 PM America/Chicago. Arrived in Gmail **Inbox** (not spam). Google `Authentication-Results`: `dkim=pass` (`@mypantryhub.com` / `s=resend`, plus SES), `spf=pass` (`rsend.mypantryhub.com`), `dmarc=pass` (`p=NONE`).
+- Terraform in `deploy/terraform/main.tf` now matches live DNS. **Do not apply until a planned DNS change window** — records are already live.
 
-## Fix Plan
+## DMARC plan
 
-- [ ] Verify the domain in Resend and publish the DKIM records Resend shows (commit them in terraform once known)
-- [ ] Align live apex SPF with terraform: include `amazonses.com` (keep Cloudflare email include if still needed)
-- [ ] After a successful test send, tighten DMARC from `p=none` (quarantine first, then reject if clean)
-- [ ] Confirm `dmarc-reports@mypantryhub.com` is a mailbox that is actually read, or change `rua`
+Stay at `p=none` for now. The domain was just verified and we have one passing test; tighten to `quarantine` (then `reject` if reports stay clean) after a stretch of real transactional mail. `rua=mailto:dmarc-reports@mypantryhub.com` is already on the record (that address forwards through Cloudflare Email Routing).
 
 ## Acceptance Criteria
 
-- [ ] Resend domain shows verified (SPF + DKIM)
-- [ ] A test message from the chosen From address passes SPF and DKIM
-- [ ] Terraform matches live DNS
-- [ ] DMARC plan is documented and applied (or a dated reason to stay at `p=none`)
+- [x] Resend domain shows verified (DKIM + Forge CNAMEs)
+- [x] A test message from `Pantry Hub <hello@mypantryhub.com>` landed in the inbox and passed SPF, DKIM, and DMARC
+- [x] Terraform matches live DNS (apply later; not run in this pass)
+- [x] DMARC plan documented; stay at `p=none` until a clean stretch of mail
