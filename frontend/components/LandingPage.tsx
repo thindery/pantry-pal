@@ -340,7 +340,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white" aria-labelledby="features-heading">
+      <section id="features" className="scroll-mt-24 py-20 bg-white" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
             <h2 id="features-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
@@ -367,7 +367,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-[var(--marketing-surface)]" aria-labelledby="how-it-works-heading">
+      <section id="how-it-works" className="scroll-mt-24 py-20 bg-[var(--marketing-surface)]" aria-labelledby="how-it-works-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-16">
             <h2 id="how-it-works-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
@@ -381,7 +381,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             {STEPS.map((step, index) => (
               <RevealOnScroll key={index} variant="fade-up" delay={index * 120}>
                 <div className="text-center">
-                  <div className="text-6xl font-serif-heading font-bold text-[var(--primary)]/20 mb-4" aria-hidden="true">{step.number}</div>
+                  <div className="text-6xl font-serif-heading font-bold text-[var(--primary)]/35 mb-4" aria-hidden="true">{step.number}</div>
                   <h3 className="text-xl font-serif-heading font-bold text-slate-800 mb-2">{step.title}</h3>
                   <p className="text-slate-600">{step.description}</p>
                 </div>
@@ -392,7 +392,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white" aria-labelledby="pricing-heading">
+      <section id="pricing" className="scroll-mt-24 py-20 bg-white" aria-labelledby="pricing-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-12">
             <h2 id="pricing-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
@@ -447,7 +447,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-white" aria-labelledby="faq-heading">
+      <section id="faq" className="scroll-mt-24 py-20 bg-white" aria-labelledby="faq-heading">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <RevealOnScroll className="text-center mb-12">
             <h2 id="faq-heading" className="text-3xl md:text-4xl font-serif-heading font-bold text-slate-800 mb-4">
@@ -551,7 +551,9 @@ const PricingPreview: React.FC<{
             className={`w-full py-3 rounded-xl font-semibold transition-all ${
               tier.popular
                 ? 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]'
-                : 'bg-[var(--marketing-surface)] text-slate-800 hover:bg-[var(--marketing-surface-hover)]'
+                : tier.id === 'free'
+                ? 'bg-white text-slate-800 border-2 border-slate-300 hover:border-[var(--primary)]'
+                : 'bg-white text-slate-800 border-2 border-slate-200 hover:border-[var(--primary)]'
             }`}
           >
             {tier.cta}

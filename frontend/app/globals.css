@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* Brand greens — aligned with marketing (grocery / healthy) */
-  --primary: #7cb342;
-  --primary-hover: #689f38;
+  /* Brand greens — --primary is AA with white; --primary-bright is decorative */
+  --primary: #2e7d32;
+  --primary-hover: #1b5e20;
+  --primary-bright: #7cb342;
   --primary-light: #e8f5e9;
   --primary-muted: #f1f8e9;
-  --accent: #f59e0b;
-  --accent-hover: #d97706;
+  --accent: #b45309;
+  --accent-hover: #92400e;
+  --accent-bright: #f59e0b;
   --accent-light: #fef3c7;
   /* Dashboard: cool neutral (not marketing cream) */
   --background: #f8fafc;
@@ -17,7 +19,7 @@
   --border: #e2e8f0;
   --surface: #ffffff;
   --surface-muted: #f1f5f9;
-  --danger: #f43f5e;
+  --danger: #e11d48;
   --danger-light: #ffe4e6;
   /* Marketing-only warm surfaces */
   --marketing-bg: #fefdf9;
@@ -39,8 +41,10 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   --color-primary-muted: var(--primary-muted);
+  --color-primary-bright: var(--primary-bright);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-bright: var(--accent-bright);
   --color-accent-light: var(--accent-light);
   --color-muted: var(--muted);
   --color-muted-light: var(--muted-light);
@@ -64,8 +68,8 @@
   --color-emerald-300: #aed581;
   --color-emerald-400: #9ccc65;
   --color-emerald-500: #8bc34a;
-  --color-emerald-600: #7cb342;
-  --color-emerald-700: #689f38;
+  --color-emerald-600: #2e7d32;
+  --color-emerald-700: #1b5e20;
   --color-emerald-800: #558b2f;
   --color-emerald-900: #33691e;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;

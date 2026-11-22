@@ -90,7 +90,6 @@ const TIERS: PricingTier[] = [
       'Personal + shared lists',
       'Activity feed (who used what)',
       'Admin controls',
-      'Family meal planning',
     ],
     disabledFeatures: [],
   },
@@ -103,11 +102,16 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const upgradeInFlight = useRef(false);
   const { status } = useSession();
   const isSignedIn = status === 'authenticated';
-  const { tierInfo: _tierInfo, isFree, isPro, isFamily } = useSubscription();
+  const { tierInfo: _tierInfo, isFree, isPro, isFamily, loading: tierLoading } = useSubscription();
+
+  const goToSignIn = (callbackPath: string) => {
+    const callback = new URL(callbackPath, window.location.origin).toString();
+    window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(callback)}`;
+  };
 
   const handleUpgrade = async (tier: 'pro' | 'family') => {
     if (!isSignedIn) {
-      setError('Please sign in to upgrade');
+      goToSignIn('/pricing/');
       return;
     }
     if (upgradeInFlight.current || isLoading) {
@@ -144,7 +148,12 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
     }
   };
 
+  const subscriptionKnown = isSignedIn && !tierLoading;
+
   const getCtaText = (tier: PricingTier): string => {
+    if (!subscriptionKnown) {
+      return tier.id === 'free' ? 'Get started free' : tier.cta;
+    }
     if (tier.id === 'free') {
       if (isFree) return 'Current Plan';
       return 'Downgrade';
@@ -186,7 +195,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
         {/* Title */}
         <div className="text-center mb-10 md:mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
-            Upgrade Your Pantry Experience
+            {isSignedIn ? "Upgrade your pantry experience" : "Simple, transparent pricing"}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Choose the plan that fits your household. Start free and upgrade when you need more power.
@@ -302,7 +311,13 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
 
               {/* CTA Button */}
               <button
-                onClick={() => tier.id !== 'free' && handleUpgrade(tier.id)}
+                onClick={() => {
+                  if (tier.id === 'free') {
+                    if (!isSignedIn) goToSignIn('/dashboard/');
+                    return;
+                  }
+                  handleUpgrade(tier.id);
+                }}
                 disabled={isDisabled(tier)}
                 className={`w-full py-3 rounded-xl font-semibold transition-all ${
                   isCurrentPlan(tier)

@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 4:54 PM CT (open board grouped by P0–P3; ticket priority convention documented)
+Last updated: 2026-11-22, 5:05 PM CT (PP-141–PP-143 implemented, pending deploy)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-22, 4:54 PM CT (open board grouped by P0–P3; ticket prio
 
 | | Count |
 |--|-------|
-| Done | 91 (includes PP-088–PP-096, PP-097–PP-100, PP-102, PP-112, PP-113, PP-131–PP-134; PP-101 reopened for copy follow-up) |
+| Done | 94 (previous plus PP-141–PP-143; pending deploy) |
 | In progress | 0 |
-| Ready | 27 (PP-101 copy follow-up; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard; PP-135–PP-137 remaining email design; PP-138–PP-140 revenue options) |
+| Ready | 30 (PP-144–PP-146 still open; PP-141–PP-143 done pending deploy) |
 | Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 3 · P1: 11 · P2: 15 · P3: 3 (32 including backlog and security-open) |
+| Open by priority | P0: 3 · P1: 12 · P2: 17 · P3: 3 (35 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: GSC Domain property + DNS TXT verify (PP-118); optional GA4 (PP-117); Bing after GSC (PP-119) |
 
 ---
@@ -38,7 +38,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
 
-### P1 — next up, high impact (11)
+### P1 — next up, high impact (12)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -53,8 +53,9 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
 | PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
+| PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
 
-### P2 — soon (15)
+### P2 — soon (17)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -73,6 +74,8 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-136 | Promo or trial-ending reminder (only if relevant) | 📋 Open | Email design |
 | PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
+| PP-145 | Desktop Pantry layout and 44px icon targets | 📋 Open | Design review |
+| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | 📋 Open | Design review |
 
 ### P3 — someday (3)
 
@@ -326,6 +329,22 @@ Tylor asked for more revenue ideas (saved recipes, first-party recipes with affi
 | PP-138 | Saved recipes and cook-from-pantry | P1 | 📋 Open |
 | PP-139 | Public first-party recipes and affiliate links | P2 | 📋 Open |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | P2 | 📋 Open |
+
+
+## Design review (2026-11-22)
+
+**Doc:** `.agents/docs/design-review-2026-11-22.md`  
+**Shots:** `.agents/design-review/2026-11-22/`  
+Tylor asked for a designer-style review of every screen, in the same spirit as Bragle’s design critique, and for updates that refine brand and UI/UX. Production marketing pages were captured at 390 and 1440; logged-in screens used a local fixture of the real components with generic sample items (no customer data). Do not duplicate PP-103 (titles) or PP-108 (H1, screenshots, unshipped claims).
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-141 | Fix logged-out `/pricing/` CTAs and the sign-in upgrade path | P0 | ✅ Done (pending deploy) |
+| PP-142 | Accessible color tokens (primary / accent / danger split) | P1 | ✅ Done (pending deploy) |
+| PP-143 | Marketing UX: sticky-nav overlap, CTA weight, numeral contrast | P1 | ✅ Done (pending deploy) |
+| PP-144 | Sign-in and checkout brand + contrast | P1 | 📋 Open — sign-in done, checkout remaining |
+| PP-145 | Desktop Pantry layout and 44px icon targets | P2 | 📋 Open |
+| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | 📋 Open |
 
 ## Future / backlog
 
