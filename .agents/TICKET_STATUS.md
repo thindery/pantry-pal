@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-096–PP-100 Resend helper and billing emails; sends no-op until a key is set)
+Last updated: 2026-11-22 (PP-112 Stripe-vs-DB reconciliation; PP-113 deploy TAG fix; PP-096–PP-100 emails live, no-op until a Resend key is set)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -13,9 +13,9 @@ Last updated: 2026-11-22 (PP-096–PP-100 Resend helper and billing emails; send
 
 | | Count |
 |--|-------|
-| Done | 51+ (includes PP-089) |
+| Done | 85 (includes PP-088–PP-094, PP-096–PP-100, PP-112, PP-113) |
 | In progress | 0 |
-| Ready | 22 (PP-090–PP-100 billing/email; PP-101–PP-111 SEO/AEO) |
+| Ready | 12 (PP-095 Resend DNS; PP-101–PP-111 SEO/AEO) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt) |
 
@@ -185,6 +185,8 @@ Each hardening item and each missing transactional email is its own ticket.
 | PP-098 | Send a payment / subscription confirmation email | P1 | ✅ Done |
 | PP-099 | Send a payment-failed email | P1 | ✅ Done |
 | PP-100 | Send a cancellation confirmation email | P2 | ✅ Done |
+| PP-112 | Reconcile Stripe subscriptions with the app DB after the webhook outage | P0 | ✅ Done |
+| PP-113 | Fix deploy abort when the Ralph ticket regex misses | P1 | ✅ Done |
 
 
 ## SEO / AEO / marketing audit (2026-11-22)
