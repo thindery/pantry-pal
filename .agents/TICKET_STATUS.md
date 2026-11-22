@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22 (PP-117–PP-122 analytics / Search Console tickets filed; PP-109 split)
+Last updated: 2026-11-22 (PP-123–PP-129 marketing dashboard tickets filed; PP-117–PP-122 analytics / Search Console already filed)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,8 +15,8 @@ Last updated: 2026-11-22 (PP-117–PP-122 analytics / Search Console tickets fil
 |--|-------|
 | Done | 87 (includes PP-088–PP-094, PP-096–PP-100, PP-101, PP-102, PP-112, PP-113) |
 | In progress | 0 |
-| Ready | 15 (PP-095 Resend DNS; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC) |
-| Backlog | 2 (PP-114 real social proof; PP-115 nearby grocery ads) |
+| Ready | 21 (PP-095 Resend DNS; PP-103–PP-108 and PP-110–PP-111 SEO/AEO; PP-117–PP-122 analytics / GSC; PP-123–PP-128 marketing dashboard) |
+| Backlog | 3 (PP-114 real social proof; PP-115 nearby grocery ads; PP-129 Resend read key, needs yes) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Google sign-in for PP-117 GA4, PP-118 Search Console, PP-119 Bing |
 
@@ -225,6 +225,22 @@ Follow-up to PP-109 after Tylor asked to put analytics and Search Console under 
 | PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | P2 | 📋 Open (CF token done) |
 | PP-122 | Update the privacy policy to disclose analytics | P1 | 📋 Open |
 
+
+## Marketing dashboard (2026-11-22)
+
+**Doc:** `.agents/docs/marketing-dashboard.md`  
+Tylor asked for the same email-send visibility another project already has in admin. The match is the User Kudos **Emails** tab and Agent Paige **Recent Emails Sent** (gold standards). shipinaday `/ship-ops/marketing` is a blog/SEO page, not email stats. Pantry Hub already has `/admin` and the PP-096 send helper; `email_sends` is only an idempotency table, and the mypantryhub Resend key is send-only, so stats must come from the app DB plus a signed webhook — not the Resend read API. No feature code in this pass (agy / Hermes later).
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-123 | Extend `email_sends` and log every helper attempt | P1 | 📋 Open |
+| PP-124 | Resend webhook (signature + idempotency) and `email_events` | P1 | 📋 Open |
+| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | P2 | 📋 Open |
+| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | P2 | 📋 Open |
+| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | P2 | 📋 Open |
+| PP-128 | Admin auth hardening leftovers | P2 | 📋 Open |
+| PP-129 | Optional full-access Resend read key | P3 | 📋 Backlog — needs Tylor’s yes |
+
 ## Future / backlog
 
 Documented for later; no implementation in this pass.
@@ -233,6 +249,7 @@ Documented for later; no implementation in this pass.
 |--------|-------|----------|--------|
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
 | PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
+| PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
 
 ## Verification
 
