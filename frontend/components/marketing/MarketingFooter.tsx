@@ -42,6 +42,11 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/privacy/#privacy-choices" className="hover:text-white transition-colors">
+                  Your Privacy Choices
+                </Link>
+              </li>
+              <li>
                 <Link href="/terms/" className="hover:text-white transition-colors">
                   Terms of Service
                 </Link>

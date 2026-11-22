@@ -28,6 +28,7 @@ import {
 } from "@/lib/inventory-sort";
 import { barcodesMatch } from "@/lib/barcode-variants";
 import { useToast } from "@/components/Toast";
+import { trackFirstScan } from "@/lib/analytics";
 import { useSubscription } from "@/services/subscription";
 import {
   getItems,
@@ -858,6 +859,7 @@ export function usePantryState() {
       if (!options?.silent) {
         success(`Added ${quantity} ${unitText} to ${existing.name}`);
       }
+      trackFirstScan("barcode");
       return {
         ...existing,
         quantity: existing.quantity + quantity,
@@ -902,6 +904,7 @@ export function usePantryState() {
     if (!options?.silent) {
       success(`${displayName} (${quantity} ${unitText}) added to inventory`);
     }
+    trackFirstScan("barcode");
     return savedItem;
   };
 
@@ -1094,8 +1097,14 @@ export function usePantryState() {
     router.push('/dashboard/');
 
     if (failedItems.length === 0) {
+      if (addedItems.length > 0) {
+        trackFirstScan("receipt");
+      }
       alert(`Successfully added ${addedItems.length} item(s) to inventory!`);
     } else {
+      if (addedItems.length > 0) {
+        trackFirstScan("receipt");
+      }
       alert(`Added ${addedItems.length} item(s), but failed to add: ${failedItems.join(', ')}`);
     }
   };

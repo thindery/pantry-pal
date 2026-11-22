@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BRAND_NAME } from '@/lib/site-content';
+import { trackEvent } from '@/lib/analytics';
 
 interface CheckoutResultProps {
   status: 'success' | 'cancel';
@@ -10,6 +11,16 @@ export const CheckoutResult: React.FC<CheckoutResultProps> = ({ status, onClose 
   useEffect(() => {
     // Auto-close after 5 seconds on success
     if (status === 'success') {
+      try {
+        const KEY = 'ph_purchase_tracked';
+        if (!sessionStorage.getItem(KEY)) {
+          sessionStorage.setItem(KEY, 'true');
+          trackEvent('purchase');
+        }
+      } catch {
+        trackEvent('purchase');
+      }
+
       const timer = setTimeout(() => {
         onClose();
       }, 5000);

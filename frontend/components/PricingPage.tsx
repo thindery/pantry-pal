@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 import { BrandMark } from '@/components/BrandMark';
+import { trackEvent } from '@/lib/analytics';
 
 interface PricingPageProps {
   onClose: () => void;
@@ -126,6 +127,11 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
         successUrl,
         cancelUrl
       );
+
+      trackEvent('begin_checkout', {
+        tier,
+        interval: billingInterval,
+      });
 
       // Redirect to Stripe checkout or the billing portal
       // eslint-disable-next-line react-hooks/immutability

@@ -163,11 +163,21 @@ export async function reactivateSubscription(): Promise<UserTierInfo> {
   return response.data;
 }
 
-export async function requestWelcomeEmail(): Promise<void> {
+export interface WelcomeEmailResponse {
+  sent: boolean;
+  reason: string;
+}
+
+export async function requestWelcomeEmail(): Promise<WelcomeEmailResponse | null> {
   try {
-    await fetchApi('/api/emails/welcome', { method: 'POST' });
+    const response = await fetchApi<{
+      success: boolean;
+      data: WelcomeEmailResponse;
+    }>('/api/emails/welcome', { method: 'POST' });
+    return response.data ?? null;
   } catch {
     // Welcome mail must never break the signed-in app.
+    return null;
   }
 }
 

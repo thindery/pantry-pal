@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { ShoppingSession, BarcodeProduct } from '../types';
 import BarcodeScanner from './BarcodeScanner';
+import { trackFirstScan } from '@/lib/analytics';
 import {
   createShoppingSession,
   getShoppingSession,
@@ -161,6 +162,7 @@ const ShoppingSessionView: React.FC<ShoppingSessionViewProps> = ({
             const inventoryResponse = await addSessionToInventory(sessionData.id);
             if (inventoryResponse.success) {
               _setInventoryAdded(true);
+              trackFirstScan('receipt');
             }
           } catch (inventoryErr) {
             console.error('Failed to add to inventory:', inventoryErr);

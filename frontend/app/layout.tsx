@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import VersionUpdateToast from "@/components/VersionUpdateToast";
+import { AnalyticsScripts } from "@/components/analytics/AnalyticsScripts";
 import {
   BRAND_NAME,
   SITE_DESCRIPTION,
@@ -110,6 +111,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <VersionUpdateToast />
+          <AnalyticsScripts />
         </Providers>
       </body>
     </html>

@@ -1,0 +1,262 @@
+/**
+ * Analytics and Google Consent Mode v2 utilities for Pantry Hub.
+ */
+
+export const GA_MEASUREMENT_ID = (
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LEW78LC3EF"
+).trim();
+
+export const CF_BEACON_TOKEN = (
+  process.env.NEXT_PUBLIC_CF_BEACON_TOKEN || "a1ab471f80614de994b2058dd378aa26"
+).trim();
+
+export const SIGN_UP_TRACKED_KEY = "ph_sign_up_tracked";
+export const FIRST_SCAN_TRACKED_KEY = "ph_first_scan_tracked";
+
+export function isValidMeasurementId(id?: string | null): boolean {
+  if (!id) return false;
+  const trimmed = id.trim();
+  return (
+    trimmed.startsWith("G-") &&
+    trimmed !== "G-XXXXXXXXXX" &&
+    trimmed.length > 4
+  );
+}
+
+export type ConsentStatus = "granted" | "denied";
+
+export interface GtagConsentParams {
+  ad_storage: "denied";
+  ad_user_data: "denied";
+  ad_personalization: "denied";
+  analytics_storage: ConsentStatus;
+}
+
+export interface ConsentDecision {
+  consent: GtagConsentParams;
+  shouldLoadGa: boolean;
+  needsBanner: boolean;
+}
+
+/**
+ * Determines initial consent based on GPC, visitor region, and prior choice.
+ * - Ad storage, user data, and personalization are ALWAYS denied everywhere.
+ * - Global Privacy Control (GPC) immediately denies analytics and prevents loading GA.
+ * - Non-EEA visitors default to analytics_storage: 'granted' without a banner.
+ * - EEA/UK/CH visitors default to analytics_storage: 'denied' and require explicit consent.
+ */
+export function determineInitialConsent({
+  isEea,
+  storedConsent,
+  globalPrivacyControl,
+}: {
+  isEea: boolean;
+  storedConsent?: string | null;
+  globalPrivacyControl?: boolean;
+}): ConsentDecision {
+  // GPC wins over any prior choice: analytics denied, do not load GA, no banner
+  if (globalPrivacyControl) {
+    return {
+      consent: {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied",
+      },
+      shouldLoadGa: false,
+      needsBanner: false,
+    };
+  }
+
+  // EEA / UK / CH: default denied until user explicitly accepts
+  if (isEea) {
+    if (storedConsent === "granted") {
+      return {
+        consent: {
+          ad_storage: "denied",
+          ad_user_data: "denied",
+          ad_personalization: "denied",
+          analytics_storage: "granted",
+        },
+        shouldLoadGa: true,
+        needsBanner: false,
+      };
+    }
+
+    if (storedConsent === "denied") {
+      return {
+        consent: {
+          ad_storage: "denied",
+          ad_user_data: "denied",
+          ad_personalization: "denied",
+          analytics_storage: "denied",
+        },
+        shouldLoadGa: false,
+        needsBanner: false,
+      };
+    }
+
+    // No choice yet: default denied, show banner
+    return {
+      consent: {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied",
+      },
+      shouldLoadGa: false,
+      needsBanner: true,
+    };
+  }
+
+  // Non-EEA: analytics granted by default, no banner
+  return {
+    consent: {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "granted",
+    },
+    shouldLoadGa: true,
+    needsBanner: false,
+  };
+}
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+    __gaLoaded?: boolean;
+  }
+}
+
+export interface QueuedAnalyticsEvent {
+  name: string;
+  params?: Record<string, unknown>;
+  enqueuedAt: number;
+}
+
+const eventQueue: QueuedAnalyticsEvent[] = [];
+const QUEUE_TTL_MS = 5000;
+let queueCheckInterval: ReturnType<typeof setInterval> | null = null;
+
+function stopQueueCheck(): void {
+  if (queueCheckInterval !== null) {
+    clearInterval(queueCheckInterval);
+    queueCheckInterval = null;
+  }
+}
+
+function startQueueCheck(): void {
+  if (queueCheckInterval !== null || typeof window === "undefined") return;
+  queueCheckInterval = setInterval(() => {
+    if (typeof window === "undefined") {
+      stopQueueCheck();
+      return;
+    }
+
+    if (window.__gaLoaded && typeof window.gtag === "function") {
+      flushAnalyticsQueue();
+      return;
+    }
+
+    // Drop expired events if GA hasn't loaded
+    const now = Date.now();
+    while (eventQueue.length > 0 && now - eventQueue[0].enqueuedAt > QUEUE_TTL_MS) {
+      eventQueue.shift();
+    }
+
+    if (eventQueue.length === 0) {
+      stopQueueCheck();
+    }
+  }, 100);
+}
+
+/**
+ * Flushes all pending queued events to Google Analytics if loaded.
+ */
+export function flushAnalyticsQueue(): void {
+  if (typeof window === "undefined") return;
+  if (!window.__gaLoaded || typeof window.gtag !== "function") return;
+
+  const now = Date.now();
+  while (eventQueue.length > 0) {
+    const item = eventQueue.shift();
+    if (item && now - item.enqueuedAt <= QUEUE_TTL_MS) {
+      try {
+        window.gtag("event", item.name, item.params);
+      } catch {
+        // Ignore runtime tracking errors
+      }
+    }
+  }
+  stopQueueCheck();
+}
+
+/**
+ * Resets the in-memory queue (useful for test isolation).
+ */
+export function clearAnalyticsQueue(): void {
+  eventQueue.length = 0;
+  stopQueueCheck();
+}
+
+/**
+ * Inspect the current queue length/items (useful for unit tests).
+ */
+export function getQueuedAnalyticsEvents(): readonly QueuedAnalyticsEvent[] {
+  return [...eventQueue];
+}
+
+/**
+ * Dispatches a custom GA4 event if GA is loaded and active.
+ * If GA is not yet loaded, queues the event for a short time and flushes
+ * when __gaLoaded becomes true. No-ops if GA never loads (GPC, declined, invalid ID).
+ */
+export function trackEvent(name: string, params?: Record<string, unknown>): void {
+  if (typeof window === "undefined") return;
+
+  if (window.__gaLoaded && typeof window.gtag === "function") {
+    try {
+      window.gtag("event", name, params);
+    } catch {
+      // Ignore runtime tracking errors
+    }
+    return;
+  }
+
+  // Queue event to wait for GA script to finish loading
+  eventQueue.push({ name, params, enqueuedAt: Date.now() });
+  startQueueCheck();
+}
+
+/**
+ * Fires the `sign_up` key event at most once per browser.
+ * Returns true if the event was dispatched or queued, false if already tracked.
+ */
+export function trackSignUp(method: string = "Google"): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (localStorage.getItem(SIGN_UP_TRACKED_KEY)) return false;
+    localStorage.setItem(SIGN_UP_TRACKED_KEY, "true");
+    trackEvent("sign_up", { method });
+    return true;
+  } catch {
+    trackEvent("sign_up", { method });
+    return true;
+  }
+}
+
+/**
+ * Fires the `first_scan` key event exactly once per browser/user.
+ */
+export function trackFirstScan(source: "barcode" | "receipt"): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (localStorage.getItem(FIRST_SCAN_TRACKED_KEY)) return;
+    localStorage.setItem(FIRST_SCAN_TRACKED_KEY, "true");
+    trackEvent("first_scan", { source });
+  } catch {
+    trackEvent("first_scan", { source });
+  }
+}

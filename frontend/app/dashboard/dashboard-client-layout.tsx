@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { requestWelcomeEmail } from "@/services/subscription";
+import { trackSignUp } from "@/lib/analytics";
 import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/components/Toast";
@@ -20,7 +21,19 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status !== "authenticated" || welcomeRequested.current) return;
     welcomeRequested.current = true;
-    void requestWelcomeEmail();
+    void (async () => {
+      const res = await requestWelcomeEmail();
+      if (res) {
+        const isFirstAttempt =
+          res.sent === true ||
+          ["not_configured", "missing_recipient", "send_failed"].includes(
+            res.reason
+          );
+        if (isFirstAttempt && res.reason !== "already_sent") {
+          trackSignUp("Google");
+        }
+      }
+    })();
   }, [status]);
 
   const {

@@ -20,6 +20,7 @@ import {
   useSubscription,
 } from "@/services/subscription";
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
+import { trackEvent } from "@/lib/analytics";
 
 export function AccountView() {
   const { data: session } = useSession();
@@ -143,7 +144,12 @@ export function AccountView() {
               <button
                 type="button"
                 disabled={billingBusy}
-                onClick={() => runBilling(() => cancelSubscription())}
+                onClick={() =>
+                  runBilling(async () => {
+                    await cancelSubscription();
+                    trackEvent("unsubscribe");
+                  })
+                }
                 className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--border)] text-[var(--muted)] hover:bg-[var(--surface-muted)] disabled:opacity-50"
               >
                 Cancel at period end

@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { authConfig } from "@/lib/auth.config";
 import { createBearerToken } from "@/lib/auth-token";
+import { getRegionFromCountry } from "@/lib/region";
 
 const { auth } = NextAuth(authConfig);
 
@@ -68,6 +69,21 @@ function getAdminEmails(): string[] {
     .filter(Boolean);
 }
 
+function applyRegionCookie(res: NextResponse, req: NextRequest): NextResponse {
+  if (!req.cookies.has("ph_region")) {
+    const country =
+      req.headers.get("cf-ipcountry") || req.headers.get("CF-IPCountry");
+    const region = getRegionFromCountry(country);
+    res.cookies.set("ph_region", region, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: "lax",
+      httpOnly: false,
+    });
+  }
+  return res;
+}
+
 export default auth(async (req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
@@ -97,32 +113,44 @@ export default auth(async (req) => {
     if (!isLoggedIn) {
       const signIn = new URL("/auth/signin", nextUrl);
       signIn.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(signIn);
+      return applyRegionCookie(NextResponse.redirect(signIn), req);
     }
     const adminEmails = getAdminEmails();
     if (!userEmail || !adminEmails.includes(userEmail)) {
-      return NextResponse.redirect(new URL("/dashboard/", nextUrl));
+      return applyRegionCookie(
+        NextResponse.redirect(new URL("/dashboard/", nextUrl)),
+        req
+      );
     }
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return applyRegionCookie(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      req
+    );
   }
 
   if (isPublicPath(pathname)) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return applyRegionCookie(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      req
+    );
   }
 
   if (isProtectedPath(pathname) && !isLoggedIn) {
     const signIn = new URL("/auth/signin", nextUrl);
     signIn.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(signIn);
+    return applyRegionCookie(NextResponse.redirect(signIn), req);
   }
 
   if (!isLoggedIn) {
     const signIn = new URL("/auth/signin", nextUrl);
     signIn.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(signIn);
+    return applyRegionCookie(NextResponse.redirect(signIn), req);
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return applyRegionCookie(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+    req
+  );
 });
 
 export const config = {

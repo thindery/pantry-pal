@@ -21,17 +21,21 @@ export const metadata = createPageMetadata({
   path: "/privacy",
 });
 
+const PRIVACY_EMAIL = "hello@mypantryhub.com";
+const PRIVACY_MAILTO = `mailto:${PRIVACY_EMAIL}`;
+
 const NAV = [
   { label: "1. Introduction", id: "introduction" },
   { label: "2. Data We Collect", id: "data-collection" },
   { label: "3. How We Use Data", id: "data-use" },
-  { label: "4. Inventory & AI Features", id: "inventory-data" },
-  { label: "5. Retention", id: "data-retention" },
+  { label: "4. Inventory & Scan Features", id: "inventory-data" },
+  { label: "5. Data Retention", id: "data-retention" },
   { label: "6. Third Parties", id: "third-parties" },
-  { label: "7. Cookies", id: "cookies" },
+  { label: "7. Cookies & Analytics", id: "cookies" },
   { label: "8. Security", id: "security" },
-  { label: "9. Your Rights", id: "rights" },
-  { label: "10. Contact", id: "contact" },
+  { label: "9. Your Privacy Rights", id: "rights" },
+  { label: "10. Your Privacy Choices", id: "privacy-choices" },
+  { label: "11. Contact Us", id: "contact" },
 ];
 
 export default function PrivacyPage() {
@@ -40,7 +44,7 @@ export default function PrivacyPage() {
       title="Privacy"
       titleAccent="Policy"
       description={`We are committed to transparency about how ${BRAND_NAME} handles your account, pantry inventory, and subscription data.`}
-      lastUpdated="July 10, 2026"
+      lastUpdated="November 22, 2026"
       navItems={NAV}
     >
       <LegalHighlight title="Your pantry data stays yours">
@@ -141,6 +145,10 @@ export default function PrivacyPage() {
         </ul>
         <p>
           To request account deletion, email{" "}
+          <a href={PRIVACY_MAILTO} className="text-emerald-700 hover:underline">
+            {PRIVACY_EMAIL}
+          </a>{" "}
+          or{" "}
           <a href={CONTACT_MAILTO} className="text-emerald-700 hover:underline">
             {CONTACT_EMAIL}
           </a>
@@ -152,7 +160,7 @@ export default function PrivacyPage() {
         <p>We share limited data with providers that help us operate {BRAND_NAME}:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
-            <strong className="text-slate-900">Google</strong> — OAuth sign-in
+            <strong className="text-slate-900">Google</strong> — OAuth sign-in and Google Analytics 4 (processor)
           </li>
           <li>
             <strong className="text-slate-900">Stripe</strong> — subscription billing
@@ -161,7 +169,7 @@ export default function PrivacyPage() {
             <strong className="text-slate-900">Open Food Facts</strong> — barcode product lookups
           </li>
           <li>
-            <strong className="text-slate-900">Cloudflare</strong> — DNS and CDN
+            <strong className="text-slate-900">Cloudflare</strong> — DNS, CDN, and cookieless Web Analytics / RUM
           </li>
           <li>
             <strong className="text-slate-900">OVH</strong> — application hosting and PostgreSQL
@@ -175,12 +183,44 @@ export default function PrivacyPage() {
 
       <LegalSection id="cookies" number="7" title="Cookies & Analytics">
         <p>
-          We use session cookies and authentication tokens required to keep you signed in. We do not
-          use third-party advertising cookies on the marketing site.
+          We use session cookies and authentication tokens (such as NextAuth session cookies)
+          strictly required to keep you signed in. Disabling these necessary cookies in your browser
+          settings will prevent sign-in.
         </p>
         <p>
-          Essential cookies include NextAuth session cookies for login state. You can control browser
-          cookies through your device settings; disabling them may prevent sign-in.
+          We do not use third-party advertising cookies, and we do not track you across unrelated
+          websites for marketing purposes.
+        </p>
+        <p>
+          We use Google Analytics 4 (GA4) to understand general website usage and improve Pantry Hub.
+          Google acts as a data processor on our behalf; data is collected solely to understand site
+          usage, not to sell ads for us or build advertising profiles. Our analytics tag is configured
+          with strict privacy guardrails: Google signals is off, IP anonymization is permanently on,
+          and advertising storage, personalization, and ad user data are denied.
+        </p>
+        <p>
+          GA4 sets analytics cookies only when analytics storage is granted. Visitors in the European
+          Economic Area (EEA), United Kingdom, and Switzerland are presented with a consent banner and
+          must explicitly grant consent before GA4 loads. You can also opt out of Google Analytics across
+          all websites by installing the{" "}
+          <a
+            href="https://tools.google.com/dlpage/gaoptout"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-700 hover:underline"
+          >
+            Google Analytics Opt-out Browser Add-on
+          </a>
+          .
+        </p>
+        <p>
+          We honor Global Privacy Control (GPC): when your browser transmits a GPC signal, we treat it
+          as an automatic opt-out and do not load Google Analytics.
+        </p>
+        <p>
+          In addition, we use Cloudflare Web Analytics for Real User Monitoring (RUM) and performance
+          diagnostics. Cloudflare Web Analytics is cookieless and does not collect or track personal
+          identifiers.
         </p>
       </LegalSection>
 
@@ -198,29 +238,91 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection id="rights" number="9" title="Your Privacy Rights">
-        <p>Depending on your location, you may have the right to access, correct, delete, or export your personal data.</p>
+        <p>
+          Depending on your location (including the European Economic Area, United Kingdom, and other
+          applicable jurisdictions), you may have the right to access, correct, delete, or export
+          your personal data.
+        </p>
         <p>
           Submit requests to{" "}
+          <a href={PRIVACY_MAILTO} className="text-emerald-700 hover:underline">
+            {PRIVACY_EMAIL}
+          </a>{" "}
+          or{" "}
           <a href={CONTACT_MAILTO} className="text-emerald-700 hover:underline">
             {CONTACT_EMAIL}
           </a>
-          . We will verify your identity and respond within applicable legal timeframes.
+          . We will verify your identity using your account email and respond within applicable legal
+          timeframes.
         </p>
       </LegalSection>
 
-      <LegalSection id="contact" number="10" title="Contact Us">
-        <p>Questions about this Privacy Policy?</p>
-        <div className="p-4 rounded-xl border border-slate-200 bg-white w-fit">
-          <span className="block text-xs text-slate-400 font-medium uppercase mb-1">
-            Privacy contact
-          </span>
-          <a
-            href={CONTACT_MAILTO}
-            className="text-slate-900 font-semibold hover:text-emerald-700 transition-colors"
-          >
-            {CONTACT_EMAIL}
+      <LegalSection id="privacy-choices" number="10" title="Your Privacy Choices">
+        <p>
+          We provide clear privacy choices and controls as an industry best practice for all households.
+          Residents of California and other U.S. states with consumer data privacy frameworks (such as
+          Colorado, Connecticut, Utah, and Virginia) have specific rights regarding their personal
+          information:
+        </p>
+        <ul className="list-disc pl-5 space-y-2">
+          <li>
+            <strong className="text-slate-900">No Sale or Sharing:</strong> We do not sell personal
+            information, and we do not share or disclose personal information for cross-context
+            behavioral advertising.
+          </li>
+          <li>
+            <strong className="text-slate-900">Global Privacy Control (GPC):</strong> We honor GPC as
+            a valid, automated opt-out of sale/sharing and of analytics cookies. When a browser sends
+            a GPC signal, Google Analytics is not loaded.
+          </li>
+          <li>
+            <strong className="text-slate-900">Rights to Know, Delete, and Correct:</strong> You have
+            the right to request disclosure of the personal information we maintain, request correction
+            of inaccurate personal data, and request deletion of your information, subject to limited
+            legal exceptions.
+          </li>
+          <li>
+            <strong className="text-slate-900">Right to Opt Out:</strong> You have the right to opt
+            out of non-essential data processing and analytics tracking.
+          </li>
+        </ul>
+        <p>
+          You can exercise any of these privacy choices at any time by emailing{" "}
+          <a href={PRIVACY_MAILTO} className="text-emerald-700 font-semibold hover:underline">
+            {PRIVACY_EMAIL}
           </a>
-          <span className="block text-sm text-slate-500 mt-2">{LEGAL_LOCATION_FULL}</span>
+          . We verify requests against your registered account email and do not discriminate against
+          anyone for exercising their privacy rights.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="contact" number="11" title="Contact Us">
+        <p>Questions about this Privacy Policy or your data?</p>
+        <div className="flex flex-col sm:flex-row gap-4 mt-2">
+          <div className="p-4 rounded-xl border border-slate-200 bg-white">
+            <span className="block text-xs text-slate-400 font-medium uppercase mb-1">
+              Privacy inquiries & choices
+            </span>
+            <a
+              href={PRIVACY_MAILTO}
+              className="text-slate-900 font-semibold hover:text-emerald-700 transition-colors"
+            >
+              {PRIVACY_EMAIL}
+            </a>
+            <span className="block text-sm text-slate-500 mt-2">{LEGAL_LOCATION_FULL}</span>
+          </div>
+          <div className="p-4 rounded-xl border border-slate-200 bg-white">
+            <span className="block text-xs text-slate-400 font-medium uppercase mb-1">
+              General support
+            </span>
+            <a
+              href={CONTACT_MAILTO}
+              className="text-slate-900 font-semibold hover:text-emerald-700 transition-colors"
+            >
+              {CONTACT_EMAIL}
+            </a>
+            <span className="block text-sm text-slate-500 mt-2">{LEGAL_LINE}</span>
+          </div>
         </div>
       </LegalSection>
     </LegalPageShell>
