@@ -19,7 +19,13 @@ import type {
   ThresholdConfig,
   ShoppingSession,
   BarcodeProduct,
+  InventorySortBy,
 } from "@/types";
+import {
+  INVENTORY_SORT_STORAGE_KEY,
+  normalizeInventorySort,
+  sortInventoryItems,
+} from "@/lib/inventory-sort";
 import { useToast } from "@/components/Toast";
 import { useSubscription } from "@/services/subscription";
 import {
@@ -142,8 +148,23 @@ export function usePantryState() {
     }
   }, []);
 
-  // Sort state
-  const [sortBy, setSortBy] = useState<'recent' | 'quantity' | 'alphabetical'>('recent');
+  // Sort state (restored from localStorage after mount to avoid hydration mismatch)
+  const [sortBy, setSortByState] = useState<InventorySortBy>("recent");
+  useEffect(() => {
+    try {
+      setSortByState(normalizeInventorySort(localStorage.getItem(INVENTORY_SORT_STORAGE_KEY)));
+    } catch {
+      // ignore private-mode / storage errors
+    }
+  }, []);
+  const setSortBy = useCallback((value: InventorySortBy) => {
+    setSortByState(value);
+    try {
+      localStorage.setItem(INVENTORY_SORT_STORAGE_KEY, value);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Stat card filter state (legacy / inventory deep links)
   const [statCardFilter, setStatCardFilter] = useState<string | null>(null);
@@ -226,17 +247,7 @@ export function usePantryState() {
       }
     }
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'recent':
-        return items.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime());
-      case 'quantity':
-        return items.sort((a, b) => b.quantity - a.quantity);
-      case 'alphabetical':
-        return items.sort((a, b) => a.name.localeCompare(b.name));
-      default:
-        return items;
-    }
+    return sortInventoryItems(items, sortBy);
   }, [inventory, sortBy, statCardFilter, pantryFilter, itemIsLowStock]);
 
   // Shopping List State
@@ -846,7 +857,11 @@ export function usePantryState() {
       nutrition: product.nutrition,
     });
 
-    setInventory((prev) => [...normalizeList<PantryItem>(prev), result.item]);
+    const savedItem: PantryItem = {
+      ...result.item,
+      imageUrl: result.item.imageUrl || product.image || product.imageUrl,
+    };
+    setInventory((prev) => [...normalizeList<PantryItem>(prev), savedItem]);
     if (result.activity) {
       prependActivity(result.activity);
     }
@@ -854,7 +869,7 @@ export function usePantryState() {
     if (!options?.silent) {
       success(`${displayName} (${quantity} ${unitText}) added to inventory`);
     }
-    return result.item;
+    return savedItem;
   };
 
   const handleAdjustQuantity = async (

@@ -8,8 +8,16 @@ export interface PantryItem {
   updatedAt?: string;
   createdAt?: string;
   barcode?: string;
+  imageUrl?: string;
   productInfo?: ProductInfo;
 }
+
+export type InventorySortBy =
+  | "recent"
+  | "name-asc"
+  | "qty-asc"
+  | "qty-desc"
+  | "category";
 
 export interface NutritionData {
   calories?: number;

@@ -23,6 +23,7 @@ def _row_to_item(row: dict[str, Any]) -> dict[str, Any]:
         "category": row["category"],
         "lastUpdated": row["last_updated"],
         "barcode": row.get("barcode"),
+        "imageUrl": row.get("image_url") or None,
     }
 
 
@@ -45,12 +46,24 @@ def get_all_items(user_id: str, category: Optional[str] = None) -> list[dict[str
         with conn.cursor() as cur:
             if category:
                 cur.execute(
-                    "SELECT * FROM pantry_items WHERE user_id = %s AND category = %s ORDER BY name",
+                    """
+                    SELECT i.*, p.image_url
+                    FROM pantry_items i
+                    LEFT JOIN product_cache p ON p.barcode = i.barcode
+                    WHERE i.user_id = %s AND i.category = %s
+                    ORDER BY i.name
+                    """,
                     (user_id, category),
                 )
             else:
                 cur.execute(
-                    "SELECT * FROM pantry_items WHERE user_id = %s ORDER BY name",
+                    """
+                    SELECT i.*, p.image_url
+                    FROM pantry_items i
+                    LEFT JOIN product_cache p ON p.barcode = i.barcode
+                    WHERE i.user_id = %s
+                    ORDER BY i.name
+                    """,
                     (user_id,),
                 )
             return [_row_to_item(r) for r in cur.fetchall()]
@@ -71,7 +84,12 @@ def get_item_by_id(user_id: str, item_id: str) -> Optional[dict[str, Any]]:
     with db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT * FROM pantry_items WHERE user_id = %s AND id = %s",
+                """
+                SELECT i.*, p.image_url
+                FROM pantry_items i
+                LEFT JOIN product_cache p ON p.barcode = i.barcode
+                WHERE i.user_id = %s AND i.id = %s
+                """,
                 (user_id, item_id),
             )
             row = cur.fetchone()
