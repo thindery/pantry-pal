@@ -162,6 +162,10 @@ describe("BarcodeScanner compact header", () => {
     expect(screen.getByRole("checkbox", { name: /Toggle Quick Scan/i })).toBeInTheDocument();
     expect(screen.queryByText(/Scan Barcode/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Point camera at a barcode to add an item/i)).not.toBeInTheDocument();
+
+    const camera = screen.getByTestId("scan-camera-box");
+    expect(camera.className).toContain("h-[clamp(12.5rem,33dvh,18.75rem)]");
+    expect(camera.className).not.toContain("flex-1");
   });
 });
 

@@ -26,7 +26,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isScanBarcode
-            ? "relative z-0 h-[100dvh] overflow-hidden pb-20 md:h-auto md:min-h-screen md:overflow-visible md:pb-0 md:pt-16 max-w-5xl mx-auto px-3 sm:px-6"
+            ? "relative z-0 h-[calc(100dvh-5rem-env(safe-area-inset-bottom,0px))] overflow-hidden md:h-auto md:min-h-screen md:overflow-visible md:pt-16 max-w-5xl mx-auto px-3 sm:px-6"
             : "relative z-0 min-h-[100dvh] md:min-h-screen pb-20 md:pb-0 md:pt-16 max-w-5xl mx-auto px-4 sm:px-6"
         }
       >

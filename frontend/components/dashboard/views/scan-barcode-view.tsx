@@ -356,7 +356,7 @@ export function ScanBarcodeView() {
 
       {quickScan && (
         <div
-          className="shrink-0 w-full max-w-lg mx-auto flex flex-col max-h-[40dvh] pt-2"
+          className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col pt-2 overflow-hidden"
           data-testid="quick-scan-ledger"
         >
           <div className="flex items-center justify-between mb-1.5 px-1 shrink-0">
@@ -420,7 +420,7 @@ export function ScanBarcodeView() {
             </ul>
           ) : (
             <p
-              className="px-3 py-2.5 text-xs text-slate-400 text-center rounded-xl border border-dashed border-slate-200 bg-white"
+              className="flex-1 min-h-0 flex items-center justify-center px-3 py-2.5 text-xs text-slate-400 text-center rounded-xl border border-dashed border-slate-200 bg-white"
               data-testid="session-ledger-empty"
             >
               Scanned items appear here

@@ -433,7 +433,10 @@ describe("ScanBarcodeView session ledger", () => {
 
   it("keeps the empty session panel visible under the camera", () => {
     render(<ScanBarcodeView />);
-    expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument();
+    const ledger = screen.getByTestId("quick-scan-ledger");
+    expect(ledger).toBeInTheDocument();
+    expect(ledger.className).toContain("flex-1");
+    expect(ledger.className).toContain("min-h-0");
     expect(screen.getByTestId("session-ledger-empty")).toHaveTextContent(
       "Scanned items appear here"
     );

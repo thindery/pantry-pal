@@ -416,7 +416,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   };
 
   return (
-    <div className={`max-w-lg mx-auto w-full flex flex-col min-h-0 flex-1 gap-2 ${className ?? ""}`}>
+    <div className={`max-w-lg mx-auto w-full flex flex-col shrink-0 gap-2 ${className ?? ""}`}>
       <header className="flex items-center h-11 shrink-0 gap-1">
         <button
           type="button"
@@ -476,12 +476,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       {/* Camera View */}
       {detectedProduct == null && hasCameraPermission !== false && (
         <div
-          className="relative bg-black rounded-2xl overflow-hidden flex-1 min-h-48 w-full cursor-pointer"
+          data-testid="scan-camera-box"
+          className="relative shrink-0 w-full overflow-hidden rounded-2xl bg-black cursor-pointer h-[clamp(12.5rem,33dvh,18.75rem)]"
           onPointerDown={handleCameraPointer}
         >
           <video
             ref={videoRef}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             playsInline
             muted
           />
