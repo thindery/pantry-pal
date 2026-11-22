@@ -63,11 +63,13 @@ SAMPLE_ACTIVITY = {
     "backend.routers.barcode.pantry_service.log_activity",
     return_value=SAMPLE_ACTIVITY,
 )
-@patch("backend.routers.barcode.pantry_service.create_item", return_value=SAMPLE_ITEM)
+@patch("backend.routers.barcode.pantry_service.find_existing_item", return_value=None)
+@patch("backend.routers.barcode.pantry_service.add_or_increment_item", return_value=(SAMPLE_ITEM, True))
 @patch("backend.routers.barcode.barcode_service.save_product")
 def test_save_barcode_product_creates_item_and_cache(
     mock_save_product,
-    mock_create,
+    mock_add,
+    mock_find,
     mock_log_activity,
     mock_get_items,
     mock_can,
@@ -95,7 +97,7 @@ def test_save_barcode_product_creates_item_and_cache(
     assert data["item"]["barcode"] == "012345678905"
     assert data["activity"]["source"] == "BARCODE_SCAN"
     mock_save_product.assert_called_once()
-    mock_create.assert_called_once()
+    mock_add.assert_called_once()
     mock_log_activity.assert_called_once()
     assert mock_log_activity.call_args.kwargs.get("adjust_quantity") is False
 
@@ -217,3 +219,43 @@ def test_lookup_external_product_uses_upcitemdb_after_off_timeout():
     assert result["product"]["brand"] == "Bragg"
     assert result["product"]["barcode"] == "074305001161"
     assert result["product"]["source"] == "upcitemdb"
+
+
+@patch("backend.routers.barcode.subscription_service.can_add_items")
+@patch(
+    "backend.routers.barcode.pantry_service.log_activity",
+    return_value=SAMPLE_ACTIVITY,
+)
+@patch("backend.routers.barcode.pantry_service.find_existing_item", return_value=SAMPLE_ITEM)
+@patch(
+    "backend.routers.barcode.pantry_service.add_or_increment_item",
+    return_value=({**SAMPLE_ITEM, "quantity": 3}, False),
+)
+@patch("backend.routers.barcode.barcode_service.save_product")
+def test_save_barcode_product_increments_existing_item(
+    mock_save_product,
+    mock_add,
+    mock_find,
+    mock_log_activity,
+    mock_can,
+    client,
+    auth_headers,
+):
+    response = client.post(
+        "/api/barcode/012345678905",
+        headers=auth_headers,
+        json={
+            "name": "Organic Milk",
+            "quantity": 1,
+            "unit": "units",
+            "category": "dairy",
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["item"]["quantity"] == 3
+    mock_add.assert_called_once()
+    mock_can.assert_not_called()
+    mock_log_activity.assert_called_once()
+    assert mock_log_activity.call_args.kwargs.get("adjust_quantity") is False

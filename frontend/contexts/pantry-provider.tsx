@@ -26,6 +26,7 @@ import {
   normalizeInventorySort,
   sortInventoryItems,
 } from "@/lib/inventory-sort";
+import { barcodesMatch } from "@/lib/barcode-variants";
 import { useToast } from "@/components/Toast";
 import { useSubscription } from "@/services/subscription";
 import {
@@ -775,7 +776,23 @@ export function usePantryState() {
   const [_showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
 
   const handleCreateItem = async (itemData: Omit<PantryItem, 'id' | 'lastUpdated'>) => {
-    // Check item limit before creating
+    const existing = inventory.find((item) =>
+      itemData.barcode
+        ? barcodesMatch(item.barcode, itemData.barcode)
+        : !item.barcode &&
+          item.name.toLowerCase() === itemData.name.toLowerCase() &&
+          item.category === itemData.category,
+    );
+    if (existing != null) {
+      await handleAdjustQuantity(existing.id, Number(itemData.quantity ?? 1), {
+        silent: true,
+        source: "MANUAL",
+      });
+      success(`Added ${itemData.quantity} to ${existing.name}`);
+      return Promise.resolve();
+    }
+
+    // Check item limit before creating a new row
     if (inventory.length >= 50 && !isPaid) {
       setShowItemLimitPrompt(true);
       return;
@@ -784,7 +801,16 @@ export function usePantryState() {
     setIsAddingItem(true);
     try {
       const newItem = await createItem(itemData);
-      setInventory((prev) => [...normalizeList<PantryItem>(prev), newItem]);
+      setInventory((prev) => {
+        const list = normalizeList<PantryItem>(prev);
+        const index = list.findIndex((item) => item.id === newItem.id);
+        if (index >= 0) {
+          const next = [...list];
+          next[index] = { ...list[index], ...newItem };
+          return next;
+        }
+        return [...list, newItem];
+      });
       await addActivityLog(
         { id: newItem.id, name: newItem.name },
         'ADD',
@@ -813,10 +839,11 @@ export function usePantryState() {
     const displayName =
       product.name.charAt(0).toUpperCase() + product.name.slice(1);
 
-    const existing = inventory.find(
-      (i) =>
-        (product.barcode && i.barcode === product.barcode) ||
-        i.name.toLowerCase() === product.name.toLowerCase(),
+    const existing = inventory.find((i) =>
+      product.barcode
+        ? barcodesMatch(i.barcode, product.barcode)
+        : i.name.toLowerCase() === product.name.toLowerCase() &&
+          i.category === (product.category || "other"),
     );
 
     if (existing != null) {
@@ -861,7 +888,16 @@ export function usePantryState() {
       ...result.item,
       imageUrl: result.item.imageUrl || product.image || product.imageUrl,
     };
-    setInventory((prev) => [...normalizeList<PantryItem>(prev), savedItem]);
+    setInventory((prev) => {
+      const list = normalizeList<PantryItem>(prev);
+      const index = list.findIndex((item) => item.id === savedItem.id);
+      if (index >= 0) {
+        const next = [...list];
+        next[index] = { ...list[index], ...savedItem };
+        return next;
+      }
+      return [...list, savedItem];
+    });
     if (result.activity) {
       prependActivity(result.activity);
     }

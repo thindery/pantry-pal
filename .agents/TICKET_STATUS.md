@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-21 (PP-085 compact pantry list + sort)
+Last updated: 2026-11-21 (PP-088 one pantry row per product, quantities summed)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -163,6 +163,7 @@ Last updated: 2026-11-21 (PP-085 compact pantry list + sort)
 | PP-085 | Compact pantry list, thumbnails, and sort options | P1 | ✅ Done |
 | PP-086 | Compact camera controls and wrapping session names | P1 | ✅ Done |
 | PP-087 | Barcode lookup fallback when Open Food Facts is down | P0 | ✅ Done |
+| PP-088 | One pantry row per product, quantities summed | P0 | ✅ Done |
 
 ## Verification
 

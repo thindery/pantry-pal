@@ -49,19 +49,26 @@ async def get_item(item_id: str, user_id: str = Depends(require_authenticated_us
 @router.post("", status_code=201)
 async def create_item(body: CreateItemRequest, user_id: str = Depends(require_authenticated_user_id)):
     try:
-        existing = pantry_service.get_all_items(user_id)
-        tier_check = subscription_service.can_add_items(user_id, len(existing))
-        if not tier_check["allowed"]:
-            raise HTTPException(
-                status_code=403,
-                detail=error_response(
-                    "TIER_LIMIT_EXCEEDED",
-                    "Item limit reached for your plan. Upgrade to add more items.",
-                    {"remaining": tier_check["remaining"]},
-                ),
-            )
         payload = body.model_dump()
-        item = pantry_service.create_item(user_id, payload)
+        existing_item = pantry_service.find_existing_item(
+            user_id,
+            barcode=payload.get("barcode"),
+            name=payload.get("name"),
+            category=payload.get("category"),
+        )
+        if not existing_item:
+            existing = pantry_service.get_all_items(user_id)
+            tier_check = subscription_service.can_add_items(user_id, len(existing))
+            if not tier_check["allowed"]:
+                raise HTTPException(
+                    status_code=403,
+                    detail=error_response(
+                        "TIER_LIMIT_EXCEEDED",
+                        "Item limit reached for your plan. Upgrade to add more items.",
+                        {"remaining": tier_check["remaining"]},
+                    ),
+                )
+        item, _created = pantry_service.add_or_increment_item(user_id, payload)
         if payload.get("barcode"):
             barcode_service.ensure_product_cached(
                 payload["barcode"],

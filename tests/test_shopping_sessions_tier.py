@@ -48,7 +48,8 @@ def test_add_to_inventory_requires_auth(client):
     "backend.services.shopping_sessions_service.get_session_by_id",
     return_value=SAMPLE_SESSION,
 )
-def test_add_to_inventory_tier_limit(mock_session, mock_items, mock_can, client, auth_headers):
+@patch("backend.services.shopping_sessions_service.pantry_service.find_existing_item", return_value=None)
+def test_add_to_inventory_tier_limit(mock_find, mock_session, mock_items, mock_can, client, auth_headers):
     response = client.post(
         f"/api/shopping-sessions/{SESSION_ID}/add-to-inventory",
         headers=auth_headers,
@@ -62,7 +63,8 @@ def test_add_to_inventory_tier_limit(mock_session, mock_items, mock_can, client,
 
 
 @patch("backend.services.shopping_sessions_service.pantry_service.log_activity")
-@patch("backend.services.shopping_sessions_service.pantry_service.create_item")
+@patch("backend.services.shopping_sessions_service.pantry_service.find_existing_item", return_value=None)
+@patch("backend.services.shopping_sessions_service.pantry_service.add_or_increment_item")
 @patch(
     "backend.services.shopping_sessions_service.subscription_service.can_add_items",
     return_value={"allowed": True, "remaining": 10},
@@ -76,13 +78,16 @@ def test_add_to_inventory_tier_limit(mock_session, mock_items, mock_can, client,
     return_value=SAMPLE_SESSION,
 )
 def test_add_to_inventory_allowed(
-    mock_session, mock_items, mock_can, mock_create, mock_log, client, auth_headers
+    mock_session, mock_items, mock_can, mock_add, mock_find, mock_log, client, auth_headers
 ):
-    mock_create.side_effect = lambda user_id, data: {
-        "id": f"new-{data['barcode']}",
-        "userId": user_id,
-        **data,
-    }
+    mock_add.side_effect = lambda user_id, data: (
+        {
+            "id": f"new-{data['barcode']}",
+            "userId": user_id,
+            **data,
+        },
+        True,
+    )
     mock_log.return_value = {"id": "act-1"}
 
     response = client.post(
@@ -93,5 +98,5 @@ def test_add_to_inventory_allowed(
     data = response.json()
     assert data["success"] is True
     assert len(data["data"]["items"]) == 2
-    assert mock_create.call_count == 2
+    assert mock_add.call_count == 2
     mock_can.assert_called_once()

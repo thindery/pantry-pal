@@ -59,17 +59,19 @@ async def save_barcode_product(
     if len(clean) < 8:
         raise HTTPException(status_code=400, detail={"success": False, "cached": False, "error": "Invalid barcode format"})
 
-    existing = pantry_service.get_all_items(user_id)
-    tier_check = subscription_service.can_add_items(user_id, len(existing))
-    if not tier_check["allowed"]:
-        raise HTTPException(
-            status_code=403,
-            detail=error_response(
-                "TIER_LIMIT_EXCEEDED",
-                "Item limit reached for your plan. Upgrade to add more items.",
-                {"remaining": tier_check["remaining"]},
-            ),
-        )
+    existing_item = pantry_service.find_existing_item(user_id, barcode=clean)
+    if not existing_item:
+        existing = pantry_service.get_all_items(user_id)
+        tier_check = subscription_service.can_add_items(user_id, len(existing))
+        if not tier_check["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=error_response(
+                    "TIER_LIMIT_EXCEEDED",
+                    "Item limit reached for your plan. Upgrade to add more items.",
+                    {"remaining": tier_check["remaining"]},
+                ),
+            )
 
     barcode_service.save_product(
         {
@@ -83,7 +85,7 @@ async def save_barcode_product(
             "source": "openfoodfacts" if body.imageUrl or body.brand else "manual_entry",
         }
     )
-    item = pantry_service.create_item(
+    item, _created = pantry_service.add_or_increment_item(
         user_id,
         {
             "name": body.name,

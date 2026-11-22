@@ -37,9 +37,10 @@ def test_list_items(mock_get, client, auth_headers):
     return_value={"allowed": True, "remaining": 45},
 )
 @patch("backend.routers.items.pantry_service.get_all_items", return_value=[])
-@patch("backend.routers.items.pantry_service.create_item", return_value=SAMPLE_ITEM)
+@patch("backend.routers.items.pantry_service.find_existing_item", return_value=None)
+@patch("backend.routers.items.pantry_service.add_or_increment_item", return_value=(SAMPLE_ITEM, True))
 def test_create_item_validation(
-    mock_create, mock_get, mock_can, mock_cache, client, auth_headers
+    mock_add, mock_find, mock_get, mock_can, mock_cache, client, auth_headers
 ):
     response = client.post(
         "/api/items",
@@ -64,7 +65,8 @@ def test_create_item_validation(
     return_value={"allowed": False, "remaining": 0},
 )
 @patch("backend.routers.items.pantry_service.get_all_items", return_value=[SAMPLE_ITEM] * 50)
-def test_create_item_tier_limit(mock_get, mock_can, client, auth_headers):
+@patch("backend.routers.items.pantry_service.find_existing_item", return_value=None)
+def test_create_item_tier_limit(mock_find, mock_get, mock_can, client, auth_headers):
     response = client.post(
         "/api/items",
         headers=auth_headers,

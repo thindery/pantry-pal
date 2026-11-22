@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+from backend.services.barcode_service import barcode_variants
 from database.db import db_connection
 
 
@@ -104,6 +105,149 @@ def get_categories(user_id: str) -> list[str]:
                 (user_id,),
             )
             return [r["category"] for r in cur.fetchall()]
+
+
+
+def _clean_barcode(barcode: Optional[str]) -> Optional[str]:
+    if not barcode:
+        return None
+    clean = "".join(c for c in str(barcode) if c.isdigit())
+    return clean or None
+
+
+def _advisory_lock_key(user_id: str, barcode: Optional[str], name: str, category: str) -> str:
+    if barcode:
+        variants = barcode_variants(barcode)
+        # Prefer the 12-digit form when a leading-zero EAN-13 variant exists.
+        canon = min(variants, key=lambda v: (len(v), v))
+        return f"pantry:{user_id}:barcode:{canon}"
+    return f"pantry:{user_id}:name:{name.casefold().strip()}:{category}"
+
+
+def _find_existing_item(
+    cur,
+    user_id: str,
+    *,
+    barcode: Optional[str] = None,
+    name: Optional[str] = None,
+    category: Optional[str] = None,
+    for_update: bool = False,
+) -> Optional[dict[str, Any]]:
+    lock = " FOR UPDATE OF i" if for_update else ""
+    clean = _clean_barcode(barcode)
+    if clean:
+        cur.execute(
+            f"""
+            SELECT i.*, p.image_url
+            FROM pantry_items i
+            LEFT JOIN product_cache p ON p.barcode = i.barcode
+            WHERE i.user_id = %s AND i.barcode = ANY(%s)
+            ORDER BY i.created_at ASC, i.id ASC
+            LIMIT 1
+            {lock}
+            """,
+            (user_id, barcode_variants(clean)),
+        )
+        row = cur.fetchone()
+        return _row_to_item(row) if row else None
+    if not name or not category:
+        return None
+    cur.execute(
+        f"""
+        SELECT i.*, p.image_url
+        FROM pantry_items i
+        LEFT JOIN product_cache p ON p.barcode = i.barcode
+        WHERE i.user_id = %s
+          AND (i.barcode IS NULL OR i.barcode = '')
+          AND LOWER(BTRIM(i.name)) = LOWER(BTRIM(%s))
+          AND i.category = %s
+        ORDER BY i.created_at ASC, i.id ASC
+        LIMIT 1
+        {lock}
+        """,
+        (user_id, name, category),
+    )
+    row = cur.fetchone()
+    return _row_to_item(row) if row else None
+
+
+def find_existing_item(
+    user_id: str,
+    *,
+    barcode: Optional[str] = None,
+    name: Optional[str] = None,
+    category: Optional[str] = None,
+) -> Optional[dict[str, Any]]:
+    """Return the user's existing item for a barcode (including UPC/EAN variants) or unbarcoded name+category."""
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            return _find_existing_item(
+                cur, user_id, barcode=barcode, name=name, category=category, for_update=False
+            )
+
+
+def add_or_increment_item(user_id: str, data: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    """Insert a pantry item, or add to quantity if the user already has it.
+
+    Matches barcode variants (UPC-A vs EAN-13 with a leading 0) when a barcode
+    is present; otherwise matches normalized name + category among unbarcoded
+    items. Uses a transaction-scoped advisory lock so concurrent scans cannot
+    create two rows.
+    """
+    barcode = _clean_barcode(data.get("barcode"))
+    name = data["name"]
+    category = data["category"]
+    quantity = data["quantity"]
+    unit = data["unit"]
+    now = _now()
+    lock_key = _advisory_lock_key(user_id, barcode, name, category)
+
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT pg_advisory_xact_lock(('x' || substr(md5(%s), 1, 16))::bit(64)::bigint)",
+                (lock_key,),
+            )
+            existing = _find_existing_item(
+                cur,
+                user_id,
+                barcode=barcode,
+                name=name,
+                category=category,
+                for_update=True,
+            )
+            if existing:
+                cur.execute(
+                    """
+                    UPDATE pantry_items
+                    SET quantity = quantity + %s, last_updated = %s
+                    WHERE user_id = %s AND id = %s
+                    RETURNING *
+                    """,
+                    (quantity, now, user_id, existing["id"]),
+                )
+                row = cur.fetchone()
+                item = _row_to_item({**row, "image_url": existing.get("imageUrl")})
+                return item, False
+
+            item_id = str(uuid.uuid4())
+            cur.execute(
+                """
+                INSERT INTO pantry_items (id, user_id, name, barcode, quantity, unit, category, last_updated)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (item_id, user_id, name, barcode, quantity, unit, category, now),
+            )
+    return {
+        "id": item_id,
+        "userId": user_id,
+        "name": name,
+        "barcode": barcode,
+        "quantity": quantity,
+        "unit": unit,
+        "category": category,
+        "lastUpdated": now,
+    }, True
 
 
 def create_item(user_id: str, data: dict[str, Any]) -> dict[str, Any]:

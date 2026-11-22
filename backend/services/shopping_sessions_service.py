@@ -319,17 +319,27 @@ def add_session_to_inventory(user_id: str, session_id: str) -> dict[str, Any]:
     existing_count = len(pantry_service.get_all_items(user_id))
     tier_check = subscription_service.can_add_items(user_id, existing_count)
     remaining = tier_check["remaining"]
-    if remaining != -1 and len(to_add) > remaining:
+    new_item_count = sum(
+        1
+        for item in to_add
+        if not pantry_service.find_existing_item(
+            user_id,
+            barcode=item.get("barcode"),
+            name=item.get("name"),
+            category=item.get("category") or "other",
+        )
+    )
+    if remaining != -1 and new_item_count > remaining:
         raise PermissionError(
             f"Item limit reached for your plan. "
-            f"Session would add {len(to_add)} items but only {remaining} remaining."
+            f"Session would add {new_item_count} items but only {remaining} remaining."
         )
 
     items_added: list[dict[str, Any]] = []
     activities: list[dict[str, Any]] = []
 
     for item in to_add:
-        pantry_item = pantry_service.create_item(
+        pantry_item, _created = pantry_service.add_or_increment_item(
             user_id,
             {
                 "name": item["name"],
@@ -340,7 +350,12 @@ def add_session_to_inventory(user_id: str, session_id: str) -> dict[str, Any]:
             },
         )
         activity = pantry_service.log_activity(
-            user_id, pantry_item["id"], "ADD", item["quantity"], "SHOPPING_SESSION"
+            user_id,
+            pantry_item["id"],
+            "ADD",
+            item["quantity"],
+            "SHOPPING_SESSION",
+            adjust_quantity=False,
         )
         if activity:
             activities.append(activity)
