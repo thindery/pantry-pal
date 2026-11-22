@@ -49,6 +49,10 @@ import {
   getItemThreshold,
   isItemLowStock,
 } from "@/lib/threshold-utils";
+import {
+  calculateSuggestedQuantity as calculateItemSuggestedQuantity,
+  mergePreservedQuantity,
+} from "@/lib/shopping-list-utils";
 
 export type DashboardInlineFilter =
   | "low-stock"
@@ -365,29 +369,8 @@ export function usePantryState() {
 
   // Calculate suggested quantity based on past consumption
   const calculateSuggestedQuantity = useCallback((item: PantryItem): number => {
-    const itemActivities = safeActivities.filter(
-      (a) => a.itemId === item.id && (a.type === 'REMOVE' || a.type === 'ADJUST')
-    );
-    
-    if (itemActivities.length === 0) {
-      return Math.max(getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2, 1);
-    }
-    
-    const totalUsed = itemActivities.reduce((sum, a) => sum + a.amount, 0);
-    const avgUsage = totalUsed / itemActivities.length;
-    
-    if (avgUsage === 0) {
-      return Math.max(getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2, 1);
-    }
-    
-    const daysOfHistory = Math.max(
-      1,
-      (Date.now() - new Date(itemActivities[itemActivities.length - 1].timestamp).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const dailyUsage = totalUsed / daysOfHistory;
-    const suggested = Math.ceil(dailyUsage * 14 / avgUsage) * Math.ceil(avgUsage);
-    
-    return Math.max(suggested, 1);
+    const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
+    return calculateItemSuggestedQuantity(safeActivities, item.id, threshold);
   }, [safeActivities, thresholdConfig, itemThresholdOverrides]);
 
   const isLowStock = useCallback(
@@ -448,11 +431,20 @@ export function usePantryState() {
         const newItems: ShoppingListItem[] = [
           ...lowStockItems.map((item) => {
             const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
+            const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
+            const calculated = isOutOfStock(item) 
+              ? calculateSuggestedQuantity(item) 
+              : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1);
             if (existing) {
               return {
                 ...existing,
                 currentQuantity: item.quantity,
-                lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
+                suggestedQuantity: mergePreservedQuantity(
+                  existing.suggestedQuantity,
+                  calculated,
+                  threshold
+                ),
+                lowStockThreshold: threshold,
               };
             }
             return {
@@ -460,24 +452,29 @@ export function usePantryState() {
               name: item.name,
               category: item.category,
               currentQuantity: item.quantity,
-              suggestedQuantity: isOutOfStock(item) 
-                ? calculateSuggestedQuantity(item) 
-                : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1),
+              suggestedQuantity: calculated,
               unit: item.unit,
               isManual: false,
               isChecked: false,
               addedAt: new Date().toISOString(),
               reason: 'low_stock' as const,
               pantryItemId: item.id,
-              lowStockThreshold: getItemThreshold(item, thresholdConfig, itemThresholdOverrides),
+              lowStockThreshold: threshold,
             };
           }),
           ...recommendationItems.map((item) => {
             const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
+            const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
+            const calculated = calculateSuggestedQuantity(item);
             if (existing) {
               return {
                 ...existing,
                 currentQuantity: item.quantity,
+                suggestedQuantity: mergePreservedQuantity(
+                  existing.suggestedQuantity,
+                  calculated,
+                  threshold
+                ),
               };
             }
             return {
@@ -485,7 +482,7 @@ export function usePantryState() {
               name: item.name,
               category: item.category,
               currentQuantity: item.quantity,
-              suggestedQuantity: calculateSuggestedQuantity(item),
+              suggestedQuantity: calculated,
               unit: item.unit,
               isManual: false,
               isChecked: false,

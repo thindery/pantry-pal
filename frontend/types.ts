@@ -19,6 +19,12 @@ export type InventorySortBy =
   | "qty-desc"
   | "category";
 
+export type ShoppingListSortBy =
+  | "category"
+  | "name-asc"
+  | "qty-desc"
+  | "recent";
+
 export interface NutritionData {
   calories?: number;
   protein?: number;
@@ -124,6 +130,8 @@ export interface ShoppingListItem {
   pantryItemId?: string;
   /** Effective low-stock threshold when the list was built */
   lowStockThreshold?: number;
+  /** Thumbnail image URL when matched to inventory */
+  imageUrl?: string;
 }
 
 export interface ShoppingList {
