@@ -1,6 +1,6 @@
 # PP-156: Unify shopping-list products and default the need/target to 1
 
-**Status:** 📋 Open
+**Status:** 🚀 Deployed, merge pending (deployed 2026-11-22 in `25edb57`; one-time inventory merge not yet run)
 **Priority:** P1
 **Phase:** User-reported bug
 **Created:** 2026-11-22
@@ -100,3 +100,12 @@ Subline copy should stay short, like today’s `Have N · need M`, but M must be
 - [ ] One-time merge: dry-run + backup first; quantities summed; no data lost; report of groups merged vs left alone
 - [ ] Unit tests cover need/target, stale-5 reset, grouping, and the Milk attach case; no long suites; no dependency churn
 - [ ] Reviewer commits only allowed files, deploys, and verifies live `build-id.txt` and Tylor’s shopping tab
+
+## Implementation notes (2026-11-22, 6:55 PM America/Chicago)
+
+- Shipped in `25edb57` (live `build-id.txt` = `25edb57`; migration `020_add_pantry_item_target_quantity` applied on prod). Default target 1; optional per-item `target_quantity`; need = `max(target - have, 0)`; auto rows recomputed and grouped by exact normalized name; one-time localStorage reset of only exact pre-July-18 category defaults; barcoded scans attach to an unbarcoded same-name row.
+- Because the default target is now 1, an item with have 1 is no longer listed; only out-of-stock (have 0) items appear unless a higher target is set. The pantry low-stock badge still uses `have <= threshold` (unchanged).
+- Merge script `scripts/merge_duplicate_pantry_items_by_name.py` is **dry-run by default**; writes need `--apply --backup-confirmed`; `review` groups (different barcodes) also need `--include-review`. Not run for real.
+- Dry-run on prod for Tylor (read-only): `milk` SAFE (unbarcoded 1 + barcoded 2 -> 3); `pineapple slices`, `chicken broth`, `german chocolate cake mix` REVIEW (different barcodes). Decision pending on whether to merge the REVIEW groups or leave distinct brands separate.
+- Remaining criteria: merge decision + backup + (optional) real merge run; Tylor to check the shopping tab.
+

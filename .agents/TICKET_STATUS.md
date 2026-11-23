@@ -44,7 +44,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-156 | Unify shopping-list products and default the need/target to 1 | 📋 Open | User-reported |
+| PP-156 | Unify shopping-list products and default the need/target to 1 | 🚀 Deployed (25edb57), merge pending | User-reported |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
@@ -235,7 +235,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-087 | Barcode lookup fallback when Open Food Facts is down | P0 | ✅ Done |
 | PP-088 | One pantry row per product, quantities summed | P0 | ✅ Done |
 | PP-089 | Refund extra Stripe charges and stop duplicate checkouts | P0 | ✅ Done |
-| PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | 📋 Open |
+| PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | 🚀 Deployed (25edb57), merge pending |
 
 ## Billing & email audit (2026-11-22)
 
