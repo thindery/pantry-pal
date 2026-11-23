@@ -45,6 +45,7 @@ class PantryItem(BaseModel):
     category: str
     lastUpdated: str
     barcode: Optional[str] = None
+    targetQuantity: Optional[float] = None
 
 
 class Activity(BaseModel):
@@ -69,6 +70,7 @@ class CreateItemRequest(BaseModel):
     unit: str = Field(..., min_length=1, max_length=MAX_UNIT_LENGTH)
     category: str = Field(..., min_length=1, max_length=MAX_CATEGORY_LENGTH)
     barcode: Optional[str] = Field(default=None, max_length=50)
+    targetQuantity: Optional[float] = Field(default=None, ge=0, le=999999)
 
     @field_validator("name", "unit", "category")
     @classmethod
@@ -84,6 +86,7 @@ class UpdateItemRequest(BaseModel):
     unit: Optional[str] = Field(default=None, min_length=1, max_length=MAX_UNIT_LENGTH)
     category: Optional[str] = Field(default=None, min_length=1, max_length=MAX_CATEGORY_LENGTH)
     barcode: Optional[str] = Field(default=None, max_length=50)
+    targetQuantity: Optional[float] = Field(default=None, ge=0, le=999999)
 
     @field_validator("name", "unit", "category")
     @classmethod

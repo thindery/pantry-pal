@@ -88,7 +88,12 @@ async def create_item(body: CreateItemRequest, user_id: str = Depends(require_au
 async def update_item(item_id: str, body: UpdateItemRequest, user_id: str = Depends(require_authenticated_user_id)):
     if not UUID_REGEX.match(item_id):
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "Invalid item ID format"))
-    data = {k: v for k, v in body.model_dump().items() if v is not None}
+    # PP-156: only targetQuantity may be explicitly cleared with null; other None values are ignored
+    data = {
+        k: v
+        for k, v in body.model_dump(exclude_unset=True).items()
+        if v is not None or k == "targetQuantity"
+    }
     if not data:
         raise HTTPException(status_code=400, detail=error_response("VALIDATION_ERROR", "At least one field must be provided for update"))
     existing = pantry_service.get_item_by_id(user_id, item_id)

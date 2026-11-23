@@ -10,6 +10,7 @@ export interface PantryItem {
   barcode?: string;
   imageUrl?: string;
   productInfo?: ProductInfo;
+  targetQuantity?: number | null;
 }
 
 export type InventorySortBy =

@@ -48,11 +48,15 @@ import {
   type ItemThresholdOverrides,
   getCategoryThreshold,
   getItemThreshold,
+  getItemTarget,
   isItemLowStock,
+  migrateThresholdConfig,
 } from "@/lib/threshold-utils";
 import {
-  calculateSuggestedQuantity as calculateItemSuggestedQuantity,
-  mergePreservedQuantity,
+  buildAutoShoppingListItems,
+  calculateNeed,
+  migrateShoppingListItems,
+  normalizeItemName,
 } from "@/lib/shopping-list-utils";
 
 export type DashboardInlineFilter =
@@ -284,8 +288,36 @@ export function usePantryState() {
     }
   }, []);
 
-  // Load shopping list from localStorage on mount
+  // Load shopping list from localStorage on mount (with one-time PP-156 migration)
   useEffect(() => {
+    const PP156_MIGRATION_FLAG = "pantry_pp156_unified_target_migrated_v1";
+    try {
+      const migrationDone = localStorage.getItem(PP156_MIGRATION_FLAG);
+      if (!migrationDone) {
+        const rawThresholds = localStorage.getItem('pantry_threshold_config');
+        if (rawThresholds) {
+          try {
+            const parsed = JSON.parse(rawThresholds);
+            if (parsed && typeof parsed === "object") {
+              const migrated = migrateThresholdConfig(parsed);
+              localStorage.setItem('pantry_threshold_config', JSON.stringify(migrated));
+            }
+          } catch {}
+        }
+        const rawList = localStorage.getItem('pantry_shopping_list');
+        if (rawList) {
+          try {
+            const parsed = JSON.parse(rawList);
+            if (Array.isArray(parsed)) {
+              const migratedList = migrateShoppingListItems(parsed);
+              localStorage.setItem('pantry_shopping_list', JSON.stringify(migratedList));
+            }
+          } catch {}
+        }
+        localStorage.setItem(PP156_MIGRATION_FLAG, "true");
+      }
+    } catch {}
+
     const savedList = localStorage.getItem('pantry_shopping_list');
     const savedThresholds = localStorage.getItem('pantry_threshold_config');
     const savedItemThresholds = localStorage.getItem('pantry_item_threshold_overrides');
@@ -357,22 +389,28 @@ export function usePantryState() {
   );
 
   const setItemThreshold = useCallback((itemId: string, threshold: number | null) => {
+    const val =
+      threshold == null || Number.isNaN(threshold)
+        ? null
+        : Math.max(0, Math.floor(threshold));
     setItemThresholdOverrides((prev) => {
       const next = { ...prev };
-      if (threshold == null || Number.isNaN(threshold)) {
+      if (val == null) {
         delete next[itemId];
       } else {
-        next[itemId] = Math.max(0, Math.floor(threshold));
+        next[itemId] = val;
       }
       return next;
     });
+    // Persist to DB as targetQuantity as well
+    updateItem(itemId, { targetQuantity: val }).catch(() => {});
   }, []);
 
-  // Calculate suggested quantity based on past consumption
+  // Target-based suggested quantity: need = max(target - have, 0)
   const calculateSuggestedQuantity = useCallback((item: PantryItem): number => {
-    const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
-    return calculateItemSuggestedQuantity(safeActivities, item.id, threshold);
-  }, [safeActivities, thresholdConfig, itemThresholdOverrides]);
+    const target = getItemTarget(item, thresholdConfig, itemThresholdOverrides);
+    return calculateNeed(target, item.quantity);
+  }, [thresholdConfig, itemThresholdOverrides]);
 
   const isLowStock = useCallback(
     (item: PantryItem): boolean =>
@@ -385,124 +423,27 @@ export function usePantryState() {
     return item.quantity === 0;
   }, []);
 
-  // Generate shopping list from low stock items
+  // Generate shopping list from low stock items using exact-name grouping and target-based need
   const generateShoppingList = useCallback(async () => {
     setIsGeneratingList(true);
     
     try {
       const inventoryArray = Array.isArray(inventory) ? inventory : [];
-      const lowStockItems = inventoryArray.filter(
-        (item) => isLowStock(item) || isOutOfStock(item)
-      );
-      
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const recommendationItems = inventoryArray.filter((item) => {
-        if (lowStockItems.includes(item)) return false;
-        
-        const lastAdd = safeActivities.find(
-          (a) => a.itemId === item.id && a.type === 'ADD'
-        );
-        
-        if (lastAdd == null) return false;
-        
-        const lastAddDate = new Date(lastAdd.timestamp);
-        return (
-          lastAddDate < thirtyDaysAgo &&
-          item.quantity > 0 &&
-          item.quantity <= getItemThreshold(item, thresholdConfig, itemThresholdOverrides) * 2
-        );
-      });
-      
       setShoppingList((prevList) => {
         const safeShoppingList = normalizeList<ShoppingListItem>(prevList);
-        
-        // Match existing items by name or by pantryItemId to preserve their custom/checked state
-        const existingByName = new Map<string, ShoppingListItem>();
-        const existingById = new Map<string, ShoppingListItem>();
-        
-        safeShoppingList.forEach((item) => {
-          existingByName.set(item.name.toLowerCase(), item);
-          if (item.pantryItemId) {
-            existingById.set(item.pantryItemId, item);
-          }
-        });
-
-        const newItems: ShoppingListItem[] = [
-          ...lowStockItems.map((item) => {
-            const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
-            const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
-            const calculated = isOutOfStock(item) 
-              ? calculateSuggestedQuantity(item) 
-              : Math.max(calculateSuggestedQuantity(item) - item.quantity, 1);
-            if (existing) {
-              return {
-                ...existing,
-                currentQuantity: item.quantity,
-                suggestedQuantity: mergePreservedQuantity(
-                  existing.suggestedQuantity,
-                  calculated,
-                  threshold
-                ),
-                lowStockThreshold: threshold,
-              };
-            }
-            return {
-              id: `low-${item.id}-${Date.now()}`,
-              name: item.name,
-              category: item.category,
-              currentQuantity: item.quantity,
-              suggestedQuantity: calculated,
-              unit: item.unit,
-              isManual: false,
-              isChecked: false,
-              addedAt: new Date().toISOString(),
-              reason: 'low_stock' as const,
-              pantryItemId: item.id,
-              lowStockThreshold: threshold,
-            };
-          }),
-          ...recommendationItems.map((item) => {
-            const existing = existingById.get(item.id) || existingByName.get(item.name.toLowerCase());
-            const threshold = getItemThreshold(item, thresholdConfig, itemThresholdOverrides);
-            const calculated = calculateSuggestedQuantity(item);
-            if (existing) {
-              return {
-                ...existing,
-                currentQuantity: item.quantity,
-                suggestedQuantity: mergePreservedQuantity(
-                  existing.suggestedQuantity,
-                  calculated,
-                  threshold
-                ),
-              };
-            }
-            return {
-              id: `rec-${item.id}-${Date.now()}`,
-              name: item.name,
-              category: item.category,
-              currentQuantity: item.quantity,
-              suggestedQuantity: calculated,
-              unit: item.unit,
-              isManual: false,
-              isChecked: false,
-              addedAt: new Date().toISOString(),
-              reason: 'recommendation' as const,
-              pantryItemId: item.id,
-            };
-          }),
-        ];
-
+        const autoItems = buildAutoShoppingListItems(
+          inventoryArray,
+          thresholdConfig,
+          itemThresholdOverrides,
+          safeShoppingList,
+        );
+        const autoNames = new Set(autoItems.map((i) => normalizeItemName(i.name)));
         // Keep manual items that aren't already represented in the newly generated items
-        const existingManualItems = safeShoppingList.filter((item) => item.isManual);
-        const newItemsNames = new Set(newItems.map((i) => i.name.toLowerCase()));
-        
-        const mergedItems = [
-          ...newItems,
-          ...existingManualItems.filter((item) => !newItemsNames.has(item.name.toLowerCase())),
-        ];
+        const existingManualItems = safeShoppingList.filter(
+          (item) => item.isManual && !autoNames.has(normalizeItemName(item.name))
+        );
 
+        const mergedItems = [...autoItems, ...existingManualItems];
         return mergedItems.sort((a, b) => a.category.localeCompare(b.category));
       });
     } finally {
@@ -510,10 +451,6 @@ export function usePantryState() {
     }
   }, [
     inventory,
-    safeActivities,
-    isLowStock,
-    isOutOfStock,
-    calculateSuggestedQuantity,
     thresholdConfig,
     itemThresholdOverrides,
   ]);
@@ -579,13 +516,28 @@ export function usePantryState() {
   }, []);
 
   // Update shopping list item quantity
+  // If the user changes the stepper on an auto row, persist that as an explicit per-item target override
   const updateShoppingItemQuantity = useCallback((id: string, newQuantity: number) => {
+    const targetNeed = Math.max(1, newQuantity);
+    const row = shoppingList.find((item) => item.id === id);
+    if (row == null) return;
+    const isAutoRow = !row.isManual && row.pantryItemId != null;
+    const newTarget = isAutoRow ? (row.currentQuantity || 0) + targetNeed : null;
+    if (isAutoRow && row.pantryItemId != null && newTarget != null) {
+      setItemThreshold(row.pantryItemId, newTarget);
+    }
     setShoppingList((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, suggestedQuantity: newQuantity } : item
+        item.id !== id
+          ? item
+          : {
+              ...item,
+              suggestedQuantity: targetNeed,
+              ...(newTarget != null ? { lowStockThreshold: newTarget } : {}),
+            }
       )
     );
-  }, []);
+  }, [shoppingList, setItemThreshold]);
 
   // Clear entire shopping list
   const clearShoppingList = useCallback(() => {
@@ -837,12 +789,21 @@ export function usePantryState() {
     const displayName =
       product.name.charAt(0).toUpperCase() + product.name.slice(1);
 
-    const existing = inventory.find((i) =>
-      product.barcode
-        ? barcodesMatch(i.barcode, product.barcode)
-        : i.name.toLowerCase() === product.name.toLowerCase() &&
-          i.category === (product.category || "other"),
-    );
+    const norm = (s: string) => normalizeItemName(s);
+    let existing = product.barcode
+      ? inventory.find((i) => barcodesMatch(i.barcode, product.barcode))
+      : inventory.find(
+          (i) =>
+            norm(i.name) === norm(product.name) &&
+            i.category === (product.category || "other"),
+        );
+
+    if (!existing && product.barcode) {
+      // Milk gap: attach to existing unbarcoded row with same normalized name
+      existing = inventory.find(
+        (i) => !i.barcode && norm(i.name) === norm(product.name),
+      );
+    }
 
     if (existing != null) {
       if (!existing.barcode && product.barcode) {

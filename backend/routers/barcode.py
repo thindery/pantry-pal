@@ -59,7 +59,9 @@ async def save_barcode_product(
     if len(clean) < 8:
         raise HTTPException(status_code=400, detail={"success": False, "cached": False, "error": "Invalid barcode format"})
 
-    existing_item = pantry_service.find_existing_item(user_id, barcode=clean)
+    existing_item = pantry_service.find_existing_item(
+        user_id, barcode=clean, name=body.name, category=body.category
+    )
     if not existing_item:
         existing = pantry_service.get_all_items(user_id)
         tier_check = subscription_service.can_add_items(user_id, len(existing))

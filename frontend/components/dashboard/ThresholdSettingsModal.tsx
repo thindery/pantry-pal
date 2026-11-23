@@ -20,7 +20,7 @@ export function ThresholdSettingsModal({
       <div className="bg-[var(--surface)] rounded-2xl w-full max-w-md p-6 shadow-2xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-[var(--foreground)]">
-            Low stock thresholds
+            Low stock targets
           </h2>
           <button
             type="button"
@@ -32,9 +32,9 @@ export function ThresholdSettingsModal({
           </button>
         </div>
         <p className="text-[var(--muted)] text-sm mb-4">
-          These are defaults by category. Items at or below the threshold appear on
-          your shopping list. To override for one item (like milk), edit that item and
-          set a custom low stock alert.
+          These are default target quantities by category. Items below the target appear
+          on your shopping list (need = target - have). To override for one item (like milk),
+          edit that item or adjust the shopping list stepper.
         </p>
         <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
           {CATEGORIES.map((category) => (

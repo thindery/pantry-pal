@@ -15,6 +15,7 @@ def _now() -> str:
 
 
 def _row_to_item(row: dict[str, Any]) -> dict[str, Any]:
+    target_qty = row.get("target_quantity")
     return {
         "id": row["id"],
         "userId": row["user_id"],
@@ -25,6 +26,7 @@ def _row_to_item(row: dict[str, Any]) -> dict[str, Any]:
         "lastUpdated": row["last_updated"],
         "barcode": row.get("barcode"),
         "imageUrl": row.get("image_url") or None,
+        "targetQuantity": float(target_qty) if target_qty is not None else None,
     }
 
 
@@ -149,7 +151,29 @@ def _find_existing_item(
             (user_id, barcode_variants(clean)),
         )
         row = cur.fetchone()
-        return _row_to_item(row) if row else None
+        if row:
+            return _row_to_item(row)
+        # PP-156: Close the Milk gap: when an add has a barcode and no row matches
+        # that barcode, attach to an existing UNBARCODED row with the same normalized name
+        if name:
+            cur.execute(
+                f"""
+                SELECT i.*, p.image_url
+                FROM pantry_items i
+                LEFT JOIN product_cache p ON p.barcode = i.barcode
+                WHERE i.user_id = %s
+                  AND (i.barcode IS NULL OR i.barcode = '')
+                  AND LOWER(BTRIM(i.name)) = LOWER(BTRIM(%s))
+                ORDER BY i.created_at ASC, i.id ASC
+                LIMIT 1
+                {lock}
+                """,
+                (user_id, name),
+            )
+            row = cur.fetchone()
+            if row:
+                return _row_to_item(row)
+        return None
     if not name or not category:
         return None
     cur.execute(
@@ -199,6 +223,7 @@ def add_or_increment_item(user_id: str, data: dict[str, Any]) -> tuple[dict[str,
     category = data["category"]
     quantity = data["quantity"]
     unit = data["unit"]
+    target_quantity = data.get("targetQuantity") if "targetQuantity" in data else data.get("target_quantity")
     now = _now()
     lock_key = _advisory_lock_key(user_id, barcode, name, category)
 
@@ -217,15 +242,26 @@ def add_or_increment_item(user_id: str, data: dict[str, Any]) -> tuple[dict[str,
                 for_update=True,
             )
             if existing:
-                cur.execute(
-                    """
-                    UPDATE pantry_items
-                    SET quantity = quantity + %s, last_updated = %s
-                    WHERE user_id = %s AND id = %s
-                    RETURNING *
-                    """,
-                    (quantity, now, user_id, existing["id"]),
-                )
+                if barcode and not existing.get("barcode"):
+                    cur.execute(
+                        """
+                        UPDATE pantry_items
+                        SET quantity = quantity + %s, barcode = %s, last_updated = %s
+                        WHERE user_id = %s AND id = %s
+                        RETURNING *
+                        """,
+                        (quantity, barcode, now, user_id, existing["id"]),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        UPDATE pantry_items
+                        SET quantity = quantity + %s, last_updated = %s
+                        WHERE user_id = %s AND id = %s
+                        RETURNING *
+                        """,
+                        (quantity, now, user_id, existing["id"]),
+                    )
                 row = cur.fetchone()
                 item = _row_to_item({**row, "image_url": existing.get("imageUrl")})
                 return item, False
@@ -233,10 +269,10 @@ def add_or_increment_item(user_id: str, data: dict[str, Any]) -> tuple[dict[str,
             item_id = str(uuid.uuid4())
             cur.execute(
                 """
-                INSERT INTO pantry_items (id, user_id, name, barcode, quantity, unit, category, last_updated)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO pantry_items (id, user_id, name, barcode, quantity, unit, category, last_updated, target_quantity)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (item_id, user_id, name, barcode, quantity, unit, category, now),
+                (item_id, user_id, name, barcode, quantity, unit, category, now, target_quantity),
             )
     return {
         "id": item_id,
@@ -247,18 +283,20 @@ def add_or_increment_item(user_id: str, data: dict[str, Any]) -> tuple[dict[str,
         "unit": unit,
         "category": category,
         "lastUpdated": now,
+        "targetQuantity": target_quantity,
     }, True
 
 
 def create_item(user_id: str, data: dict[str, Any]) -> dict[str, Any]:
     item_id = str(uuid.uuid4())
     now = _now()
+    target_quantity = data.get("targetQuantity") if "targetQuantity" in data else data.get("target_quantity")
     with db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO pantry_items (id, user_id, name, barcode, quantity, unit, category, last_updated)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO pantry_items (id, user_id, name, barcode, quantity, unit, category, last_updated, target_quantity)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     item_id,
@@ -269,6 +307,7 @@ def create_item(user_id: str, data: dict[str, Any]) -> dict[str, Any]:
                     data["unit"],
                     data["category"],
                     now,
+                    target_quantity,
                 ),
             )
     return {
@@ -280,6 +319,7 @@ def create_item(user_id: str, data: dict[str, Any]) -> dict[str, Any]:
         "unit": data["unit"],
         "category": data["category"],
         "lastUpdated": now,
+        "targetQuantity": target_quantity,
     }
 
 
@@ -296,6 +336,8 @@ def update_item(user_id: str, item_id: str, data: dict[str, Any]) -> Optional[di
         ("quantity", "quantity"),
         ("unit", "unit"),
         ("category", "category"),
+        ("targetQuantity", "target_quantity"),
+        ("target_quantity", "target_quantity"),
     ]:
         if key in data:
             fields.append(f"{col} = %s")
