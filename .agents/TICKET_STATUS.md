@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-23, 11:36 AM CT (PP-158 in progress: paste fallback when a recipe site blocks URL import)
+Last updated: 2026-11-23, 11:59 AM CT (PP-158 done: link-only recipe import + add-details paste, live f7c43f4)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-23, 11:36 AM CT (PP-158 in progress: paste fallback when a
 
 | | Count |
 |--|-------|
-| Done | 102 (previous plus PP-157: GA4 collect firing, live 05ad14c) |
-| In progress | 1 (PP-158 paste fallback for blocked recipe imports) |
+| Done | 103 (previous plus PP-158: link-only recipe import + add-details paste, live f7c43f4) |
+| In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -40,11 +40,10 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (14)
+### P1 — next up, high impact (13)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-158 | Paste fallback when a recipe site blocks URL import | 🔄 In progress | Recipes |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
@@ -235,7 +234,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-088 | One pantry row per product, quantities summed | P0 | ✅ Done |
 | PP-089 | Refund extra Stripe charges and stop duplicate checkouts | P0 | ✅ Done |
 | PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | ✅ Done |
-| PP-158 | Paste fallback when a recipe site blocks URL import | P1 | 🔄 In progress |
+| PP-158 | Paste fallback when a recipe site blocks URL import | P1 | ✅ Done (live `f7c43f4`) |
 
 ## Billing & email audit (2026-11-22)
 
@@ -335,7 +334,7 @@ Tylor asked for more revenue ideas (saved recipes, first-party recipes with affi
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-138 | Saved recipes and cook-from-pantry | P1 | ✅ Done (live `edf52c0`) |
-| PP-158 | Paste fallback when a recipe site blocks URL import | P1 | 🔄 In progress |
+| PP-158 | Paste fallback when a recipe site blocks URL import | P1 | ✅ Done (live `f7c43f4`) |
 | PP-139 | Public first-party recipes and affiliate links | P2 | 📋 Open |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | P2 | 📋 Open |
 

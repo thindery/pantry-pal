@@ -1,10 +1,10 @@
 # PP-158: Paste fallback when a recipe site blocks URL import
 
-**Status:** 🔄 In progress
+**Status:** ✅ Done
 **Priority:** P1
 **Phase:** User-reported bugs (follow-up to PP-138)
 **Created:** 2026-11-23
-**Updated:** 2026-11-23, 12:00 PM America/Chicago
+**Updated:** 2026-11-23, 11:59 AM America/Chicago
 **Depends on:** PP-138
 **Blocks:** —
 **Source:** Tylor, 2026-11-23, 11:35 AM America/Chicago. Import of https://www.allrecipes.com/recipe/7869/neiman-marcus-cake-ii/ failed. Confirmed: Allrecipes / Dotdash Meredith (also SimplyRecipes, etc.) returns 403 to the OVH datacenter IP even with a browser User-Agent, so `POST /api/recipes/import` returns 400. Server-side fetch cannot fix this at $0.
@@ -78,11 +78,20 @@ No live network in tests. Extend `tests/test_recipes.py` and fixtures under `tes
 
 ## Acceptance Criteria
 
-- [ ] A blocked fetch or a page with no Recipe JSON-LD still saves a link-only recipe (stripped source URL, slug or og:title, `isComplete` false) and returns 201. No `SITE_BLOCKED` / `RECIPE_NOT_FOUND` to the client; reasons go to server logs only
-- [ ] The UI never tells the user the import failed or was blocked. List and detail show a subtle “Details not imported” badge, View original, and Add details
-- [ ] Add details opens an editor with a paste box; the parser fills ingredients and steps; saving via PATCH marks the recipe complete
-- [ ] Tracking params are stripped from source URLs before fetch and before store
-- [ ] Coverage and add-missing handle zero ingredients gracefully
-- [ ] Link-only recipes count toward the Free cap
-- [ ] Tests cover the paste parser, JSON-LD-in-paste, URL stripping, slug/og titles, link-only save on blocked/no-JSON-LD, parse and PATCH auth, and empty coverage, with no live network
-- [ ] No new dependencies, no proxies or paid services, no rollback-glob migration file
+- [x] A blocked fetch or a page with no Recipe JSON-LD still saves a link-only recipe (stripped source URL, slug or og:title, `isComplete` false) and returns 201. No `SITE_BLOCKED` / `RECIPE_NOT_FOUND` to the client; reasons go to server logs only
+- [x] The UI never tells the user the import failed or was blocked. List and detail show a subtle “Details not imported” badge, View original, and Add details
+- [x] Add details opens an editor with a paste box; the parser fills ingredients and steps; saving via PATCH marks the recipe complete
+- [x] Tracking params are stripped from source URLs before fetch and before store
+- [x] Coverage and add-missing handle zero ingredients gracefully
+- [x] Link-only recipes count toward the Free cap
+- [x] Tests cover the paste parser, JSON-LD-in-paste, URL stripping, slug/og titles, link-only save on blocked/no-JSON-LD, parse and PATCH auth, and empty coverage, with no live network
+- [x] No new dependencies, no proxies or paid services, no rollback-glob migration file
+
+---
+
+## Shipped
+
+Live on https://www.mypantryhub.com as of 2026-11-23, 11:59 AM America/Chicago.
+
+- Feature commit: `f7c43f4` — link-only save when a recipe URL cannot be fully imported; paste parser; Add details; tracking-param stripping; `is_complete` migration 022
+- Live build: `f7c43f4` (`/build-id.txt`). Migration `022_recipe_is_complete` applied. Containers healthy.
