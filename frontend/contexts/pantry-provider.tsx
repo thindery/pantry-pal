@@ -501,6 +501,16 @@ export function usePantryState() {
     );
   }, [shoppingList]);
 
+  // Batch add shopping items (used by recipe cook-from-pantry)
+  const addBatchShoppingItems = useCallback((items: ShoppingListItem[]) => {
+    if (items.length === 0) return;
+    setShoppingList((prev) =>
+      [...normalizeList<ShoppingListItem>(prev), ...items].sort((a, b) =>
+        a.category.localeCompare(b.category),
+      ),
+    );
+  }, []);
+
   // Toggle item checked status
   const toggleItemChecked = useCallback((id: string) => {
     setShoppingList((prev) =>
@@ -1108,6 +1118,7 @@ export function usePantryState() {
     setShoppingListBoughtQuantities,
     generateShoppingList,
     addManualShoppingItem,
+    addBatchShoppingItems,
     toggleItemChecked,
     removeShoppingItem,
     updateShoppingItemQuantity,

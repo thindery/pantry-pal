@@ -222,6 +222,7 @@ export interface TierInfo {
     multiDevice: boolean;
     sharedInventory: boolean;
     maxFamilyMembers: number;
+    maxSavedRecipes?: number;
   };
   usage: {
     currentItems: number;
@@ -230,3 +231,39 @@ export interface TierInfo {
     voiceSessionsThisMonth: number;
   };
 }
+
+export interface RecipeIngredient {
+  raw: string;
+  name: string;
+}
+
+export interface Recipe {
+  id: string;
+  userId: string;
+  title: string;
+  sourceUrl?: string | null;
+  imageUrl?: string | null;
+  servings?: string | null;
+  ingredients: RecipeIngredient[];
+  instructions: string[];
+  createdAt: string;
+}
+
+export type RecipeCoverageStatus = "have" | "missing" | "unsure";
+
+export interface RecipeIngredientCoverage {
+  ingredient: RecipeIngredient;
+  status: RecipeCoverageStatus;
+  haveQuantity: number;
+}
+
+export interface RecipeCoverage {
+  recipeId: string;
+  items: RecipeIngredientCoverage[];
+  haveCount: number;
+  missingCount: number;
+  unsureCount: number;
+  totalCount: number;
+  coveragePercentage: number;
+}
+

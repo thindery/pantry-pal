@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 7:20 PM CT (PP-156 done: shopping-list targets shipped in 25edb57; Tylor inventory merge applied)
+Last updated: 2026-11-22, 9:47 PM CT (PP-138 in progress: saved recipes / cook-from-pantry v1)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,8 +16,8 @@ Last updated: 2026-11-22, 7:20 PM CT (PP-156 done: shopping-list targets shipped
 | | Count |
 |--|-------|
 | Done | 100 (previous plus PP-156: shopping-list targets in 25edb57 and Tylor inventory merge) |
-| In progress | 0 |
-| Ready | 26 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
+| In progress | 1 (PP-138 saved recipes v1) |
+| Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
 | Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
@@ -50,7 +50,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
-| PP-138 | Saved recipes and cook-from-pantry | 📋 Open | Revenue options |
+| PP-138 | Saved recipes and cook-from-pantry | 🚧 In progress | Revenue options |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
@@ -333,7 +333,7 @@ Tylor asked for more revenue ideas (saved recipes, first-party recipes with affi
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-138 | Saved recipes and cook-from-pantry | P1 | 📋 Open |
+| PP-138 | Saved recipes and cook-from-pantry | P1 | 🚧 In progress |
 | PP-139 | Public first-party recipes and affiliate links | P2 | 📋 Open |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | P2 | 📋 Open |
 

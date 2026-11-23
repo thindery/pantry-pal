@@ -8,6 +8,8 @@ from typing import Any, Optional
 
 from database.db import db_connection
 
+FREE_MAX_SAVED_RECIPES = 10
+
 TIER_LIMITS = {
     "free": {
         "maxItems": 50,
@@ -17,6 +19,7 @@ TIER_LIMITS = {
         "multiDevice": False,
         "sharedInventory": False,
         "maxFamilyMembers": 1,
+        "maxSavedRecipes": FREE_MAX_SAVED_RECIPES,
     },
     "pro": {
         "maxItems": -1,
@@ -26,6 +29,7 @@ TIER_LIMITS = {
         "multiDevice": True,
         "sharedInventory": False,
         "maxFamilyMembers": 1,
+        "maxSavedRecipes": -1,
     },
     "family": {
         "maxItems": -1,
@@ -35,6 +39,7 @@ TIER_LIMITS = {
         "multiDevice": True,
         "sharedInventory": True,
         "maxFamilyMembers": 5,
+        "maxSavedRecipes": -1,
     },
 }
 
@@ -253,3 +258,12 @@ def can_scan_receipt(user_id: str) -> dict[str, Any]:
 def can_use_voice_assistant(user_id: str) -> bool:
     sub = get_or_create_user_subscription(user_id)
     return TIER_LIMITS[sub["tier"]]["voiceAssistant"]
+
+
+def can_save_recipe(user_id: str, current_count: int) -> dict[str, Any]:
+    sub = get_or_create_user_subscription(user_id)
+    limit = TIER_LIMITS[sub["tier"]].get("maxSavedRecipes", FREE_MAX_SAVED_RECIPES)
+    if limit == -1:
+        return {"allowed": True, "remaining": -1}
+    remaining = limit - current_count
+    return {"allowed": remaining > 0, "remaining": max(0, remaining)}

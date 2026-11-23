@@ -245,3 +245,37 @@ class BarcodeSaveRequest(BaseModel):
     @classmethod
     def strip_whitespace(cls, v: str) -> str:
         return v.strip()
+
+
+class RecipeIngredientItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    raw: str = Field(..., min_length=1, max_length=1000)
+    name: str = Field(..., min_length=1, max_length=200)
+
+
+class CreateRecipeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    title: str = Field(..., min_length=1, max_length=200)
+    sourceUrl: Optional[str] = Field(default=None, max_length=2000, alias="source_url")
+    imageUrl: Optional[str] = Field(default=None, max_length=2000, alias="image_url")
+    servings: Optional[str] = Field(default=None, max_length=100)
+    ingredients: list[Union[RecipeIngredientItem, str]] = Field(default_factory=list)
+    instructions: list[str] = Field(default_factory=list)
+
+    @field_validator("title")
+    @classmethod
+    def strip_title(cls, v: str) -> str:
+        return v.strip()
+
+
+class ImportRecipeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    url: str = Field(..., min_length=1, max_length=2000)
+
+    @field_validator("url")
+    @classmethod
+    def strip_url(cls, v: str) -> str:
+        return v.strip()

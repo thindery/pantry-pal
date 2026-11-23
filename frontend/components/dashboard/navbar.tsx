@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, ShoppingCart, User } from "lucide-react";
+import { ChefHat, Home, Package, ShoppingCart, User } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { UserButton } from "@/components/auth/UserButton";
 import { DashboardLink } from "@/components/dashboard/dashboard-link";
 
 const NAV_LINKS = [
   { href: "/dashboard/", label: "Pantry", icon: Package },
+  { href: "/dashboard/recipes/", label: "Recipes", icon: ChefHat },
   { href: "/dashboard/shopping-list/", label: "Shopping", icon: ShoppingCart },
   { href: "/dashboard/account/", label: "Account", icon: User },
 ] as const;
