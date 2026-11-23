@@ -7,6 +7,7 @@ import {
   GA_MEASUREMENT_ID,
   determineInitialConsent,
   flushAnalyticsQueue,
+  installGtag,
   isValidMeasurementId,
 } from "@/lib/analytics";
 
@@ -24,12 +25,8 @@ export function AnalyticsScripts() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Initialize dataLayer and window.gtag
-    window.dataLayer = window.dataLayer || [];
-    function gtag(...args: unknown[]) {
-      window.dataLayer?.push(args);
-    }
-    window.gtag = gtag;
+    // Initialize dataLayer and window.gtag (must push Arguments, not an Array)
+    installGtag();
 
     const gpc = Boolean(
       (navigator as unknown as { globalPrivacyControl?: boolean })
@@ -45,7 +42,7 @@ export function AnalyticsScripts() {
     });
 
     // Call consent default before any config or gtag.js execution
-    gtag("consent", "default", decision.consent);
+    window.gtag?.("consent", "default", decision.consent);
 
     if (decision.needsBanner) {
       setShowBanner(true);

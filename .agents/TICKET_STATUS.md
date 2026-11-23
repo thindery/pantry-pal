@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 10:15 PM CT (PP-138 done: saved recipes live in edf52c0)
+Last updated: 2026-11-23, 9:10 AM CT (PP-157 in progress: GA4 collect not firing)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,11 +16,11 @@ Last updated: 2026-11-22, 10:15 PM CT (PP-138 done: saved recipes live in edf52c
 | | Count |
 |--|-------|
 | Done | 101 (previous plus PP-138: saved recipes / cook-from-pantry in e78c28a, live edf52c0) |
-| In progress | 0 |
+| In progress | 1 (PP-157 GA4 collect not firing) |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
+| Open by priority | P0: 6 · P1: 13 · P2: 18 · P3: 3 (40 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -30,7 +30,7 @@ Last updated: 2026-11-22, 10:15 PM CT (PP-138 done: saved recipes live in edf52c
 
 Triage board for work that is not done. Area inventories later in this file stay as historical context. PP-109 was split into PP-117–PP-122 and is not listed here.
 
-### P0 — broken or blocking revenue/customers now (5)
+### P0 — broken or blocking revenue/customers now (6)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -39,6 +39,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
+| PP-157 | GA4 collect is not firing on the live site | 🔨 In progress | Analytics / GSC |
 
 ### P1 — next up, high impact (13)
 

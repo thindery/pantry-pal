@@ -130,6 +130,23 @@ declare global {
   }
 }
 
+/**
+ * Install the official gtag() stub that queues commands until gtag.js loads.
+ *
+ * gtag.js only treats Arguments objects as commands (it checks
+ * [object Arguments] or .callee). Pushing a rest-parameter Array is
+ * silently ignored, so `config` / `event` never run and no collect
+ * request is sent.
+ */
+export function installGtag(): void {
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer!.push(arguments as unknown as never);
+  };
+}
+
 export interface QueuedAnalyticsEvent {
   name: string;
   params?: Record<string, unknown>;

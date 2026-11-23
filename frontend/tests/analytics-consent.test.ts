@@ -5,6 +5,7 @@ import {
   determineInitialConsent,
   flushAnalyticsQueue,
   getQueuedAnalyticsEvents,
+  installGtag,
   isValidMeasurementId,
   trackEvent,
   trackFirstScan,
@@ -271,5 +272,48 @@ describe("trackSignUp and trackFirstScan single-dispatch guards", () => {
     // Second call should be ignored by the localStorage guard
     trackFirstScan("receipt");
     expect(gtagMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("installGtag", () => {
+  beforeEach(() => {
+    window.dataLayer = [];
+    delete window.gtag;
+    window.__gaLoaded = false;
+  });
+
+  it("pushes an Arguments object so gtag.js will treat commands as commands", () => {
+    installGtag();
+    expect(typeof window.gtag).toBe("function");
+
+    window.gtag?.("consent", "default", { analytics_storage: "granted" });
+    window.gtag?.("js", new Date());
+    window.gtag?.("config", "G-LEW78LC3EF");
+
+    expect(window.dataLayer).toHaveLength(3);
+    for (const item of window.dataLayer ?? []) {
+      const tag = Object.prototype.toString.call(item);
+      expect(tag).toBe("[object Arguments]");
+    }
+    expect((window.dataLayer?.[0] as unknown as unknown[])[0]).toBe("consent");
+    expect((window.dataLayer?.[2] as unknown as unknown[])[0]).toBe("config");
+  });
+
+  it("does not treat a rest-parameter Array as a gtag command (gtag.js Mb() check)", () => {
+    // Documents the production bug: dataLayer.push(["config", id]) is ignored
+    // because gtag.js only accepts Arguments objects or .callee.
+    const arrayCommand = ["config", "G-LEW78LC3EF"];
+    const isArgumentsObject = (value: unknown) =>
+      !!value &&
+      (Object.prototype.toString.call(value) === "[object Arguments]" ||
+        Object.prototype.hasOwnProperty.call(value, "callee"));
+
+    expect(isArgumentsObject(arrayCommand)).toBe(false);
+
+    function officialGtag(..._args: unknown[]) {
+      // eslint-disable-next-line prefer-rest-params
+      return arguments;
+    }
+    expect(isArgumentsObject(officialGtag("config", "G-LEW78LC3EF"))).toBe(true);
   });
 });
