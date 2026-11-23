@@ -27,6 +27,10 @@ def get_migration_files():
     for file in sorted(MIGRATIONS_DIR.glob("*.sql")):
         if file.name.startswith("TEMPLATE"):
             continue
+        # Rollback companions are named <migration>.rollback.sql and are only
+        # used by `migrate.py rollback`. Never apply them as forward migrations.
+        if file.name.endswith(".rollback.sql"):
+            continue
         version = file.stem  # full filename stem avoids duplicate numeric prefixes
         migrations.append(
             {
