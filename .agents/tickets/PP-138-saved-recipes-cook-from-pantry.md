@@ -1,10 +1,10 @@
 # PP-138: Saved recipes and cook-from-pantry
 
-**Status:** 🚧 In progress
+**Status:** ✅ Done
 **Priority:** P1
 **Phase:** Revenue options (research 2026-11-22; v1 build 2026-11-22)
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 9:47 PM America/Chicago
+**Updated:** 2026-11-22, 10:15 PM America/Chicago
 **Depends on:** PP-156 (shopping-list grouping + need = max(target − have, 0))
 **Blocks:** PP-139 (public recipes can reuse the recipe model; public/SEO work is out of scope here)
 **Doc:** `.agents/docs/revenue-options.md`
@@ -117,3 +117,14 @@ Pure function (frontend is enough in v1; inventory is already in `PantryProvider
 - [x] Imported recipes stay private and non-indexable; import fetches only on explicit user action; View original is always shown when a source URL exists; source images are not downloaded or re-hosted
 - [x] Tests cover the cap, URL parse (fixtures, no live network), SSRF blocks, add-missing without dupes, and a missed ingredient match (no silent wrong match)
 - [x] No affiliate, ad, or third-party account is created from this ticket; no new paid services; no new dependencies unless truly required and justified
+
+
+---
+
+## Shipped
+
+Live on https://www.mypantryhub.com as of 2026-11-22, 10:15 PM America/Chicago.
+
+- Feature commit: `e78c28a` — saved recipes, URL import, pantry coverage, add-missing
+- Follow-up: `edf52c0` — stop applying `*.rollback.sql` as forward migrations (first deploy had run the rollback file as a no-op drop *before* create; the `recipes` table was intact). The stale `schema_migrations` row for `021_saved_recipes.rollback` was removed on prod after this fix.
+- Live build: `edf52c0` (`/build-id.txt`). Migration `021_saved_recipes` applied. Containers healthy.

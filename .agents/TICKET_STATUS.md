@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 9:47 PM CT (PP-138 in progress: saved recipes / cook-from-pantry v1)
+Last updated: 2026-11-22, 10:15 PM CT (PP-138 done: saved recipes live in edf52c0)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-22, 9:47 PM CT (PP-138 in progress: saved recipes / cook-f
 
 | | Count |
 |--|-------|
-| Done | 100 (previous plus PP-156: shopping-list targets in 25edb57 and Tylor inventory merge) |
-| In progress | 1 (PP-138 saved recipes v1) |
+| Done | 101 (previous plus PP-138: saved recipes / cook-from-pantry in e78c28a, live edf52c0) |
+| In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -40,7 +40,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (14)
+### P1 — next up, high impact (13)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -50,7 +50,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
-| PP-138 | Saved recipes and cook-from-pantry | 🚧 In progress | Revenue options |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
@@ -333,7 +332,7 @@ Tylor asked for more revenue ideas (saved recipes, first-party recipes with affi
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-138 | Saved recipes and cook-from-pantry | P1 | 🚧 In progress |
+| PP-138 | Saved recipes and cook-from-pantry | P1 | ✅ Done (live `edf52c0`) |
 | PP-139 | Public first-party recipes and affiliate links | P2 | 📋 Open |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | P2 | 📋 Open |
 
