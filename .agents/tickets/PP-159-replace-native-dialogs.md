@@ -1,10 +1,10 @@
 # PP-159: Replace native browser dialogs with in-app confirm and toasts
 
-**Status:** 📋 Open
+**Status:** ✅ Done
 **Priority:** P2
 **Phase:** User-reported bugs
 **Created:** 2026-11-23
-**Updated:** 2026-11-23, 2:17 PM America/Chicago
+**Updated:** 2026-11-23, 2:30 PM America/Chicago
 **Depends on:** —
 **Blocks:** —
 **Source:** Tylor, 2026-11-23, ~2:15 PM America/Chicago. Screenshot of the Android Chrome native confirm: “www.mypantryhub.com says: Are you sure you want to clear the entire shopping list? Cancel/OK”, triggered by the “Clear entire list” link on the Shopping list page. Quote: “Also we should not use default alerts boxes like this. Ugly.”
@@ -126,10 +126,19 @@ Zero matches may remain in `frontend/` (ignore comments/docs). Then:
 
 ## Acceptance Criteria
 
-- [ ] No `window.confirm`, `window.alert`, or `window.prompt` (or bare `confirm`/`alert`/`prompt(`) remain in `frontend/`.
-- [ ] Shared in-app confirm dialog matches existing modal styling, is mobile-friendly, supports Esc/backdrop/focus trap/restore, and uses a red confirm button for destructive actions.
-- [ ] `useConfirm()` (or equivalent) returns `Promise<boolean>` and is used at all previous confirm call sites.
-- [ ] All previous `alert` call sites use the existing toast system.
-- [ ] Frontend typecheck, Vitest, and production build pass.
-- [ ] No new dependencies.
+- [x] No `window.confirm`, `window.alert`, or `window.prompt` (or bare `confirm`/`alert`/`prompt(`) remain in `frontend/`.
+- [x] Shared in-app confirm dialog matches existing modal styling, is mobile-friendly, supports Esc/backdrop/focus trap/restore, and uses a red confirm button for destructive actions.
+- [x] `useConfirm()` (or equivalent) returns `Promise<boolean>` and is used at all previous confirm call sites.
+- [x] All previous `alert` call sites use the existing toast system.
+- [x] Frontend typecheck, Vitest, and production build pass.
+- [x] No new dependencies.
 
+---
+
+## Shipped
+
+Live on https://www.mypantryhub.com as of 2026-11-23, 2:30 PM America/Chicago.
+
+- Feature commit: `f388d55` — shared `ConfirmProvider` / `useConfirm()` in-app dialog (destructive rose confirm, Esc/backdrop/focus trap); all native `alert`s routed through existing toasts
+- Live build: `f388d55` (`/build-id.txt`). Homepage 200. Shopping list still auth-gated (307 to sign-in). Nginx vhost-reload warning is the usual harmless one.
+- Checks: frontend typecheck clean; Vitest 22 files / 143 passed; production frontend build clean; pre-commit also ran backend tests (134 passed). No new dependencies.

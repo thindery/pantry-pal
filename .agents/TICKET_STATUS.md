@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-23, 2:17 PM CT (PP-159 open: replace native confirm/alert with in-app dialog + toasts)
+Last updated: 2026-11-23, 2:30 PM CT (PP-159 done: in-app confirm dialog + toasts, live f388d55)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-23, 2:17 PM CT (PP-159 open: replace native confirm/alert 
 
 | | Count |
 |--|-------|
-| Done | 103 (previous plus PP-158: link-only recipe import + add-details paste, live f7c43f4) |
+| Done | 104 (previous plus PP-159: in-app confirm dialog + toasts, live f388d55) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 13 · P2: 19 · P3: 3 (40 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -58,7 +58,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-151 | E2E: shopping list | 📋 Backlog | E2E |
 | PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
-### P2 — soon (19)
+### P2 — soon (18)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -80,7 +80,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-145 | Desktop Pantry layout and 44px icon targets | 📋 Open | Design review |
 | PP-146 | Refresh `/design-system` to the shipped UI and brand guide | 📋 Open | Design review |
 | PP-155 | E2E: analytics consent path | 📋 Backlog | E2E |
-| PP-159 | Replace native browser dialogs with in-app confirm and toasts | 📋 Open | User-reported UX |
 
 ### P3 — someday (3)
 
@@ -236,7 +235,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-089 | Refund extra Stripe charges and stop duplicate checkouts | P0 | ✅ Done |
 | PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | ✅ Done |
 | PP-158 | Paste fallback when a recipe site blocks URL import | P1 | ✅ Done (live `f7c43f4`) |
-| PP-159 | Replace native browser dialogs with in-app confirm and toasts | P2 | 📋 Open |
+| PP-159 | Replace native browser dialogs with in-app confirm and toasts | P2 | ✅ Done (live `f388d55`) |
 
 ## Billing & email audit (2026-11-22)
 
