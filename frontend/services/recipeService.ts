@@ -10,6 +10,20 @@ export interface CreateRecipePayload {
   instructions: string[];
 }
 
+export interface ParseRecipePayload {
+  text: string;
+  sourceUrl?: string | null;
+}
+
+export interface RecipeDraft {
+  title: string;
+  sourceUrl?: string | null;
+  imageUrl?: string | null;
+  servings?: string | null;
+  ingredients: Array<{ raw: string; name: string }>;
+  instructions: string[];
+}
+
 export const getRecipes = async (): Promise<Recipe[]> => {
   const res = await fetchApi<{ success: boolean; data: Recipe[] }>("/api/recipes");
   return res.data || [];
@@ -32,6 +46,22 @@ export const importRecipe = async (url: string): Promise<Recipe> => {
   const res = await fetchApi<{ success: boolean; data: Recipe }>("/api/recipes/import", {
     method: "POST",
     body: JSON.stringify({ url }),
+  });
+  return res.data;
+};
+
+export const parseRecipe = async (payload: ParseRecipePayload): Promise<RecipeDraft> => {
+  const res = await fetchApi<{ success: boolean; data: RecipeDraft }>("/api/recipes/parse", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+};
+
+export const updateRecipe = async (id: string, payload: CreateRecipePayload): Promise<Recipe> => {
+  const res = await fetchApi<{ success: boolean; data: Recipe }>(`/api/recipes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
   });
   return res.data;
 };

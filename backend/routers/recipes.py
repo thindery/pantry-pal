@@ -5,9 +5,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.auth_session import require_authenticated_user_id
-from backend.lib.recipe_import import ContentTooLargeError, RecipeNotFoundError, SSRFError
+from backend.lib.recipe_import import SSRFError
 from backend.models.responses import error_response, success_response
-from backend.models.schemas import CreateRecipeRequest, ImportRecipeRequest
+from backend.models.schemas import CreateRecipeRequest, ImportRecipeRequest, ParseRecipeRequest, UpdateRecipeRequest
 from backend.services import recipe_service, subscription_service
 
 router = APIRouter(prefix="/api/recipes", tags=["Recipes"])
@@ -23,6 +23,32 @@ async def list_recipes(user_id: str = Depends(require_authenticated_user_id)):
         raise HTTPException(
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to retrieve recipes"),
+        )
+
+
+@router.post("/parse")
+async def parse_recipe(body: ParseRecipeRequest, user_id: str = Depends(require_authenticated_user_id)):
+    """Parse recipe text or HTML without saving or counting against tier limits."""
+    try:
+        draft = recipe_service.parse_pasted_recipe(body.text, source_url=body.sourceUrl)
+        return success_response(draft)
+    except SSRFError:
+        raise HTTPException(
+            status_code=400,
+            detail=error_response(
+                "INVALID_URL",
+                "The provided source URL is invalid or not allowed.",
+            ),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=error_response("VALIDATION_ERROR", str(exc)),
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to parse recipe text"),
         )
 
 
@@ -70,32 +96,16 @@ async def create_recipe(body: CreateRecipeRequest, user_id: str = Depends(requir
 
 @router.post("/import", status_code=201)
 async def import_recipe(body: ImportRecipeRequest, user_id: str = Depends(require_authenticated_user_id)):
-    """Import and save a recipe from a URL using Schema.org JSON-LD."""
+    """Import a recipe from a URL. If the site blocks us or has no JSON-LD, save a link-only recipe."""
     try:
         recipe = recipe_service.import_recipe_from_url(user_id, body.url)
         return success_response(recipe)
-    except RecipeNotFoundError:
-        raise HTTPException(
-            status_code=404,
-            detail=error_response(
-                "RECIPE_NOT_FOUND",
-                "No recipe data was found on that page. You can enter the recipe by hand instead.",
-            ),
-        )
     except SSRFError:
         raise HTTPException(
             status_code=400,
             detail=error_response(
                 "INVALID_URL",
                 "This URL can't be imported. Use a public http or https recipe page, or enter the recipe by hand.",
-            ),
-        )
-    except ContentTooLargeError:
-        raise HTTPException(
-            status_code=413,
-            detail=error_response(
-                "CONTENT_TOO_LARGE",
-                "That page is too large to import. You can enter the recipe by hand instead.",
             ),
         )
     except ValueError as exc:
@@ -118,6 +128,41 @@ async def import_recipe(body: ImportRecipeRequest, user_id: str = Depends(requir
         raise HTTPException(
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to import recipe"),
+        )
+
+
+@router.patch("/{recipe_id}")
+async def update_recipe(recipe_id: str, body: UpdateRecipeRequest, user_id: str = Depends(require_authenticated_user_id)):
+    """Update a saved recipe (used to add details to a link-only import)."""
+    try:
+        payload = body.model_dump(by_alias=False, exclude_unset=True)
+        recipe = recipe_service.update_recipe(user_id, recipe_id, payload)
+        if not recipe:
+            raise HTTPException(
+                status_code=404,
+                detail=error_response("NOT_FOUND", f"Recipe with ID {recipe_id} not found"),
+            )
+        return success_response(recipe)
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        if str(exc) == "TIER_LIMIT_EXCEEDED":
+            raise HTTPException(
+                status_code=403,
+                detail=error_response(
+                    "TIER_LIMIT_EXCEEDED",
+                    "Free accounts can save 10 recipes. Upgrade to Pro for unlimited saved recipes.",
+                    {"remaining": 0, "limit": subscription_service.FREE_MAX_SAVED_RECIPES},
+                ),
+            )
+        raise HTTPException(
+            status_code=400,
+            detail=error_response("VALIDATION_ERROR", str(exc)),
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to update recipe"),
         )
 
 

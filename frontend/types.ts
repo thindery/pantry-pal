@@ -246,6 +246,7 @@ export interface Recipe {
   servings?: string | null;
   ingredients: RecipeIngredient[];
   instructions: string[];
+  isComplete?: boolean;
   createdAt: string;
 }
 

@@ -91,4 +91,8 @@ describe("recipe-shopping-list", () => {
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("whole milk");
   });
+
+  it("returns an empty list when there are no missing ingredients", () => {
+    expect(buildMissingRecipeShoppingItems([], [])).toEqual([]);
+  });
 });

@@ -153,4 +153,33 @@ describe("recipe-coverage", () => {
     expect(coverage.totalCount).toBe(4);
     expect(coverage.coveragePercentage).toBe(50);
   });
+
+  it("handles a recipe with no ingredients without treating anything as missing", () => {
+    const recipe: Recipe = {
+      id: "r-empty",
+      userId: "u1",
+      title: "Neiman Marcus Cake II",
+      sourceUrl: "https://www.allrecipes.com/recipe/7869/neiman-marcus-cake-ii/",
+      ingredients: [],
+      instructions: [],
+      isComplete: false,
+      createdAt: "2026-11-23T00:00:00Z",
+    };
+    const coverage = calculateRecipeCoverage(recipe, [
+      {
+        id: "p1",
+        name: "Milk",
+        quantity: 1,
+        unit: "count",
+        category: "dairy",
+        lastUpdated: "2026-11-23T00:00:00Z",
+      },
+    ]);
+    expect(coverage.totalCount).toBe(0);
+    expect(coverage.haveCount).toBe(0);
+    expect(coverage.missingCount).toBe(0);
+    expect(coverage.unsureCount).toBe(0);
+    expect(coverage.coveragePercentage).toBe(0);
+    expect(coverage.items).toEqual([]);
+  });
 });

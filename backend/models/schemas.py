@@ -279,3 +279,38 @@ class ImportRecipeRequest(BaseModel):
     @classmethod
     def strip_url(cls, v: str) -> str:
         return v.strip()
+
+
+class ParseRecipeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    text: str = Field(..., min_length=1, max_length=100000)
+    sourceUrl: Optional[str] = Field(default=None, max_length=2000, alias="source_url")
+
+    @field_validator("text")
+    @classmethod
+    def strip_text(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("Recipe text cannot be empty")
+        return s
+
+
+class UpdateRecipeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    sourceUrl: Optional[str] = Field(default=None, max_length=2000, alias="source_url")
+    servings: Optional[str] = Field(default=None, max_length=100)
+    ingredients: Optional[list[Union[RecipeIngredientItem, str]]] = None
+    instructions: Optional[list[str]] = None
+
+    @field_validator("title")
+    @classmethod
+    def strip_title(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        s = v.strip()
+        if not s:
+            raise ValueError("Title is required")
+        return s

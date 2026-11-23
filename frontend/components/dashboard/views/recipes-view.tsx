@@ -44,6 +44,7 @@ export function RecipesView() {
 
   // Manual form state
   const [manualTitle, setManualTitle] = useState("");
+  const [manualSourceUrl, setManualSourceUrl] = useState("");
   const [manualServings, setManualServings] = useState("");
   const [manualIngredients, setManualIngredients] = useState("");
   const [manualInstructions, setManualInstructions] = useState("");
@@ -84,12 +85,12 @@ export function RecipesView() {
         setImportError(
           `Free accounts can save ${FREE_MAX_SAVED_RECIPES} recipes. Upgrade to Pro for unlimited saved recipes.`
         );
-      } else if (err instanceof ApiError && err.code === "RECIPE_NOT_FOUND") {
+      } else if (err instanceof ApiError && err.code === "INVALID_URL") {
         setImportError(
-          "No recipe found at the provided URL. You can enter the recipe details manually."
+          "This URL can't be imported. Use a public http or https recipe page, or enter the recipe by hand."
         );
       } else {
-        setImportError(err instanceof Error ? err.message : "Failed to import recipe from URL.");
+        setImportError(err instanceof Error ? err.message : "This URL can't be imported. You can enter the recipe by hand.");
       }
     } finally {
       setImporting(false);
@@ -115,6 +116,7 @@ export function RecipesView() {
 
       const created = await createRecipe({
         title: manualTitle.trim(),
+        sourceUrl: manualSourceUrl.trim() || null,
         servings: manualServings.trim() || null,
         ingredients: lines,
         instructions: instructionsList,
@@ -123,6 +125,7 @@ export function RecipesView() {
       setRecipes((prev) => [created, ...prev]);
       setShowAddModal(false);
       setManualTitle("");
+      setManualSourceUrl("");
       setManualServings("");
       setManualIngredients("");
       setManualInstructions("");
@@ -148,7 +151,7 @@ export function RecipesView() {
     try {
       await deleteRecipe(id);
       setRecipes((prev) => prev.filter((r) => r.id !== id));
-    } catch (err) {
+    } catch (_err) {
       alert("Failed to delete recipe");
     }
   };
@@ -269,24 +272,41 @@ export function RecipesView() {
                     </p>
                   )}
 
-                  <p className="text-xs text-[var(--muted)] mt-1">
-                    {recipe.ingredients.length} ingredients · {recipe.instructions.length} steps
-                  </p>
+                  {recipe.isComplete === false ? (
+                    <p className="mt-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--surface-muted)] text-[var(--muted)] border border-[var(--border)]">
+                        Details not imported
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[var(--muted)] mt-1">
+                      {recipe.ingredients.length} ingredients · {recipe.instructions.length} steps
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
-                        coverage.coveragePercentage === 100
-                          ? "bg-emerald-100 text-emerald-800"
-                          : coverage.coveragePercentage > 0
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {coverage.haveCount}/{coverage.totalCount} in pantry ({coverage.coveragePercentage}%)
-                    </span>
+                    {recipe.isComplete === false ? (
+                      <Link
+                        href={`/dashboard/recipes/${recipe.id}/`}
+                        className="text-[var(--accent)] font-medium hover:underline"
+                      >
+                        Add details
+                      </Link>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
+                          coverage.coveragePercentage === 100
+                            ? "bg-emerald-100 text-emerald-800"
+                            : coverage.coveragePercentage > 0
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {coverage.haveCount}/{coverage.totalCount} in pantry ({coverage.coveragePercentage}%)
+                      </span>
+                    )}
                   </div>
 
                   {recipe.sourceUrl && /^https?:\/\//i.test(recipe.sourceUrl) && (
@@ -367,7 +387,7 @@ export function RecipesView() {
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   />
                   <p className="text-xs text-[var(--muted)] mt-1.5">
-                    We will safely extract the recipe ingredients and steps from the page.
+                    We'll pull the ingredients and steps when the page provides them. If not, you can add the details next.
                   </p>
                 </div>
 
@@ -376,6 +396,7 @@ export function RecipesView() {
                     {importError}
                   </div>
                 )}
+
 
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
@@ -417,6 +438,20 @@ export function RecipesView() {
                     placeholder="e.g. Grandma's Apple Pie"
                     value={manualTitle}
                     onChange={(e) => setManualTitle(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="manual-source-url" className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wider mb-1">
+                    Source Web Address (optional)
+                  </label>
+                  <input
+                    id="manual-source-url"
+                    type="url"
+                    placeholder="https://example.com/recipe-page"
+                    value={manualSourceUrl}
+                    onChange={(e) => setManualSourceUrl(e.target.value)}
                     className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   />
                 </div>

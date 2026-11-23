@@ -34,12 +34,153 @@ class SSRFError(ValueError):
     """Raised when a URL violates SSRF safety rules."""
 
 
+class SiteBlockedError(ValueError):
+    """Raised when upstream recipe site blocks our fetch (401, 403, 429, or bot challenge)."""
+
+
 class RecipeNotFoundError(ValueError):
     """Raised when no Schema.org Recipe JSON-LD is found on the page."""
 
 
 class ContentTooLargeError(ValueError):
     """Raised when response body exceeds maximum allowed size."""
+
+
+TRACKING_PARAM_PREFIXES = ("utm_", "mtm_", "hsa_")
+TRACKING_PARAM_NAMES = {
+    "fbclid", "gclid", "gclsrc", "dclid", "gbraid", "wbraid", "msclkid",
+    "twclid", "ttclid", "li_fat_id", "mc_eid", "mc_cid", "igshid", "yclid",
+    "_hsenc", "_hsmi", "mkt_tok", "srsltid", "ncid", "ocid", "icid",
+    "pk_campaign", "pk_kwd",
+}
+
+
+def is_tracking_param(name: str) -> bool:
+    lower = name.lower()
+    if lower in TRACKING_PARAM_NAMES:
+        return True
+    return lower.startswith(TRACKING_PARAM_PREFIXES)
+
+
+def strip_tracking_params(url: Optional[str]) -> Optional[str]:
+    """Strip marketing and tracking query parameters from a URL while preserving other params."""
+    if not url or not isinstance(url, str):
+        return url
+    trimmed = url.strip()
+    if not trimmed:
+        return trimmed
+
+    parsed = urllib.parse.urlsplit(trimmed)
+    if not parsed.query:
+        return trimmed
+
+    query_params = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    filtered = [(k, v) for k, v in query_params if not is_tracking_param(k)]
+
+    new_query = urllib.parse.urlencode(filtered) if filtered else ""
+    return urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, new_query, parsed.fragment))
+
+
+def is_bot_challenge_page(body: str) -> bool:
+    """Detect bot challenge or access-denied pages (Cloudflare, Akamai, captcha, etc.)."""
+    if not body or not isinstance(body, str):
+        return False
+    lower = body.lower()
+    if "<title>just a moment...</title>" in lower or "<title>just a moment</title>" in lower:
+        return True
+    if "attention required! | cloudflare" in lower:
+        return True
+    if "cf-chl-opt" in lower or "challenges.cloudflare.com" in lower:
+        return True
+    if "<title>access denied</title>" in lower and (
+        "permission to access" in lower or "reference #" in lower or "akamai" in lower or "blocked" in lower
+    ):
+        return True
+    if "please verify you are a human" in lower or "verify you are human" in lower:
+        return True
+    if "checking if the site connection is secure" in lower and "cloudflare" in lower:
+        return True
+    return False
+
+
+
+GENERIC_SLUG_SEGMENTS = {
+    "recipe", "recipes", "receta", "recette", "rezept", "article", "articles",
+    "post", "posts", "food", "cooking", "index", "html", "htm", "www", "en", "us", "blog",
+}
+ROMAN_NUMERALS = {
+    "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",
+    "xi", "xii", "xiii", "xiv", "xv",
+}
+CHALLENGE_TITLE_MARKERS = (
+    "just a moment",
+    "attention required",
+    "access denied",
+    "access to this page has been denied",
+    "403 forbidden",
+    "cloudflare",
+)
+
+
+def _is_challenge_title(title: str) -> bool:
+    lower = title.lower()
+    return any(marker in lower for marker in CHALLENGE_TITLE_MARKERS)
+
+
+def title_from_source_url(url: Optional[str]) -> str:
+    """Build a display title from a recipe URL slug, dropping numeric ids."""
+    fallback = "Saved recipe"
+    if not url or not isinstance(url, str):
+        return fallback
+    parsed = urllib.parse.urlsplit(url.strip())
+    parts = [urllib.parse.unquote(part) for part in parsed.path.split("/") if part]
+    cleaned: list[str] = []
+    for part in parts:
+        part = re.sub(r"\.(html|htm|php|aspx)$", "", part, flags=re.I)
+        if not part or re.fullmatch(r"\d+", part):
+            continue
+        if part.lower() in GENERIC_SLUG_SEGMENTS:
+            continue
+        # Drop a trailing numeric id on the slug itself (neiman-marcus-cake-ii-12345)
+        part = re.sub(r"[-_][0-9]{3,}$", "", part)
+        if part and not re.fullmatch(r"\d+", part):
+            cleaned.append(part)
+    if not cleaned:
+        return fallback
+    words = [w for w in re.split(r"[-_]+", cleaned[-1]) if w]
+    titled: list[str] = []
+    for word in words:
+        if word.lower() in ROMAN_NUMERALS:
+            titled.append(word.upper())
+        elif word.isupper() and len(word) > 1:
+            titled.append(word)
+        else:
+            titled.append(word[0].upper() + word[1:].lower())
+    return " ".join(titled) or fallback
+
+
+def extract_og_title(html_content: Optional[str]) -> Optional[str]:
+    """Pull og:title, twitter:title, or <title> from HTML, ignoring challenge pages."""
+    if not html_content or not isinstance(html_content, str):
+        return None
+    patterns = (
+        r'<meta\b[^>]*\bproperty=["\']og:title["\'][^>]*\bcontent=["\']([^"\']+)["\']',
+        r'<meta\b[^>]*\bcontent=["\']([^"\']+)["\'][^>]*\bproperty=["\']og:title["\']',
+        r'<meta\b[^>]*\bname=["\']twitter:title["\'][^>]*\bcontent=["\']([^"\']+)["\']',
+        r'<meta\b[^>]*\bcontent=["\']([^"\']+)["\'][^>]*\bname=["\']twitter:title["\']',
+    )
+    for pattern in patterns:
+        match = re.search(pattern, html_content, flags=re.I)
+        if match:
+            title = html.unescape(match.group(1)).strip()
+            if title and not _is_challenge_title(title):
+                return title
+    match = re.search(r"<title[^>]*>(.*?)</title>", html_content, flags=re.I | re.S)
+    if match:
+        title = html.unescape(re.sub(r"\s+", " ", match.group(1))).strip()
+        if title and not _is_challenge_title(title):
+            return title
+    return None
 
 
 # Extra networks not always covered by ipaddress flags (CGNAT, this-host, benchmarking).
@@ -97,7 +238,7 @@ def sanitize_stored_url(url: Optional[str]) -> Optional[str]:
     """Allow storing only http(s) URLs with no credentials or literal blocked IPs. Does not fetch or resolve DNS."""
     if not url or not isinstance(url, str):
         return None
-    trimmed = url.strip()
+    trimmed = strip_tracking_params(url.strip())
     if not trimmed:
         return None
     parsed = validate_url_for_ssrf(trimmed)
@@ -184,7 +325,7 @@ def fetch_url_html(
     max_bytes: int = MAX_IMPORT_BYTES,
 ) -> str:
     """Safely fetch HTML with manual redirect checks and size streaming."""
-    current_url = url.strip()
+    current_url = strip_tracking_params(url.strip()) or ""
     redirects_followed = 0
 
     # trust_env=False: do not honor HTTP_PROXY, which would bypass IP checks.
@@ -226,6 +367,10 @@ def fetch_url_html(
                 current_url = urllib.parse.urljoin(current_url, location)
                 continue
 
+            if response.status_code in (401, 403, 429):
+                response.close()
+                raise SiteBlockedError(f"Site blocked automated request (status {response.status_code})")
+
             if response.status_code != 200:
                 response.close()
                 raise SSRFError(f"HTTP request returned status {response.status_code}")
@@ -241,7 +386,12 @@ def fetch_url_html(
                 response.close()
 
             encoding = response.encoding or "utf-8"
-            return body_bytes.decode(encoding, errors="replace")
+            decoded_body = body_bytes.decode(encoding, errors="replace")
+
+            if is_bot_challenge_page(decoded_body):
+                raise SiteBlockedError("Site presented a bot challenge or access denied page")
+
+            return decoded_body
 
 
 def clean_ingredient_name(raw: str) -> str:
@@ -257,6 +407,14 @@ def clean_ingredient_name(raw: str) -> str:
     m = re.match(qty_pattern, text)
     if m:
         remaining = text[m.end():].strip()
+        if remaining:
+            text = remaining
+
+    # Strip parenthetical size/quantity, e.g. (18.25 ounce) or (8 oz)
+    paren_qty_pattern = r"^\([\d\s\./\-\u00BC-\u00BE\u2150-\u215E]+[a-zA-Z\s\.]*\)\s*"
+    m2 = re.match(paren_qty_pattern, text)
+    if m2:
+        remaining = text[m2.end():].strip()
         if remaining:
             text = remaining
 
@@ -336,26 +494,41 @@ def _find_recipe_dicts(obj: Any) -> list[dict[str, Any]]:
 
 
 def parse_recipe_json_ld(html_content: str, source_url: Optional[str] = None) -> dict[str, Any]:
-    """Extract and parse Schema.org Recipe data from HTML content."""
+    """Extract and parse Schema.org Recipe data from HTML content or bare JSON."""
     parser = _JSONLDExtractor()
     try:
         parser.feed(html_content)
     except Exception:
         pass
 
-    if not parser.scripts:
-        raise RecipeNotFoundError("No JSON-LD metadata found on page")
-
     candidate_recipes: list[dict[str, Any]] = []
-    for script_text in parser.scripts:
-        cleaned = script_text.strip()
-        if not cleaned:
-            continue
-        try:
-            parsed_data = json.loads(cleaned)
-        except Exception:
-            continue
-        candidate_recipes.extend(_find_recipe_dicts(parsed_data))
+    if parser.scripts:
+        for script_text in parser.scripts:
+            cleaned = script_text.strip()
+            if not cleaned:
+                continue
+            try:
+                parsed_data = json.loads(cleaned)
+            except Exception:
+                continue
+            candidate_recipes.extend(_find_recipe_dicts(parsed_data))
+
+    # If no scripts extracted from <script type="application/ld+json">,
+    # try bare JSON or script tags without type
+    if not candidate_recipes:
+        trimmed = html_content.strip()
+        script_match = re.search(r"<script[^>]*>(.*?)</script>", trimmed, flags=re.DOTALL | re.IGNORECASE)
+        if script_match:
+            try:
+                candidate_recipes.extend(_find_recipe_dicts(json.loads(script_match.group(1).strip())))
+            except Exception:
+                pass
+
+        if not candidate_recipes and (trimmed.startswith("{") or trimmed.startswith("[")):
+            try:
+                candidate_recipes.extend(_find_recipe_dicts(json.loads(trimmed)))
+            except Exception:
+                pass
 
     if not candidate_recipes:
         raise RecipeNotFoundError("No Schema.org Recipe found on page")
@@ -446,3 +619,170 @@ def parse_recipe_json_ld(html_content: str, source_url: Optional[str] = None) ->
         }
 
     raise RecipeNotFoundError("Recipe data missing required name or ingredients")
+
+
+INGREDIENTS_HEADER_RE = re.compile(
+    r"^(?:#{1,6}\s*|\*{1,2}\s*)?(?:ingredients?|what you(?:\x27ll| will) need)(?:\s*:)?(?:\s*\*{1,2})?\s*$",
+    re.IGNORECASE,
+)
+INSTRUCTIONS_HEADER_RE = re.compile(
+    r"^(?:#{1,6}\s*|\*{1,2}\s*)?(?:directions?|instructions?|steps?|method|preparation|how to make(?: it)?|procedure)(?:\s*:)?(?:\s*\*{1,2})?\s*$",
+    re.IGNORECASE,
+)
+OTHER_SECTION_HEADER_RE = re.compile(
+    r"^(?:#{1,6}\s*|\*{1,2}\s*)?(?:notes?|cook\x27?s? notes?|nutrition(?: facts| information)?|tips?|equipment|source)(?:\s*:)?(?:\s*\*{1,2})?\s*$",
+    re.IGNORECASE,
+)
+SERVINGS_RE = re.compile(
+    r"^(?:servings?|yields?|makes)\s*:\s*(.+)$",
+    re.IGNORECASE,
+)
+METADATA_LINE_RE = re.compile(
+    r"^(?:(?:prep|cook|total|active|additional|chill|bake)\s*time|jump to recipe|print recipe|save recipe|rate this|ratings?|reviews?|\d+(\.\d+)?\s*(?:stars?|out of 5)|author|course|cuisine)\s*:",
+    re.IGNORECASE,
+)
+
+
+def _is_quantity_leading(line: str) -> bool:
+    clean = re.sub(r"^[\*\-•▪▫\+]\s*", "", line).strip()
+    return bool(re.match(r"^[\d\u00BC-\u00BE\u2150-\u215E]", clean))
+
+
+def _is_bullet_line(line: str) -> bool:
+    return bool(re.match(r"^[\*\-•▪▫\+]\s+\S", line))
+
+
+def _is_numbered_step(line: str) -> bool:
+    return bool(re.match(r"^(?:step\s*\d+[:.]?\s*|\d+[\.\)\:]\s+)", line, re.I))
+
+
+def parse_pasted_recipe(text: str, source_url: Optional[str] = None) -> dict[str, Any]:
+    """Parse pasted recipe text or HTML into a draft recipe."""
+    if not text or not isinstance(text, str) or not text.strip():
+        raise ValueError("Recipe text cannot be empty")
+
+    trimmed = text.strip()
+    clean_source = strip_tracking_params(source_url) if source_url else None
+
+    # 1. Try Schema.org JSON-LD first (handles HTML-wrapped ld+json, bare JSON object/array/@graph, or script tag)
+    try:
+        recipe = parse_recipe_json_ld(trimmed, source_url=clean_source)
+        if recipe.get("title") and recipe.get("ingredients"):
+            return recipe
+    except (RecipeNotFoundError, Exception):
+        pass
+
+    # 2. Heuristic parsing
+    cleaned_text = trimmed
+    if re.search(r"<(?:p|br|li|h[1-6]|div|tr)[\s/>]", cleaned_text, flags=re.I):
+        converted = re.sub(r"<(?:br|/li|/p|/div|/h[1-6]|/tr)[\s/>]", "\n", cleaned_text, flags=re.I)
+        converted = re.sub(r"<[^>]+>", "", converted)
+        cleaned_text = html.unescape(converted)
+
+    raw_lines = [html.unescape(l).strip() for l in cleaned_text.splitlines()]
+    lines = [l for l in raw_lines if l]
+
+    if not lines:
+        raise ValueError("Could not parse recipe: text is empty")
+
+    title: Optional[str] = None
+    servings: Optional[str] = None
+    ingredients: list[dict[str, str]] = []
+    instructions: list[str] = []
+    current_section = "HEADER"
+
+    for line in lines:
+        if INGREDIENTS_HEADER_RE.match(line):
+            current_section = "INGREDIENTS"
+            continue
+        if INSTRUCTIONS_HEADER_RE.match(line):
+            current_section = "INSTRUCTIONS"
+            continue
+        if OTHER_SECTION_HEADER_RE.match(line):
+            current_section = "OTHER"
+            continue
+
+        serv_match = SERVINGS_RE.match(line)
+        if serv_match:
+            if not servings:
+                servings = serv_match.group(1).strip()
+            continue
+
+        if (
+            METADATA_LINE_RE.match(line)
+            or re.match(r"^(?:jump to recipe|print recipe|save recipe)$", line, re.I)
+            or re.match(r"^https?://", line, re.I)
+        ):
+            continue
+
+        if current_section == "HEADER":
+            if _is_bullet_line(line) or _is_quantity_leading(line):
+                current_section = "INGREDIENTS"
+                clean_item = re.sub(r"^[\*\-•▪▫\+]\s*", "", line).strip()
+                if clean_item:
+                    name = clean_ingredient_name(clean_item)
+                    ingredients.append({"raw": clean_item, "name": name or clean_item})
+                continue
+
+            if _is_numbered_step(line):
+                current_section = "INSTRUCTIONS"
+                clean_step = re.sub(r"^(?:step\s*\d+[:.]?\s*|\d+[\.\)\:]\s*)", "", line, flags=re.I).strip()
+                clean_step = re.sub(r"^[\*\-•▪▫\+]\s*", "", clean_step).strip()
+                if clean_step:
+                    instructions.append(clean_step)
+                continue
+
+            if not title:
+                candidate = re.sub(r"^#{1,6}\s*", "", line).strip()
+                candidate = re.sub(r"^\*{1,2}|\*{1,2}$", "", candidate).strip()
+                if candidate and len(candidate) <= 200:
+                    title = candidate
+            continue
+
+        if current_section == "INGREDIENTS":
+            if _is_numbered_step(line):
+                current_section = "INSTRUCTIONS"
+                clean_step = re.sub(r"^(?:step\s*\d+[:.]?\s*|\d+[\.\)\:]\s*)", "", line, flags=re.I).strip()
+                clean_step = re.sub(r"^[\*\-•▪▫\+]\s*", "", clean_step).strip()
+                if clean_step:
+                    instructions.append(clean_step)
+                continue
+
+            clean_item = re.sub(r"^[\*\-•▪▫\+]\s*", "", line).strip()
+            if clean_item.endswith(":") and not re.match(r"^[\d\u00BC-\u00BE\u2150-\u215E]", clean_item):
+                continue
+            if clean_item:
+                name = clean_ingredient_name(clean_item)
+                ingredients.append({"raw": clean_item, "name": name or clean_item})
+            continue
+
+        if current_section == "INSTRUCTIONS":
+            clean_step = re.sub(r"^(?:step\s*\d+[:.]?\s*|\d+[\.\)\:]\s*)", "", line, flags=re.I).strip()
+            clean_step = re.sub(r"^[\*\-•▪▫\+]\s*", "", clean_step).strip()
+            if clean_step.endswith(":") and not any(ch.isdigit() for ch in clean_step) and len(clean_step) < 30:
+                continue
+            if clean_step:
+                instructions.append(clean_step)
+            continue
+
+        if current_section == "OTHER":
+            continue
+
+    if not title:
+        for l in lines:
+            c = re.sub(r"^#{1,6}\s*", "", l).strip()
+            if c and not INGREDIENTS_HEADER_RE.match(c) and not INSTRUCTIONS_HEADER_RE.match(c):
+                title = c
+                break
+
+    if not title or not ingredients:
+        raise ValueError("Could not parse recipe: title and at least one ingredient are required")
+
+    return {
+        "title": title,
+        "sourceUrl": clean_source,
+        "imageUrl": None,
+        "servings": servings,
+        "ingredients": ingredients,
+        "instructions": instructions,
+    }
