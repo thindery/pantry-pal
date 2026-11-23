@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-22, 6:35 PM CT (PP-156 filed: unify shopping-list products and default need/target to 1)
+Last updated: 2026-11-22, 7:20 PM CT (PP-156 done: shopping-list targets shipped in 25edb57; Tylor inventory merge applied)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-22, 6:35 PM CT (PP-156 filed: unify shopping-list products
 
 | | Count |
 |--|-------|
-| Done | 99 (previous plus PP-117, PP-118, PP-120, PP-122, PP-130 in deploy db0ef3e) |
+| Done | 100 (previous plus PP-156: shopping-list targets in 25edb57 and Tylor inventory merge) |
 | In progress | 0 |
-| Ready | 27 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers; PP-156 shopping-list unify) |
+| Ready | 26 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 15 · P2: 18 · P3: 3 (41 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -40,11 +40,10 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (15)
+### P1 — next up, high impact (14)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-156 | Unify shopping-list products and default the need/target to 1 | 🚀 Deployed (25edb57), merge pending | User-reported |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
@@ -235,7 +234,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-087 | Barcode lookup fallback when Open Food Facts is down | P0 | ✅ Done |
 | PP-088 | One pantry row per product, quantities summed | P0 | ✅ Done |
 | PP-089 | Refund extra Stripe charges and stop duplicate checkouts | P0 | ✅ Done |
-| PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | 🚀 Deployed (25edb57), merge pending |
+| PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | ✅ Done |
 
 ## Billing & email audit (2026-11-22)
 

@@ -1,10 +1,10 @@
 # PP-156: Unify shopping-list products and default the need/target to 1
 
-**Status:** 🚀 Deployed, merge pending (deployed 2026-11-22 in `25edb57`; one-time inventory merge not yet run)
+**Status:** ✅ Done
 **Priority:** P1
 **Phase:** User-reported bug
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 6:35 PM America/Chicago
+**Updated:** 2026-11-22, 7:20 PM America/Chicago
 **Depends on:** PP-088 (done — same-barcode / unbarcoded name+category merge), PP-116 (done — compact list + suggested-qty formula cap)
 **Blocks:** PP-151 e2e shopping list may need its assertions updated after this ships
 **Coder later:** agy or Hermes — tickets only in this pass; no implementation, installs, or deploys now
@@ -90,22 +90,27 @@ Subline copy should stay short, like today’s `Have N · need M`, but M must be
 
 ## Acceptance Criteria
 
-- [ ] Ticket + status row for PP-156
-- [ ] Default target is 1; per-item target is editable and survives reload
-- [ ] Shopping-list need is `max(target - have, 0)`; items with have ≥ target are not listed; no row shows a made-up 5 from `threshold * 2` or a preserved stale value
-- [ ] Stale pre-July-18 category defaults still sitting in `localStorage` are reset to 1; user-changed category values and explicit per-item overrides are kept (or mapped to the new target)
-- [ ] Auto-generated shopping-list 5s are recomputed; it is documented that formula vs stepper-5 was not distinguishable, so auto rows are reset and only manual rows keep a typed qty
-- [ ] Shopping list groups exact normalized names (Dole + Always Save “Pineapple slices” is one row, have 2); “Pineapple Chunks” stays separate
-- [ ] Scan/add increments an existing same-barcode row, and also attaches to a same-normalized-name unbarcoded row (Milk gap closed)
-- [ ] One-time merge: dry-run + backup first; quantities summed; no data lost; report of groups merged vs left alone
-- [ ] Unit tests cover need/target, stale-5 reset, grouping, and the Milk attach case; no long suites; no dependency churn
-- [ ] Reviewer commits only allowed files, deploys, and verifies live `build-id.txt` and Tylor’s shopping tab
+- [x] Ticket + status row for PP-156
+- [x] Default target is 1; per-item target is editable and survives reload
+- [x] Shopping-list need is `max(target - have, 0)`; items with have ≥ target are not listed; no row shows a made-up 5 from `threshold * 2` or a preserved stale value
+- [x] Stale pre-July-18 category defaults still sitting in `localStorage` are reset to 1; user-changed category values and explicit per-item overrides are kept (or mapped to the new target)
+- [x] Auto-generated shopping-list 5s are recomputed; it is documented that formula vs stepper-5 was not distinguishable, so auto rows are reset and only manual rows keep a typed qty
+- [x] Shopping list groups exact normalized names (Dole + Always Save “Pineapple slices” is one row, have 2); “Pineapple Chunks” stays separate
+- [x] Scan/add increments an existing same-barcode row, and also attaches to a same-normalized-name unbarcoded row (Milk gap closed)
+- [x] One-time merge: dry-run + backup first; quantities summed; no data lost; report of groups merged vs left alone
+- [x] Unit tests cover need/target, stale-5 reset, grouping, and the Milk attach case; no long suites; no dependency churn
+- [x] Reviewer commits only allowed files, deploys, and verifies live `build-id.txt` and Tylor’s shopping tab
 
 ## Implementation notes (2026-11-22, 6:55 PM America/Chicago)
 
 - Shipped in `25edb57` (live `build-id.txt` = `25edb57`; migration `020_add_pantry_item_target_quantity` applied on prod). Default target 1; optional per-item `target_quantity`; need = `max(target - have, 0)`; auto rows recomputed and grouped by exact normalized name; one-time localStorage reset of only exact pre-July-18 category defaults; barcoded scans attach to an unbarcoded same-name row.
 - Because the default target is now 1, an item with have 1 is no longer listed; only out-of-stock (have 0) items appear unless a higher target is set. The pantry low-stock badge still uses `have <= threshold` (unchanged).
-- Merge script `scripts/merge_duplicate_pantry_items_by_name.py` is **dry-run by default**; writes need `--apply --backup-confirmed`; `review` groups (different barcodes) also need `--include-review`. Not run for real.
-- Dry-run on prod for Tylor (read-only): `milk` SAFE (unbarcoded 1 + barcoded 2 -> 3); `pineapple slices`, `chicken broth`, `german chocolate cake mix` REVIEW (different barcodes). Decision pending on whether to merge the REVIEW groups or leave distinct brands separate.
-- Remaining criteria: merge decision + backup + (optional) real merge run; Tylor to check the shopping tab.
+- Merge script is dry-run by default. Tylor approved merging all four groups; the apply ran 2026-11-22 at 7:19 PM CT for his account only. See merge notes below.
 
+## Merge completed (2026-11-22, 7:20 PM America/Chicago)
+
+Tylor approved at 7:18 PM CT: merge all four groups on his account only (`milk`, `pineapple slices`, `chicken broth`, `german chocolate cake mix`).
+
+- Backup (data-only `pantry_items` + `activities`): `/opt/pantry-pal/backups/pp156-premerge-20261122-1919.sql` on OVH, and `/Users/thindery/backups/pantry-pal/pp156-premerge-20261122-1919.sql` on the Mini (108,943 bytes). Verified non-empty and containing his 156 item rows and 252 activity rows.
+- Dry-run re-run on his user only matched those exact 4 groups (8 → 4): milk qty 3, the others qty 2. Then applied with `--apply --backup-confirmed --include-review` scoped to his email.
+- After: his inventory 156 → 152 rows; total qty unchanged at 218; kept rows are Milk 3 (barcode attached), Pineapple slices 2 (Dole), Chicken Broth 2, German Chocolate Cake Mix 2. 252 activities, 0 orphans, 0 pointers left on deleted ids, 0 remaining exact-name duplicate groups. Backend logs clean; homepage 200; live build still `25edb57`.
