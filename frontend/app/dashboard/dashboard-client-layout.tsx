@@ -10,6 +10,7 @@ import { ToastContainer } from "@/components/Toast";
 import { DashboardNavbar } from "@/components/dashboard/navbar";
 import { DashboardModals } from "@/components/dashboard/dashboard-modals";
 import { ThresholdSettingsModal } from "@/components/dashboard/ThresholdSettingsModal";
+import { ConfirmProvider } from "@/contexts/confirm-provider";
 import { PantryProvider, usePantry } from "@/contexts/pantry-provider";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -108,9 +109,11 @@ export function DashboardClientLayout({
 }) {
   return (
     <ErrorBoundary>
-      <PantryProvider>
-        <DashboardShell>{children}</DashboardShell>
-      </PantryProvider>
+      <ConfirmProvider>
+        <PantryProvider>
+          <DashboardShell>{children}</DashboardShell>
+        </PantryProvider>
+      </ConfirmProvider>
     </ErrorBoundary>
   );
 }

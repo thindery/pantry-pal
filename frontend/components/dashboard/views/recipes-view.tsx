@@ -16,6 +16,7 @@ import {
 import type { Recipe } from "@/types";
 import { ApiError } from "@/lib/api-error";
 import { usePantry } from "@/contexts/pantry-provider";
+import { useConfirm } from "@/hooks/use-confirm";
 import { calculateRecipeCoverage } from "@/lib/recipe-coverage";
 import { FREE_MAX_SAVED_RECIPES } from "@/lib/recipe-constants";
 import {
@@ -27,7 +28,8 @@ import {
 
 export function RecipesView() {
   const router = useRouter();
-  const { inventory, isPaid } = usePantry();
+  const confirm = useConfirm();
+  const { inventory, isPaid, error: showErrorToast } = usePantry();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,13 +148,19 @@ export function RecipesView() {
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!confirm("Are you sure you want to delete this recipe?")) return;
+    const confirmed = await confirm({
+      title: "Delete recipe",
+      message: "Are you sure you want to delete this recipe?",
+      confirmLabel: "Delete recipe",
+      danger: true,
+    });
+    if (!confirmed) return;
 
     try {
       await deleteRecipe(id);
       setRecipes((prev) => prev.filter((r) => r.id !== id));
     } catch (_err) {
-      alert("Failed to delete recipe");
+      showErrorToast("Failed to delete recipe");
     }
   };
 

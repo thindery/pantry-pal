@@ -28,6 +28,7 @@ import {
 } from "@/lib/inventory-sort";
 import { barcodesMatch } from "@/lib/barcode-variants";
 import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/contexts/confirm-provider";
 import { trackFirstScan } from "@/lib/analytics";
 import { useSubscription } from "@/services/subscription";
 import {
@@ -73,8 +74,10 @@ export function usePantryState() {
   const { status: sessionStatus } = useSession();
   useSetupAuthToken();
 
+  const confirm = useConfirm();
+
   // Toast notifications
-  const { toasts, success, error, removeToast } = useToast();
+  const { toasts, success, error, info, removeToast } = useToast();
 
   // Local toast state for barcode scan notifications
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error'; visible: boolean} | null>(null);
@@ -477,7 +480,7 @@ export function usePantryState() {
     );
     
     if (existingItem != null) {
-      alert(`"${trimmedName}" is already in your shopping list!`);
+      info(`"${trimmedName}" is already in your shopping list!`);
       return;
     }
     
@@ -499,7 +502,7 @@ export function usePantryState() {
         a.category.localeCompare(b.category),
       ),
     );
-  }, [shoppingList]);
+  }, [shoppingList, info]);
 
   // Batch add shopping items (used by recipe cook-from-pantry)
   const addBatchShoppingItems = useCallback((items: ShoppingListItem[]) => {
@@ -550,11 +553,17 @@ export function usePantryState() {
   }, [shoppingList, setItemThreshold]);
 
   // Clear entire shopping list
-  const clearShoppingList = useCallback(() => {
-    if (confirm('Are you sure you want to clear the entire shopping list?')) {
+  const clearShoppingList = useCallback(async () => {
+    const confirmed = await confirm({
+      title: "Clear shopping list",
+      message: "Are you sure you want to clear the entire shopping list?",
+      confirmLabel: "Clear list",
+      danger: true,
+    });
+    if (confirmed) {
       setShoppingList([]);
     }
-  }, []);
+  }, [confirm]);
 
   // Export shopping list as formatted text
   const exportShoppingList = useCallback((): string => {
@@ -584,13 +593,13 @@ export function usePantryState() {
   const copyToClipboard = useCallback(async () => {
     const text = exportShoppingList();
     if (!text) {
-      alert('Shopping list is empty!');
+      info('Shopping list is empty!');
       return;
     }
     
     try {
       await navigator.clipboard.writeText(text);
-      alert('Shopping list copied to clipboard!');
+      success('Shopping list copied to clipboard!');
     } catch (_err) {
       const textarea = document.createElement('textarea');
       textarea.value = text;
@@ -600,15 +609,15 @@ export function usePantryState() {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      alert('Shopping list copied to clipboard!');
+      success('Shopping list copied to clipboard!');
     }
-  }, [exportShoppingList]);
+  }, [exportShoppingList, info, success]);
 
   // Share shopping list using Web Share API
   const shareShoppingList = useCallback(async () => {
     const text = exportShoppingList();
     if (!text) {
-      alert('Shopping list is empty!');
+      info('Shopping list is empty!');
       return;
     }
     
@@ -624,7 +633,7 @@ export function usePantryState() {
     } else {
       copyToClipboard();
     }
-  }, [exportShoppingList, copyToClipboard]);
+  }, [exportShoppingList, copyToClipboard, info]);
 
   // Load inventory from API
   const loadInventory = async () => {
@@ -951,7 +960,7 @@ export function usePantryState() {
       );
     } catch (err) {
       console.error('Failed to set quantity to 0:', err);
-      alert('Failed to update item. Please try again.');
+      error('Failed to update item. Please try again.');
     } finally {
       setUpdatingItemIds((prev) => {
         const next = new Set(prev);
@@ -984,10 +993,10 @@ export function usePantryState() {
       setShoppingList((prev) => prev.filter((i) => i.id !== item.id));
     } catch (err) {
       console.error('Failed to mark item as bought:', err);
-      alert(`Failed to add "${item.name}" to inventory. Please try again.`);
+      error(`Failed to add "${item.name}" to inventory. Please try again.`);
       // Item remains in shopping list (rollback behavior)
     }
-  }, [inventory, handleAdjustQuantity, handleCreateItem]);
+  }, [inventory, handleAdjustQuantity, handleCreateItem, error]);
 
   const handleEditItem = async (id: string, updates: Partial<PantryItem>) => {
     setIsEditing(true);
@@ -1071,18 +1080,18 @@ export function usePantryState() {
       if (addedItems.length > 0) {
         trackFirstScan("receipt");
       }
-      alert(`Successfully added ${addedItems.length} item(s) to inventory!`);
+      success(`Successfully added ${addedItems.length} item(s) to inventory!`);
     } else {
       if (addedItems.length > 0) {
         trackFirstScan("receipt");
       }
-      alert(`Added ${addedItems.length} item(s), but failed to add: ${failedItems.join(', ')}`);
+      error(`Added ${addedItems.length} item(s), but failed to add: ${failedItems.join(', ')}`);
     }
   };
 
   return {
     router,
-    toasts, success, error, removeToast,
+    toasts, success, error, info, removeToast,
     toast, showToast,
     inventory, activities: safeActivities,
     isProcessing, setIsProcessing,

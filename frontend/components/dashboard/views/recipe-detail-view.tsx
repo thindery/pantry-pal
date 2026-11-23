@@ -19,6 +19,7 @@ import {
 import type { Recipe } from "@/types";
 import { ApiError } from "@/lib/api-error";
 import { usePantry } from "@/contexts/pantry-provider";
+import { useConfirm } from "@/hooks/use-confirm";
 import { calculateRecipeCoverage } from "@/lib/recipe-coverage";
 import { buildMissingRecipeShoppingItems } from "@/lib/recipe-shopping-list";
 import { deleteRecipe, getRecipe, parseRecipe, updateRecipe } from "@/services/recipeService";
@@ -38,7 +39,8 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
     }
   }, [params, routeParams]);
 
-  const { inventory, shoppingList, addBatchShoppingItems } = usePantry();
+  const { inventory, shoppingList, addBatchShoppingItems, error: showErrorToast } = usePantry();
+  const confirm = useConfirm();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -168,13 +170,19 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
   const handleDelete = async () => {
 
     if (!recipe) return;
-    if (!confirm("Are you sure you want to delete this recipe?")) return;
+    const confirmed = await confirm({
+      title: "Delete recipe",
+      message: "Are you sure you want to delete this recipe?",
+      confirmLabel: "Delete recipe",
+      danger: true,
+    });
+    if (!confirmed) return;
 
     try {
       await deleteRecipe(recipe.id);
       router.push("/dashboard/recipes/");
     } catch (err) {
-      alert("Failed to delete recipe");
+      showErrorToast("Failed to delete recipe");
     }
   };
 
