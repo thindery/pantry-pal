@@ -1,6 +1,6 @@
 # PP-157: GA4 collect is not firing on the live site
 
-**Status:** 🔨 In progress
+**Status:** ✅ Done
 **Priority:** P0
 **Phase:** Analytics
 **Created:** 2026-11-23
@@ -28,9 +28,13 @@ A second issue: CSP `connect-src` allowed only `https://www.google-analytics.com
 
 ## Acceptance Criteria
 
-- [ ] `installGtag()` unit test proves dataLayer entries are `[object Arguments]`, not Arrays
-- [ ] Live CSP includes the regional / apex GA collect hosts
-- [ ] Deployed via `./deploy/deploy-docker.sh main` from a clean worktree
-- [ ] Live `build-id.txt` matches the fix commit
-- [ ] A real page load sends a collect request with `tid=G-LEW78LC3EF`
-- [ ] GA4 realtime reports >= 1 active user
+- [x] `installGtag()` unit test proves dataLayer entries are `[object Arguments]`, not Arrays
+- [x] Live CSP includes the regional / apex GA collect hosts
+- [x] Deployed via `./deploy/deploy-docker.sh main` from a clean worktree
+- [x] Live `build-id.txt` matches the fix commit
+- [x] A real page load sends a collect request with `tid=G-LEW78LC3EF`
+- [x] GA4 realtime reports >= 1 active user
+
+## Outcome
+
+Shipped in `05ad14c` and deployed to production 2026-11-23, ~9:06 AM CT. Live `build-id.txt` is `05ad14c`. A homepage load sent `POST https://www.google-analytics.com/g/collect?v=2&tid=G-LEW78LC3EF` with `en=page_view`. GA4 realtime then showed 1 active user and 3 events on "Pantry Hub: Smart Inventory & Shopping Lists" (desktop), 1 minute ago.
