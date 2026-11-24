@@ -11,6 +11,15 @@ export interface PantryItem {
   imageUrl?: string;
   productInfo?: ProductInfo;
   targetQuantity?: number | null;
+  groupId?: string | null;
+}
+
+export interface ItemGroup {
+  id: string;
+  name: string;
+  targetQuantity?: number | null;
+  itemIds: string[];
+  createdAt?: string;
 }
 
 export type InventorySortBy =
@@ -129,6 +138,8 @@ export interface ShoppingListItem {
   autoAddedAt?: string;
   /** Source pantry item when auto-generated */
   pantryItemId?: string;
+  /** Item group id when auto-generated from group */
+  groupId?: string;
   /** Effective low-stock threshold when the list was built */
   lowStockThreshold?: number;
   /** Thumbnail image URL when matched to inventory */

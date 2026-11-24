@@ -3,20 +3,46 @@
 import { useMemo, useState } from "react";
 import { Barcode, Loader2, Package, Plus, Search, Settings } from "lucide-react";
 import { PantryListRow } from "@/components/dashboard/PantryListRow";
+import { GroupListRow } from "@/components/dashboard/GroupListRow";
 import { DashboardLink } from "@/components/dashboard/dashboard-link";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME } from "@/lib/site-content";
-import { groupInventoryByCategory, INVENTORY_SORT_OPTIONS } from "@/lib/inventory-sort";
-import type { InventorySortBy } from "@/types";
+import { INVENTORY_SORT_OPTIONS } from "@/lib/inventory-sort";
+import type { InventorySortBy, ItemGroup, PantryItem } from "@/types";
+
+type PantryEntry =
+  | {
+      type: "group";
+      id: string;
+      group: ItemGroup;
+      members: PantryItem[];
+      name: string;
+      category: string;
+      quantity: number;
+      lastUpdated: string;
+    }
+  | {
+      type: "item";
+      id: string;
+      item: PantryItem;
+      name: string;
+      category: string;
+      quantity: number;
+      lastUpdated: string;
+    };
 
 export function InventoryView() {
   const {
     inventory,
+    itemGroups,
+    renameGroup,
+    setGroupTarget,
+    deleteGroup,
     pantryFilter,
     setPantryFilter,
     sortBy,
     setSortBy,
-    filteredInventory,
+    filteredInventory: _filteredInventory,
     itemIsLowStock,
     inventoryError,
     isLoadingInventory,
@@ -29,18 +55,133 @@ export function InventoryView() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const displayedItems = useMemo(() => {
+  const displayedEntries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return filteredInventory;
-    return filteredInventory.filter((item) =>
-      item.name.toLowerCase().includes(q)
-    );
-  }, [filteredInventory, searchQuery]);
+    const groupMap = new Map(itemGroups.map((g) => [g.id, g]));
+    const groupMembersMap = new Map<string, PantryItem[]>();
+    const ungroupedItems: PantryItem[] = [];
 
-  const categoryGroups = useMemo(
-    () => (sortBy === "category" ? groupInventoryByCategory(displayedItems) : null),
-    [displayedItems, sortBy]
-  );
+    for (const item of inventory) {
+      if (item.groupId && groupMap.has(item.groupId)) {
+        const existing = groupMembersMap.get(item.groupId) || [];
+        existing.push(item);
+        groupMembersMap.set(item.groupId, existing);
+      } else {
+        ungroupedItems.push(item);
+      }
+    }
+
+    const entries: PantryEntry[] = [];
+
+    // Process groups
+    for (const group of itemGroups) {
+      const allMembers = groupMembersMap.get(group.id) || [];
+      if (allMembers.length === 0) continue;
+
+      const combinedQty = allMembers.reduce(
+        (sum, m) => sum + (Number(m.quantity) || 0),
+        0
+      );
+      const isGroupOut = combinedQty <= 0;
+      const groupTarget = group.targetQuantity ?? 1;
+      const isGroupLow = combinedQty <= groupTarget;
+
+      // Filter members based on pantryFilter
+      const filterMatchingMembers = allMembers.filter((m) => {
+        if (pantryFilter === "low") {
+          return itemIsLowStock(m) || isGroupLow;
+        }
+        if (pantryFilter === "out") {
+          return m.quantity <= 0 || isGroupOut;
+        }
+        return true;
+      });
+
+      // Filter by search query
+      const groupMatchesQuery = !q || group.name.toLowerCase().includes(q);
+      const matchingMembers = filterMatchingMembers.filter(
+        (m) => groupMatchesQuery || m.name.toLowerCase().includes(q)
+      );
+
+      if (matchingMembers.length > 0) {
+        const primaryCategory = allMembers[0]?.category || "other";
+        const latestUpdated = allMembers.reduce(
+          (latest, m) =>
+            !latest || new Date(m.lastUpdated).getTime() > new Date(latest).getTime()
+              ? m.lastUpdated
+              : latest,
+          allMembers[0]?.lastUpdated || ""
+        );
+
+        entries.push({
+          type: "group",
+          id: group.id,
+          group,
+          members: matchingMembers,
+          name: group.name,
+          category: primaryCategory,
+          quantity: combinedQty,
+          lastUpdated: latestUpdated,
+        });
+      }
+    }
+
+    // Process ungrouped items
+    for (const item of ungroupedItems) {
+      if (pantryFilter === "low" && !itemIsLowStock(item)) continue;
+      if (pantryFilter === "out" && item.quantity > 0) continue;
+      if (q && !item.name.toLowerCase().includes(q)) continue;
+
+      entries.push({
+        type: "item",
+        id: item.id,
+        item,
+        name: item.name,
+        category: item.category,
+        quantity: item.quantity,
+        lastUpdated: item.lastUpdated,
+      });
+    }
+
+    // Sort entries
+    return entries.sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "qty-asc":
+          return a.quantity - b.quantity || a.name.localeCompare(b.name);
+        case "qty-desc":
+          return b.quantity - a.quantity || a.name.localeCompare(b.name);
+        case "recent":
+          return (
+            new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+          );
+        case "category":
+        default:
+          return (
+            a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
+          );
+      }
+    });
+  }, [inventory, itemGroups, pantryFilter, searchQuery, sortBy, itemIsLowStock]);
+
+  const categoryGroups = useMemo(() => {
+    if (sortBy !== "category") return null;
+    const groups: { category: string; entries: PantryEntry[] }[] = [];
+    let currentCategory = "";
+    let currentEntries: PantryEntry[] = [];
+
+    for (const entry of displayedEntries) {
+      const cat = entry.category || "other";
+      if (cat !== currentCategory) {
+        currentCategory = cat;
+        currentEntries = [];
+        groups.push({ category: cat, entries: currentEntries });
+      }
+      currentEntries.push(entry);
+    }
+    return groups;
+  }, [displayedEntries, sortBy]);
 
   const filterChips = [
     { id: "all" as const, label: "All" },
@@ -48,17 +189,32 @@ export function InventoryView() {
     { id: "out" as const, label: "Out" },
   ];
 
-  const renderRows = (items: typeof displayedItems) =>
-    items.map((item) => (
-      <PantryListRow
-        key={item.id}
-        item={item}
-        isLowStock={itemIsLowStock(item)}
-        onAdjustQuantity={handleAdjustQuantity}
-        onEdit={() => setEditingItem(item)}
-        isUpdating={updatingItemIds.has(item.id)}
-      />
-    ));
+  const renderEntries = (entries: PantryEntry[]) =>
+    entries.map((entry) =>
+      entry.type === "group" ? (
+        <GroupListRow
+          key={`group-${entry.id}`}
+          group={entry.group}
+          members={entry.members}
+          itemIsLowStock={itemIsLowStock}
+          onAdjustQuantity={handleAdjustQuantity}
+          onEditItem={(item) => setEditingItem(item)}
+          updatingItemIds={updatingItemIds}
+          onRename={renameGroup}
+          onSetTarget={setGroupTarget}
+          onUngroup={deleteGroup}
+        />
+      ) : (
+        <PantryListRow
+          key={entry.item.id}
+          item={entry.item}
+          isLowStock={itemIsLowStock(entry.item)}
+          onAdjustQuantity={handleAdjustQuantity}
+          onEdit={() => setEditingItem(entry.item)}
+          isUpdating={updatingItemIds.has(entry.item.id)}
+        />
+      )
+    );
 
   return (
     <div className="space-y-2.5 animate-in fade-in duration-300">
@@ -169,7 +325,7 @@ export function InventoryView() {
             Add your first item
           </DashboardLink>
         </div>
-      ) : displayedItems.length === 0 ? (
+      ) : displayedEntries.length === 0 ? (
         <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 text-center">
           <Search size={28} className="mx-auto mb-2 text-[var(--muted-light)]" />
           <p className="text-[var(--muted)] text-sm">No items match your search or filter.</p>
@@ -198,11 +354,11 @@ export function InventoryView() {
                 >
                   {group.category}
                 </h2>
-                <div className="divide-y divide-[var(--border)]">{renderRows(group.items)}</div>
+                <div className="divide-y divide-[var(--border)]">{renderEntries(group.entries)}</div>
               </div>
             ))
           ) : (
-            <div className="divide-y divide-[var(--border)]">{renderRows(displayedItems)}</div>
+            <div className="divide-y divide-[var(--border)]">{renderEntries(displayedEntries)}</div>
           )}
         </div>
       )}

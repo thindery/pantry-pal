@@ -1,4 +1,4 @@
-import type { Activity, PantryItem, ShoppingListItem, ShoppingListSortBy, ThresholdConfig } from "@/types";
+import type { Activity, ItemGroup, PantryItem, ShoppingListItem, ShoppingListSortBy, ThresholdConfig } from "@/types";
 import type { ItemThresholdOverrides } from "@/lib/threshold-utils";
 import { getItemTarget } from "@/lib/threshold-utils";
 
@@ -36,23 +36,40 @@ export function buildAutoShoppingListItems(
   thresholdConfig?: ThresholdConfig,
   itemOverrides?: ItemThresholdOverrides,
   existingShoppingList: ShoppingListItem[] = [],
+  groups?: ItemGroup[],
 ): ShoppingListItem[] {
-  const groups = new Map<string, PantryItem[]>();
+  const knownGroups = new Map<string, ItemGroup>();
+  if (groups) {
+    for (const g of groups) {
+      knownGroups.set(g.id, g);
+    }
+  }
+
+  const buckets = new Map<string, PantryItem[]>();
 
   for (const item of inventory) {
-    const key = normalizeItemName(item.name);
-    const existing = groups.get(key);
+    let key: string;
+    if (item.groupId && knownGroups.has(item.groupId)) {
+      key = `group:${item.groupId}`;
+    } else {
+      key = `name:${normalizeItemName(item.name)}`;
+    }
+
+    const existing = buckets.get(key);
     if (existing) {
       existing.push(item);
     } else {
-      groups.set(key, [item]);
+      buckets.set(key, [item]);
     }
   }
 
   const existingByPantryId = new Map<string, ShoppingListItem>();
   const existingByNormName = new Map<string, ShoppingListItem>();
+  const existingByGroupId = new Map<string, ShoppingListItem>();
+
   for (const item of existingShoppingList) {
     if (!item.isManual) {
+      if (item.groupId) existingByGroupId.set(item.groupId, item);
       if (item.pantryItemId) existingByPantryId.set(item.pantryItemId, item);
       existingByNormName.set(normalizeItemName(item.name), item);
     }
@@ -60,58 +77,99 @@ export function buildAutoShoppingListItems(
 
   const result: ShoppingListItem[] = [];
 
-  for (const [normName, items] of groups.entries()) {
+  for (const [bucketKey, items] of buckets.entries()) {
     const primaryItem = items[0];
     const combinedHave = items.reduce(
       (sum, i) => sum + (Number(i.quantity) || 0),
       0
     );
 
-    // Resolve target: check overrides across all items in group, then targetQuantity, then thresholdConfig, then default 1
-    let target = 1;
-    let foundExplicit = false;
+    if (bucketKey.startsWith("group:")) {
+      const groupId = bucketKey.slice(6);
+      const group = knownGroups.get(groupId)!;
 
-    for (const item of items) {
-      if (itemOverrides && itemOverrides[item.id] != null && !Number.isNaN(itemOverrides[item.id])) {
-        target = itemOverrides[item.id];
-        foundExplicit = true;
-        break;
+      let target = 1;
+      if (group.targetQuantity != null && !Number.isNaN(group.targetQuantity)) {
+        target = group.targetQuantity;
+      } else {
+        target = getItemTarget(primaryItem, thresholdConfig, itemOverrides);
       }
-      if (item.targetQuantity != null && !Number.isNaN(item.targetQuantity)) {
-        target = item.targetQuantity;
-        foundExplicit = true;
-        break;
+
+      const need = calculateNeed(target, combinedHave);
+      if (need <= 0) {
+        continue;
       }
+
+      const existingRow =
+        existingByGroupId.get(groupId) ||
+        existingByPantryId.get(primaryItem.id) ||
+        existingByNormName.get(normalizeItemName(group.name));
+
+      result.push({
+        id: existingRow?.id || `group-${groupId}`,
+        name: group.name,
+        category: primaryItem.category,
+        currentQuantity: combinedHave,
+        suggestedQuantity: need,
+        unit: primaryItem.unit,
+        isManual: false,
+        isChecked: existingRow ? existingRow.isChecked : false,
+        addedAt: existingRow ? existingRow.addedAt : new Date().toISOString(),
+        reason: "low_stock",
+        pantryItemId: primaryItem.id,
+        groupId: groupId,
+        lowStockThreshold: target,
+        imageUrl: primaryItem.imageUrl || primaryItem.productInfo?.imageUrl,
+      });
+    } else {
+      const normName = bucketKey.slice(5);
+
+      // Resolve target: check overrides across all items in group, then targetQuantity, then thresholdConfig, then default 1
+      let target = 1;
+      let foundExplicit = false;
+
+      for (const item of items) {
+        if (itemOverrides && itemOverrides[item.id] != null && !Number.isNaN(itemOverrides[item.id])) {
+          target = itemOverrides[item.id];
+          foundExplicit = true;
+          break;
+        }
+        if (item.targetQuantity != null && !Number.isNaN(item.targetQuantity)) {
+          target = item.targetQuantity;
+          foundExplicit = true;
+          break;
+        }
+      }
+
+      if (!foundExplicit) {
+        target = getItemTarget(primaryItem, thresholdConfig, itemOverrides);
+      }
+
+      const need = calculateNeed(target, combinedHave);
+      if (need <= 0) {
+        // Items with have >= target must NOT appear on the shopping list
+        continue;
+      }
+
+      const existingRow =
+        existingByPantryId.get(primaryItem.id) || existingByNormName.get(normName);
+
+      result.push({
+        id: existingRow?.id || `low-${primaryItem.id}`,
+        name: primaryItem.name,
+        category: primaryItem.category,
+        currentQuantity: combinedHave,
+        suggestedQuantity: need,
+        unit: primaryItem.unit,
+        isManual: false,
+        isChecked: existingRow ? existingRow.isChecked : false,
+        addedAt: existingRow ? existingRow.addedAt : new Date().toISOString(),
+        reason: "low_stock",
+        pantryItemId: primaryItem.id,
+        lowStockThreshold: target,
+        imageUrl: primaryItem.imageUrl || primaryItem.productInfo?.imageUrl,
+      });
     }
-
-    if (!foundExplicit) {
-      target = getItemTarget(primaryItem, thresholdConfig, itemOverrides);
-    }
-
-    const need = calculateNeed(target, combinedHave);
-    if (need <= 0) {
-      // Items with have >= target must NOT appear on the shopping list
-      continue;
-    }
-
-    const existingRow =
-      existingByPantryId.get(primaryItem.id) || existingByNormName.get(normName);
-
-    result.push({
-      id: existingRow?.id || `low-${primaryItem.id}`,
-      name: primaryItem.name,
-      category: primaryItem.category,
-      currentQuantity: combinedHave,
-      suggestedQuantity: need,
-      unit: primaryItem.unit,
-      isManual: false,
-      isChecked: existingRow ? existingRow.isChecked : false,
-      addedAt: existingRow ? existingRow.addedAt : new Date().toISOString(),
-      reason: "low_stock",
-      pantryItemId: primaryItem.id,
-      lowStockThreshold: target,
-      imageUrl: primaryItem.imageUrl || primaryItem.productInfo?.imageUrl,
-    });
   }
 
   return result;

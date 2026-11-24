@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import type {
   PantryItem,
+  ItemGroup,
   Activity,
   ActivityType,
   ScanResult,
@@ -42,6 +43,15 @@ import {
   saveBarcodeProduct,
   ApiError,
 } from "@/services/apiService";
+import {
+  getItemGroups,
+  createItemGroup,
+  updateItemGroup,
+  deleteItemGroup,
+  addItemToGroup as addItemToGroupApi,
+  removeItemFromGroup as removeItemFromGroupApi,
+} from "@/services/itemGroupService";
+import { findGroupSuggestion, productMatchKey, toTitleCase } from "@/lib/item-group-match";
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { DEFAULT_THRESHOLDS } from "@/lib/constants";
 import { normalizeList } from "@/lib/normalize-list";
@@ -88,6 +98,7 @@ export function usePantryState() {
 
   const [inventory, setInventory] = useState<PantryItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [itemGroups, setItemGroups] = useState<ItemGroup[]>([]);
 
   const safeActivities = useMemo(
     () => normalizeList<Activity>(activities),
@@ -439,6 +450,7 @@ export function usePantryState() {
           thresholdConfig,
           itemThresholdOverrides,
           safeShoppingList,
+          itemGroups,
         );
         const autoNames = new Set(autoItems.map((i) => normalizeItemName(i.name)));
         // Keep manual items that aren't already represented in the newly generated items
@@ -456,6 +468,7 @@ export function usePantryState() {
     inventory,
     thresholdConfig,
     itemThresholdOverrides,
+    itemGroups,
   ]);
 
   useEffect(() => {
@@ -686,11 +699,21 @@ export function usePantryState() {
     }
   }, [setActivitiesSafe]);
 
+  const loadItemGroups = useCallback(async () => {
+    try {
+      const groups = await getItemGroups();
+      setItemGroups(Array.isArray(groups) ? groups : []);
+    } catch (err) {
+      console.error("Failed to load item groups:", err);
+    }
+  }, []);
+
   useEffect(() => {
     if (sessionStatus !== "authenticated") return;
     void loadInventory();
+    void loadItemGroups();
     void loadActivities();
-  }, [sessionStatus]);
+  }, [sessionStatus, loadItemGroups]);
 
   // Save to localStorage as backup
   useEffect(() => {
@@ -744,6 +767,148 @@ export function usePantryState() {
   const [_showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
   const [_showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
 
+  const createGroup = useCallback(
+    async (name: string, itemIds: string[], targetQuantity?: number | null): Promise<ItemGroup | null> => {
+      try {
+        const group = await createItemGroup({ name, itemIds, targetQuantity });
+        await Promise.all([loadInventory(), loadItemGroups()]);
+        success(`Created group "${name}"`);
+        return group;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to create group";
+        error(message);
+        return null;
+      }
+    },
+    [loadInventory, loadItemGroups, success, error]
+  );
+
+  const addItemToGroup = useCallback(
+    async (groupId: string, itemId: string): Promise<ItemGroup | null> => {
+      try {
+        const group = await addItemToGroupApi(groupId, itemId);
+        await Promise.all([loadInventory(), loadItemGroups()]);
+        success(`Added to group "${group.name}"`);
+        return group;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to add item to group";
+        error(message);
+        return null;
+      }
+    },
+    [loadInventory, loadItemGroups, success, error]
+  );
+
+  const removeItemFromGroup = useCallback(
+    async (groupId: string, itemId: string): Promise<void> => {
+      try {
+        await removeItemFromGroupApi(groupId, itemId);
+        await Promise.all([loadInventory(), loadItemGroups()]);
+        success("Removed item from group");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to remove item from group";
+        error(message);
+      }
+    },
+    [loadInventory, loadItemGroups, success, error]
+  );
+
+  const renameGroup = useCallback(
+    async (groupId: string, name: string): Promise<void> => {
+      try {
+        await updateItemGroup(groupId, { name });
+        await loadItemGroups();
+        success(`Renamed group to "${name}"`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to rename group";
+        error(message);
+      }
+    },
+    [loadItemGroups, success, error]
+  );
+
+  const setGroupTarget = useCallback(
+    async (groupId: string, targetQuantity: number | null): Promise<void> => {
+      try {
+        await updateItemGroup(groupId, { targetQuantity });
+        await loadItemGroups();
+        success("Updated group target quantity");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update target";
+        error(message);
+      }
+    },
+    [loadItemGroups, success, error]
+  );
+
+  const deleteGroup = useCallback(
+    async (groupId: string): Promise<void> => {
+      const group = itemGroups.find((g) => g.id === groupId);
+      const groupName = group ? group.name : "group";
+      const confirmed = await confirm({
+        title: `Ungroup ${groupName}?`,
+        message: "Items stay in your pantry.",
+        confirmLabel: "Ungroup",
+        cancelLabel: "Cancel",
+      });
+      if (!confirmed) return;
+
+      try {
+        await deleteItemGroup(groupId);
+        await Promise.all([loadInventory(), loadItemGroups()]);
+        success(`Ungrouped ${groupName}`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to ungroup";
+        error(message);
+      }
+    },
+    [itemGroups, confirm, loadInventory, loadItemGroups, success, error]
+  );
+
+  const tryPromptGroupSuggestion = useCallback(
+    async (item: PantryItem) => {
+      if (item.groupId) return;
+      const match = findGroupSuggestion(item, inventory, itemGroups);
+      if (!match) return;
+
+      const pairKey = [item.id, match.id].sort().join(":");
+      try {
+        const raw =
+          typeof window !== "undefined"
+            ? localStorage.getItem("pantry-group-suggest-dismissed")
+            : null;
+        const dismissed: string[] = raw ? JSON.parse(raw) : [];
+        if (dismissed.includes(pairKey)) return;
+
+        const targetName = match.name;
+        const confirmed = await confirm({
+          title: `Group with ${targetName}?`,
+          message: "Count them together on your pantry and shopping list.",
+          confirmLabel: "Group",
+          cancelLabel: "Not now",
+        });
+
+        if (confirmed) {
+          if ("itemIds" in match) {
+            await addItemToGroup(match.id, item.id);
+          } else {
+            const key = productMatchKey(match.name);
+            const groupName = key ? toTitleCase(key) : match.name;
+            await createGroup(groupName, [match.id, item.id]);
+          }
+        } else {
+          const next = [...dismissed, pairKey];
+          if (typeof window !== "undefined") {
+            localStorage.setItem("pantry-group-suggest-dismissed", JSON.stringify(next));
+          }
+        }
+      } catch (e) {
+        console.error("Group suggestion prompt error:", e);
+      }
+    },
+    [inventory, itemGroups, confirm, addItemToGroup, createGroup]
+  );
+
   const handleCreateItem = async (itemData: Omit<PantryItem, 'id' | 'lastUpdated'>) => {
     const existing = inventory.find((item) =>
       itemData.barcode
@@ -787,6 +952,7 @@ export function usePantryState() {
         'MANUAL'
       );
       success(`Added ${newItem.name} to inventory`);
+      void tryPromptGroupSuggestion(newItem);
       return Promise.resolve();
     } catch (err) {
       const message =
@@ -883,6 +1049,7 @@ export function usePantryState() {
     const unitText = quantity === 1 ? "unit" : "units";
     if (!options?.silent) {
       success(`${displayName} (${quantity} ${unitText}) added to inventory`);
+      void tryPromptGroupSuggestion(savedItem);
     }
     trackFirstScan("barcode");
     return savedItem;
@@ -1136,6 +1303,14 @@ export function usePantryState() {
     shareShoppingList,
     loadInventory,
     loadActivities,
+    itemGroups,
+    loadItemGroups,
+    createGroup,
+    addItemToGroup,
+    removeItemFromGroup,
+    renameGroup,
+    setGroupTarget,
+    deleteGroup,
     isPaid,
     receiptScansRemaining,
     isFeatureAvailable,

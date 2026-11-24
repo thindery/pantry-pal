@@ -236,6 +236,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-156 | Unify shopping-list products and default the need/target to 1 | P1 | ✅ Done |
 | PP-158 | Paste fallback when a recipe site blocks URL import | P1 | ✅ Done (live `f7c43f4`) |
 | PP-159 | Replace native browser dialogs with in-app confirm and toasts | P2 | ✅ Done (live `f388d55`) |
+| PP-160 | Item groups: combine different SKUs that are the same thing | P1 | 🚧 In progress |
 
 ## Billing & email audit (2026-11-22)
 

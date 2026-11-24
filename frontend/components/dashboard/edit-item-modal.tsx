@@ -5,6 +5,8 @@ import { Info } from "lucide-react";
 import type { BarcodeProduct, PantryItem } from "@/types";
 import { UNITS, CATEGORIES } from "@/lib/constants";
 import { getProductByBarcode } from "@/services/apiService";
+import { usePantry } from "@/contexts/pantry-provider";
+import { GroupWithModal } from "@/components/dashboard/GroupWithModal";
 
 interface EditItemModalProps {
   item: PantryItem;
@@ -313,6 +315,32 @@ export function EditItemModal({
 
   if (!isOpen) return null;
 
+  const {
+    inventory,
+    itemGroups,
+    createGroup,
+    addItemToGroup,
+    removeItemFromGroup,
+  } = usePantry();
+
+  const [showGroupWithModal, setShowGroupWithModal] = useState(false);
+  const [isRemovingGroup, setIsRemovingGroup] = useState(false);
+
+  const currentGroup = item.groupId
+    ? itemGroups.find((g) => g.id === item.groupId)
+    : null;
+
+  const handleRemoveFromGroup = async () => {
+    if (!item.groupId) return;
+    setIsRemovingGroup(true);
+    try {
+      await removeItemFromGroup(item.groupId, item.id);
+      onClose();
+    } finally {
+      setIsRemovingGroup(false);
+    }
+  };
+
   const displayName = product?.name || name;
 
   const handleSave = async () => {
@@ -440,6 +468,47 @@ export function EditItemModal({
             </div>
           )}
 
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-center justify-between gap-2">
+            {currentGroup ? (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    In group
+                  </p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">
+                    {currentGroup.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveFromGroup}
+                  disabled={isRemovingGroup}
+                  className="px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors shrink-0 disabled:opacity-50"
+                >
+                  {isRemovingGroup ? "Removing…" : "Remove from group"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    Item Grouping
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    Different SKUs, same thing
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowGroupWithModal(true)}
+                  className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors shrink-0"
+                >
+                  Group with…
+                </button>
+              </>
+            )}
+          </div>
+
           {hasBarcode && !productLoading && (
             <div>
               <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-4">
@@ -542,6 +611,19 @@ export function EditItemModal({
           </div>
         </div>
       </div>
+
+      <GroupWithModal
+        item={item}
+        isOpen={showGroupWithModal}
+        onClose={() => {
+          setShowGroupWithModal(false);
+          onClose();
+        }}
+        inventory={inventory}
+        itemGroups={itemGroups}
+        onAddToGroup={addItemToGroup}
+        onCreateGroup={createGroup}
+      />
     </div>
   );
 }

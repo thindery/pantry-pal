@@ -27,6 +27,7 @@ def _row_to_item(row: dict[str, Any]) -> dict[str, Any]:
         "barcode": row.get("barcode"),
         "imageUrl": row.get("image_url") or None,
         "targetQuantity": float(target_qty) if target_qty is not None else None,
+        "groupId": row.get("group_id"),
     }
 
 

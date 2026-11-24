@@ -46,6 +46,7 @@ class PantryItem(BaseModel):
     lastUpdated: str
     barcode: Optional[str] = None
     targetQuantity: Optional[float] = None
+    groupId: Optional[str] = None
 
 
 class Activity(BaseModel):
@@ -314,3 +315,43 @@ class UpdateRecipeRequest(BaseModel):
         if not s:
             raise ValueError("Title is required")
         return s
+
+
+class CreateItemGroupRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=100)
+    itemIds: list[str] = Field(..., min_length=1, max_length=50)
+    targetQuantity: Optional[float] = Field(default=None, ge=0, le=999999)
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("Name is required")
+        return s
+
+
+class UpdateItemGroupRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    targetQuantity: Optional[float] = Field(default=None, ge=0, le=999999)
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        s = v.strip()
+        if not s:
+            raise ValueError("Name cannot be blank")
+        return s
+
+
+class AddItemGroupItemRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    itemId: str
+
