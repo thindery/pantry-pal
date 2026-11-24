@@ -108,7 +108,7 @@ export function findGroupSuggestion(
   inventory: PantryItem[],
   groups: ItemGroup[] = []
 ): PantryItem | ItemGroup | null {
-  const newBrand = newItem.productInfo?.brand || (newItem as any).brand;
+  const newBrand = newItem.productInfo?.brand;
   const newKey = productMatchKey(newItem.name, newBrand);
   if (!newKey) return null;
 
@@ -116,7 +116,7 @@ export function findGroupSuggestion(
     if (item.id === newItem.id) continue;
     if (newItem.groupId && item.groupId === newItem.groupId) continue;
 
-    const itemBrand = item.productInfo?.brand || (item as any).brand;
+    const itemBrand = item.productInfo?.brand;
     const itemKey = productMatchKey(item.name, itemBrand);
 
     if (itemKey && itemKey === newKey) {

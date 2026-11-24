@@ -313,8 +313,6 @@ export function EditItemModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const {
     inventory,
     itemGroups,
@@ -325,6 +323,8 @@ export function EditItemModal({
 
   const [showGroupWithModal, setShowGroupWithModal] = useState(false);
   const [isRemovingGroup, setIsRemovingGroup] = useState(false);
+
+  if (!isOpen) return null;
 
   const currentGroup = item.groupId
     ? itemGroups.find((g) => g.id === item.groupId)
