@@ -24,6 +24,7 @@ class ActivityType(str, Enum):
     REMOVE = "REMOVE"
     ADJUST = "ADJUST"
     SHOPPING_SESSION = "SHOPPING_SESSION"
+    DELETE = "DELETE"
 
 
 class ActivitySource(str, Enum):
@@ -54,13 +55,31 @@ class Activity(BaseModel):
 
     id: str
     userId: str
-    itemId: str
+    itemId: Optional[str] = None
     itemName: str
     type: ActivityType
     amount: float
     timestamp: str
     source: ActivitySource
     metadata: Optional[str] = None
+    itemBarcode: Optional[str] = None
+
+
+class CreateActivityRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    itemId: str
+    type: Literal["ADD", "REMOVE", "ADJUST"]
+    amount: float = Field(..., gt=0, le=999999)
+    source: ActivitySource = ActivitySource.MANUAL
+    adjustQuantity: bool = True
+
+    @field_validator("itemId")
+    @classmethod
+    def validate_uuid(cls, v: str) -> str:
+        if not UUID_REGEX.match(v):
+            raise ValueError("Invalid item ID format")
+        return v
 
 
 class CreateItemRequest(BaseModel):
@@ -93,23 +112,6 @@ class UpdateItemRequest(BaseModel):
     @classmethod
     def strip_optional(cls, v: Optional[str]) -> Optional[str]:
         return v.strip() if v is not None else v
-
-
-class CreateActivityRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    itemId: str
-    type: Literal["ADD", "REMOVE", "ADJUST"]
-    amount: float = Field(..., gt=0, le=999999)
-    source: ActivitySource = ActivitySource.MANUAL
-    adjustQuantity: bool = True
-
-    @field_validator("itemId")
-    @classmethod
-    def validate_uuid(cls, v: str) -> str:
-        if not UUID_REGEX.match(v):
-            raise ValueError("Invalid item ID format")
-        return v
 
 
 class ReceiptScanRequest(BaseModel):

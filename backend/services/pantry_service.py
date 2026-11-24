@@ -42,6 +42,7 @@ def _row_to_activity(row: dict[str, Any]) -> dict[str, Any]:
         "timestamp": row["timestamp"],
         "source": row["source"],
         "metadata": row.get("metadata"),
+        "itemBarcode": row.get("item_barcode"),
     }
 
 
@@ -356,16 +357,49 @@ def update_item(user_id: str, item_id: str, data: dict[str, Any]) -> Optional[di
 
 
 def delete_item(user_id: str, item_id: str) -> bool:
+    now = _now()
     with db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT group_id FROM pantry_items WHERE user_id = %s AND id = %s FOR UPDATE",
+                "SELECT name, barcode, quantity, group_id FROM pantry_items WHERE user_id = %s AND id = %s FOR UPDATE",
                 (user_id, item_id),
             )
             row = cur.fetchone()
             if not row:
                 return False
-            group_id = row.get("group_id") if isinstance(row, dict) else row[0]
+            item_name = row["name"] if isinstance(row, dict) else row[0]
+            barcode = row["barcode"] if isinstance(row, dict) else row[1]
+            quantity = row["quantity"] if isinstance(row, dict) else row[2]
+            group_id = row["group_id"] if isinstance(row, dict) else row[3]
+
+            # PP-163: snapshot the barcode on this item's existing history before the
+            # FK sets item_id to NULL, then log the removal in the same transaction.
+            if barcode:
+                cur.execute(
+                    "UPDATE activities SET item_barcode = %s "
+                    "WHERE user_id = %s AND item_id = %s AND item_barcode IS NULL",
+                    (barcode, user_id, item_id),
+                )
+
+            activity_id = str(uuid.uuid4())
+            cur.execute(
+                """
+                INSERT INTO activities (id, user_id, item_id, item_name, type, amount, timestamp, source, metadata, item_barcode)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    activity_id,
+                    user_id,
+                    item_id,
+                    item_name,
+                    "DELETE",
+                    float(quantity or 0),
+                    now,
+                    "MANUAL",
+                    '{"reason":"removed_from_pantry"}',
+                    barcode,
+                ),
+            )
 
             cur.execute(
                 "DELETE FROM pantry_items WHERE user_id = %s AND id = %s",
@@ -443,6 +477,9 @@ def log_activity(
     source: str = "MANUAL",
     adjust_quantity: bool = True,
 ) -> Optional[dict[str, Any]]:
+    if activity_type not in {"ADD", "REMOVE", "ADJUST"}:
+        return None
+
     item = get_item_by_id(user_id, item_id)
     if not item:
         return None
@@ -495,4 +532,5 @@ def log_activity(
         "amount": actual_amount,
         "timestamp": now,
         "source": source,
+        "itemBarcode": item.get("barcode"),
     }

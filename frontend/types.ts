@@ -96,12 +96,13 @@ export type ActivityType = 'CREATE' | 'UPDATE' | 'DELETE' | 'ADD' | 'REMOVE' | '
 
 export interface Activity {
   id: string;
-  itemId: string;
+  itemId?: string | null;
   itemName: string;
   type: ActivityType;
   amount: number;
   timestamp: string;
   source: 'MANUAL' | 'RECEIPT_SCAN' | 'VISUAL_USAGE' | 'BARCODE_SCAN';
+  itemBarcode?: string | null;
 }
 
 export interface ScanResult {

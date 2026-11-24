@@ -239,6 +239,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-160 | Item groups: combine different SKUs that are the same thing | P1 | ✅ Done (live `e739760`) |
 | PP-161 | Suggested matches at the top of the Group with… picker | P2 | ✅ Done (live `67a20c9`) |
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
+| PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | 🚧 In progress |
 
 ## Billing & email audit (2026-11-22)
 

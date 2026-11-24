@@ -15,6 +15,18 @@ SAMPLE_ACTIVITY = {
     "source": "MANUAL",
 }
 
+DELETE_ACTIVITY = {
+    "id": "660e8400-e29b-41d4-a716-446655440002",
+    "userId": "test_user_contract_001",
+    "itemId": None,
+    "itemName": "Apple",
+    "type": "DELETE",
+    "amount": 0,
+    "timestamp": "2024-01-15T10:31:00Z",
+    "source": "MANUAL",
+    "itemBarcode": "123456789012",
+}
+
 
 def test_activities_requires_auth(client):
     response = client.get("/api/activities")
@@ -74,3 +86,17 @@ def test_create_activity_invalid_item_id(client, auth_headers):
         json={"itemId": "bad-id", "type": "ADD", "amount": 2},
     )
     assert response.status_code == 422
+
+
+@patch("backend.routers.activities.pantry_service.get_activities", return_value=[SAMPLE_ACTIVITY, DELETE_ACTIVITY])
+@patch("backend.routers.activities.pantry_service.get_activity_count", return_value=2)
+def test_list_activities_includes_delete_with_null_item_id(mock_count, mock_list, client, auth_headers):
+    response = client.get("/api/activities", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["meta"]["total"] == 2
+    delete_activity = next(a for a in data["data"] if a["type"] == "DELETE")
+    assert delete_activity["itemId"] is None
+    assert delete_activity["itemName"] == "Apple"
+    assert delete_activity["itemBarcode"] == "123456789012"

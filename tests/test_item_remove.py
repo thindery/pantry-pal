@@ -47,7 +47,7 @@ def test_delete_item_happy_path(mock_delete, client, auth_headers):
 def test_service_delete_item_without_group_deletes_pantry_item_only():
     mock_cursor = MagicMock()
     mock_cursor.fetchone.side_effect = [
-        {"group_id": None},
+        {"name": "Test Item", "barcode": None, "quantity": 2.0, "group_id": None},
         {"count": 0},
     ]
     mock_cursor.rowcount = 1
@@ -63,6 +63,17 @@ def test_service_delete_item_without_group_deletes_pantry_item_only():
 
         executed_sqls = [call_args[0][0] for call_args in mock_cursor.execute.call_args_list]
 
+        # Must insert a DELETE activity with item barcode snapshot before deleting the pantry row
+        insert_sqls = [sql for sql in executed_sqls if "INSERT INTO activities" in sql]
+        assert len(insert_sqls) == 1
+        # Cur.execute was called with "DELETE" string as a type parameter
+        delete_value_calls = [
+            call_args
+            for call_args in mock_cursor.execute.call_args_list
+            if any("DELETE" in str(arg) for arg in call_args[0])
+        ]
+        assert len(delete_value_calls) >= 1
+        assert "item_barcode" in insert_sqls[0]
         # Must delete only the user's pantry row
         assert any("DELETE FROM pantry_items" in sql for sql in executed_sqls)
         # Must verify ownership before deleting
@@ -78,7 +89,7 @@ def test_service_delete_item_without_group_deletes_pantry_item_only():
 def test_service_delete_item_last_group_member_deletes_group():
     mock_cursor = MagicMock()
     mock_cursor.fetchone.side_effect = [
-        {"group_id": VALID_GROUP_ID},
+        {"name": "Grouped Item", "barcode": "123456789012", "quantity": 2.0, "group_id": VALID_GROUP_ID},
         {"count": 0},
     ]
     mock_cursor.rowcount = 1
@@ -94,6 +105,11 @@ def test_service_delete_item_last_group_member_deletes_group():
 
         executed_sqls = [call_args[0][0] for call_args in mock_cursor.execute.call_args_list]
 
+        # Activity captured the barcode snapshot before removal
+        insert_sqls = [sql for sql in executed_sqls if "INSERT INTO activities" in sql]
+        assert len(insert_sqls) == 1
+        assert "item_barcode" in insert_sqls[0]
+
         # Group delete issued because count is 0
         assert any("DELETE FROM item_groups" in sql for sql in executed_sqls)
         # Scoped to user
@@ -107,7 +123,7 @@ def test_service_delete_item_last_group_member_deletes_group():
 def test_service_delete_item_non_last_group_member_keeps_group():
     mock_cursor = MagicMock()
     mock_cursor.fetchone.side_effect = [
-        {"group_id": VALID_GROUP_ID},
+        {"name": "Grouped Item", "barcode": None, "quantity": 2.0, "group_id": VALID_GROUP_ID},
         {"count": 1},
     ]
     mock_cursor.rowcount = 1
@@ -122,6 +138,10 @@ def test_service_delete_item_non_last_group_member_keeps_group():
         assert result is True
 
         executed_sqls = [call_args[0][0] for call_args in mock_cursor.execute.call_args_list]
+
+        # Activity is still written
+        insert_sqls = [sql for sql in executed_sqls if "INSERT INTO activities" in sql]
+        assert len(insert_sqls) == 1
 
         # No group delete when other members remain
         assert not any("DELETE FROM item_groups" in sql for sql in executed_sqls)
@@ -143,4 +163,4 @@ def test_service_delete_item_missing_row_returns_false():
         mock_cursor.execute.assert_called_once()
         # Only the lookup should have run
         sql = mock_cursor.execute.call_args[0][0]
-        assert "SELECT group_id" in sql
+        assert "SELECT name, barcode, quantity, group_id" in sql

@@ -30,7 +30,7 @@ const typeConfig: Record<ActivityType, {
   },
   DELETE: {
     icon: '🗑️',
-    label: 'Deleted',
+    label: 'Removed from pantry',
     bg: 'bg-rose-50',
     border: 'border-rose-100',
     text: 'text-rose-600',
@@ -314,7 +314,7 @@ export const ActivityLedger: React.FC<ActivityLedgerProps> = ({
                         {/* Amount */}
                         <div className="text-right">
                           <div className={`text-xl font-bold ${config.text}`}>
-                            {sign}{activity.amount}
+                            {activity.type === 'DELETE' ? `had ${activity.amount}` : `${sign}${activity.amount}`}
                           </div>
                         </div>
                       </div>

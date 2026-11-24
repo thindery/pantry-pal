@@ -686,7 +686,7 @@ export const RecentActivityPreview: React.FC<RecentActivityPreviewProps> = ({
                   {activity.type === 'ADJUST' && 'adjusted'}
                   {activity.type === 'CREATE' && 'created'}
                   {activity.type === 'UPDATE' && 'updated'}
-                  {activity.type === 'DELETE' && 'deleted'}
+                  {activity.type === 'DELETE' && `removed from pantry (had ${activity.amount})`}
                 </span>
               </p>
             </div>

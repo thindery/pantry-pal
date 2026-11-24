@@ -1237,7 +1237,7 @@ export function usePantryState() {
           delete next[item.id];
           return next;
         });
-        await Promise.all([loadItemGroups(), loadInventory()]);
+        await Promise.all([loadItemGroups(), loadInventory(), loadActivities()]);
         success(`Removed ${item.name} from your pantry`);
         return true;
       } catch (err) {

@@ -71,7 +71,45 @@ describe("calculateSuggestedQuantity", () => {
     expect(suggested).toBe(2);
   });
 
-  it("counts REMOVE activities and ignores ADJUST / ADD / non-positive amounts", () => {
+  it("ignores DELETE activities", () => {
+    const fourteenDaysAgo = now - 14 * 24 * 3600 * 1000;
+
+    const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
+      {
+        itemId: "item-1",
+        type: "DELETE",
+        amount: 0,
+        timestamp: new Date(fourteenDaysAgo).toISOString(),
+      },
+      {
+        itemId: "item-1",
+        type: "REMOVE",
+        amount: 2,
+        timestamp: new Date(fourteenDaysAgo).toISOString(),
+      },
+    ];
+
+    const suggested = calculateSuggestedQuantity(activities, "item-1", 2, now);
+    expect(suggested).toBe(2);
+  });
+
+  it("handles nullable itemId from removed-item activities gracefully", () => {
+    const fourteenDaysAgo = now - 14 * 24 * 3600 * 1000;
+
+    const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
+      {
+        itemId: undefined,
+        type: "DELETE",
+        amount: 0,
+        timestamp: new Date(fourteenDaysAgo).toISOString(),
+      },
+    ];
+
+    const suggested = calculateSuggestedQuantity(activities, "item-1", 2, now);
+    expect(suggested).toBe(4);
+  });
+
+  it("counts REMOVE activities and ignores ADJUST / ADD / DELETE / non-positive amounts", () => {
     const fourteenDaysAgo = now - 14 * 24 * 3600 * 1000;
 
     const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
@@ -91,6 +129,12 @@ describe("calculateSuggestedQuantity", () => {
         itemId: "other-item",
         type: "REMOVE",
         amount: 5,
+        timestamp: new Date(fourteenDaysAgo).toISOString(),
+      },
+      {
+        itemId: "item-1",
+        type: "DELETE",
+        amount: 0,
         timestamp: new Date(fourteenDaysAgo).toISOString(),
       },
     ];
