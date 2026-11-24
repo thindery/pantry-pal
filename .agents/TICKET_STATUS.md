@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-23, 7:30 PM CT (PP-160 done: item groups, live e739760)
+Last updated: 2026-11-23, 9:50 PM CT (PP-161 picker suggestions + PP-162 remove from pantry, live 67a20c9)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-23, 7:30 PM CT (PP-160 done: item groups, live e739760)
 
 | | Count |
 |--|-------|
-| Done | 105 (previous plus PP-160: item groups, live e739760) |
+| Done | 107 (previous plus PP-161 and PP-162, live 67a20c9) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
@@ -237,8 +237,8 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-158 | Paste fallback when a recipe site blocks URL import | P1 | ✅ Done (live `f7c43f4`) |
 | PP-159 | Replace native browser dialogs with in-app confirm and toasts | P2 | ✅ Done (live `f388d55`) |
 | PP-160 | Item groups: combine different SKUs that are the same thing | P1 | ✅ Done (live `e739760`) |
-| PP-161 | Suggested matches at the top of the Group with… picker | P2 | 🚧 In progress |
-| PP-162 | Remove from pantry button in the Item Details sheet | P1 | 🚧 In progress |
+| PP-161 | Suggested matches at the top of the Group with… picker | P2 | ✅ Done (live `67a20c9`) |
+| PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 
 ## Billing & email audit (2026-11-22)
 

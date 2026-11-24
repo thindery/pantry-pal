@@ -1,6 +1,7 @@
 # PP-162: "Remove from pantry" button in the Item Details sheet
 
-**Status:** 📋 Open
+**Status:** ✅ Done
+**Updated:** 2026-11-23, 9:50 PM America/Chicago
 **Priority:** P1
 **Phase:** User-requested features
 **Created:** 2026-11-23
@@ -61,9 +62,13 @@ Run: `.venv/bin/python -m pytest tests -q`, `npm run typecheck -w @pantry-pal/fr
 
 ## Acceptance Criteria
 
-- [ ] Ticket + TICKET_STATUS row
-- [ ] Destructive "Remove from pantry" button in Item Details, in-app confirm
-- [ ] Only the current user's row deleted; product cache untouched; empty group deleted, non-empty group kept
-- [ ] Shopping-list rows and overrides for the item dropped; sheet closes; pantry refreshes; toast
-- [ ] Backend tests for ownership + product row surviving; all checks pass
-- [ ] Deployed, build-id verified
+- [x] Ticket + TICKET_STATUS row
+- [x] Destructive "Remove from pantry" button in Item Details, in-app confirm
+- [x] Only the current user's row deleted; product cache untouched; empty group deleted, non-empty group kept
+- [x] Shopping-list rows and overrides for the item dropped; sheet closes; pantry refreshes; toast
+- [x] Backend tests for ownership + product row surviving; all checks pass
+- [x] Deployed, build-id verified
+
+## Implementation notes (2026-11-23, 9:50 PM America/Chicago)
+
+- Code by Hermes (kimi-k2.7-code), reviewed. Shipped in `67a20c9` (live). Reuses `DELETE /api/items/{id}`; `delete_item` now locks the row, deletes only the user's row, and deletes the group if it becomes empty. Never touches `product_cache`. Activities for the item are removed by the existing ON DELETE CASCADE (unchanged). 8 backend tests in `tests/test_item_remove.py`; backend 158 passed.

@@ -1,6 +1,7 @@
 # PP-161: Suggested matches at the top of the "Group with…" picker
 
-**Status:** ✅ Done (pending deploy)
+**Status:** ✅ Done
+**Updated:** 2026-11-23, 9:50 PM America/Chicago
 **Priority:** P2
 **Phase:** User-requested features
 **Created:** 2026-11-23
@@ -73,4 +74,8 @@ Run: `npm run typecheck -w @pantry-pal/frontend`, `npm run lint -w @pantry-pal/f
 - [x] Cream of chicken vs cream of mushroom never on top over a real match; variants never tier 1/2
 - [x] Group matches by name or member names; source item and own group excluded
 - [x] Vitest coverage; typecheck, lint, vitest, build pass
-- [ ] Deployed, build-id verified
+- [x] Deployed, build-id verified
+
+## Implementation notes (2026-11-23, 9:50 PM America/Chicago)
+
+- Shipped in `50efc34`, deployed with PP-162; live build `67a20c9`. Client-side ranking in `rankGroupSuggestions` (tiers: exact core / compatible subset / partial overlap incl. variants). 13 new vitest tests. Typecheck, lint (0 errors), vitest 171, build pass.
