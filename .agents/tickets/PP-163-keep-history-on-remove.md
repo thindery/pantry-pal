@@ -1,6 +1,7 @@
 # PP-163: Keep activity history when an item is removed, and log a "Removed from pantry" activity
 
-**Status:** 🚧 In progress
+**Status:** ✅ Done
+**Updated:** 2026-11-23, 9:55 PM America/Chicago
 **Priority:** P1 (data loss)
 **Phase:** User-requested features
 **Created:** 2026-11-23
@@ -76,9 +77,17 @@ Checks: `.venv/bin/python -m pytest tests -q`; `npm run typecheck -w @pantry-pal
 
 ## Acceptance Criteria
 
-- [ ] Ticket + TICKET_STATUS row
-- [ ] Migration 024 (FK SET NULL, item_barcode snapshot + backfill, DELETE type) + rollback; applied on prod after a backup
-- [ ] Removing an item keeps its history and writes a DELETE "Removed from pantry" activity (name, qty) atomically
-- [ ] UI shows "Removed from pantry" with the name; no crash on null itemId; not counted as stock movement
-- [ ] Backend/shopping/usage logic tolerates null item links
-- [ ] Tests; all checks pass; deployed; build-id verified
+- [x] Ticket + TICKET_STATUS row
+- [x] Migration 024 (FK SET NULL, item_barcode snapshot + backfill, DELETE type) + rollback; applied on prod after a backup
+- [x] Removing an item keeps its history and writes a DELETE "Removed from pantry" activity (name, qty) atomically
+- [x] UI shows "Removed from pantry" with the name; no crash on null itemId; not counted as stock movement
+- [x] Backend/shopping/usage logic tolerates null item links
+- [x] Tests; all checks pass; deployed; build-id verified
+
+## Implementation notes (2026-11-23, 9:55 PM America/Chicago)
+
+- Code by Hermes (kimi-k2.7-code), reviewed and fixed by Pantry Hub Lead: DELETE activity now records the quantity at removal (Hermes wrote 0) plus `metadata {"reason":"removed_from_pantry"}`; barcode snapshot UPDATE on prior history before the delete; ledger shows "had N" instead of a ± amount; recent activity shows "removed from pantry (had N)". Hermes also reverted the PP-163 status row by mistake; re-added.
+- Shipped in `613d37d` (live). Migration `024_activity_keep_history` applied: FK now `ON DELETE SET NULL`, DELETE type allowed, `item_barcode` backfilled on 316 of 334 rows (the rest have no barcode). Dry-run in a rolled-back transaction on prod before deploy; post-deploy rolled-back smoke confirmed history rows survive an item delete with `item_id` NULL.
+- Backup: `/opt/pantry-pal/backups/pp163-pre-20261123-2146.sql` (221,922 bytes).
+- Tests: backend 164 passed / 3 skipped (`tests/test_activity_history.py` new, `test_item_remove.py` updated); vitest 173; typecheck, lint 0 errors, build pass.
+- Rollback note: the rollback deletes `type = 'DELETE'` rows (only created after this migration) and restores CASCADE.

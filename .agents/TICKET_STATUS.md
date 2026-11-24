@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-23, 9:50 PM CT (PP-161 picker suggestions + PP-162 remove from pantry, live 67a20c9)
+Last updated: 2026-11-23, 9:55 PM CT (PP-163 keep history on remove, live 613d37d)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-23, 9:50 PM CT (PP-161 picker suggestions + PP-162 remove 
 
 | | Count |
 |--|-------|
-| Done | 107 (previous plus PP-161 and PP-162, live 67a20c9) |
+| Done | 108 (previous plus PP-163 keep history on remove, live 613d37d) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
@@ -239,7 +239,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-160 | Item groups: combine different SKUs that are the same thing | P1 | ✅ Done (live `e739760`) |
 | PP-161 | Suggested matches at the top of the Group with… picker | P2 | ✅ Done (live `67a20c9`) |
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
-| PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | 🚧 In progress |
+| PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 
 ## Billing & email audit (2026-11-22)
 
