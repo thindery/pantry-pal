@@ -359,10 +359,37 @@ def delete_item(user_id: str, item_id: str) -> bool:
     with db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
+                "SELECT group_id FROM pantry_items WHERE user_id = %s AND id = %s FOR UPDATE",
+                (user_id, item_id),
+            )
+            row = cur.fetchone()
+            if not row:
+                return False
+            group_id = row.get("group_id") if isinstance(row, dict) else row[0]
+
+            cur.execute(
                 "DELETE FROM pantry_items WHERE user_id = %s AND id = %s",
                 (user_id, item_id),
             )
-            return cur.rowcount > 0
+            deleted = cur.rowcount > 0
+            if not deleted:
+                return False
+
+            if group_id:
+                cur.execute(
+                    "SELECT COUNT(*) AS count FROM pantry_items WHERE user_id = %s AND group_id = %s",
+                    (user_id, group_id),
+                )
+                count_row = cur.fetchone()
+                count = int(count_row["count"]) if isinstance(count_row, dict) else int(count_row[0])
+                if count == 0:
+                    cur.execute(
+                        "DELETE FROM item_groups WHERE user_id = %s AND id = %s",
+                        (user_id, group_id),
+                    )
+
+            conn.commit()
+            return True
 
 
 def get_activities(

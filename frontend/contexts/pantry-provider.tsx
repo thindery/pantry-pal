@@ -36,6 +36,7 @@ import {
   getItems,
   createItem,
   updateItem,
+  deleteItem,
   logActivity,
   getActivities,
   useSetupAuthToken,
@@ -1213,6 +1214,41 @@ export function usePantryState() {
     }
   }, [receiptScansRemaining]);
 
+  const removeItemFromPantry = useCallback(
+    async (item: PantryItem): Promise<boolean> => {
+      const confirmed = await confirm({
+        title: `Remove ${item.name} from your pantry?`,
+        message:
+          "This can't be undone. The product stays available to scan or add again later.",
+        confirmLabel: "Remove",
+        cancelLabel: "Cancel",
+        danger: true,
+      });
+      if (!confirmed) return false;
+
+      try {
+        await deleteItem(item.id);
+        setInventory((prev) => prev.filter((i) => i.id !== item.id));
+        setShoppingList((prev) =>
+          prev.filter((i) => i.pantryItemId !== item.id),
+        );
+        setItemThresholdOverrides((prev) => {
+          const next = { ...prev };
+          delete next[item.id];
+          return next;
+        });
+        await Promise.all([loadItemGroups(), loadInventory()]);
+        success(`Removed ${item.name} from your pantry`);
+        return true;
+      } catch (err) {
+        console.error("Failed to remove item from pantry:", err);
+        error("Couldn't remove the item. Try again.");
+        return false;
+      }
+    },
+    [confirm, loadItemGroups, loadInventory, success, error],
+  );
+
   const handleAddScannedItems = async (items: ScanResult[]) => {
     const addedItems: string[] = [];
     const failedItems: string[] = [];
@@ -1323,6 +1359,7 @@ export function usePantryState() {
     handleLinkBarcode,
     handleScanReceiptClick,
     handleAddScannedItems,
+    removeItemFromPantry,
     scannedProduct, setScannedProduct,
     scanQuantity, setScanQuantity,
     isConfirmingScan, setIsConfirmingScan,

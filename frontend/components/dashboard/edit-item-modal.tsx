@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Info } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import type { BarcodeProduct, PantryItem } from "@/types";
 import { UNITS, CATEGORIES } from "@/lib/constants";
 import { getProductByBarcode } from "@/services/apiService";
@@ -319,10 +319,12 @@ export function EditItemModal({
     createGroup,
     addItemToGroup,
     removeItemFromGroup,
+    removeItemFromPantry,
   } = usePantry();
 
   const [showGroupWithModal, setShowGroupWithModal] = useState(false);
   const [isRemovingGroup, setIsRemovingGroup] = useState(false);
+  const [isRemovingFromPantry, setIsRemovingFromPantry] = useState(false);
 
   if (!isOpen) return null;
 
@@ -338,6 +340,18 @@ export function EditItemModal({
       onClose();
     } finally {
       setIsRemovingGroup(false);
+    }
+  };
+
+  const handleRemoveFromPantry = async () => {
+    setIsRemovingFromPantry(true);
+    try {
+      const removed = await removeItemFromPantry(item);
+      if (removed) {
+        onClose();
+      }
+    } finally {
+      setIsRemovingFromPantry(false);
     }
   };
 
@@ -593,20 +607,32 @@ export function EditItemModal({
             </div>
           )}
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex flex-col gap-3 pt-1">
+            <div className="flex gap-3">
+              <button
+                onClick={handleSave}
+                disabled={isLoading || isRemovingFromPantry}
+                className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                onClick={onClose}
+                disabled={isLoading || isRemovingFromPantry}
+                className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+
             <button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-colors disabled:opacity-50"
+              type="button"
+              onClick={handleRemoveFromPantry}
+              disabled={isLoading || isRemovingFromPantry}
+              className="w-full flex items-center justify-center gap-2 py-3 border border-rose-300 text-rose-600 rounded-xl font-semibold hover:bg-rose-50 transition-colors disabled:opacity-50 min-h-[44px]"
             >
-              {isLoading ? "Saving..." : "Save Changes"}
-            </button>
-            <button
-              onClick={onClose}
-              disabled={isLoading}
-              className="px-6 py-3 border border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
-            >
-              Cancel
+              <Trash2 size={18} />
+              {isRemovingFromPantry ? "Removing..." : "Remove from pantry"}
             </button>
           </div>
         </div>
