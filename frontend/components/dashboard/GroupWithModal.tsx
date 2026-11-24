@@ -3,7 +3,11 @@
 import React, { useMemo, useState } from "react";
 import { FolderPlus, Layers, Search, X } from "lucide-react";
 import type { ItemGroup, PantryItem } from "@/types";
-import { productMatchKey, toTitleCase } from "@/lib/item-group-match";
+import {
+  productMatchKey,
+  rankGroupSuggestions,
+  toTitleCase,
+} from "@/lib/item-group-match";
 
 interface GroupWithModalProps {
   item: PantryItem;
@@ -37,6 +41,19 @@ export function GroupWithModal({
   const availableItems = useMemo(() => {
     return inventory.filter((i) => i.id !== item.id && !i.groupId);
   }, [inventory, item.id]);
+
+  const rawSuggestions = useMemo(() => {
+    return rankGroupSuggestions(item, inventory, itemGroups, 5);
+  }, [item, inventory, itemGroups]);
+
+  const filteredSuggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return rawSuggestions;
+    return rawSuggestions.filter((s) => {
+      const name = s.kind === "group" ? s.group.name : s.item.name;
+      return name.toLowerCase().includes(q);
+    });
+  }, [rawSuggestions, searchQuery]);
 
   const filteredGroups = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -178,6 +195,62 @@ export function GroupWithModal({
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {filteredSuggestions.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">
+                    Suggested
+                  </h3>
+                  <div className="space-y-1">
+                    {filteredSuggestions.map((s) => {
+                      if (s.kind === "group") {
+                        const g = s.group;
+                        return (
+                          <button
+                            key={`suggested-group-${g.id}`}
+                            type="button"
+                            onClick={() => handlePickGroup(g)}
+                            disabled={isSubmitting}
+                            className="w-full text-left p-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)] hover:border-[var(--primary-light)] transition-colors flex items-center justify-between"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-[var(--foreground)]">{g.name}</p>
+                              <p className="text-xs text-[var(--muted)]">
+                                Group · {g.itemIds.length} {g.itemIds.length === 1 ? "item" : "items"}
+                                {g.targetQuantity != null ? ` · Target ${g.targetQuantity}` : ""}
+                              </p>
+                            </div>
+                            <span className="text-xs font-semibold text-[var(--primary)] bg-[var(--primary-light)] px-2.5 py-1 rounded-lg">
+                              Add to group
+                            </span>
+                          </button>
+                        );
+                      }
+                      const other = s.item;
+                      return (
+                        <button
+                          key={`suggested-item-${other.id}`}
+                          type="button"
+                          onClick={() => handlePickItem(other)}
+                          disabled={isSubmitting}
+                          className="w-full text-left p-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)] hover:border-[var(--primary-light)] transition-colors flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-[var(--foreground)]">{other.name}</p>
+                            <p className="text-xs text-[var(--muted)]">
+                              {other.quantity} {other.unit} · {other.category}
+                            </p>
+                          </div>
+                          <span className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)] flex items-center gap-1">
+                            <FolderPlus size={14} />
+                            Group
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {filteredGroups.length > 0 && (
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">
