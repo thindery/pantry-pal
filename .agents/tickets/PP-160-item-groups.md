@@ -1,6 +1,7 @@
 # PP-160: Item groups (different SKUs, same thing)
 
-**Status:** 🚧 In progress
+**Status:** ✅ Done
+**Updated:** 2026-11-23, 7:30 PM America/Chicago
 **Priority:** P1
 **Phase:** User-requested features
 **Created:** 2026-11-23
@@ -121,4 +122,12 @@ Run before finishing:
 - [x] Shopping list: group target, need = target − sum(member qty), no separate member rows; ungrouped unchanged
 - [x] Strict name-key suggestion with one-tap in-app prompt; cream of chicken ≠ cream of mushroom; never auto-group
 - [x] Backend + vitest tests added; typecheck, vitest, build, backend tests pass
-- [ ] Deployed, build-id verified, smoke via API
+- [x] Deployed, build-id verified, smoke via API
+
+## Implementation notes (2026-11-23, 7:30 PM America/Chicago)
+
+- Shipped in `49c84ab` + `e739760` (review fix: edit-modal hooks were called after an early return; moved above it). Live `build-id.txt` = `e739760`.
+- Migration `023_item_groups` applied on prod; 0 groups, 0 linked items after deploy (no existing data changed). Backup before deploy: `/opt/pantry-pal/backups/pp160-pre-20261123-1924.sql` (219,609 bytes).
+- Suggestions use exact `productMatchKey` equality only (brand + size stripped, flavor/variant words kept). No category matching. Prompt only on non-silent single adds/scans (Quick Scan loop is silent, so no prompt there). Dismissals saved in localStorage `pantry-group-suggest-dismissed`.
+- Tests: backend 150 passed / 3 skipped (16 new in `tests/test_item_groups.py`); vitest 158 (15 new); typecheck, lint (0 errors), production build pass.
+- Smoke: `/api/item-groups` returns 401 unauthenticated on the live backend (route registered); homepage 200; backend logs clean. No authenticated UI smoke was run.
