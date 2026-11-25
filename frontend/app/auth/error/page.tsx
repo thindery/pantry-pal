@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { BRAND_NAME } from "@/lib/site-content";
+import { createPageMetadata } from "@/lib/site-metadata";
 
-export const metadata = {
-  title: `Sign In Error — ${BRAND_NAME}`,
-};
+export const metadata = createPageMetadata({
+  title: "Sign In Error",
+  description: `There was a problem signing in to ${BRAND_NAME}.`,
+  path: "/auth/error/",
+  noindex: true,
+});
 
 export default async function AuthErrorPage({
   searchParams,

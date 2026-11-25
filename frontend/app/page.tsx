@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/site-metadata";
 import { LandingPageWrapper } from "@/components/LandingPageWrapper";
 import { SoftwareApplicationSchema } from "@/components/SchemaMarkup";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Pantry Hub: Smart Inventory & Shopping Lists",
   description: "Track what you have, know what you need. AI-powered pantry management with receipt scanning, barcode lookup & smart alerts. Try free today.",
-};
+  path: "/",
+});
 
 export default function HomePage() {
   return (

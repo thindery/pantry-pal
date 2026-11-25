@@ -18,7 +18,7 @@ export const metadata = createPageMetadata({
   title: "Privacy Policy",
   description:
     "Learn how Peak Collective LLC dba Pantry Hub collects, uses, and protects your account and pantry data.",
-  path: "/privacy",
+  path: "/privacy/",
 });
 
 const PRIVACY_EMAIL = "hello@mypantryhub.com";
