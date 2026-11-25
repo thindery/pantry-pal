@@ -156,7 +156,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle (built locally, off, waiting for Tylor to deploy) | 🔨 Built | Pro AI |
+| PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle ([#119](https://github.com/thindery/pantry-pal/pull/119); live 4:10 PM CT Nov 25, build `32cb176`, migration 031 app_settings, `AI_RECEIPT_SCAN_ENABLED=1`) | ✅ Done | Pro AI |
 | PP-110 | AEO content cluster and comparison pages | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |
