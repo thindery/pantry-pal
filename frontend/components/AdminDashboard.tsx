@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles } from './admin';
+import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles, MarketingView } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import type { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import FeatureFlagsPanel from '../src/components/FeatureFlagsPanel';
 
-type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe' | 'features';
+type AdminView = 'dashboard' | 'marketing' | 'errors' | 'users' | 'products' | 'stripe' | 'features';
 
 interface ClientError {
   id: string;
@@ -236,6 +236,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               failedCount={metrics.alerts.failedPayments}
             />
           </div>
+        )}
+
+        {/* Marketing view (PP-125) */}
+        {activeView === 'marketing' && (
+          <MarketingView
+            period={period}
+            onPeriodChange={setPeriod}
+          />
         )}
 
         {activeView === 'errors' && (
