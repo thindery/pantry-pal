@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-24, 11:38 PM CT (PP-165 GA4 key events + login_events, live 9b19fa8)
+Last updated: 2026-11-24, 11:55 PM CT (PP-166 subscription.created handler live 0753f20; webhook events added)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-24, 11:38 PM CT (PP-165 GA4 key events + login_events, liv
 
 | | Count |
 |--|-------|
-| Done | 109 (previous plus PP-165 GA4 key events + login_events, live 9b19fa8) |
+| Done | 110 (previous plus PP-166 customer.subscription.created handler, live 0753f20) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
@@ -241,8 +241,8 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 | PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
-| PP-166 | Handle customer.subscription.created before enabling it on the live webhook | P0 | 🔄 In progress |
-| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094 (`78427fd` live) |
+| PP-166 | Handle customer.subscription.created before enabling it on the live webhook | P0 | ✅ Done (live `0753f20`) |
+| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094; live webhook now includes refund + subscription.created events |
 
 ## Billing & email audit (2026-11-22)
 
