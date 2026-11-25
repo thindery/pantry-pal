@@ -57,6 +57,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-150 E2E inventory +/- (minted test session + in-memory API; test-only) | [#92](https://github.com/thindery/pantry-pal/pull/92) | 8c857f4 | test-only, no runtime change |
 | PP-151 E2E shopping list (same harness; test-only) | [#93](https://github.com/thindery/pantry-pal/pull/93) | 0366501 | test-only, no runtime change |
 | PP-173 (new, P2) Scan page hydration error when Quick Scan is off | [#94](https://github.com/thindery/pantry-pal/pull/94) | 1094760 | 1094760 (read from the frontend container) |
+| PP-149 E2E barcode lookup and add, normal mode (partly done: camera Quick Scan add still open) | [#95](https://github.com/thindery/pantry-pal/pull/95) | cfe329e | test-only, no runtime change |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
@@ -115,7 +116,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
-| PP-149 | E2E: barcode scan including Quick Scan | 📋 Backlog | E2E |
+| PP-149 | E2E: barcode scan including Quick Scan | 🟡 Partly done (#95; camera Quick Scan add open) | E2E |
 | PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
 ### P2 — soon (9)
