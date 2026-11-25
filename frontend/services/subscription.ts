@@ -136,6 +136,24 @@ export async function createCheckoutSession(
   return response.data;
 }
 
+export interface CheckoutConfirmation {
+  confirmed: boolean;
+  applied: boolean;
+  tier: string;
+  sessionStatus: string | null;
+  paymentStatus: string | null;
+  amountTotal: number | null;
+  currency: string | null;
+}
+
+export async function confirmCheckoutSession(sessionId: string): Promise<CheckoutConfirmation> {
+  const response = await fetchApi<{ success: boolean; data: CheckoutConfirmation }>(
+    '/api/subscription/checkout/confirm',
+    { method: 'POST', body: JSON.stringify({ sessionId }) },
+  );
+  return response.data;
+}
+
 export async function createCustomerPortal(returnUrl: string): Promise<{ url: string }> {
   const response = await fetchApi<{
     success: boolean;
