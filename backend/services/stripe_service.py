@@ -9,6 +9,7 @@ Never creates duplicates on deploy/restart when catalog already exists.
 
 from __future__ import annotations
 
+import hashlib
 import os
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -375,6 +376,21 @@ def _ensure_customer_email(customer_id: Optional[str], email: Optional[str] = No
         stripe.Customer.modify(customer_id, **updates)
 
 
+def checkout_idempotency_key(
+    user_id: str, tier: str, billing_interval: str, success_url: str, cancel_url: str
+) -> str:
+    """PP-170: Stripe rejects a reused idempotency key with different params.
+
+    Two checkouts for the same user/tier/interval from different origins
+    (www vs apex, or a different return path) used to share a key and fail
+    with an idempotency error. Hashing the redirect URLs into the key keeps
+    retries of the *same* request deduped while letting a changed request
+    through. The URLs are hashed, never stored in the key in clear text.
+    """
+    digest = hashlib.sha256(f"{success_url}\n{cancel_url}".encode("utf-8")).hexdigest()[:16]
+    return f"pantryhub-checkout-{user_id}-{tier}-{billing_interval}-{digest}"
+
+
 async def create_checkout_session(
     user_id: str,
     tier: str,
@@ -430,7 +446,7 @@ async def create_checkout_session(
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"userId": user_id, "tier": tier},
-        idempotency_key=f"pantryhub-checkout-{user_id}-{tier}-{billing_interval}",
+        idempotency_key=checkout_idempotency_key(user_id, tier, billing_interval, success_url, cancel_url),
     )
     if not session.url:
         raise ValueError("Checkout session created without URL")
