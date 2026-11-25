@@ -37,6 +37,20 @@ async def dashboard(
         )
 
 
+@router.get("/funnel")
+async def funnel(
+    period: Literal["7d", "30d", "90d"] = Query("7d"),
+    _admin: str = Depends(require_admin),
+):
+    try:
+        return success_response(admin_service.get_funnel_metrics(period))
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve funnel metrics"),
+        )
+
+
 @router.get("/transactions")
 async def transactions(
     limit: int = Query(10, ge=1, le=100),

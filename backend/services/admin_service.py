@@ -304,3 +304,164 @@ def get_failed_payment_alerts() -> list[dict[str, Any]]:
                 }
                 for r in cur.fetchall()
             ]
+
+
+def get_funnel_metrics(period: Period = "7d") -> dict[str, Any]:
+    """Calculate subscription funnel metrics for the given period and all-time.
+
+    Timestamp choice documentation:
+    - Churned: Subscriptions with status in ('canceled', 'ended').
+      We use `updated_at` as the timestamp for filtering churn within the period because:
+      1) `updated_at` is a native PostgreSQL TIMESTAMP NOT NULL column automatically updated
+         whenever a subscription status transitions (such as in downgrade_to_free() or stripe webhook handlers).
+      2) In contrast, `subscription_end_date` is a free-form TEXT column that may be NULL or ISO formatted.
+      3) Subscriptions marked `cancel_at_period_end = TRUE` that are currently 'active' or 'trialing'
+         are strictly NOT counted as churn; they are tracked separately in `cancel_scheduled`.
+    """
+    dates = _period_dates(period)
+    start_date = dates["currentStart"]
+
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            # 1. Signups (from users by created_at)
+            cur.execute("SELECT COUNT(*) AS count FROM users")
+            signups_all_time = int(cur.fetchone()["count"])
+
+            cur.execute(
+                "SELECT COUNT(*) AS count FROM users WHERE created_at >= %s",
+                (start_date,),
+            )
+            signups_period = int(cur.fetchone()["count"])
+
+            # 2. Trials (user_subscriptions with subscription_status = 'trialing')
+            cur.execute(
+                "SELECT COUNT(*) AS count FROM user_subscriptions WHERE subscription_status = 'trialing'"
+            )
+            trials_all_time = int(cur.fetchone()["count"])
+
+            cur.execute(
+                """
+                SELECT COUNT(*) AS count FROM user_subscriptions
+                WHERE subscription_status = 'trialing' AND created_at >= %s
+                """,
+                (start_date,),
+            )
+            trials_period = int(cur.fetchone()["count"])
+
+            # 3. Paid conversions:
+            # Count of DISTINCT users whose FIRST succeeded admin_transactions row with amount_cents > 0
+            # falls in the period. Excludes refunds, failed, and $0 invoices.
+            # Distinct on user_id ensures a user's second paid invoice does not double-count.
+            cur.execute(
+                """
+                WITH first_paid AS (
+                    SELECT DISTINCT ON (user_id)
+                        user_id,
+                        created_at,
+                        LOWER(COALESCE(tier, '')) AS tier
+                    FROM admin_transactions
+                    WHERE status = 'succeeded' AND amount_cents > 0
+                    ORDER BY user_id, created_at ASC, id ASC
+                )
+                SELECT
+                    COUNT(*) AS total_all_time,
+                    COALESCE(SUM(CASE WHEN tier = 'pro' THEN 1 ELSE 0 END), 0) AS pro_all_time,
+                    COALESCE(SUM(CASE WHEN tier = 'family' THEN 1 ELSE 0 END), 0) AS family_all_time,
+                    COALESCE(SUM(CASE WHEN created_at >= %s THEN 1 ELSE 0 END), 0) AS total_period,
+                    COALESCE(SUM(CASE WHEN created_at >= %s AND tier = 'pro' THEN 1 ELSE 0 END), 0) AS pro_period,
+                    COALESCE(SUM(CASE WHEN created_at >= %s AND tier = 'family' THEN 1 ELSE 0 END), 0) AS family_period
+                FROM first_paid
+                """,
+                (start_date, start_date, start_date),
+            )
+            conv_row = cur.fetchone()
+            total_paid_all_time = int(conv_row["total_all_time"])
+            pro_paid_all_time = int(conv_row["pro_all_time"])
+            family_paid_all_time = int(conv_row["family_all_time"])
+            total_paid_period = int(conv_row["total_period"])
+            pro_paid_period = int(conv_row["pro_period"])
+            family_paid_period = int(conv_row["family_period"])
+
+            # 4. Churned (subscriptions that actually ended: canceled/ended)
+            cur.execute(
+                """
+                SELECT COUNT(*) AS count FROM user_subscriptions
+                WHERE subscription_status IN ('canceled', 'ended')
+                """
+            )
+            churned_all_time = int(cur.fetchone()["count"])
+
+            cur.execute(
+                """
+                SELECT COUNT(*) AS count FROM user_subscriptions
+                WHERE subscription_status IN ('canceled', 'ended') AND updated_at >= %s
+                """,
+                (start_date,),
+            )
+            churned_period = int(cur.fetchone()["count"])
+
+            # 5. Cancel scheduled (currently active/trialing with cancel_at_period_end = TRUE)
+            cur.execute(
+                """
+                SELECT COUNT(*) AS count FROM user_subscriptions
+                WHERE cancel_at_period_end = TRUE AND subscription_status IN ('active', 'trialing')
+                """
+            )
+            cancel_scheduled_all_time = int(cur.fetchone()["count"])
+
+            cur.execute(
+                """
+                SELECT COUNT(*) AS count FROM user_subscriptions
+                WHERE cancel_at_period_end = TRUE
+                  AND subscription_status IN ('active', 'trialing')
+                  AND updated_at >= %s
+                """,
+                (start_date,),
+            )
+            cancel_scheduled_period = int(cur.fetchone()["count"])
+
+    return {
+        "period": period,
+        "signups": {
+            "period": signups_period,
+            "allTime": signups_all_time,
+        },
+        "trials": {
+            "period": trials_period,
+            "allTime": trials_all_time,
+        },
+        "paidConversions": {
+            "period": total_paid_period,
+            "allTime": total_paid_all_time,
+            "pro": {
+                "period": pro_paid_period,
+                "allTime": pro_paid_all_time,
+            },
+            "family": {
+                "period": family_paid_period,
+                "allTime": family_paid_all_time,
+            },
+        },
+        "churned": {
+            "period": churned_period,
+            "allTime": churned_all_time,
+        },
+        "cancelScheduled": {
+            "period": cancel_scheduled_period,
+            "allTime": cancel_scheduled_all_time,
+        },
+        "signupsPeriod": signups_period,
+        "signupsAllTime": signups_all_time,
+        "trialsPeriod": trials_period,
+        "trialsAllTime": trials_all_time,
+        "proConversions": pro_paid_period,
+        "proConversionsAllTime": pro_paid_all_time,
+        "familyConversions": family_paid_period,
+        "familyConversionsAllTime": family_paid_all_time,
+        "paidConversionsPeriod": total_paid_period,
+        "paidConversionsAllTime": total_paid_all_time,
+        "churnedPeriod": churned_period,
+        "churnedAllTime": churned_all_time,
+        "cancelScheduledPeriod": cancel_scheduled_period,
+        "cancelScheduledAllTime": cancel_scheduled_all_time,
+    }

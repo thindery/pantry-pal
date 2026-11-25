@@ -3,3 +3,4 @@ export { KPICard } from './KPICard';
 export { ChartCard } from './ChartCard';
 export { RevenueCard } from './RevenueCard';
 export { TransactionsList } from './TransactionsList';
+export { FunnelTiles } from './FunnelTiles';
