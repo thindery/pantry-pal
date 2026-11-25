@@ -1,6 +1,6 @@
 # PP-140: Free-tier and public-recipe ads (Bragle rules)
 
-**Status:** 📋 Open
+**Status:** 🟡 Code ready, switched off (2026-11-25). Turning it on needs an AdSense ad unit that only Tylor can create.
 **Priority:** P2
 **Phase:** Revenue options (research 2026-11-22)
 **Created:** 2026-11-22
@@ -30,7 +30,17 @@ Mediavine and Raptive are not in reach yet (Journey starts at 5,000 premium-coun
 
 ## Acceptance Criteria
 
-- [ ] Written placement policy in this ticket or the revenue doc (Free in-app slots, Pro/Family suppression, public-recipe rules) — done as the Behavior section above, refine if design review disagrees
+- [x] Written placement policy in this ticket or the revenue doc (Free in-app slots, Pro/Family suppression, public-recipe rules) — done as the Behavior section above, refine if design review disagrees
 - [ ] A “needs Tylor’s yes” checklist for AdSense (and, much later, Journey / Mediavine / Raptive) with the official thresholds from the revenue doc
-- [ ] Implementation (later, only after yes and after public content exists): flag-gated ad slots, Pro/Family suppression covered by tests, privacy copy updated
+- [x] Implementation: flag-gated ad slot (`frontend/components/InAppAdSlot.tsx`, `INAPP_ADS_ENABLED = false`), Free only, calm-surface allowlist (`shopping-list-footer`, `pantry-footer`), non-personalized request; placed at the foot of the Shopping list. Tests: `frontend/tests/inapp-ad-slot.test.tsx`. Privacy copy: still to review before switching on (see below)
 - [ ] No AdSense, AdMob, Mediavine, or Raptive account is created from this ticket without a recorded yes from Tylor
+
+## Status 2026-11-25 (Tylor approved in chat 1:54 PM CT)
+
+AdSense is already live on public marketing pages (PR #106, publisher `ca-pub-5710716295420357`), so no new ad-network signup is needed for in-app slots.
+
+**Still needs Tylor (AdSense sign-in):**
+- In AdSense → Ads → By ad unit, create one **Display** ad unit named "Pantry Hub in-app (Free)" and send the slot id. Then a one-line PR sets `INAPP_AD_SLOT` and `INAPP_ADS_ENABLED = true`.
+- Before that ships, re-read the Privacy page's "We do not use third-party advertising cookies" line. Consent Mode keeps `ad_storage` denied, but once ads run in the app that sentence should name AdSense (non-personalized) plainly.
+
+Public-recipe page ads wait on PP-139 (no public recipes exist yet). Journey / Mediavine / Raptive: not eligible yet (5,000 / 25,000 monthly thresholds in the revenue doc); no application.
