@@ -25,6 +25,7 @@ const PUBLIC_PATHS = new Set([
 const PUBLIC_PREFIXES = [
   "/api/auth/",
   "/api/webhooks/stripe",
+  "/api/public/offer",
 ];
 
 const PROTECTED_PREFIXES = [

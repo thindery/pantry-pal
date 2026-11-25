@@ -50,6 +50,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
+| PP-166 | $1 first-month offer test on Pro monthly (PR open; Tylor must approve coupon + deploy) | 🔄 In review | Revenue |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
@@ -241,6 +242,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-161 | Suggested matches at the top of the Group with… picker | P2 | ✅ Done (live `67a20c9`) |
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
+| PP-166 | $1 first-month offer test on Pro monthly (PR open, needs Tylor's yes before coupon/deploy) | P1 | 🔄 In review |
 | GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094 (`78427fd` live) |
 
 ## Billing & email audit (2026-11-22)

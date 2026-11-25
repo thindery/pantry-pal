@@ -35,8 +35,8 @@ def record_transaction(data: dict[str, Any]) -> None:
                 INSERT INTO admin_transactions (
                     id, user_id, stripe_customer_id, stripe_subscription_id, stripe_invoice_id,
                     amount_cents, currency, status, tier, billing_interval,
-                    failure_code, failure_message, stripe_event_id, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    failure_code, failure_message, stripe_event_id, offer, is_comp, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                 """,
                 (
                     txn_id,
@@ -52,6 +52,8 @@ def record_transaction(data: dict[str, Any]) -> None:
                     data.get("failureCode"),
                     data.get("failureMessage"),
                     data.get("stripeEventId"),
+                    data.get("offer"),
+                    bool(data.get("isComp", False)),
                 ),
             )
 
@@ -75,6 +77,36 @@ def record_refund(data: dict[str, Any]) -> None:
                 if cur.fetchone():
                     return
     record_transaction({**data, "status": "refunded", "amountCents": amount})
+
+
+def _offer_metrics(cur: Any) -> dict[str, Any]:
+    """PP-166 first-month offer stats. Comp (100% discount) invoices are always excluded."""
+    cur.execute(
+        """
+        SELECT COUNT(DISTINCT stripe_subscription_id) AS redemptions,
+               COALESCE(SUM(amount_cents), 0) AS revenue
+        FROM admin_transactions
+        WHERE offer IS NOT NULL AND status = 'succeeded' AND NOT is_comp
+        """
+    )
+    row = cur.fetchone() or {}
+    cur.execute(
+        """
+        SELECT COUNT(DISTINCT t.stripe_subscription_id) AS converted
+        FROM admin_transactions t
+        WHERE t.status = 'succeeded' AND NOT t.is_comp AND t.amount_cents >= 499
+          AND t.stripe_subscription_id IN (
+              SELECT stripe_subscription_id FROM admin_transactions
+              WHERE offer IS NOT NULL AND NOT is_comp
+          )
+        """
+    )
+    conv = cur.fetchone() or {}
+    return {
+        "redemptions": int(row.get("redemptions") or 0),
+        "revenueCents": int(row.get("revenue") or 0),
+        "convertedToFullPrice": int(conv.get("converted") or 0),
+    }
 
 
 def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
@@ -117,14 +149,14 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
             by_category = {r["category"]: int(r["count"]) for r in cur.fetchall()}
 
             cur.execute(
-                "SELECT COALESCE(SUM(amount_cents), 0) AS total FROM admin_transactions WHERE status = 'succeeded'"
+                "SELECT COALESCE(SUM(amount_cents), 0) AS total FROM admin_transactions WHERE status = 'succeeded' AND NOT is_comp"
             )
             lifetime_revenue = int(cur.fetchone()["total"])
 
             cur.execute(
                 """
                 SELECT COALESCE(SUM(amount_cents), 0) AS total FROM admin_transactions
-                WHERE status = 'succeeded' AND created_at >= %s
+                WHERE status = 'succeeded' AND NOT is_comp AND created_at >= %s
                 """,
                 (dates["currentStart"],),
             )
@@ -133,7 +165,7 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
             cur.execute(
                 """
                 SELECT COALESCE(SUM(amount_cents), 0) AS total FROM admin_transactions
-                WHERE status = 'succeeded' AND created_at >= %s AND created_at < %s
+                WHERE status = 'succeeded' AND NOT is_comp AND created_at >= %s AND created_at < %s
                 """,
                 (dates["previousStart"], dates["previousEnd"]),
             )
@@ -144,6 +176,8 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
                 if previous_revenue > 0
                 else (100.0 if current_revenue > 0 else 0.0)
             )
+
+            offer_metrics = _offer_metrics(cur)
 
             cur.execute(
                 """
@@ -210,6 +244,7 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
         "logins": {"dau": dau, "sparkline": []},
         "transactions": recent_txns,
         "failedPayments": {"count": failed_count, "recent": failed_recent},
+        "offer": offer_metrics,
     }
 
 
