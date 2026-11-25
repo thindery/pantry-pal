@@ -15,12 +15,12 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 | | Count |
 |--|-------|
-| Done | 132 (previous 110 plus 22 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 150, 151, 155, 168–173) |
+| Done | 133 (previous 110 plus 23 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 155, 168–173) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 8 · P2: 9 · P3: 2 (24 on the board below) |
+| Open by priority | P0: 5 · P1: 7 · P2: 9 · P3: 2 (23 on the board below) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -58,6 +58,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-151 E2E shopping list (same harness; test-only) | [#93](https://github.com/thindery/pantry-pal/pull/93) | 0366501 | test-only, no runtime change |
 | PP-173 (new, P2) Scan page hydration error when Quick Scan is off | [#94](https://github.com/thindery/pantry-pal/pull/94) | 1094760 | 1094760 (read from the frontend container) |
 | PP-149 E2E barcode lookup and add, normal mode (partly done: camera Quick Scan add still open) | [#95](https://github.com/thindery/pantry-pal/pull/95) | cfe329e | test-only, no runtime change |
+| PP-149 Quick Scan camera add (finishes ticket, generated fake webcam) | [#96](https://github.com/thindery/pantry-pal/pull/96) | 28fe947 | test-only, no runtime change |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
@@ -106,7 +107,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (8)
+### P1 — next up, high impact (7)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -116,7 +117,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
-| PP-149 | E2E: barcode scan including Quick Scan | 🟡 Partly done (#95; camera Quick Scan add open) | E2E |
 | PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
 ### P2 — soon (9)
@@ -424,7 +424,7 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 |--------|-------|----------|--------|
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
-| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
 | PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
@@ -443,7 +443,7 @@ Documented for later; no implementation in this pass.
 | PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
-| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
 | PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
