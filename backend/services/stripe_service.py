@@ -876,12 +876,46 @@ def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
     )
 
 
+def _invoice_id_for_charge(charge: dict[str, Any]) -> Optional[str]:
+    """Find the invoice a charge paid.
+
+    PP-177: API 2025-03-31.basil and later (this account's webhooks are on
+    2026-06-24.dahlia) dropped `Charge.invoice`; the link is an InvoicePayment
+    keyed by the payment intent. Older payloads still carry `invoice`.
+    """
+    invoice = charge.get("invoice")
+    if isinstance(invoice, dict):
+        invoice = invoice.get("id")
+    if invoice:
+        return invoice
+    payment_intent = charge.get("payment_intent")
+    if isinstance(payment_intent, dict):
+        payment_intent = payment_intent.get("id")
+    if not payment_intent:
+        return None
+    try:
+        payments = stripe.InvoicePayment.list(
+            payment={"type": "payment_intent", "payment_intent": payment_intent},
+            limit=1,
+        )
+    except Exception:
+        __import__("logging").getLogger(__name__).exception("Could not look up invoice for refunded charge")
+        return None
+    for payment in _obj_get(payments, "data") or []:
+        found = _obj_get(payment, "invoice")
+        if isinstance(found, dict):
+            found = found.get("id")
+        if found:
+            return found
+    return None
+
+
 def _handle_charge_refunded(charge: dict[str, Any]) -> None:
     amount = int(charge.get("amount") or 0)
     refunded_amount = int(charge.get("amount_refunded") or 0)
     if not charge.get("refunded") and refunded_amount <= 0:
         return
-    invoice_id = charge.get("invoice")
+    invoice_id = _invoice_id_for_charge(charge)
     customer_id = charge.get("customer")
     subscription_id = None
     if invoice_id:
