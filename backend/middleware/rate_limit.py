@@ -31,7 +31,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         settings = get_settings()
         path = request.url.path
 
-        if path in ("/health", "/api/webhooks/stripe"):
+        if path in ("/health", "/api/webhooks/stripe", "/api/webhooks/resend"):
             return await call_next(request)
 
         if path == "/api/client-errors" and request.method == "POST":

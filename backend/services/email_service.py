@@ -41,6 +41,44 @@ def _sanitize_error(error: Any) -> str:
     return msg[:500]
 
 
+def _mask_email(email: Optional[str]) -> str:
+    """Mask email address for safe logging (e.g. u***r@example.com)."""
+    if not email:
+        return "[EMPTY]"
+    parts = email.split("@", 1)
+    if len(parts) == 2:
+        name, domain = parts
+        if len(name) <= 2:
+            masked_name = name[0] + "***" if name else "***"
+        else:
+            masked_name = name[0] + "***" + name[-1]
+        return f"{masked_name}@{domain}"
+    return "***"
+
+
+def is_suppressed(email: Optional[str]) -> bool:
+    """Check if an email address is in the suppressions table."""
+    if not email:
+        return False
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT 1 FROM email_suppressions WHERE email = %s",
+                    (email.strip().lower(),),
+                )
+                return cur.fetchone() is not None
+    except Exception:
+        logger.exception("email_suppressions lookup failed for %s", _mask_email(email))
+        return False
+
+
+def _is_billing_critical_template(template: str) -> bool:
+    """Return True if template is billing-critical and should bypass suppression."""
+    t = (template or "").strip().lower()
+    return t.startswith("payment_") or t.startswith("cancel") or t == "subscription_ended"
+
+
 def count_sent(
     *,
     template: Optional[str] = None,
@@ -143,6 +181,25 @@ def send_email(
         return {"skipped": True, "reason": "missing_recipient"}
     if already_sent(idempotency_key):
         return {"skipped": True, "reason": "already_sent"}
+
+    if is_suppressed(to):
+        if _is_billing_critical_template(template):
+            # Billing-critical templates (payment confirmations, payment failures,
+            # cancellation scheduled, subscription ended) must still be sent even if the
+            # recipient address is in email_suppressions, so users receive legally and
+            # contractually required financial/subscription notifications.
+            logger.warning(
+                "Recipient %s is in email_suppressions, but sending billing-critical email %s anyway",
+                _mask_email(to),
+                template,
+            )
+        else:
+            logger.info(
+                "Skipping non-billing email %s: recipient %s is suppressed",
+                template,
+                _mask_email(to),
+            )
+            return {"skipped": True, "reason": "suppressed"}
 
     api_key = _api_key()
     from_addr = _from_address()
