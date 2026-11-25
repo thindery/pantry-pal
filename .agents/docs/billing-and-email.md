@@ -58,6 +58,7 @@ Templates (placeholders only): repo-root `.env.example` and `.env.prod.example`.
 - `STRIPE_FAMILY_MONTHLY_PRICE_ID`
 - `STRIPE_FAMILY_YEARLY_PRICE_ID`
 - `STRIPE_PRO_FIRST_MONTH_COUPON_ID` (optional, PP-166; blank = offer off)
+- `LOW_STOCK_DIGEST_ENABLED` (optional, PP-137; blank = weekly opt-in low-stock email off, toggle hidden)
 
 ### Resend (placeholders in `.env.example` / `.env.prod.example`; real values only on OVH)
 
@@ -93,3 +94,6 @@ Terraform (`deploy/terraform/main.tf`) now matches live Cloudflare DNS. **Do not
 
 A 2026-11-22 test of `send_payment_confirmation` to Tylor landed in Gmail Inbox with `spf=pass`, `dkim=pass` (`@mypantryhub.com` / `s=resend`), and `dmarc=pass`.
 
+## Weekly low-stock email (PP-137)
+
+Opt-in only, off unless `LOW_STOCK_DIGEST_ENABLED=1`. Template `low_stock_digest`, once per user per ISO week, Sundays 9:00 AM CT from the OVH cron (`docker exec pantry-pal-backend python -m backend.jobs.low_stock_digest`). Not billing-critical: suppressed addresses are skipped, and every mail has a one-click unsubscribe (`/api/public/email/unsubscribe?token=`, plus `List-Unsubscribe` headers). Lists only items at or below the user's synced low-stock levels; nothing is sent when nothing is low.

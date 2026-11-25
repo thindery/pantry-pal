@@ -34,6 +34,8 @@ const PUBLIC_PREFIXES = [
   "/api/webhooks/stripe",
   "/api/webhooks/resend",
   "/api/public/offer",
+  // PP-137: one-click unsubscribe from the low-stock email must work signed out
+  "/api/public/email/unsubscribe",
 ];
 
 const PROTECTED_PREFIXES = [
@@ -45,6 +47,7 @@ const PROTECTED_PREFIXES = [
   "/design-system",
   "/api/user/",
   "/api/subscription",
+  "/api/email-preferences",
   "/api/customer-portal",
   "/api/admin",
   "/api/items",

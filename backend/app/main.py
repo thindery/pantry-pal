@@ -18,6 +18,7 @@ from backend.routers import (
     admin,
     barcode,
     client_errors,
+    email_preferences,
     emails,
     health,
     instacart,
@@ -114,6 +115,7 @@ def create_app() -> FastAPI:
     app.include_router(recipes.router)
     app.include_router(item_groups.router)
     app.include_router(offer.router)
+    app.include_router(email_preferences.router)
     app.include_router(instacart.router)
 
     return app
