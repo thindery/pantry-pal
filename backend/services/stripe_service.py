@@ -368,7 +368,7 @@ def _has_ever_subscribed(customer_id: str, stored: Optional[dict[str, Any]]) -> 
 
 
 def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
-    session = stripe.billingPortal.Session.create(customer=customer_id, return_url=return_url)
+    session = stripe.billing_portal.Session.create(customer=customer_id, return_url=return_url)
     return {"sessionId": _obj_get(session, "id") or "", "url": session.url}
 
 
@@ -561,7 +561,7 @@ async def create_portal_session(
     if not subscription or not subscription.get("stripeCustomerId"):
         raise ValueError("No Stripe customer found for this user")
     _ensure_customer_email(subscription["stripeCustomerId"], email=email, name=name)
-    session = stripe.billingPortal.Session.create(
+    session = stripe.billing_portal.Session.create(
         customer=subscription["stripeCustomerId"],
         return_url=return_url,
     )
