@@ -485,4 +485,4 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-178 | Send to Instacart (Beta) button on the shopping list (hidden until `INSTACART_API_KEY` is set) | P2 | 🟡 Built; waiting on Tylor's Instacart Developer Platform key |
+| PP-178 | Send to Instacart (Beta) button on the shopping list (hidden until `INSTACART_API_KEY` is set) | P2 | ⛔ Blocked: Instacart IDP applications closed. Code merged ([#110](https://github.com/thindery/pantry-pal/pull/110)), dormant without `INSTACART_API_KEY` |
