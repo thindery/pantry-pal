@@ -1,7 +1,7 @@
 # PP-166: $1 first-month offer test on Pro monthly
 
-**Status:** ✅ Merged dark (PR #62, Nov 25 12:39 AM CT); off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set, which needs Tylor's own yes
-**Updated:** 2026-11-24 America/Chicago
+**Status:** ✅ Done — live 2026-11-25 1:57 PM CT (Tylor approved in chat 1:54 PM CT)
+**Updated:** 2026-11-25 America/Chicago
 **Priority:** P1
 **Phase:** Revenue experiments
 **Created:** 2026-11-24
@@ -44,4 +44,14 @@ No commits, no pushes, no secrets or real key values anywhere, no dependency chu
 - [x] Comp (100% discount) rows excluded from revenue and offer metrics.
 - [x] Backend and frontend tests added; pytest, vitest, typecheck, lint and build pass.
 - [ ] Live test-mode checkout: **blocked**, no Stripe test key on the Mini (the `.env`/`.env.dev` key is a placeholder and returns 401; Stripe CLI is not logged in). Mocked in unit tests.
-- [ ] Tylor approves live setup (see PR description), then deploy.
+- [x] Tylor approves live setup (see PR description), then deploy. Approved 2026-11-25 1:54 PM CT.
+
+## Go-live (2026-11-25)
+
+- Live coupon `pro-monthly-first-month-1usd`: $3.99 off USD, `duration: once`, `applies_to` the Pro product (monthly and yearly share it; the code limits it to monthly).
+- `STRIPE_PRO_FIRST_MONTH_COUPON_ID` set in `/opt/pantry-pal/.env.prod`; backend recreated. `/api/public/offer` returns `enabled: true`.
+- Browser check: `/pricing` shows "$1 for your first month of Pro, then $4.99/mo" and the homepage hero shows the offer line.
+- Live Checkout Session dry run (no customer, no payment): subtotal $4.99, total $1.00, expired right away. No live charge was run.
+- Comp exclusion: Tylor's 100%-off invoice rows are `is_comp = true` in `admin_transactions`.
+- GA4 `purchase`: already uses the session `amount_total`; this PR removes the 4.99 fallback so an unknown amount is omitted instead of guessed.
+- Rollback: remove the env line and `docker compose -p pantry-pal up -d --no-deps backend`. Optionally delete the coupon in Stripe (Tylor's call).

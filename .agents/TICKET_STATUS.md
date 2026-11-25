@@ -90,7 +90,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 
 - PP-164 (local ads hub): waiting on Tylor.
 - PP-139, PP-140: need Tylor's yes.
-- PP-166 / PR #62: merged dormant; enabling it means a live Stripe coupon, which is Tylor's call.
+- PP-166: ✅ live Nov 25 1:57 PM CT after Tylor's yes.
 - GROWTH-010 (Search Console, other domains): blocked on verification tokens.
 - PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 merged 2026-11-25 and deployed; AdSense PR #106 live).
 - PP-148 (real Google sign-up / login E2E), PP-152–PP-153 (Stripe checkout, cancel): need a Google test account and Stripe test-mode keys. (PP-154 shipped as a backend integration test with signed local webhooks.)
@@ -129,7 +129,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (the "500" came from the checker's proxy) | ✅ Closed — already satisfied (301 verified 2026-11-25) | SEO / AEO |
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | ✅ Done (live 2026-11-25) | SEO / AEO |
-| PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
+| PP-166 | $1 first-month offer test on Pro monthly (live Nov 25, 1:57 PM CT) | ✅ Done (live) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
 
 ### P2 — soon (9)
@@ -306,7 +306,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 | PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
 | PP-167 | Handle customer.subscription.created before enabling it on the live webhook (commit messages say PP-166) | P0 | ✅ Done (live `0753f20`) |
-| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Merged dark (offer off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set), Remy overnight Nov 25 |
+| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Done — live Nov 25 1:57 PM CT (coupon `pro-monthly-first-month-1usd`) |
 | GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094; live webhook now includes refund + subscription.created events |
 
 ## Billing & email audit (2026-11-22)

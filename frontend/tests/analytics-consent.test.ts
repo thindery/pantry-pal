@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CHECKOUT_SESSION_STORAGE_KEY,
   DEFAULT_PURCHASE_CURRENCY,
-  DEFAULT_PURCHASE_VALUE,
   PURCHASE_TRACKED_PREFIX,
   SIGN_UP_TRACKED_KEY,
   clearAnalyticsQueue,
@@ -370,11 +369,11 @@ describe("trackPurchase and checkout transaction id", () => {
     window.gtag = gtagMock;
     window.__gaLoaded = true;
 
-    const first = trackPurchase({ transaction_id: "cs_test_123" });
+    const first = trackPurchase({ transaction_id: "cs_test_123", value: 1 });
     expect(first).toBe(true);
     expect(gtagMock).toHaveBeenCalledTimes(1);
     expect(gtagMock).toHaveBeenCalledWith("event", "purchase", {
-      value: DEFAULT_PURCHASE_VALUE,
+      value: 1,
       currency: DEFAULT_PURCHASE_CURRENCY,
       transaction_id: "cs_test_123",
     });
@@ -390,11 +389,11 @@ describe("trackPurchase and checkout transaction id", () => {
     window.gtag = gtagMock;
     window.__gaLoaded = true;
 
-    trackPurchase({ transaction_id: "cs_aaa" });
-    trackPurchase({ transaction_id: "cs_bbb" });
+    trackPurchase({ transaction_id: "cs_aaa", value: 4.99 });
+    trackPurchase({ transaction_id: "cs_bbb", value: 79.99 });
     expect(gtagMock).toHaveBeenCalledTimes(2);
     expect(gtagMock).toHaveBeenNthCalledWith(2, "event", "purchase", {
-      value: 4.99,
+      value: 79.99,
       currency: "USD",
       transaction_id: "cs_bbb",
     });
@@ -413,9 +412,9 @@ describe("trackPurchase and checkout transaction id", () => {
     const gtagMock = vi.fn();
     window.gtag = gtagMock;
     window.__gaLoaded = true;
+    // No amount from the backend: omit value instead of guessing the list price.
     trackPurchase();
     expect(gtagMock).toHaveBeenCalledWith("event", "purchase", {
-      value: 4.99,
       currency: "USD",
       transaction_id: "cs_from_url",
     });
