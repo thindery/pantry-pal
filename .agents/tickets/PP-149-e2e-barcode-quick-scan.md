@@ -1,6 +1,6 @@
 # PP-149: E2E — barcode scan including Quick Scan
 
-**Status:** 🟡 Partly done
+**Status:** 🔄 In review
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -57,3 +57,4 @@ Prove barcode add still works in normal and Quick Scan modes, including the look
 
 - 2026-11-25 overnight (Pantry Hub Lead): `e2e/barcode-scan.spec.ts` (normal mode, "Type Barcode" path, PP-150 test session + API stand-in). Covers a product_cache hit (Cached badge), an Open Food Facts hit and a UPCitemdb fallback (as the backend reports them, Live badge), and a total miss with manual name entry (Add disabled until a name is typed). Each is added through `POST /api/barcode/{code}` and shows on `/dashboard/`. Direct Open Food Facts / UPCitemdb calls are blocked and asserted absent. Quick Scan: toggling it on hides the manual/image fallbacks and persists `pantry-quick-scan`. Found and fixed PP-173 (hydration error) on the way.
 - Still open: a Quick Scan camera add (ledger + toast) needs a camera fixture (fake media stream with a barcode video, or a decode hook). The backend fallback order itself is covered by tests/test_barcode.py, not this spec.
+- 2026-11-25 overnight, part 2: `e2e/quick-scan-camera.spec.ts` drives Quick Scan with a fake Chromium camera. `e2e/support/fake-camera.ts` writes a Y4M video of EAN-13 0012345678905 at test time (no binary fixture in git). The decoded barcode hits the mocked lookup, the product is added with no confirm step, and the session ledger and toast region show it. Stable across 4 repeats. All PP-149 assertions are now covered on the frontend; backend fallback order stays in tests/test_barcode.py.
