@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Check,
   Loader2,
+  Newspaper,
   Plus,
   RefreshCw,
   Settings,
@@ -103,6 +105,13 @@ export function ShoppingListView() {
           <span className="text-xs text-[var(--muted)]">
             ({uncheckedCount})
           </span>
+          <Link
+            href="/dashboard/weekly-ads/"
+            className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+          >
+            <Newspaper size={14} aria-hidden="true" />
+            Weekly ads
+          </Link>
         </div>
         <button
           type="button"

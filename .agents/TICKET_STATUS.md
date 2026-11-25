@@ -88,7 +88,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 
 ### Blocked, and why
 
-- PP-164 (local ads hub): waiting on Tylor.
+- PP-164 (local ads hub): ✅ v1 link-out shipped Nov 25 at /dashboard/weekly-ads/ (Springfield-area seed; national fallback elsewhere).
 - PP-139, PP-140: need Tylor's yes.
 - PP-166: ✅ live Nov 25 1:57 PM CT after Tylor's yes.
 - GROWTH-010 (Search Console, other domains): blocked on verification tokens.
