@@ -24,7 +24,7 @@ Endpoint `we_1Twvx9RHCLA4QETrTSnoc38P` (status `enabled`, URL unchanged).
 - Before: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`
 - After (add only): the five above, plus `charge.refunded`, `charge.refund.updated`, `customer.subscription.created`
 
-`charge.refunded` / `charge.refund.updated` already had the PP-094 handler. `customer.subscription.created` was missing a handler, so PP-166 (`cdd3053`, merge `0753f20`, live build `0753f20`) shipped first: grants Pro only for active/trialing subs via the same path as `checkout.session.completed`; does not replace a different linked active sub; incomplete created events are ignored.
+`charge.refunded` / `charge.refund.updated` already had the PP-094 handler. `customer.subscription.created` was missing a handler, so PP-167 (filed as PP-166 in commit `cdd3053`, merge `0753f20`, live build `0753f20`) shipped first: grants Pro only for active/trialing subs via the same path as `checkout.session.completed`; does not replace a different linked active sub; incomplete created events are ignored.
 
 Stripe MCP could not write (missing permission). The endpoint was updated with a one-off `POST /v1/webhook_endpoints/{id}` inside the backend container using the app's existing Stripe key. The key and webhook secret were not printed or written to a file.
 
