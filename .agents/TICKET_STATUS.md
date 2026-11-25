@@ -83,7 +83,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 ### Still open
 
 - PP-136: ✅ done Nov 25 — `invoice.upcoming` enabled on the live webhook; renewal reminder before the first full-price renewal after a promo.
-- PP-137: an opt-in low-stock digest is a new recurring customer email. Needs Tylor's yes.
+- PP-137: ✅ built Nov 25, switched off (`LOW_STOCK_DIGEST_ENABLED`). First send waits for Tylor to OK the copy.
 - PP-115, PP-114: backlog (research / real data first).
 
 ### Blocked, and why
@@ -151,7 +151,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
 | PP-129 | Optional full-access Resend read key | 📋 Backlog — needs Tylor’s yes | Marketing dashboard |
-| PP-137 | Low-stock or expiring-items digest (only if relevant) | 📋 Open | Email design |
+| PP-137 | Low-stock or expiring-items digest (only if relevant) | ✅ Built, off (Nov 25) | Email design |
 
 ## Phase 0 — Bootstrap
 
@@ -398,7 +398,7 @@ Tylor liked the first live payment-confirmation mail but found it visually bare,
 | PP-134 | Payment-failed email design | P1 | ✅ Done |
 | PP-135 | Cancellation and win-back email design | P2 | 📋 Open |
 | PP-136 | Promo or trial-ending reminder (only if relevant) | P2 | ✅ Done Nov 25 (`invoice.upcoming` live) |
-| PP-137 | Low-stock or expiring-items digest (only if relevant) | P3 | 📋 Open |
+| PP-137 | Low-stock or expiring-items digest (only if relevant) | P3 | ✅ Built, off until Tylor OKs the copy |
 
 ## Revenue options (2026-11-22)
 

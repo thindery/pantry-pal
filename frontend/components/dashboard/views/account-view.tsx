@@ -22,6 +22,7 @@ import {
 } from "@/services/subscription";
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
 import { trackEvent } from "@/lib/analytics";
+import { LowStockDigestToggle } from "@/components/LowStockDigestToggle";
 
 export function AccountView() {
   const { data: session } = useSession();
@@ -30,6 +31,8 @@ export function AccountView() {
     isPaid,
     setShowThresholdSettings,
     handleScanReceiptClick,
+    thresholdConfig,
+    itemThresholdOverrides,
   } = usePantry();
 
   const email = session?.user?.email ?? "";
@@ -159,6 +162,11 @@ export function AccountView() {
           </div>
         )}
       </div>
+
+      <LowStockDigestToggle
+        thresholdConfig={thresholdConfig}
+        itemThresholdOverrides={itemThresholdOverrides}
+      />
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm divide-y divide-[var(--border)]">
         {menuItems.map((item) => {

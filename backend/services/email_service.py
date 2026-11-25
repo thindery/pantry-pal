@@ -174,6 +174,7 @@ def send_email(
     template: str,
     idempotency_key: str,
     user_id: Optional[str] = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> dict[str, Any]:
     """Send one transactional email, or skip if already sent / not configured."""
     if not to:
@@ -228,15 +229,16 @@ def send_email(
         import resend
 
         resend.api_key = api_key
-        result = resend.Emails.send(
-            {
-                "from": from_addr,
-                "to": [to],
-                "subject": subject,
-                "html": html,
-                "text": text,
-            }
-        )
+        params: dict[str, Any] = {
+            "from": from_addr,
+            "to": [to],
+            "subject": subject,
+            "html": html,
+            "text": text,
+        }
+        if headers:
+            params["headers"] = dict(headers)
+        result = resend.Emails.send(params)
         resend_id = result.get("id") if isinstance(result, dict) else getattr(result, "id", None)
         with db_connection() as conn:
             with conn.cursor() as cur:
