@@ -24,6 +24,26 @@ fi
 echo $$ > "$LOCAL_LOCK"
 trap 'rm -f "$LOCAL_LOCK"' EXIT
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# PP-147: Pre-deploy smoke gate. Run locally before SSHing to OVH.
+if [ "${SKIP_E2E_SMOKE:-0}" = "1" ]; then
+    echo "⚠️  WARNING: SKIP_E2E_SMOKE=1 is set! Skipping local E2E smoke tests. Emergency rollback use only."
+else
+    git -C "$REPO_ROOT" fetch -q origin "$TAG" 2>/dev/null || true
+    LOCAL_HEAD=$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)
+    REMOTE_HEAD=$(git -C "$REPO_ROOT" rev-parse "origin/$TAG" 2>/dev/null || echo unknown)
+    if [ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]; then
+        echo "⚠️  WARNING: smoke runs against this checkout ($LOCAL_HEAD), but OVH deploys origin/$TAG ($REMOTE_HEAD). Run from an up-to-date checkout of $TAG."
+    fi
+    echo "Running local E2E smoke suite before deploy..."
+    if ! (cd "$REPO_ROOT" && npm run test:e2e:smoke); then
+        echo "❌ E2E smoke suite failed! Aborting deploy without connecting to server." >&2
+        exit 1
+    fi
+    echo "✅ E2E smoke suite passed."
+fi
+
 echo "Deploying pantry-pal version $TAG to OVH server..."
 
 ssh ovh "
