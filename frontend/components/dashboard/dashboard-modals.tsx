@@ -87,7 +87,7 @@ export function DashboardModals() {
       )}
 
       {isConfirmingScan && scannedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in fade-in zoom-in duration-200">
             <h3 className="text-xl font-bold text-slate-800 mb-4">
               Add to Inventory
