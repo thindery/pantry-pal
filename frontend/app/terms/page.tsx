@@ -19,7 +19,7 @@ export const metadata = createPageMetadata({
   title: "Terms of Service",
   description:
     "Pantry Hub Terms of Service. Read about subscriptions, acceptable use, and your rights when using our pantry inventory app.",
-  path: "/terms",
+  path: "/terms/",
 });
 
 const NAV = [

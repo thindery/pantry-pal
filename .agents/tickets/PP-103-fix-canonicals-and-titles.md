@@ -1,6 +1,6 @@
 # PP-103: Fix inherited canonicals, doubled titles, and page-level social metadata
 
-**Status:** 📋 Open
+**Status:** 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed)
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -39,3 +39,11 @@ Search engines may collapse pricing into the homepage and never treat it as its 
 - [ ] Privacy and terms canonicals remain correct
 - [ ] Sign-in, auth error, and checkout success/cancel send `noindex, nofollow`
 - [ ] Each indexable page has a unique title, description, and `og:url` for that page
+
+## Implementation (2026-11-25, SEO desk overnight sweep)
+
+- Root layout no longer sets a site-wide canonical or `og:url` (those made every page point at the homepage).
+- `lib/site-metadata.ts`: `createPageMetadata` now sets a trailing-slash self-canonical, `og:url`, `og:siteName`, OG/Twitter image, never doubles the brand (`{ absolute }` when the title already has it), and has a `noindex` option.
+- Home, pricing, privacy, terms, sign-in, and auth error use it; pricing keeps `/pricing/og-image`. Checkout layout sends `noindex, nofollow`.
+- Tests: `tests/site-metadata.test.ts` (3 new). Local `next start`: `/pricing/` title "Simple Pricing - Start Free | Pantry Hub", canonical `/pricing/`; sign-in "Sign In | Pantry Hub" `noindex, nofollow`; auth error + checkout success/cancel `noindex, nofollow`; privacy/terms canonicals unchanged.
+- Sign-in still in the sitemap until PP-105 (stacked on this branch).

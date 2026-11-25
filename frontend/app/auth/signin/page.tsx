@@ -5,11 +5,14 @@ import { isGoogleAuthConfigured } from "@/lib/auth-providers";
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
 import { BRAND_NAME } from "@/lib/site-content";
+import { createPageMetadata } from "@/lib/site-metadata";
 
-export const metadata = {
-  title: `Sign In — ${BRAND_NAME}`,
+export const metadata = createPageMetadata({
+  title: "Sign In",
   description: `Sign in to ${BRAND_NAME} with Google`,
-};
+  path: "/auth/signin/",
+  noindex: true,
+});
 
 export default async function SignInPage() {
   const session = await auth();

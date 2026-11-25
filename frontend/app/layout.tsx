@@ -56,7 +56,6 @@ export const metadata: Metadata = {
     description: SITE_OG_DESCRIPTION,
     type: "website",
     locale: "en_US",
-    url: SITE_URL,
     siteName: BRAND_NAME,
     images: [
       {
@@ -84,9 +83,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  alternates: {
-    canonical: SITE_URL,
-  },
+  // No site-wide canonical: each page sets its own via createPageMetadata (PP-103).
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

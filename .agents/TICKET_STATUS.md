@@ -35,7 +35,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
 | PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
@@ -277,7 +277,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 |--------|-------|----------|--------|
 | PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open (Tylor copy follow-up; 206 items counted) |
 | PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
 | PP-104 | Allow public OG images and add favicon/logo assets | P0 | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 📋 Open |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 📋 Open |
