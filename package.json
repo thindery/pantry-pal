@@ -25,9 +25,12 @@
     "openapi:export": ".venv/bin/python scripts/export_openapi.py",
     "check": "npm run typecheck && npm run lint && npm run test:run && npm run test:backend",
     "check:ci": "npm run check && npm run build:frontend",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "concurrently": "^8.2.2",
     "husky": "^9.1.7"
   }
