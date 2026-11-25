@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.auth_session import require_authenticated_user_id, resolve_authenticated_user
 from backend.services.user_profile import merge_contact
 from backend.models.responses import error_response, success_response
-from backend.models.schemas import CheckoutRequest, PortalRequest
+from backend.models.schemas import CheckoutConfirmRequest, CheckoutRequest, PortalRequest
 from backend.lib.url_validation import validate_redirect_url
 from backend.services import email_service, pantry_service, stripe_service, subscription_service
 
@@ -105,6 +105,30 @@ async def checkout(body: CheckoutRequest, request: Request, user_id: str = Depen
         raise HTTPException(
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to create checkout session"),
+        )
+
+
+@router.post("/checkout/confirm")
+async def confirm_checkout(body: CheckoutConfirmRequest, user_id: str = Depends(require_authenticated_user_id)):
+    """PP-168: success page confirms the paid session so a late webhook cannot show Free."""
+    try:
+        result = stripe_service.confirm_checkout_session(user_id, body.sessionId)
+        return success_response(result)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=error_response("VALIDATION_ERROR", "Invalid checkout session"),
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail=error_response("NOT_FOUND", "Checkout session not found"),
+        ) from exc
+    except Exception:
+        logger.exception("Checkout confirm failed")
+        raise HTTPException(
+            status_code=502,
+            detail=error_response("INTERNAL_ERROR", "Could not confirm checkout yet"),
         )
 
 
