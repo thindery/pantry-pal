@@ -165,23 +165,23 @@ const PROOF_CARDS = [
 export const FAQS = [
   {
     question: 'How does the receipt scanning work?',
-    answer: 'Take a photo of your grocery receipt and our OCR engine extracts item names, quantities, and categories automatically. It uses advanced AI to recognize products, match them to our database, and add them directly to your inventory. No manual typing required.',
+    answer: 'Take a photo of your grocery receipt. Pantry Hub reads the text with OCR, suggests the items it finds, and lets you review and fix them before anything is added to your pantry. The Free plan includes 5 receipt scans a month; Pro and Family plans are unlimited.',
   },
   {
     question: `Can I use ${BRAND_NAME} with multiple devices?`,
-    answer: 'Yes! With a Pro or Family plan, your inventory syncs across all your devices in real-time. Free plan is limited to single device use. Access your pantry from phone, tablet, or desktop - everything stays in sync.',
+    answer: `${BRAND_NAME} runs in your web browser on a phone, tablet, or computer. Pro and Family plans include use across multiple devices. The Free plan is for a single device.`,
   },
   {
     question: 'Is there a limit on how many items I can track?',
-    answer: 'Free plans can track up to 50 items. Pro and Family plans offer unlimited item tracking. You can add as many pantry items, household supplies, and personal items as you need.',
+    answer: 'The Free plan tracks up to 50 items. Pro and Family plans have no item limit.',
   },
   {
     question: 'Can I share my pantry with family members?',
-    answer: 'Absolutely! The Family plan supports up to 5 household members with shared inventory and individual shopping lists. Everyone sees updates in real-time, and you can control who has admin access.',
+    answer: 'Yes. The Family plan lets up to 5 household members share one pantry inventory.',
   },
   {
     question: 'What happens to my data if I cancel?',
-    answer: 'Your data remains accessible in read-only mode. You can export your inventory anytime as CSV, and if you re-subscribe, everything picks up where you left off. We never delete your data - you own it.',
+    answer: 'If you cancel a paid plan, your account moves to the Free plan and your pantry items stay in your account. Free plan limits apply after that, and you can upgrade again at any time.',
   },
 ];
 
@@ -471,14 +471,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
                       {openFaqIndex === index ? '−' : '+'}
                     </span>
                   </button>
-                  {openFaqIndex === index && (
-                    <div 
-                      id={`faq-answer-${index}`}
-                      className="p-4 bg-white"
-                    >
-                      <p className="text-slate-600">{faq.answer}</p>
-                    </div>
-                  )}
+                  {/* PP-106: every answer stays in the HTML (FAQPage JSON-LD must match visible text); closed answers are only hidden. */}
+                  <div
+                    id={`faq-answer-${index}`}
+                    className="p-4 bg-white"
+                    hidden={openFaqIndex !== index}
+                  >
+                    <p className="text-slate-600">{faq.answer}</p>
+                  </div>
                 </div>
               </RevealOnScroll>
             ))}

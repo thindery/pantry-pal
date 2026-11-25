@@ -33,21 +33,13 @@ export function OrganizationSchema() {
   );
 }
 
-// WebSite Schema with SearchAction
+// WebSite Schema. No SearchAction: there is no public search page (PP-106).
 export function WebSiteSchema() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Pantry Hub",
-    url: SITE_URL,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
+    url: `${SITE_URL}/`,
   };
 
   return (
@@ -65,7 +57,8 @@ export function SoftwareApplicationSchema() {
     "@type": "SoftwareApplication",
     name: "Pantry Hub",
     applicationCategory: "LifestyleApplication",
-    operatingSystem: "Web, iOS, Android",
+    // Web app only; there is no App Store or Google Play listing (PP-106).
+    operatingSystem: "Web",
     offers: [
       {
         "@type": "Offer",
@@ -89,16 +82,15 @@ export function SoftwareApplicationSchema() {
       },
     ],
     featureList: [
-      "AI Receipt Scanning",
-      "Barcode Scanner",
+      "Receipt scanning (OCR)",
+      "Barcode scanner",
       "Quick Scan",
-      "Inventory Ledger",
-      "Smart Analytics",
-      "Shopping Lists",
-      "Household Sharing",
+      "Pantry inventory",
+      "Shopping lists",
+      "Household sharing (Family plan)",
     ],
-    description: "Track pantry inventory, scan receipts and barcodes, auto-generate shopping lists, and manage household stock with AI-powered kitchen utilities.",
-    url: SITE_URL,
+    description: "Track pantry inventory, scan receipts and barcodes, and build shopping lists from what is running low.",
+    url: `${SITE_URL}/`,
     screenshot: `${SITE_URL}/og-image.png`,
   };
 
