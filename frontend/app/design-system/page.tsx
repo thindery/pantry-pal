@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Barcode,
-  Minus,
+  ChefHat,
   Package,
   Plus,
   Settings,
@@ -12,26 +12,20 @@ import {
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { BRAND_NAME } from "@/lib/site-content";
+import { LivePantryRows, LiveShoppingRows } from "./LiveRows";
 import { colors, defaultThresholds } from "@/lib/design-tokens";
 
 export const metadata: Metadata = {
-  title: "Design System (PP-042)",
-  description: "Pantry Hub dashboard design kit reference for PP-042 designer handoff.",
+  title: "Design System",
+  description: "Pantry Hub shipped component and token reference.",
   robots: { index: false, follow: false },
 };
 
-const SWATCHES = [
-  { name: "Primary", token: "--primary", hex: colors.primary },
-  { name: "Primary light", token: "--primary-light", hex: colors.primaryLight },
-  { name: "Accent", token: "--accent", hex: colors.accent },
-  { name: "Accent light", token: "--accent-light", hex: colors.accentLight },
-  { name: "Background", token: "--background", hex: colors.background },
-  { name: "Surface", token: "--surface", hex: colors.surface },
-  { name: "Foreground", token: "--foreground", hex: colors.foreground },
-  { name: "Muted", token: "--muted", hex: colors.muted },
-  { name: "Border", token: "--border", hex: colors.border },
-  { name: "Danger", token: "--danger", hex: colors.danger },
-] as const;
+const SWATCHES = Object.entries(colors).map(([name, hex]) => ({
+  name,
+  token: `--${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+  hex,
+}));
 
 function Section({
   title,
@@ -56,17 +50,17 @@ export default function DesignSystemPage() {
       <MarketingNav />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-12">
         <header className="space-y-2">
-          <p className="text-sm font-medium text-[var(--primary)]">PP-042 · Designer handoff</p>
+          <p className="text-sm font-medium text-[var(--primary)]">PP-146 · Shipped UI reference</p>
           <h1 className="text-3xl font-bold text-[var(--foreground)]">
-            {BRAND_NAME} Design Kit
+            {BRAND_NAME} Design System
           </h1>
           <p className="text-[var(--muted)] max-w-2xl">
-            Light-mode dashboard system. Brand green primary, amber accent. Reference for
-            streamlining the logged-in experience around add, view inventory, and
-            threshold-based shopping lists.
+            Light-mode component reference for the shipped Pantry, Recipes, Shopping,
+            and Account experience. Rows below use the real app components with static
+            sample data and no-op actions; no account data is loaded.
           </p>
           <p className="text-sm text-[var(--muted-light)]">
-            Spec: <code className="text-xs bg-[var(--surface-muted)] px-1.5 py-0.5 rounded">.agents/design/PP-042-designer-handoff.md</code>
+            Spec: <code className="text-xs bg-[var(--surface-muted)] px-1.5 py-0.5 rounded">.agents/docs/design-review-2026-11-22.md</code>
           </p>
         </header>
 
@@ -86,22 +80,28 @@ export default function DesignSystemPage() {
               </div>
             ))}
           </div>
+          <p className="text-sm text-[var(--muted)]">
+            Use --primary for text, links and solid buttons; --primary-hover for hover.
+            --primary-bright is for the logo field and decorative accents only: no white
+            type on bright green or bright amber, and no bright-green body or link text.
+            --accent is the solid amber fill; --accent-bright is decorative.
+          </p>
         </Section>
 
         <Section title="Buttons">
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="inline-flex items-center gap-2 bg-[var(--primary)] text-white rounded-xl px-4 py-3 font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 bg-[var(--primary)] text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[var(--primary-hover)] transition-colors"
             >
-              <Barcode size={20} />
+              <Barcode size={16} />
               Scan item
             </button>
             <button
               type="button"
               className="inline-flex items-center gap-2 border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] rounded-xl px-4 py-3 font-semibold hover:bg-[var(--surface-muted)] transition-colors"
             >
-              <Plus size={20} />
+              <Plus size={16} />
               Add manually
             </button>
             <button
@@ -161,68 +161,16 @@ export default function DesignSystemPage() {
           </div>
         </Section>
 
-        <Section title="Inventory row (proposed)">
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm divide-y divide-[var(--border)]">
-            {[
-              { name: "Milk", qty: "2 cartons", status: null },
-              { name: "Eggs", qty: "12", status: null },
-              { name: "Rice", qty: "0", status: "low" as const },
-            ].map((row) => (
-              <div
-                key={row.name}
-                className="flex items-center justify-between px-4 py-3 gap-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-[var(--foreground)] truncate">{row.name}</p>
-                  <p className="text-sm text-[var(--muted)]">{row.qty}</p>
-                </div>
-                {row.status === "low" && (
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--accent-light)] text-[var(--accent-hover)] shrink-0">
-                    Low
-                  </span>
-                )}
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface-muted)] text-[var(--muted)]"
-                    aria-label="Decrease"
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--primary-light)] text-[var(--primary)]"
-                    aria-label="Increase"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        <Section title="Inventory rows (shipped)">
+          <LivePantryRows />
+          <p className="text-sm text-[var(--muted)]">52–60px compact rows, 40px thumbnails, 32px quantity steppers. Sample data only.</p>
         </Section>
 
-        <Section title="Shopping list row (proposed)">
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm divide-y divide-[var(--border)]">
-            {[
-              { label: "Milk — need 2 (have 1)", reason: "Below produce threshold (3)" },
-              { label: "Rice — out of stock", reason: "Quantity is 0" },
-            ].map((row) => (
-              <label
-                key={row.label}
-                className="flex items-start gap-3 px-4 py-3 cursor-pointer"
-              >
-                <input type="checkbox" className="mt-1 rounded border-[var(--border)]" />
-                <div>
-                  <p className="font-medium text-[var(--foreground)]">{row.label}</p>
-                  <p className="text-xs text-[var(--muted)]">{row.reason}</p>
-                </div>
-              </label>
-            ))}
-          </div>
+        <Section title="Shopping list rows (shipped)">
+          <LiveShoppingRows />
         </Section>
 
-        <Section title="Bottom navigation (proposed · 3 tabs)">
+        <Section title="Bottom navigation (shipped · 4 tabs)">
           <div className="max-w-sm mx-auto border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--surface)] shadow-sm">
             <div className="h-32 bg-[var(--background)] flex items-center justify-center text-sm text-[var(--muted)]">
               Screen content
@@ -230,6 +178,7 @@ export default function DesignSystemPage() {
             <nav className="flex border-t border-[var(--border)] px-2 py-2">
               {[
                 { icon: Package, label: "Pantry", active: true },
+                { icon: ChefHat, label: "Recipes", active: false },
                 { icon: ShoppingCart, label: "Shopping", active: false },
                 { icon: User, label: "Account", active: false },
               ].map(({ icon: Icon, label, active }) => (
@@ -248,7 +197,7 @@ export default function DesignSystemPage() {
             </nav>
           </div>
           <p className="text-sm text-[var(--muted)]">
-            Replaces current 4-tab nav (Dashboard, Inventory, Shopping, Ledger). Pantry is default landing.
+            Pantry is the default landing. Four tabs: Pantry, Recipes, Shopping, Account. This inline sample mirrors the mobile navbar without fixed positioning.
           </p>
         </Section>
 
@@ -271,25 +220,30 @@ export default function DesignSystemPage() {
 
         <Section title="Typography">
           <div className="space-y-3 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4">
-            <p className="text-2xl font-bold text-[var(--foreground)]">Page title · Inter bold</p>
+            <p className="text-2xl font-serif-heading font-bold text-[var(--foreground)]">Page title · Lora bold</p>
             <p className="text-lg font-semibold text-[var(--foreground)]">Section heading</p>
             <p className="text-base text-[var(--foreground)]">Body text for lists and forms</p>
             <p className="text-sm text-[var(--muted)]">Secondary / helper text</p>
             <p className="text-xs text-[var(--muted-light)]">Captions and metadata</p>
           </div>
           <p className="text-sm text-[var(--muted)]">
-            Lora serif is marketing-only — not used in dashboard screens.
+            Inter for body and controls; Lora for marketing and app screen titles. Scale: xs 12, sm 14, base 16, lg 18, xl 20, 2xl 24, 3xl 30; 4xl 36 and 5xl 48 for marketing H1 only.
+          </p>
+        </Section>
+
+        <Section title="Shape, icons and focus">
+          <p className="text-sm text-[var(--muted)]">
+            Cards use rounded-2xl, shadow-sm and a 1px border; rows use rounded-lg
+            thumbs. Use the shipped Tailwind radius classes (not custom per-component
+            values). Lucide icons: 16–20px for controls, tab stroke 1.75 inactive / 2.25
+            active. Standalone settings, close and back icons need at least 44×44px
+            targets. Controls should have a 2px primary focus ring with 2px offset.
           </p>
         </Section>
 
         <div className="rounded-xl border border-[var(--primary-light)] bg-[var(--primary-muted)] p-4 text-sm text-[var(--foreground)]">
-          <p className="font-semibold mb-1">Designer deliverables requested</p>
-          <ul className="list-disc list-inside space-y-1 text-[var(--muted)]">
-            <li>High-fidelity mockups: Pantry, Shopping, Account (mobile + desktop)</li>
-            <li>Scan flow + add-manually sheet/modal states</li>
-            <li>Threshold settings panel redesign</li>
-            <li>Annotated component spec (spacing, states, empty states)</li>
-          </ul>
+          <p className="font-semibold">Component reference, not a second design system</p>
+          <p className="text-[var(--muted)]">Update the shipped components and token source first; this page documents them.</p>
           <p className="mt-3">
             <Link href="/" className="text-[var(--primary)] font-medium hover:underline">
               ← Back to marketing site

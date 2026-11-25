@@ -1,6 +1,6 @@
 # PP-030: Rate limiting production patterns
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P1  
 **Phase:** 3 — Modernization  
 **Playbook:** `rate_limiting.md`  

@@ -1,6 +1,6 @@
 # PP-153: E2E — cancel subscription and billing portal
 
-**Status:** 📋 Backlog
+**Status:** 🟡 Partly done (backend integration shipped overnight 2026-11-25; real Stripe test-mode browser run blocked on test keys)
 **Priority:** P0
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -46,3 +46,9 @@ Prove a Pro test user can schedule cancellation (and still keep Pro until period
 - Depends on the PP-147 harness and a test-mode Pro fixture from PP-152. No extra runtime dependencies.
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Overnight 2026-11-25: backend part shipped
+
+`tests/test_billing_cancel_postgres.py` covers cancel at period end (stays Pro), `customer.subscription.updated`, reactivate, billing portal (would have caught PP-174), off-site return URL rejected, cancel without a sub rejected, `customer.subscription.deleted` → Free, and deleted-but-another-active-sub stays Pro. Runs in CI `postgres-integration`.
+
+Still open: the browser + real Stripe test-mode portal run, blocked on Stripe test keys and PP-148.

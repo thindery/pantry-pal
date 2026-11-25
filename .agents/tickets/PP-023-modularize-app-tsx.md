@@ -1,6 +1,6 @@
 # PP-023: Split App.tsx god component
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Created:** 2026-07-10  
