@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — see "Overnight 2026-11-25")
+Last updated: 2026-11-25, 3:30 AM CT (overnight sweep; live build 2cbf0e4 — see "Overnight 2026-11-25")
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,7 +15,7 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 | | Count |
 |--|-------|
-| Done | 134 (previous 110 plus 24 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–173) |
+| Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
@@ -67,8 +67,14 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-176 (new, P1) Postgres guard: removing an item keeps its history, product cache, owner-only, empty group dropped | [#102](https://github.com/thindery/pantry-pal/pull/102) | fa719f3 | test-only, no runtime change |
 | PP-177 (new, P2 billing data) Refunds find their invoice via InvoicePayment (live dahlia `charge.refunded` has no `invoice`, verified read-only), so the paid row is marked refunded and the PP-094 rule runs | [#103](https://github.com/thindery/pantry-pal/pull/103) | 2cbf0e4 | 2cbf0e4 (deployed about 3:14 AM CT) |
 | PP-177 backfill: 3 refunded Nov 21 duplicate invoices set `succeeded` → `refunded` in admin_transactions (backup pre-pp177-admin-transactions-20261125-0916.sql; nothing deleted; entitlement untouched) | — | data fix | live DB |
+| Docs: 38 stale ticket files (PP-001–PP-056) had To Do / Open status lines although this board marks them Done; synced so the fix-and-test routine does not pick them up | see PR below | docs | docs |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
+
+### Final state (3:30 AM CT)
+
+- Live build: **2cbf0e4** (read from the pantry-pal-frontend container and the public build-id.txt), which is the last code commit on origin/main; later commits are docs only, so no further deploy was needed. Frontend and backend containers healthy; smoke from the Lead's box: `/`, `/pricing/`, `/checkout/success/`, `/checkout/cancel/`, `/auth/signin/`, `/privacy/` 200; `/admin/`, `/dashboard/`, `/design-system/` 307; Stripe webhook unsigned 400; `/api/public/offer` `enabled: false`.
+- Every open ticket left on the board is blocked or backlog (see below). Nothing unblocked remains for the 9:00 AM fix-and-test run.
 
 ### Not done by the Lead: PR #62 ($1 offer, PP-166)
 
@@ -95,7 +101,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 
 ### Notes
 
-- Data: admin_transactions has 6 succeeded rows, 4 over $0. The Nov 21 refunded duplicates may still be marked succeeded (see PP-112), which would inflate paid-conversion counts until reconciled.
+- Data: the 3 refunded Nov 21 duplicate invoices are now `refunded` in admin_transactions (PP-177 backfill), so paid-conversion counts no longer include them.
 - Pre-existing deploy warning "nginx container not running; skipped vhost reload" comes from the script's compose path; nginx is up.
 - After PP-067, a signed-in check of the barcode scanner and a Stripe redirect is still worth doing by hand. Rollback is a one-line revert.
 

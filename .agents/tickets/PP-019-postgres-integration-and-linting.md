@@ -1,6 +1,6 @@
 # PP-019: Postgres integration tests + linting standards
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 2 — Playbook structure (do when monorepo + compose are green)  
 **Playbooks:**  

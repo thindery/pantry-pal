@@ -1,6 +1,6 @@
 # PP-031: SEO / social / AEO metadata baseline
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P1  
 **Phase:** 3 — Modernization  
 **Playbook:** `seo_social_aeo_metadata.md`  
