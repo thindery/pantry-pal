@@ -31,12 +31,98 @@ def _api_key() -> str:
     return (os.getenv("RESEND_API_KEY") or "").strip()
 
 
+def _sanitize_error(error: Any) -> str:
+    msg = str(error) if error is not None else ""
+    if not msg:
+        msg = type(error).__name__ if error is not None else "Unknown error"
+    api_key = _api_key()
+    if api_key and api_key in msg:
+        msg = msg.replace(api_key, "[REDACTED]")
+    return msg[:500]
+
+
+def _mask_email(email: Optional[str]) -> str:
+    """Mask email address for safe logging (e.g. u***r@example.com)."""
+    if not email:
+        return "[EMPTY]"
+    parts = email.split("@", 1)
+    if len(parts) == 2:
+        name, domain = parts
+        if len(name) <= 2:
+            masked_name = name[0] + "***" if name else "***"
+        else:
+            masked_name = name[0] + "***" + name[-1]
+        return f"{masked_name}@{domain}"
+    return "***"
+
+
+def is_suppressed(email: Optional[str]) -> bool:
+    """Check if an email address is in the suppressions table."""
+    if not email:
+        return False
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT 1 FROM email_suppressions WHERE email = %s",
+                    (email.strip().lower(),),
+                )
+                return cur.fetchone() is not None
+    except Exception:
+        logger.exception("email_suppressions lookup failed for %s", _mask_email(email))
+        return False
+
+
+def _is_billing_critical_template(template: str) -> bool:
+    """Return True if template is billing-critical and should bypass suppression."""
+    t = (template or "").strip().lower()
+    return t.startswith("payment_") or t.startswith("cancel") or t == "subscription_ended"
+
+
+def count_sent(
+    *,
+    template: Optional[str] = None,
+    user_id: Optional[str] = None,
+    status: Optional[str] = None,
+) -> int:
+    """Count sent emails excluding backfill rows (status <> 'backfill').
+
+    Dashboards can also query directly using the SQL filter:
+        WHERE status <> 'backfill'
+    """
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                conditions = ["status <> 'backfill'"]
+                params: list[Any] = []
+                if status:
+                    conditions.append("status = %s")
+                    params.append(status)
+                if template:
+                    conditions.append("template = %s")
+                    params.append(template)
+                if user_id:
+                    conditions.append("user_id = %s")
+                    params.append(user_id)
+                query = f"SELECT COUNT(*) AS cnt FROM email_sends WHERE {' AND '.join(conditions)}"
+                cur.execute(query, tuple(params))
+                row = cur.fetchone()
+                if not row:
+                    return 0
+                if isinstance(row, dict):
+                    return int(row.get("cnt") or 0)
+                return int(row[0] or 0)
+    except Exception:
+        logger.exception("email_sends count failed")
+        return 0
+
+
 def already_sent(idempotency_key: str) -> bool:
     try:
         with db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT 1 FROM email_sends WHERE idempotency_key = %s",
+                    "SELECT 1 FROM email_sends WHERE idempotency_key = %s AND (status IS NULL OR status != 'failed')",
                     (idempotency_key,),
                 )
                 return cur.fetchone() is not None
@@ -45,18 +131,33 @@ def already_sent(idempotency_key: str) -> bool:
         return False
 
 
-def _record_send(user_id: Optional[str], template: str, idempotency_key: str, resend_id: Optional[str]) -> bool:
+def _record_send(
+    user_id: Optional[str],
+    template: str,
+    idempotency_key: str,
+    resend_id: Optional[str] = None,
+    to_email: Optional[str] = None,
+    subject: Optional[str] = None,
+) -> bool:
+    initial_status = "sent" if resend_id else "pending"
     try:
         with db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (idempotency_key) DO NOTHING
+                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id, to_email, subject, status, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    ON CONFLICT (idempotency_key) DO UPDATE
+                    SET status = EXCLUDED.status,
+                        resend_id = EXCLUDED.resend_id,
+                        error_message = NULL,
+                        to_email = EXCLUDED.to_email,
+                        subject = EXCLUDED.subject,
+                        updated_at = NOW()
+                    WHERE email_sends.status = 'failed'
                     RETURNING id
                     """,
-                    (str(uuid.uuid4()), user_id, template, idempotency_key, resend_id),
+                    (str(uuid.uuid4()), user_id, template, idempotency_key, resend_id, to_email, subject, initial_status),
                 )
                 return cur.fetchone() is not None
     except Exception:
@@ -81,6 +182,25 @@ def send_email(
     if already_sent(idempotency_key):
         return {"skipped": True, "reason": "already_sent"}
 
+    if is_suppressed(to):
+        if _is_billing_critical_template(template):
+            # Billing-critical templates (payment confirmations, payment failures,
+            # cancellation scheduled, subscription ended) must still be sent even if the
+            # recipient address is in email_suppressions, so users receive legally and
+            # contractually required financial/subscription notifications.
+            logger.warning(
+                "Recipient %s is in email_suppressions, but sending billing-critical email %s anyway",
+                _mask_email(to),
+                template,
+            )
+        else:
+            logger.info(
+                "Skipping non-billing email %s: recipient %s is suppressed",
+                template,
+                _mask_email(to),
+            )
+            return {"skipped": True, "reason": "suppressed"}
+
     api_key = _api_key()
     from_addr = _from_address()
     if not api_key or not from_addr:
@@ -94,7 +214,14 @@ def send_email(
         log("Transactional email %s not sent; missing %s", template, ", ".join(missing))
         return {"skipped": True, "reason": "not_configured"}
 
-    if not _record_send(user_id, template, idempotency_key, None):
+    if not _record_send(
+        user_id,
+        template,
+        idempotency_key,
+        resend_id=None,
+        to_email=to,
+        subject=subject,
+    ):
         return {"skipped": True, "reason": "already_sent"}
 
     try:
@@ -111,26 +238,34 @@ def send_email(
             }
         )
         resend_id = result.get("id") if isinstance(result, dict) else getattr(result, "id", None)
-        if resend_id:
-            with db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "UPDATE email_sends SET resend_id = %s WHERE idempotency_key = %s",
-                        (resend_id, idempotency_key),
-                    )
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE email_sends
+                    SET status = 'sent', resend_id = %s, updated_at = NOW()
+                    WHERE idempotency_key = %s
+                    """,
+                    (resend_id, idempotency_key),
+                )
         logger.info("Sent transactional email %s id=%s", template, resend_id)
         return {"skipped": False, "id": resend_id}
-    except Exception:
+    except Exception as exc:
         logger.exception("Failed to send transactional email %s", template)
+        clean_err = _sanitize_error(exc)
         try:
             with db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        "DELETE FROM email_sends WHERE idempotency_key = %s AND resend_id IS NULL",
-                        (idempotency_key,),
+                        """
+                        UPDATE email_sends
+                        SET status = 'failed', error_message = %s, updated_at = NOW()
+                        WHERE idempotency_key = %s
+                        """,
+                        (clean_err, idempotency_key),
                     )
         except Exception:
-            logger.exception("Could not release email send claim %s", template)
+            logger.exception("Could not record email send failure %s", template)
         return {"skipped": True, "reason": "send_failed"}
 
 # Brand tokens from frontend/app/globals.css. Button uses the darker green for contrast.
@@ -166,6 +301,8 @@ FAMILY_FEATURES = [
     "Admin controls",
     "Family meal planning",
 ]
+# Free plan limits copied directly from frontend/components/PricingPage.tsx (TIERS[0].features).
+# Read from PricingPage.tsx TIERS[0].features. Hard-coded to match the exact Free plan limits shown there.
 FREE_FEATURES = [
     "Up to 50 pantry items",
     "5 AI receipt scans/month",
@@ -453,24 +590,32 @@ def send_cancellation_scheduled(
     email: Optional[str],
     subscription_id: str,
     period_end: Optional[str] = None,
+    tier: Optional[str] = None,
 ) -> dict[str, Any]:
+    # Only name the plan when the caller knows it; never guess Pro for a Family user.
+    tier_key = (tier or "").strip().lower()
+    plan = {"pro": "Pro", "family": "Family"}.get(tier_key)
+    subject_access = f"Your {plan} access" if plan else "Your access"
     pretty_end = _format_period_end(period_end)
-    end_line = (
-        f" You'll keep access until {pretty_end}."
-        if pretty_end
-        else " You'll keep access until the end of the current period."
-    )
-    end_html = (
-        f" You'll keep access until {_html_escape(pretty_end)}."
-        if pretty_end
-        else " You'll keep access until the end of the current period."
-    )
+    if pretty_end:
+        access_line = f"{subject_access} continues through {pretty_end}."
+        access_html = f"{_html_escape(subject_access)} continues through {_html_escape(pretty_end)}."
+    else:
+        access_line = f"{subject_access} continues until the end of your current billing period."
+        access_html = f"{_html_escape(subject_access)} continues until the end of your current billing period."
+    preheader = access_line
     account = f"{_app_url()}/dashboard/account/"
-    body_html = f'<p style="margin:0 0 16px 0;">We\'ve scheduled your cancellation.{end_html}</p>'
-    body_text = f"We've scheduled your cancellation.{end_line}"
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">Your cancellation is scheduled. {access_html}</p>
+      <p style="margin:0 0 16px 0;">If you change your mind, you can keep your plan anytime before your billing period ends.</p>
+    """
+    body_text = (
+        f"Your cancellation is scheduled. {access_line}\n\n"
+        "If you change your mind, you can keep your plan anytime before your billing period ends."
+    )
     html, text = _wrap(
         title="Your Pantry Hub cancellation is scheduled",
-        preheader="You'll keep access until the end of the current period.",
+        preheader=preheader,
         body_html=body_html,
         body_text=body_text,
         cta_label="Keep my plan",
@@ -495,18 +640,18 @@ def send_subscription_ended(
 ) -> dict[str, Any]:
     pricing = f"{_app_url()}/pricing/"
     body_html = f"""
-      <p style="margin:0 0 16px 0;">Your Pantry Hub paid plan has ended and this account is now on the Free plan.</p>
-      <p style="margin:0 0 8px 0;font-weight:700;">On Free you still have</p>
+      <p style="margin:0 0 16px 0;">Your paid plan has ended. You're now on the Free plan.</p>
+      <p style="margin:0 0 8px 0;font-weight:700;">What's included with Free</p>
       {_feature_list_html(FREE_FEATURES)}
     """
     feature_text = "\n".join(f"- {item}" for item in FREE_FEATURES)
     body_text = (
-        "Your Pantry Hub paid plan has ended and this account is now on the Free plan.\n\n"
-        f"On Free you still have:\n{feature_text}"
+        "Your paid plan has ended. You're now on the Free plan.\n\n"
+        f"What's included with Free:\n{feature_text}"
     )
     html, text = _wrap(
         title="Your Pantry Hub subscription has ended",
-        preheader="Your account is now on the Free plan. You can resubscribe any time.",
+        preheader="You're now on the Free plan. You can resubscribe any time.",
         body_html=body_html,
         body_text=body_text,
         cta_label="Resubscribe",

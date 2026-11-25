@@ -1,6 +1,6 @@
 # PP-155: E2E — analytics consent path
 
-**Status:** 📋 Backlog
+**Status:** ✅ Done (overnight 2026-11-25, PR #84, merge ee1bbd7)
 **Priority:** P2
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -35,12 +35,18 @@ Current (and in-flight) code to target:
 
 ## Assertions
 
-- [ ] Ad storage / ad user data / ad personalization are denied in every fixture
-- [ ] EEA/UK/CH (and GPC) fixtures do not grant analytics until an explicit accept
-- [ ] Accept and decline persist across reload via `ph_analytics_consent`
-- [ ] GA4 script loads only when a real Measurement ID is present **and** analytics consent is granted
-- [ ] Cloudflare beacon behavior matches the implemented policy
-- [ ] Tests do not require a paid analytics tool and do not write a real Measurement ID into git
+- [x] Ad storage / ad user data / ad personalization are denied in every fixture
+- [x] EEA/UK/CH (and GPC) fixtures do not grant analytics until an explicit accept
+- [x] Accept and decline persist across reload via `ph_analytics_consent`
+- [x] GA4 script loads only when a real Measurement ID is present **and** analytics consent is granted
+- [x] Cloudflare beacon behavior matches the implemented policy
+- [x] Tests do not require a paid analytics tool and do not write a real Measurement ID into git
+
+## Progress notes
+
+- Implemented `e2e/analytics-consent.spec.ts` covering non-EEA default grant, EEA default deny + banner, EEA accept/decline flows with reload persistence, GPC overriding prior grant, Cloudflare beacon cookieless loading, and `/privacy` disclosure copy.
+- Requests to googletagmanager.com, google-analytics.com, and cloudflareinsights.com intercepted and aborted with `page.route` to eliminate real network egress.
+- Documented in `e2e/README.md`.
 
 ## Allowed paths
 

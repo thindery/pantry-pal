@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar, KPICard, ChartCard, TransactionsList } from './admin';
+import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles, MarketingView } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import type { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import FeatureFlagsPanel from '../src/components/FeatureFlagsPanel';
 
-type AdminView = 'dashboard' | 'errors' | 'users' | 'products' | 'stripe' | 'features';
+type AdminView = 'dashboard' | 'marketing' | 'errors' | 'users' | 'products' | 'stripe' | 'features';
 
 interface ClientError {
   id: string;
@@ -199,7 +199,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             {/* Top row: 3 KPI cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <KPICard
-                title="Total Users"
+                title="Users with pantry items"
                 value={metrics.users.total.toLocaleString()}
                 growth={metrics.users.growth}
                 sparklineData={metrics.users.sparkline}
@@ -219,6 +219,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               />
             </div>
 
+            {/* PP-126: first-party subscription funnel (app DB only) */}
+            <FunnelTiles period={period} />
+
             {/* Middle row: Logins chart */}
             <ChartCard
               title="Daily Active Logins"
@@ -233,6 +236,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               failedCount={metrics.alerts.failedPayments}
             />
           </div>
+        )}
+
+        {/* Marketing view (PP-125) */}
+        {activeView === 'marketing' && (
+          <MarketingView
+            period={period}
+            onPeriodChange={setPeriod}
+          />
         )}
 
         {activeView === 'errors' && (

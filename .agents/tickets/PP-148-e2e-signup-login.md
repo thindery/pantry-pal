@@ -1,6 +1,6 @@
 # PP-148: E2E — sign-up and login
 
-**Status:** 📋 Backlog
+**Status:** 🟡 Partly done (local auth paths shipped overnight 2026-11-25; real Google round trip blocked on a Google test account)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -47,3 +47,10 @@ Prove the live auth path still works: a new Google user can sign up, a returning
 - Depends on the PP-147 harness. No extra runtime dependencies.
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Overnight 2026-11-25: local part shipped
+
+`e2e/auth-paths.spec.ts`: `/sign-in` and `/sign-up` redirect to `/auth/signin/` keeping the callback; logged-out sign-in page shows "Continue with Google" with the Pantry Hub title and starts the Google authorize redirect (fake client id in the harness, Google intercepted); a signed-in user on `/auth/signin` lands on `/dashboard/` and `POST /api/emails/welcome` fires once; sign-out clears the session and `/dashboard/` is protected again. Anonymous redirects were already covered by `e2e/auth-gate.spec.ts` (PP-172).
+
+Still open: the real Google sign-up / returning-user round trip needs a dedicated Google test account (Tylor). Found PP-175 (sign-out race) while writing this.
+

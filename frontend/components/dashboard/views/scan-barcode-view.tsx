@@ -41,15 +41,22 @@ export function ScanBarcodeView() {
   const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
   const [isSavingUnknown, setIsSavingUnknown] = useState(false);
   const [unknownProductName, setUnknownProductName] = useState("");
-  const [quickScan, setQuickScan] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
+  // PP-173: start from the server default and read the stored preference
+  // after mount. Reading localStorage in the initializer rendered a different
+  // tree on the client than on the server (React hydration error #418) for
+  // anyone who had turned Quick Scan off.
+  const [quickScan, setQuickScan] = useState<boolean>(true);
+  const quickScanLoadedRef = useRef(false);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(QUICK_SCAN_STORAGE_KEY);
-      return stored !== "false";
+      if (stored === "false") setQuickScan(false);
     } catch {
-      return true;
+      // Ignore storage errors (e.g. private mode)
     }
-  });
+    quickScanLoadedRef.current = true;
+  }, []);
 
   // Track recently scanned barcodes to prevent duplicates within 3 seconds
   const recentScansRef = useRef<Set<string>>(new Set());
@@ -76,7 +83,8 @@ export function ScanBarcodeView() {
   }, [sessionEntries]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    // Do not overwrite the stored preference with the default before it is read.
+    if (!quickScanLoadedRef.current) return;
     try {
       localStorage.setItem(QUICK_SCAN_STORAGE_KEY, String(quickScan));
     } catch {

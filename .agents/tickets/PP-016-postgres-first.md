@@ -1,6 +1,6 @@
 # PP-016: Postgres-first DATABASE_URL; SQLite tests only
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 2 — Playbook structure  
 **Playbook:** `project-director/playbooks/postgresql_integration_testing.md`  

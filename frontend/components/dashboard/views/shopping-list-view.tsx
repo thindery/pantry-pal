@@ -106,7 +106,7 @@ export function ShoppingListView() {
         <button
           type="button"
           onClick={() => setShowThresholdSettings(true)}
-          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--primary)] hover:border-[var(--primary-light)] transition-colors"
+          className="min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--primary)] hover:border-[var(--primary-light)] transition-colors"
           aria-label="Low stock threshold settings"
           title="Threshold settings"
         >

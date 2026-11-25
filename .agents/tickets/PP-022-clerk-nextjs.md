@@ -1,6 +1,6 @@
 # PP-022: Clerk Next.js + middleware JWT pattern
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `clerk_authentication.md`, `clerk_middleware_pattern.md`  

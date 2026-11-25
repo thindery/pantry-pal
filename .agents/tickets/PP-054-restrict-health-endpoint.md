@@ -1,6 +1,6 @@
 # PP-054: Restrict public /health exposure
 
-**Status:** 📋 Open  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P2  
 **Phase:** 3 — Security remediation  
 **Playbook:** `agent_paige_security_audit.md`, `ovh_deployment.md`  

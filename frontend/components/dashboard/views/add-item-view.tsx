@@ -61,7 +61,7 @@ export function AddItemView() {
             <div className="flex items-center gap-2 mb-6">
               <button
                 onClick={() => router.push("/dashboard/")}
-                className="text-slate-400 hover:text-slate-600 text-sm"
+                className="text-[var(--muted)] hover:text-[var(--foreground)] text-sm transition-colors"
               >
                 ← Back to Inventory
               </button>
