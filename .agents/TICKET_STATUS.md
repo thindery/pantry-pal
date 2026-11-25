@@ -15,12 +15,12 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 | | Count |
 |--|-------|
-| Done | 133 (previous 110 plus 23 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 155, 168–173) |
+| Done | 134 (previous 110 plus 24 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–173) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 7 · P2: 9 · P3: 2 (23 on the board below) |
+| Open by priority | P0: 5 · P1: 6 · P2: 9 · P3: 2 (22 on the board below) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -59,6 +59,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-173 (new, P2) Scan page hydration error when Quick Scan is off | [#94](https://github.com/thindery/pantry-pal/pull/94) | 1094760 | 1094760 (read from the frontend container) |
 | PP-149 E2E barcode lookup and add, normal mode (partly done: camera Quick Scan add still open) | [#95](https://github.com/thindery/pantry-pal/pull/95) | cfe329e | test-only, no runtime change |
 | PP-149 Quick Scan camera add (finishes ticket, generated fake webcam) | [#96](https://github.com/thindery/pantry-pal/pull/96) | 28fe947 | test-only, no runtime change |
+| PP-154 transactional email triggers (Postgres integration: welcome + 4 signed Stripe webhooks, Resend and Stripe faked) | [#97](https://github.com/thindery/pantry-pal/pull/97) | 0e05f4b | test-only, no runtime change |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
@@ -79,7 +80,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 - PP-166 / PR #62: merged dormant; enabling it means a live Stripe coupon, which is Tylor's call.
 - GROWTH-010 (Search Console, other domains): blocked on verification tokens.
 - PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 open).
-- PP-148 (real Google sign-up / login E2E), PP-152–PP-154 (Stripe checkout, cancel, emails): need a Google test account and Stripe test-mode keys.
+- PP-148 (real Google sign-up / login E2E), PP-152–PP-153 (Stripe checkout, cancel): need a Google test account and Stripe test-mode keys. (PP-154 shipped as a backend integration test with signed local webhooks.)
 - PP-119 (Bing import), PP-121 (GA4 Viewer for the read-only service account): need Tylor's sign-in.
 - PP-129 (full-access Resend key): needs Tylor's yes.
 - PP-124 operator step: create the Resend webhook for `https://www.mypantryhub.com/api/webhooks/resend` in the mypantryhub Resend account and put `RESEND_WEBHOOK_SECRET` in `/opt/pantry-pal/.env.prod`. The Resend connector here is on a different account. Until then, email rates show "Pending webhook".
@@ -107,7 +108,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (7)
+### P1 — next up, high impact (6)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -117,7 +118,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
-| PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
 ### P2 — soon (9)
 
@@ -429,7 +429,7 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
 | PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
-| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
+| PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
 | PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
 
 ## Future / backlog
@@ -448,7 +448,7 @@ Documented for later; no implementation in this pass.
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
 | PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
-| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
+| PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
 | PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
 
 ## Verification
