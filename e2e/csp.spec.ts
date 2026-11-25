@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
  * Third-party analytics requests are aborted so no real traffic is sent.
  */
 
-const PAGES = ["/", "/pricing/", "/auth/signin/", "/privacy/", "/checkout/success/", "/checkout/cancel/", "/design-system/"];
+const PAGES = ["/", "/pricing/", "/auth/signin/", "/privacy/", "/checkout/success/", "/checkout/cancel/"];
 
 test.describe("Content-Security-Policy @smoke", () => {
   for (const path of PAGES) {
@@ -41,4 +41,13 @@ test.describe("Content-Security-Policy @smoke", () => {
       expect([...fromEvents, ...violations]).toEqual([]);
     });
   }
+});
+
+test("PP-072: /design-system is not public @smoke", async ({ page }) => {
+  await page.route(/googletagmanager\.com|google-analytics\.com|cloudflareinsights\.com/, (route) => route.abort());
+  await page.goto("/design-system/");
+  // Same gate as /admin: signed-out visitors go to sign-in in production; the
+  // local harness has no real session, so it lands where /admin does.
+  await expect(page).not.toHaveURL(/\/design-system/);
+  await expect(page.getByText("Shipped UI reference")).toHaveCount(0);
 });
