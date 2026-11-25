@@ -363,3 +363,18 @@ class AddItemGroupItemRequest(BaseModel):
 
     itemId: str
 
+
+
+class InstacartListItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str = Field(..., min_length=1, max_length=200)
+    quantity: float = Field(default=1, gt=0, le=999)
+    unit: Optional[str] = Field(default=None, max_length=32)
+    upc: Optional[str] = Field(default=None, max_length=32)
+
+
+class InstacartHandoffRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[InstacartListItem] = Field(..., min_length=1, max_length=100)

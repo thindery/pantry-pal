@@ -20,6 +20,7 @@ import {
   sortShoppingListItems,
 } from "@/lib/shopping-list-utils";
 import { ShoppingListRow } from "@/components/dashboard/ShoppingListRow";
+import { InstacartButton } from "@/components/dashboard/InstacartButton";
 import type { ShoppingListItem, ShoppingListSortBy } from "@/types";
 
 export function ShoppingListView() {
@@ -115,7 +116,7 @@ export function ShoppingListView() {
       </div>
 
       {/* Action buttons on one row */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-start gap-1.5">
         <button
           type="button"
           onClick={generateShoppingList}
@@ -133,6 +134,7 @@ export function ShoppingListView() {
           <Share2 size={13} />
           <span>Share</span>
         </button>
+        <InstacartButton shoppingList={shoppingList} inventory={inventory} />
         <button
           type="button"
           onClick={() => setShowAddForm((v) => !v)}
