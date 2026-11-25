@@ -33,7 +33,7 @@ test.describe("Auth paths", () => {
     });
 
     await page.goto("/auth/signin/");
-    await expect(page).toHaveTitle(/Sign In — Pantry Hub/);
+    await expect(page).toHaveTitle(/Sign In \| Pantry Hub/);
     const google = page.getByRole("button", { name: "Continue with Google" });
     await expect(google).toBeVisible();
     await expect(page.getByText(/not configured/i)).toHaveCount(0);
