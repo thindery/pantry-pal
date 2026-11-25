@@ -3,6 +3,7 @@ import { Loader2, AlertTriangle, RefreshCw, CheckCircle2, XCircle, Mail, AlertCi
 import type { Period } from '../../types/admin';
 import { getEmailMetrics, type EmailMetrics } from '../../services/adminService';
 import { FunnelTiles } from './FunnelTiles';
+import { AnalyticsLinksCard } from './AnalyticsLinksCard';
 
 interface MarketingViewProps {
   period: Period;
@@ -102,6 +103,8 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
 
       {/* Funnel Tiles */}
       <FunnelTiles period={period} />
+
+      <AnalyticsLinksCard />
 
       {/* Loading / Error States */}
       {isLoading ? (

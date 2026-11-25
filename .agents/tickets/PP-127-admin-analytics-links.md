@@ -1,6 +1,6 @@
 # PP-127: Link the admin dashboard out to GA4 and Search Console
 
-**Status:** 📋 Open
+**Status:** 🔄 In review
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -44,3 +44,7 @@ Once analytics and Search Console are set up, the Pantry Hub admin should have a
 - [ ] Admins can reach GA4, GSC, Bing, and Cloudflare Web Analytics from the admin UI when those properties exist
 - [ ] Unverified tools show an honest not-set-up state that points at the existing PP-117–PP-122 tickets
 - [ ] No analytics numbers are invented, and no setup work from PP-117–PP-122 is duplicated
+
+## Progress Notes
+
+- 2026-11-25 overnight (Pantry Hub Lead): Analytics tools card on the admin Marketing view. GA4 (PP-117), Search Console domain property (PP-118) and Cloudflare Web Analytics (PP-120) open in a new tab; Bing shows "Not set up — see PP-119". No numbers, keys, tags or CSP changes. Flip `status` in AnalyticsLinksCard.tsx when PP-119 closes.
