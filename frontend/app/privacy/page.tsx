@@ -44,7 +44,7 @@ export default function PrivacyPage() {
       title="Privacy"
       titleAccent="Policy"
       description={`We are committed to transparency about how ${BRAND_NAME} handles your account, pantry inventory, and subscription data.`}
-      lastUpdated="November 22, 2026"
+      lastUpdated="November 25, 2026"
       navItems={NAV}
     >
       <LegalHighlight title="Your pantry data stays yours">
@@ -160,7 +160,8 @@ export default function PrivacyPage() {
         <p>We share limited data with providers that help us operate {BRAND_NAME}:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
-            <strong className="text-slate-900">Google</strong> — OAuth sign-in and Google Analytics 4 (processor)
+            <strong className="text-slate-900">Google</strong> — OAuth sign-in, Google Analytics 4, and Google AdSense
+            (ads on public marketing pages)
           </li>
           <li>
             <strong className="text-slate-900">Stripe</strong> — subscription billing
@@ -188,15 +189,55 @@ export default function PrivacyPage() {
           settings will prevent sign-in.
         </p>
         <p>
-          We do not use third-party advertising cookies, and we do not track you across unrelated
-          websites for marketing purposes.
+          We use Google AdSense as a third-party advertising provider on our public marketing pages
+          (the home page, pricing, guides, privacy, and terms). Google and its partners may set
+          cookies or use other identifiers to serve, measure, and personalize ads. These ads are not
+          currently shown in the signed-in app.
         </p>
         <p>
-          We use Google Analytics 4 (GA4) to understand general website usage and improve Pantry Hub.
-          Google acts as a data processor on our behalf; data is collected solely to understand site
-          usage, not to sell ads for us or build advertising profiles. Our analytics tag is configured
-          with strict privacy guardrails: Google signals is off, IP anonymization is permanently on,
-          and advertising storage, personalization, and ad user data are denied.
+          For more about how Google uses data on sites that use its services, see{" "}
+          <a
+            href="https://policies.google.com/technologies/partner-sites"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-700 hover:underline"
+          >
+            How Google uses information from sites that use our services
+          </a>
+          . You can opt out of personalized ads in{" "}
+          <a
+            href="https://adssettings.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-700 hover:underline"
+          >
+            Google Ads Settings
+          </a>{" "}
+          (
+          <a
+            href="https://www.google.com/settings/ads"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-700 hover:underline"
+          >
+            www.google.com/settings/ads
+          </a>
+          ) or through the Digital Advertising Alliance at{" "}
+          <a
+            href="https://www.aboutads.info"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-700 hover:underline"
+          >
+            aboutads.info
+          </a>
+          .
+        </p>
+        <p>
+          We use Google Analytics 4 (GA4), measurement ID G-LEW78LC3EF, to understand general website
+          usage and improve Pantry Hub. The analytics tag is configured with IP anonymization
+          permanently on, Google signals off, and advertising storage, personalization, and ad user
+          data denied. Those analytics-tag settings apply to GA4 only; they do not control AdSense.
         </p>
         <p>
           GA4 sets analytics cookies only when analytics storage is granted. Visitors in the European
@@ -266,14 +307,35 @@ export default function PrivacyPage() {
         </p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
-            <strong className="text-slate-900">No Sale or Sharing:</strong> We do not sell personal
-            information, and we do not share or disclose personal information for cross-context
-            behavioral advertising.
+            <strong className="text-slate-900">No Sale:</strong> We do not sell your personal
+            information for money, and we do not sell your pantry contents.
+          </li>
+          <li>
+            <strong className="text-slate-900">Advertising / sharing:</strong> On public marketing
+            pages, Google AdSense may use cookies and identifiers to serve and personalize ads. Under
+            some U.S. state privacy laws, that may be considered &quot;sharing&quot; for cross-context
+            behavioral advertising. You can opt out of personalized ads through{" "}
+            <a
+              href="https://adssettings.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-700 hover:underline"
+            >
+              Google Ads Settings
+            </a>, the Digital Advertising Alliance at{" "}
+            <a
+              href="https://www.aboutads.info"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-700 hover:underline"
+            >
+              aboutads.info
+            </a>, or other browser controls.
           </li>
           <li>
             <strong className="text-slate-900">Global Privacy Control (GPC):</strong> We honor GPC as
-            a valid, automated opt-out of sale/sharing and of analytics cookies. When a browser sends
-            a GPC signal, Google Analytics is not loaded.
+            a valid, automated opt-out of analytics cookies. When a browser sends a GPC signal,
+            Google Analytics is not loaded. GPC does not currently block Google AdSense on this site.
           </li>
           <li>
             <strong className="text-slate-900">Rights to Know, Delete, and Correct:</strong> You have
