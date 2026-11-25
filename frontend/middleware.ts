@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authConfig } from "@/lib/auth.config";
 import { createBearerToken } from "@/lib/auth-token";
 import { getRegionFromCountry } from "@/lib/region";
+import { trailingSlashTarget } from "@/lib/trailing-slash";
 
 const { auth } = NextAuth(authConfig);
 
@@ -19,7 +20,6 @@ const PUBLIC_PATHS = new Set([
   "/build-id.txt",
   "/sitemap.xml",
   "/robots.txt",
-  "/design-system",
   // PP-104: social card images must load for crawlers and link unfurlers
   "/og-image",
   "/pricing/og-image",
@@ -32,6 +32,8 @@ const PUBLIC_PREFIXES = [
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
+  // PP-105: internal style guide is not a public document
+  "/design-system",
   "/admin",
   "/api/user/",
   "/api/subscription",
@@ -98,6 +100,13 @@ export default auth(async (req) => {
     return NextResponse.redirect(signIn);
   }
 
+  const slashTarget = trailingSlashTarget(pathname);
+  if (slashTarget) {
+    const target = new URL(nextUrl);
+    target.pathname = slashTarget;
+    return NextResponse.redirect(target, 301);
+  }
+
   const requestHeaders = new Headers(req.headers);
   requestHeaders.delete("x-user-id");
   requestHeaders.delete("x-user-email");
@@ -144,7 +153,10 @@ export default auth(async (req) => {
     return applyRegionCookie(NextResponse.redirect(signIn), req);
   }
 
-  if (!isLoggedIn) {
+  // PP-105: unauthenticated API calls outside the public allowlist keep the
+  // old sign-in redirect; unknown *pages* fall through so Next.js returns a
+  // real 404 (noindex) instead of a soft-404 sign-in page.
+  if (!isLoggedIn && normalizePath(pathname).startsWith("/api")) {
     const signIn = new URL("/auth/signin", nextUrl);
     signIn.searchParams.set("callbackUrl", pathname);
     return applyRegionCookie(NextResponse.redirect(signIn), req);
