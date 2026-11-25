@@ -19,7 +19,6 @@ const PUBLIC_PATHS = new Set([
   "/build-id.txt",
   "/sitemap.xml",
   "/robots.txt",
-  "/design-system",
 ]);
 
 const PUBLIC_PREFIXES = [
@@ -32,6 +31,8 @@ const PUBLIC_PREFIXES = [
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/admin",
+  // PP-072: internal component reference, admins only.
+  "/design-system",
   "/api/user/",
   "/api/subscription",
   "/api/customer-portal",
@@ -118,7 +119,12 @@ export default auth(async (req) => {
     }
   }
 
-  if (normalizePath(pathname).startsWith("/admin")) {
+  const normalizedPath = normalizePath(pathname);
+  if (
+    normalizedPath.startsWith("/admin") ||
+    normalizedPath === "/design-system" ||
+    normalizedPath.startsWith("/design-system/")
+  ) {
     if (!isLoggedIn) {
       const signIn = new URL("/auth/signin", nextUrl);
       signIn.searchParams.set("callbackUrl", pathname);
