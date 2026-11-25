@@ -37,6 +37,10 @@ App-owned emails to add (all via Resend, after PP-096):
 
 The privacy policy already says the product sends transactional emails.
 
+## $1 first-month offer (PP-166)
+
+Off unless `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set. The coupon is **$3.99 off, duration once**, so Pro monthly's first month is $1 and renewals are the $4.99 list price. It is applied only to Pro monthly Checkout, only for accounts that never had a subscription (no stored subscription id and none on the Stripe customer). Offer sessions carry `metadata.offer = pro_monthly_first_month_1usd` and use idempotency key `pantryhub-checkout-<user>-pro-month-offer-<coupon>`. Stripe does not allow `discounts` with `allow_promotion_codes`, so offer sessions have no promo-code box (non-offer sessions keep it, PP-077). The PP-089 active-subscription guard runs before any of this. `GET /api/public/offer` feeds the `/pricing` banner and homepage hero line. `admin_transactions.offer` / `is_comp` (migration 026) tag offer invoices and fully discounted (100% off, for example Tylor's own) invoices; admin revenue and the `offer` metrics block exclude comps. Rollback: unset the env var and restart the backend.
+
 ## Where keys live (names only)
 
 Templates (placeholders only): repo-root `.env.example` and `.env.prod.example`. Frontend auth names also appear in `frontend/.env.example`. Production values live in `.env.prod` on the OVH host and are **not** committed.
@@ -50,6 +54,7 @@ Templates (placeholders only): repo-root `.env.example` and `.env.prod.example`.
 - `STRIPE_PRO_YEARLY_PRICE_ID`
 - `STRIPE_FAMILY_MONTHLY_PRICE_ID`
 - `STRIPE_FAMILY_YEARLY_PRICE_ID`
+- `STRIPE_PRO_FIRST_MONTH_COUPON_ID` (optional, PP-166; blank = offer off)
 
 ### Resend (placeholders in `.env.example` / `.env.prod.example`; real values only on OVH)
 

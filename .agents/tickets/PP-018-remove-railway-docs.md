@@ -1,6 +1,6 @@
 # PP-018: Remove/replace Railway-centric deploy docs
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P1  
 **Phase:** 2 — Playbook structure  
 **Created:** 2026-07-10  

@@ -40,6 +40,10 @@ npm-debug.log*
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+e2e/.auth/
 
 # Editor
 .vscode/*

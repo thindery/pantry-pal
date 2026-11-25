@@ -1,6 +1,6 @@
 # PP-028: Stripe billing + webhooks on FastAPI
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `billing_and_database.md`  

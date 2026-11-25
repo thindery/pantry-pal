@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutCompletely } from "@/lib/sign-out";
 import Image from "next/image";
 import { LogOut } from "lucide-react";
 
@@ -46,7 +47,7 @@ export function UserButton() {
       </Link>
       <button
         type="button"
-        onClick={() => signOut({ callbackUrl: "/" })}
+        onClick={() => void signOutCompletely("/")}
         className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-2 py-1.5 rounded-lg hover:bg-[var(--surface-muted)]"
       >
         <LogOut size={16} />

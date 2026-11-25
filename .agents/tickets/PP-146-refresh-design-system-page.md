@@ -1,6 +1,6 @@
 # PP-146: Refresh /design-system to the shipped UI and brand guide
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25, PR #86, merge 0d1035c)
 **Priority:** P2
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22
@@ -30,3 +30,7 @@
 
 - Building a new token platform or Storybook
 - Do not `git add -A`. Do not commit `2026-07-30`.
+
+## Progress Notes
+
+- 2026-11-25 overnight (Pantry Hub Lead; agy out of credits): /design-system now renders the real PantryListRow and ShoppingListRow with static sample data, the shipped 4-tab bar, the full token list from lib/design-tokens (incl. --primary vs --primary-bright guidance), the type scale, radii/icon/focus rules. Still noindex, nofollow; gating stays in PP-072.

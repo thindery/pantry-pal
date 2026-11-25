@@ -1,10 +1,10 @@
 # PP-145: Desktop Pantry layout and 44px icon targets
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25, PR #82, merge 132d36b)
 **Priority:** P2
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 4:55 PM America/Chicago
+**Updated:** 2026-11-25
 **Depends on:** —
 **Blocks:** —
 **Doc:** `.agents/docs/design-review-2026-11-22.md`
@@ -24,9 +24,24 @@ On a 1440px desktop, Pantry’s “Scan item” and “Add manually” buttons a
 
 ## Acceptance Criteria
 
-- [ ] At 1440px, Scan and Add are compact and aligned with the list, not stretched edge-to-edge
-- [ ] The inventory title does not repeat the full wordmark under the desktop nav
-- [ ] Settings gears are at least 44×44
+- [x] At 1440px, Scan and Add are compact and aligned with the list, not stretched edge-to-edge
+- [x] The inventory title does not repeat the full wordmark under the desktop nav
+- [x] Settings gears are at least 44×44
+
+## Implementation Notes
+
+- `frontend/components/dashboard/views/inventory-view.tsx`:
+  - From `md` up, Scan item and Add manually buttons use `md:flex md:w-auto`, remaining compact and aligned with the list while keeping mobile `grid grid-cols-2`.
+  - Desktop title text renders "Pantry" (`hidden md:inline`) under the desktop nav while keeping mobile title text (`md:hidden`).
+  - Settings button upgraded to 44×44 (`min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center`).
+- `frontend/components/dashboard/views/shopping-list-view.tsx`:
+  - Settings button upgraded to 44×44 (`min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center`).
+- `frontend/components/dashboard/ThresholdSettingsModal.tsx`:
+  - Close button upgraded to 44×44 (`min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center`).
+- `frontend/components/dashboard/views/add-item-view.tsx`:
+  - "Back to Inventory" link updated to `text-[var(--muted)] hover:text-[var(--foreground)]`.
+- `frontend/tests/desktop-pantry-layout.test.tsx`:
+  - Added test coverage verifying the desktop title text, 44×44 icon buttons, compact button group, and tokenized link colors.
 
 ## Out of scope
 

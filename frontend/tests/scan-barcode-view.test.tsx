@@ -435,8 +435,10 @@ describe("ScanBarcodeView session ledger", () => {
   it("clears the session list without changing inventory", async () => {
     render(<ScanBarcodeView />);
     fireEvent.click(screen.getByTestId("simulate-known-scan"));
+    // PP-171: the ledger panel is always rendered (empty state), so wait for the
+    // scanned row itself before clearing; waiting on the panel raced the scan.
     await waitFor(() =>
-      expect(screen.getByTestId("quick-scan-ledger")).toBeInTheDocument()
+      expect(screen.getByTestId("session-row-012345678905")).toBeInTheDocument()
     );
 
     fireEvent.click(screen.getByTestId("clear-session-ledger"));

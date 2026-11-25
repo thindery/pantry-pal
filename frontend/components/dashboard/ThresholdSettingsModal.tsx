@@ -25,7 +25,7 @@ export function ThresholdSettingsModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-[var(--muted)] hover:text-[var(--foreground)] rounded-lg"
+            className="min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center text-[var(--muted)] hover:text-[var(--foreground)] rounded-lg transition-colors"
             aria-label="Close"
           >
             <X size={20} />

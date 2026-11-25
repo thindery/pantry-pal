@@ -41,45 +41,23 @@ def _get_admin_emails() -> set[str]:
     return {item.strip().lower() for item in raw.split(",") if item.strip()}
 
 
-def _email_from_clerk_user(user_id: str) -> Optional[str]:
-    secret_key = os.getenv("CLERK_SECRET_KEY", "")
-    if not secret_key or not user_id:
-        return None
-    try:
-        response = httpx.get(
-            f"https://api.clerk.com/v1/users/{user_id}",
-            headers={"Authorization": f"Bearer {secret_key}"},
-            timeout=10.0,
-        )
-        response.raise_for_status()
-        data = response.json()
-    except Exception:
-        return None
-    primary_id = data.get("primary_email_address_id")
-    for entry in data.get("email_addresses", []):
-        if entry.get("id") == primary_id:
-            email = entry.get("email_address")
-            return email if isinstance(email, str) else None
-    if data.get("email_addresses"):
-        email = data["email_addresses"][0].get("email_address")
-        return email if isinstance(email, str) else None
-    return None
-
-
 def is_admin_user(user_id: Optional[str], email: Optional[str] = None) -> bool:
-    admin_ids = _get_admin_user_ids()
-    if user_id and user_id in admin_ids:
-        return True
-    admin_emails = _get_admin_emails()
-    if not admin_emails or not user_id:
-        return False
-    candidates: list[str] = []
+    """
+    Decide admin access from authenticated user id and verified email (PP-128).
+
+    Does NOT call Clerk or any network API.
+    A user is an admin if their id is in ADMIN_USER_IDS or their verified email
+    is in ADMIN_EMAILS (case-insensitive, trimmed).
+    """
+    if user_id:
+        admin_ids = _get_admin_user_ids()
+        if user_id.strip() in admin_ids:
+            return True
     if email:
-        candidates.append(email.lower())
-    clerk_email = _email_from_clerk_user(user_id)
-    if clerk_email:
-        candidates.append(clerk_email.lower())
-    return any(addr in admin_emails for addr in candidates)
+        admin_emails = _get_admin_emails()
+        if email.strip().lower() in admin_emails:
+            return True
+    return False
 
 
 def _fetch_clerk_jwks() -> dict[str, Any]:

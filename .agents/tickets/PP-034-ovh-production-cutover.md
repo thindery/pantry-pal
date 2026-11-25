@@ -1,6 +1,6 @@
 # PP-034: OVH production cutover
 
-**Status:** 📋 Ready (domain set — needs PP-033 DNS apply + `.env.prod` on OVH)
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `ovh_deployment.md`  
