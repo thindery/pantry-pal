@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar, KPICard, ChartCard, TransactionsList } from './admin';
+import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import type { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
@@ -199,7 +199,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             {/* Top row: 3 KPI cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <KPICard
-                title="Total Users"
+                title="Users with pantry items"
                 value={metrics.users.total.toLocaleString()}
                 growth={metrics.users.growth}
                 sparklineData={metrics.users.sparkline}
@@ -218,6 +218,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 trendData={metrics.revenue.trend}
               />
             </div>
+
+            {/* PP-126: first-party subscription funnel (app DB only) */}
+            <FunnelTiles period={period} />
 
             {/* Middle row: Logins chart */}
             <ChartCard

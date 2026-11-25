@@ -1,6 +1,6 @@
 # PP-126: Subscription funnel tiles on the admin dashboard
 
-**Status:** 📋 Open
+**Status:** 🔄 In review
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -39,7 +39,17 @@ Place the tiles on the Marketing view (PP-125) and/or the overview. Admin-only A
 
 ## Acceptance Criteria
 
-- [ ] Signups, trials, Pro/Family conversions, and churn (ended vs cancel-at-period-end) are visible for 7d / 30d / 90d and all-time
-- [ ] Counts come from `users` / `user_subscriptions` / `admin_transactions` and are unit-tested against fixture rows
-- [ ] The existing pantry-item “Total Users” KPI is not silently redefined
-- [ ] No invented or placeholder numeric marketing copy
+- [x] Signups, trials, Pro/Family conversions, and churn (ended vs cancel-at-period-end) are visible for 7d / 30d / 90d and all-time
+- [x] Counts come from `users` / `user_subscriptions` / `admin_transactions` and are unit-tested against fixture rows
+- [x] The existing pantry-item “Total Users” KPI is not silently redefined (relabeled to "Users with pantry items")
+- [x] No invented or placeholder numeric marketing copy
+
+## Progress Notes (2026-11-25)
+
+- Added `get_funnel_metrics(period)` to `backend/services/admin_service.py` computing signups (from `users.created_at`), trials (from `user_subscriptions.subscription_status = 'trialing'`), paid conversions (from distinct first succeeded `admin_transactions` row with amount > 0 broken out by Pro vs Family, excluding refunds, failed, and $0 invoices), churned (from `user_subscriptions.subscription_status IN ('canceled', 'ended')` using `updated_at`), and cancel scheduled (`cancel_at_period_end = TRUE` and active/trialing).
+- Exposed `GET /api/admin/funnel?period=7d|30d|90d` on `backend/routers/admin.py` with `require_admin` dependency and period validation.
+- Added `getFunnelMetrics` in `frontend/services/adminService.ts`.
+- Created `frontend/components/admin/FunnelTiles.tsx` and exported from `frontend/components/admin/index.ts` with 6 KPICard tiles (Signups, Trials, Pro conversions, Family conversions, Churned, Cancel scheduled) and honest loading/error handling.
+- Extended `frontend/components/admin/KPICard.tsx` with optional growth, secondary text, and badge support.
+- Updated `frontend/app/admin/page.tsx` with the subscription funnel row and relabeled the existing pantry-item "Total Users" KPI to "Users with pantry items".
+- Added unit and router contract tests in `tests/test_admin_funnel.py` and UI vitest tests in `frontend/tests/admin-funnel.test.tsx`.

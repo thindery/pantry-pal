@@ -4,6 +4,41 @@ import { getApiBaseUrl } from '@/lib/env';
 
 const API_URL = getApiBaseUrl();
 
+export interface FunnelBreakdown {
+  period: number;
+  allTime: number;
+}
+
+export interface FunnelConversions {
+  period: number;
+  allTime: number;
+  pro: FunnelBreakdown;
+  family: FunnelBreakdown;
+}
+
+export interface FunnelMetrics {
+  period: Period;
+  signups: FunnelBreakdown;
+  trials: FunnelBreakdown;
+  paidConversions: FunnelConversions;
+  churned: FunnelBreakdown;
+  cancelScheduled: FunnelBreakdown;
+  signupsPeriod?: number;
+  signupsAllTime?: number;
+  trialsPeriod?: number;
+  trialsAllTime?: number;
+  proConversions?: number;
+  proConversionsAllTime?: number;
+  familyConversions?: number;
+  familyConversionsAllTime?: number;
+  paidConversionsPeriod?: number;
+  paidConversionsAllTime?: number;
+  churnedPeriod?: number;
+  churnedAllTime?: number;
+  cancelScheduledPeriod?: number;
+  cancelScheduledAllTime?: number;
+}
+
 // Helper for API calls
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
@@ -23,8 +58,25 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 // Dashboard API
-export const getDashboardMetrics = (period: Period = '7d'): Promise<DashboardMetrics> =>
-  fetchApi<DashboardMetrics>(`/api/admin/dashboard?period=${period}`);
+export const getDashboardMetrics = async (period: Period = '7d'): Promise<DashboardMetrics> => {
+  const res = await fetchApi<DashboardMetrics | { success: boolean; data: DashboardMetrics }>(
+    `/api/admin/dashboard?period=${period}`
+  );
+  if (res && typeof res === 'object' && 'data' in res && res.data) {
+    return (res as { data: DashboardMetrics }).data;
+  }
+  return res as DashboardMetrics;
+};
+
+export const getFunnelMetrics = async (period: Period = '7d'): Promise<FunnelMetrics> => {
+  const res = await fetchApi<FunnelMetrics | { success: boolean; data: FunnelMetrics }>(
+    `/api/admin/funnel?period=${period}`
+  );
+  if (res && typeof res === 'object' && 'data' in res && res.data) {
+    return (res as { data: FunnelMetrics }).data;
+  }
+  return res as FunnelMetrics;
+};
 
 export const getTransactions = (limit: number = 10): Promise<Transaction[]> =>
   fetchApi<Transaction[]>(`/api/admin/transactions?limit=${limit}`);
