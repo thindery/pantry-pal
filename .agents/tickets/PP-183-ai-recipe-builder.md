@@ -1,6 +1,6 @@
 # PP-183: AI recipe builder (Pro), recipes from my pantry with metered weekly tokens
 
-**Status:** 🔨 Built on `feature/PP-183-ai-recipe-builder` (PR pending). Tylor asked for merge + deploy (4:05 PM CT Nov 25: "ensure all work is getting merged and deployed. i test it once live.")
+**Status:** ✅ Live 4:34 PM CT Nov 25, build `c5cbe9a` ([#122](https://github.com/thindery/pantry-pal/pull/122)). Migration 032 applied. On for Pro (`AI_FEATURES_ENABLED=1`, user cap 40,000/week, global 200,000/week, 10/hour). At deploy, Ollama Cloud answered HTTP 429 (usage limit), so ideas currently come from the Gemini fallback, which is metered against the same caps.
 **Priority:** P1
 **Phase:** Pro features / AI
 **Created:** 2026-11-25, 3:20 PM America/Chicago. Rescoped to "AI recipe builder" 3:54 PM CT (Remy for Tylor).
