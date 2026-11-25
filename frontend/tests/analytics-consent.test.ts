@@ -1,14 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  CHECKOUT_SESSION_STORAGE_KEY,
+  DEFAULT_PURCHASE_CURRENCY,
+  DEFAULT_PURCHASE_VALUE,
+  PURCHASE_TRACKED_PREFIX,
   SIGN_UP_TRACKED_KEY,
   clearAnalyticsQueue,
   determineInitialConsent,
   flushAnalyticsQueue,
+  getCheckoutTransactionId,
   getQueuedAnalyticsEvents,
   installGtag,
   isValidMeasurementId,
+  stashCheckoutSessionId,
   trackEvent,
   trackFirstScan,
+  trackPurchase,
   trackSignUp,
 } from "@/lib/analytics";
 import { getRegionFromCountry, isEeaCountry } from "@/lib/region";
@@ -36,6 +43,31 @@ Object.defineProperty(window, "localStorage", {
 });
 Object.defineProperty(globalThis, "localStorage", {
   value: localStorageMock,
+  writable: true,
+});
+
+const sessionStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, "sessionStorage", {
+  value: sessionStorageMock,
+  writable: true,
+});
+Object.defineProperty(globalThis, "sessionStorage", {
+  value: sessionStorageMock,
   writable: true,
 });
 
@@ -315,5 +347,82 @@ describe("installGtag", () => {
       return arguments;
     }
     expect(isArgumentsObject(officialGtag("config", "G-LEW78LC3EF"))).toBe(true);
+  });
+});
+
+describe("trackPurchase and checkout transaction id", () => {
+  const originalSearch = window.location.search;
+
+  beforeEach(() => {
+    delete (window as unknown as { gtag?: unknown }).gtag;
+    delete (window as unknown as { __gaLoaded?: boolean }).__gaLoaded;
+    clearAnalyticsQueue();
+    sessionStorageMock.clear();
+    window.history.replaceState({}, "", "/checkout/success");
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, "", `/checkout/success${originalSearch || ""}`);
+  });
+
+  it("fires purchase with value, currency, and transaction_id once per session id", () => {
+    const gtagMock = vi.fn();
+    window.gtag = gtagMock;
+    window.__gaLoaded = true;
+
+    const first = trackPurchase({ transaction_id: "cs_test_123" });
+    expect(first).toBe(true);
+    expect(gtagMock).toHaveBeenCalledTimes(1);
+    expect(gtagMock).toHaveBeenCalledWith("event", "purchase", {
+      value: DEFAULT_PURCHASE_VALUE,
+      currency: DEFAULT_PURCHASE_CURRENCY,
+      transaction_id: "cs_test_123",
+    });
+    expect(sessionStorageMock.getItem(`${PURCHASE_TRACKED_PREFIX}cs_test_123`)).toBe("true");
+
+    const second = trackPurchase({ transaction_id: "cs_test_123" });
+    expect(second).toBe(false);
+    expect(gtagMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows a different transaction_id to fire again", () => {
+    const gtagMock = vi.fn();
+    window.gtag = gtagMock;
+    window.__gaLoaded = true;
+
+    trackPurchase({ transaction_id: "cs_aaa" });
+    trackPurchase({ transaction_id: "cs_bbb" });
+    expect(gtagMock).toHaveBeenCalledTimes(2);
+    expect(gtagMock).toHaveBeenNthCalledWith(2, "event", "purchase", {
+      value: 4.99,
+      currency: "USD",
+      transaction_id: "cs_bbb",
+    });
+  });
+
+  it("prefers session_id from the URL over the stashed id and ignores the placeholder", () => {
+    stashCheckoutSessionId("cs_stashed");
+    expect(getCheckoutTransactionId()).toBe("cs_stashed");
+
+    window.history.replaceState({}, "", "/checkout/success?session_id={CHECKOUT_SESSION_ID}");
+    expect(getCheckoutTransactionId()).toBe("cs_stashed");
+
+    window.history.replaceState({}, "", "/checkout/success?session_id=cs_from_url");
+    expect(getCheckoutTransactionId()).toBe("cs_from_url");
+
+    const gtagMock = vi.fn();
+    window.gtag = gtagMock;
+    window.__gaLoaded = true;
+    trackPurchase();
+    expect(gtagMock).toHaveBeenCalledWith("event", "purchase", {
+      value: 4.99,
+      currency: "USD",
+      transaction_id: "cs_from_url",
+    });
+  });
+
+  it("does not stash a placeholder session id", () => {
+    stashCheckoutSessionId("{CHECKOUT_SESSION_ID}");
+    expect(sessionStorageMock.getItem(CHECKOUT_SESSION_STORAGE_KEY)).toBeNull();
   });
 });
