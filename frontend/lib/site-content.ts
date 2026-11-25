@@ -17,9 +17,9 @@ export const SITE_URL = "https://www.mypantryhub.com";
 
 export const SITE_TAGLINE = "Smart Home Inventory & Shopping Lists";
 export const SITE_DESCRIPTION =
-  "Track pantry inventory, scan receipts and barcodes, auto-generate shopping lists, and manage household stock with AI-powered kitchen utilities.";
+  "Track pantry inventory, scan receipts and barcodes, and build shopping lists from what is running low.";
 export const SITE_OG_DESCRIPTION =
-  "Effortless inventory management with receipt scanning, barcode lookup, and smart low-stock alerts.";
+  "Pantry inventory with barcode Quick Scan, receipt scanning, and shopping lists from what is running low.";
 export const SITE_TWITTER_DESCRIPTION =
   "Track what you have, know what you need. Pantry Hub keeps your kitchen organized.";
 

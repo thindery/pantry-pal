@@ -1,6 +1,6 @@
 # PP-108: First public content set and truthful landing (Quick Scan, receipts, screenshots)
 
-**Status:** 📋 Open
+**Status:** 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed)
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -35,3 +35,12 @@ The site cannot rank or be cited for the questions people ask about pantry barco
 - [ ] At least two new indexable how-to or feature pages are live, self-canonical, in the sitemap, and linked from the home or footer
 - [ ] New pages do not claim voice/Gemini, App Store ratings, invented user counts, expiration tracking, or “identify waste”
 - [ ] Existing homepage Smart Analytics copy “identify waste” is removed or rewritten (still live as of 2026-11-22 4:30 PM CT)
+
+## Implementation (2026-11-25, SEO desk overnight sweep)
+
+- Homepage H1 "Smart Inventory & Ledger for Your Home" → "Scan Groceries Into Your Pantry"; hero copy and meta description name Quick Scan and receipt scanning.
+- Feature grid: "AI Receipt Scanning" → "Receipt Scanning" (OCR, confirm before adding), "Barcode Scanning with Quick Scan", "Inventory Ledger" → "Pantry List", Household Sharing drops "real-time" and states Family = up to 5 members. Site/OG descriptions drop "AI-powered" and "alerts".
+- New indexable pages (self-canonical, in sitemap with lastmod 2026-11-25, linked from the marketing footer on every marketing page): `/guides/barcode-scanning/` (Quick Scan, confirm mode, unknown barcodes, lookup order cache → Open Food Facts → UPCitemdb, tips) and `/guides/receipt-scanning/` (Tesseract OCR, Confirm & Add All, Free 5/month vs unlimited, tips). Facts taken from PP-076/080/081/087/088, `receipt_ocr.py`, `receipt-scanner.tsx`, and `TIER_LIMITS`.
+- No voice/Gemini, ratings, user counts, expiry, or "identify waste" on the new pages (checked in built HTML).
+- Tests: typecheck ✅, lint 0 errors, 29 files / 189 tests ✅ (indexation test updated to 6 sitemap URLs), build ✅. Local `next start`: both guides 200 with own canonical/og:url, no-slash variants 301, `/guides/` 404 noindex, home links both guides, sitemap has 6 URLs.
+- **Still open:** a real product screenshot (scan session, pantry list, or shopping list) with alt text. Needs a capture from a real or demo account; no screenshot was faked.

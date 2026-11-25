@@ -31,6 +31,16 @@ export function MarketingFooter() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link href="/guides/barcode-scanning/" className="hover:text-white transition-colors">
+                  How barcode scanning works
+                </Link>
+              </li>
+              <li>
+                <Link href="/guides/receipt-scanning/" className="hover:text-white transition-colors">
+                  How receipt scanning works
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

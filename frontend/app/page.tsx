@@ -5,7 +5,7 @@ import { SoftwareApplicationSchema } from "@/components/SchemaMarkup";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Pantry Hub: Smart Inventory & Shopping Lists",
-  description: "Track what you have, know what you need. AI-powered pantry management with receipt scanning, barcode lookup & smart alerts. Try free today.",
+  description: "Track what you have, know what you need. Scan barcodes or a grocery receipt to fill your pantry list, then shop from what is running low. Free to start.",
   path: "/",
 });
 

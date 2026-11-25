@@ -44,18 +44,18 @@ const PROOF_POINTS = [
 const FEATURES = [
   {
     icon: Receipt,
-    title: 'AI Receipt Scanning',
-    description: 'Snap a photo of your receipt and our AI automatically adds items to your inventory. No manual entry needed.',
+    title: 'Receipt Scanning',
+    description: 'Snap a photo of your grocery receipt. Pantry Hub reads it, lists the items it found, and adds them all when you confirm.',
   },
   {
     icon: ClipboardList,
-    title: 'Inventory Ledger',
+    title: 'Pantry List',
     description: 'Every add and use is recorded in one running list, so you always know what is on the shelf.',
   },
   {
     icon: Smartphone,
-    title: 'Barcode Scanner',
-    description: 'Quickly add items by scanning barcodes. Perfect for restocking as you unload groceries.',
+    title: 'Barcode Scanning with Quick Scan',
+    description: 'Scan a barcode and the item is added, then keep scanning. No tap needed between items as you unload groceries.',
   },
   {
     icon: BarChart3,
@@ -70,7 +70,7 @@ const FEATURES = [
   {
     icon: Users,
     title: 'Household Sharing',
-    description: 'Keep everyone in sync. Family members can update inventory and see what\'s needed in real-time.',
+    description: 'On the Family plan, up to 5 household members share one pantry and see what is needed.',
   },
 ];
 
@@ -304,11 +304,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
               <span className="text-sm font-medium text-slate-700">Built by a home cook for real pantries</span>
             </div>
             <h1 id="hero-heading" className="hero-enter hero-enter-delay-1 text-4xl md:text-6xl font-serif-heading font-bold text-slate-800 mb-6 leading-tight">
-              Smart Inventory & Ledger for Your{' '}
-              <span className="text-[var(--primary)]">Home</span>
+              Scan Groceries Into Your{' '}
+              <span className="text-[var(--primary)]">Pantry</span>
             </h1>
             <p className="hero-enter hero-enter-delay-2 text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              Never run out of essentials again. Track your pantry with receipt scanning, barcode lookup, and smart shopping lists.
+              Scan barcodes with Quick Scan or snap a receipt to add a whole grocery trip, then build your shopping list from what is running low.
             </p>
             <div className="hero-enter hero-enter-delay-3 flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button

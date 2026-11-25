@@ -47,7 +47,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed) |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | 🔍 In review (PR, branch seo/PP-106-honest-jsonld-faq; not deployed) |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed) |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
@@ -282,7 +282,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed) |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 🔍 In review (PR, branch seo/PP-106-honest-jsonld-faq; not deployed) |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed) |
 | PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
 | PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open (drafts in `.agents/docs/pp-directory-drafts.md`; nothing submitted) |
