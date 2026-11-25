@@ -147,7 +147,10 @@ def test_lookup_falls_back_to_upcitemdb_when_off_times_out(client, auth_headers)
     with patch("backend.routers.barcode.barcode_service.get_cached_product", return_value=None), patch(
         "backend.routers.barcode.barcode_service.lookup_external_product",
         return_value={"success": True, "cached": False, "product": product},
-    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save:
+    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save, patch(
+        "backend.routers.barcode.barcode_service.apply_name_to_junk_barcode_items",
+        return_value=0,
+    ):
         response = client.get("/api/barcode/074305001161", headers=auth_headers)
 
     assert response.status_code == 200
@@ -259,3 +262,135 @@ def test_save_barcode_product_increments_existing_item(
     mock_can.assert_not_called()
     mock_log_activity.assert_called_once()
     assert mock_log_activity.call_args.kwargs.get("adjust_quantity") is False
+
+
+def test_is_usable_product_name():
+    from backend.services.barcode_service import is_usable_product_name
+
+    assert is_usable_product_name(None) is False
+    assert is_usable_product_name("") is False
+    assert is_usable_product_name("  ") is False
+    assert is_usable_product_name("P") is False
+    assert is_usable_product_name(" F ") is False
+    assert is_usable_product_name("AB") is False
+    assert is_usable_product_name("Unknown Product") is False
+    assert is_usable_product_name("Oil") is True
+    assert is_usable_product_name(
+        "Two Men and a Garden Sweet Heat Pickling Pouch 3.8oz"
+    ) is True
+
+
+def test_get_cached_product_skips_junk_names():
+    from backend.services import barcode_service
+
+    junk = {**CACHED_PRODUCT, "name": "P", "source": "manual_entry"}
+    with patch.object(barcode_service, "get_product_by_barcode", return_value=junk):
+        assert barcode_service.get_cached_product("012345678905") is None
+
+
+def test_get_cached_product_returns_real_names():
+    from backend.services import barcode_service
+
+    with patch.object(barcode_service, "get_product_by_barcode", return_value=CACHED_PRODUCT):
+        assert barcode_service.get_cached_product("012345678905")["name"] == "Organic Milk"
+
+
+def test_lookup_skips_short_off_name_and_uses_upcitemdb():
+    import asyncio
+    from backend.services import barcode_service
+
+    async def fake_off(barcode: str):
+        return {
+            "success": True,
+            "cached": False,
+            "product": {
+                "barcode": barcode,
+                "name": "P",
+                "brand": None,
+                "category": "other",
+                "source": "openfoodfacts",
+            },
+        }
+
+    async def fake_upc(barcode: str):
+        return {
+            "success": True,
+            "cached": False,
+            "product": {
+                "barcode": barcode,
+                "name": "Two Men and a Garden Sweet Heat Pickling Pouch 3.8oz",
+                "brand": "TWO MEN AND A GARDEN",
+                "category": "pantry",
+                "source": "upcitemdb",
+            },
+        }
+
+    async def run():
+        with patch.object(barcode_service, "lookup_open_food_facts", side_effect=fake_off), patch.object(
+            barcode_service, "lookup_upcitemdb", side_effect=fake_upc
+        ):
+            return await barcode_service.lookup_external_product("810035212374")
+
+    result = asyncio.run(run())
+    assert result["success"] is True
+    assert result["product"]["source"] == "upcitemdb"
+    assert result["product"]["name"].startswith("Two Men and a Garden")
+    assert result["product"]["barcode"] == "810035212374"
+
+
+def test_lookup_junk_cache_refreshes_from_provider(client, auth_headers):
+    product = {
+        "barcode": "810035212374",
+        "name": "Two Men and a Garden Sweet Heat Pickling Pouch 3.8oz",
+        "brand": "TWO MEN AND A GARDEN",
+        "category": "pantry",
+        "imageUrl": "https://example.com/pouch.jpg",
+        "ingredients": None,
+        "nutrition": None,
+        "source": "upcitemdb",
+        "infoLastSynced": "2026-11-25T21:00:00Z",
+    }
+    with patch("backend.routers.barcode.barcode_service.get_cached_product", return_value=None), patch(
+        "backend.routers.barcode.barcode_service.lookup_external_product",
+        return_value={"success": True, "cached": False, "product": product},
+    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save, patch(
+        "backend.routers.barcode.barcode_service.apply_name_to_junk_barcode_items",
+        return_value=1,
+    ) as mock_repair:
+        response = client.get("/api/barcode/810035212374", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["cached"] is False
+    assert data["product"]["name"] == product["name"]
+    mock_save.assert_called_once_with(product)
+    mock_repair.assert_called_once_with("810035212374", product["name"])
+
+
+def test_lookup_without_usable_provider_name_asks_for_a_name(client, auth_headers):
+    with patch("backend.routers.barcode.barcode_service.get_cached_product", return_value=None), patch(
+        "backend.routers.barcode.barcode_service.lookup_external_product",
+        return_value={"success": False, "cached": False, "notFound": True, "error": "Product not found"},
+    ), patch("backend.routers.barcode.barcode_service.save_product") as mock_save:
+        response = client.get("/api/barcode/070038626039", headers=auth_headers)
+
+    assert response.status_code == 404
+    data = response.json()
+    assert data["needsName"] is True
+    assert data["success"] is False
+    mock_save.assert_not_called()
+
+
+def test_save_barcode_product_rejects_short_name(client, auth_headers):
+    response = client.post(
+        "/api/barcode/810035212374",
+        headers=auth_headers,
+        json={
+            "name": "P",
+            "quantity": 1,
+            "unit": "units",
+            "category": "other",
+        },
+    )
+    assert response.status_code == 422

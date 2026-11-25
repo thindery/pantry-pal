@@ -15,6 +15,10 @@ from database.db import db_connection
 
 logger = logging.getLogger(__name__)
 
+# Names shorter than this are treated as junk (PP-075 first-letter commit, PP-181).
+MIN_USABLE_PRODUCT_NAME_LENGTH = 3
+UNKNOWN_PRODUCT_PLACEHOLDER = "unknown product"
+
 OPEN_FOOD_FACTS_API = "https://world.openfoodfacts.org/api/v0/product"
 UPCITEMDB_API = "https://api.upcitemdb.com/prod/trial/lookup"
 PRODUCT_CACHE_MAX_AGE_DAYS = int(os.getenv("PRODUCT_CACHE_MAX_AGE_DAYS", "60"))
@@ -25,6 +29,18 @@ LOOKUP_USER_AGENT = "PantryHub/1.0 (https://www.mypantryhub.com)"
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def is_usable_product_name(name: Any) -> bool:
+    """True when a name is long enough to cache or show as a real product title."""
+    if not isinstance(name, str):
+        return False
+    cleaned = " ".join(name.split())
+    if len(cleaned) < MIN_USABLE_PRODUCT_NAME_LENGTH:
+        return False
+    if cleaned.lower() == UNKNOWN_PRODUCT_PLACEHOLDER:
+        return False
+    return True
 
 
 def _map_category(categories: str, pnns: str) -> str:
@@ -65,9 +81,14 @@ def barcode_variants(barcode: str) -> list[str]:
 
 
 def get_cached_product(barcode: str, max_age_days: Optional[int] = None) -> Optional[dict[str, Any]]:
+    """Return a cached product only when its name is usable.
+
+    1–2 character names (and the 'Unknown Product' placeholder) are not
+    treated as hits, so a later lookup can refresh them from a provider.
+    """
     for variant in barcode_variants(barcode):
         hit = get_product_by_barcode(variant, max_age_days)
-        if hit:
+        if hit and is_usable_product_name(hit.get("name")):
             return hit
     return None
 
@@ -117,7 +138,10 @@ def ensure_product_cached(
     source: str = "manual_entry",
 ) -> None:
     """Upsert minimal product metadata when an item is saved with a barcode."""
-    if get_product_by_barcode(barcode):
+    if not is_usable_product_name(name):
+        return
+    existing = get_product_by_barcode(barcode)
+    if existing and is_usable_product_name(existing.get("name")):
         return
     save_product(
         {
@@ -132,6 +156,13 @@ def ensure_product_cached(
 
 
 def save_product(data: dict[str, Any]) -> None:
+    if not is_usable_product_name(data.get("name")):
+        logger.warning(
+            "Refusing to cache unusable product name %r for barcode %s",
+            data.get("name"),
+            data.get("barcode"),
+        )
+        return
     now = _now()
     nutrition = json.dumps(data["nutrition"]) if data.get("nutrition") else None
     with db_connection() as conn:
@@ -170,6 +201,32 @@ def save_product(data: dict[str, Any]) -> None:
                     now,
                 ),
             )
+
+
+def apply_name_to_junk_barcode_items(barcode: str, name: str) -> int:
+    """Rename pantry items for this barcode whose current name is unusable.
+
+    Only updates rows whose trimmed name is empty or 1–2 characters, so a
+    user-typed real name is left alone. Returns the number of rows updated.
+    """
+    if not is_usable_product_name(name):
+        return 0
+    variants = barcode_variants(barcode)
+    if not variants:
+        return 0
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE pantry_items
+                SET name = %s,
+                    last_updated = %s
+                WHERE barcode = ANY(%s)
+                  AND length(btrim(name)) BETWEEN 0 AND %s
+                """,
+                (name, _now(), variants, MIN_USABLE_PRODUCT_NAME_LENGTH - 1),
+            )
+            return cur.rowcount or 0
 
 
 def mark_product_needs_sync(barcode: str, error: Optional[str] = None) -> None:
@@ -337,6 +394,11 @@ def _should_skip_remaining_source_attempts(result: dict[str, Any]) -> bool:
     )
 
 
+def _has_usable_product(result: dict[str, Any]) -> bool:
+    product = result.get("product") if result.get("success") else None
+    return bool(product and is_usable_product_name(product.get("name")))
+
+
 async def lookup_external_product(barcode: str) -> dict[str, Any]:
     """Try Open Food Facts, then UPCitemdb. Also try UPC-A / EAN-13 variants.
 
@@ -347,17 +409,33 @@ async def lookup_external_product(barcode: str) -> dict[str, Any]:
     for variant in barcode_variants(requested):
         result = await lookup_open_food_facts(variant)
         last = result
-        if result.get("success") and result.get("product"):
+        if _has_usable_product(result):
             result["product"]["barcode"] = requested
             return result
+        if result.get("success") and result.get("product"):
+            last = {
+                "success": False,
+                "cached": False,
+                "notFound": True,
+                "error": "Product name missing or too short",
+            }
+            continue
         if _should_skip_remaining_source_attempts(result):
             break
     for variant in barcode_variants(requested):
         result = await lookup_upcitemdb(variant)
         last = result
-        if result.get("success") and result.get("product"):
+        if _has_usable_product(result):
             result["product"]["barcode"] = requested
             return result
+        if result.get("success") and result.get("product"):
+            last = {
+                "success": False,
+                "cached": False,
+                "notFound": True,
+                "error": "Product name missing or too short",
+            }
+            continue
         if _should_skip_remaining_source_attempts(result):
             break
     return last

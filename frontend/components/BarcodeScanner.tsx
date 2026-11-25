@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { BrowserMultiFormatReader } from '@zxing/browser';
 import type { BarcodeProduct } from '../types';
 import { lookupBarcode, scanBarcodeFromImage } from '../services/barcodeService';
+import { isUsableProductName } from '../lib/product-name';
 import {
   acceptCameraCandidate,
   createNativeBarcodeDetector,
@@ -277,7 +278,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const result = await lookupBarcode(barcode);
       console.log('Barcode lookup result:', result);
 
-      if (Boolean(result.success) && result.product != null) {
+      if (Boolean(result.success) && result.product != null && isUsableProductName(result.product.name)) {
         if (quickScanRef.current && fromCamera) {
           // Quick Scan: add known products immediately and resume scanning
           onBarcodeDetected(result.product);
@@ -286,7 +287,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         }
         setDetectedProduct(result.product);
       } else {
-        // Unknown barcode - allow manual entry
+        // Unknown barcode or junk cached name - allow manual entry
         setUnknownNameInput('');
         setDetectedProduct({
           barcode,
@@ -322,7 +323,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       const result = await scanBarcodeFromImage(file);
       console.log('Image scan result:', result);
 
-      if (Boolean(result.success) && result.product != null) {
+      if (Boolean(result.success) && result.product != null && isUsableProductName(result.product.name)) {
         setDetectedProduct(result.product);
       } else if (result.product?.barcode) {
         // Barcode found but lookup failed
@@ -357,11 +358,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const handleConfirmProduct = () => {
     if (detectedProduct == null) return;
 
-    const finalProduct = detectedProduct.name
-      ? detectedProduct
-      : { ...detectedProduct, name: unknownNameInput.trim() };
+    const typedName = (detectedProduct.name || unknownNameInput).trim();
+    if (!isUsableProductName(typedName)) return;
 
-    if (!finalProduct.name) return;
+    const finalProduct = { ...detectedProduct, name: typedName };
 
     onBarcodeDetected(finalProduct);
     // Reset for next scan
@@ -704,7 +704,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 value={unknownNameInput}
                 onChange={(e) => setUnknownNameInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && unknownNameInput.trim()) {
+                  if (e.key === 'Enter' && isUsableProductName(unknownNameInput)) {
                     e.preventDefault();
                     handleConfirmProduct();
                   }
@@ -712,13 +712,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
                 placeholder="Enter product name"
                 className="w-full mt-2 px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
               />
+              {unknownNameInput.trim() && !isUsableProductName(unknownNameInput) && (
+                <p className="text-amber-700 text-xs mt-2">
+                  Please enter a name with at least 3 characters.
+                </p>
+              )}
             </div>
           )}
 
           <div className="flex gap-3">
             <button
               onClick={handleConfirmProduct}
-              disabled={!detectedProduct.name && !unknownNameInput.trim()}
+              disabled={!isUsableProductName(detectedProduct.name || unknownNameInput)}
               className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               ✅ Add to Inventory

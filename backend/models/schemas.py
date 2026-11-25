@@ -241,7 +241,7 @@ class ClientErrorCreateRequest(BaseModel):
 class BarcodeSaveRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name: str = Field(..., min_length=1, max_length=MAX_ITEM_NAME_LENGTH)
+    name: str = Field(..., min_length=3, max_length=MAX_ITEM_NAME_LENGTH)
     quantity: float = Field(default=1, gt=0, le=999999)
     unit: str = Field(default="pieces", min_length=1, max_length=MAX_UNIT_LENGTH)
     category: str = Field(..., min_length=1, max_length=MAX_CATEGORY_LENGTH)
