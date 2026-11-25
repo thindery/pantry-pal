@@ -15,7 +15,7 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 | | Count |
 |--|-------|
-| Done | 131 (previous 110 plus 21 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 150, 151, 155, 168–172) |
+| Done | 132 (previous 110 plus 22 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 150, 151, 155, 168–173) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
@@ -28,7 +28,7 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 ## Overnight 2026-11-25
 
-Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest, vitest, typecheck, lint and build locally plus CI, and was squash-merged when green. Deploys ran `./deploy/deploy-docker.sh main` from an up-to-date worktree, with a `pg_dump` into `/opt/pantry-pal/backups/` before each one. Build ids were read from the frontend container; smoke checked `/`, `/pricing/`, `/checkout/success/`, `/checkout/cancel/`, `/auth/signin/`, `/privacy/` (200), `/admin/`, `/dashboard/`, `/design-system/` (307 to sign-in), the Resend webhook (503, no secret yet) and the Stripe webhook without a signature (400). No rollbacks were needed. agy ran out of credits at about 12:50 AM and Hermes was already out (HTTP 429), so later tickets were coded by the Lead.
+Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest, vitest, typecheck, lint and build locally plus CI, and was squash-merged when green. Deploys ran `./deploy/deploy-docker.sh main` from an up-to-date worktree, with a `pg_dump` into `/opt/pantry-pal/backups/` before each one. Build ids were read from the frontend container; smoke checked `/`, `/pricing/`, `/checkout/success/`, `/checkout/cancel/`, `/auth/signin/`, `/privacy/` (200), `/admin/`, `/dashboard/`, `/design-system/` (307 to sign-in), the Resend webhook (503, no secret yet) and the Stripe webhook without a signature (400). No rollbacks were needed. From about 1:40 AM the public build-id.txt is behind a Cloudflare challenge for the Mini, so build ids are read inside the frontend container and smoke runs from the Lead's box. agy ran out of credits at about 12:50 AM and Hermes was already out (HTTP 429), so later tickets were coded by the Lead.
 
 ### Shipped
 
@@ -56,6 +56,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-172 (new, P1) Middleware fails closed if Auth.js is misconfigured | [#91](https://github.com/thindery/pantry-pal/pull/91) | b20bf7f | b20bf7f |
 | PP-150 E2E inventory +/- (minted test session + in-memory API; test-only) | [#92](https://github.com/thindery/pantry-pal/pull/92) | 8c857f4 | test-only, no runtime change |
 | PP-151 E2E shopping list (same harness; test-only) | [#93](https://github.com/thindery/pantry-pal/pull/93) | 0366501 | test-only, no runtime change |
+| PP-173 (new, P2) Scan page hydration error when Quick Scan is off | [#94](https://github.com/thindery/pantry-pal/pull/94) | 1094760 | 1094760 (read from the frontend container) |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
