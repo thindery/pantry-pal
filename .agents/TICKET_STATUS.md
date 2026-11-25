@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-24, 11:38 PM CT (PP-165 GA4 key events + login_events, live 9b19fa8)
+Last updated: 2026-11-25, 3:30 AM CT (overnight sweep; live build 2cbf0e4 — see "Overnight 2026-11-25")
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,16 +15,97 @@ Last updated: 2026-11-24, 11:38 PM CT (PP-165 GA4 key events + login_events, liv
 
 | | Count |
 |--|-------|
-| Done | 109 (previous plus PP-165 GA4 key events + login_events, live 9b19fa8) |
+| Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
-| Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
+| Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
+| Open by priority | P0: 5 · P1: 6 · P2: 9 · P3: 2 (22 on the board below) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
 
+
+## Overnight 2026-11-25
+
+Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest, vitest, typecheck, lint and build locally plus CI, and was squash-merged when green. Deploys ran `./deploy/deploy-docker.sh main` from an up-to-date worktree, with a `pg_dump` into `/opt/pantry-pal/backups/` before each one. Build ids were read from the frontend container; smoke checked `/`, `/pricing/`, `/checkout/success/`, `/checkout/cancel/`, `/auth/signin/`, `/privacy/` (200), `/admin/`, `/dashboard/`, `/design-system/` (307 to sign-in), the Resend webhook (503, no secret yet) and the Stripe webhook without a signature (400). No rollbacks were needed. From about 1:40 AM the public build-id.txt is behind a Cloudflare challenge for the Mini, so build ids are read inside the frontend container and smoke runs from the Lead's box. agy ran out of credits at about 12:50 AM and Hermes was already out (HTTP 429), so later tickets were coded by the Lead.
+
+### Shipped
+
+| Ticket | PR | Merge commit | Live in build |
+|--------|----|--------------|---------------|
+| PP-167 renumber (docs only; PP-166 stays the $1 offer) | — | dd67017 | docs |
+| PP-168 Success page confirms the purchase with the backend | [#65](https://github.com/thindery/pantry-pal/pull/65) | ed5aaf6 | e58fc58 and later |
+| PP-169 Deploy runs migrations before `up -d` | [#66](https://github.com/thindery/pantry-pal/pull/66) | 723d3d6 | e58fc58 and later |
+| PP-170 Checkout idempotency key includes the redirect URLs | [#67](https://github.com/thindery/pantry-pal/pull/67) | fa09890 | e58fc58 and later |
+| PP-123 Log every email_sends attempt (migration 027) | [#68](https://github.com/thindery/pantry-pal/pull/68) | e58fc58 | e58fc58 (backup overnight-pre-027-20261125-0016.sql) |
+| PP-147 Playwright harness and pre-deploy smoke gate | [#74](https://github.com/thindery/pantry-pal/pull/74) | 8575f0c | 6372881 |
+| PP-144 Branded checkout success / cancel screens | [#75](https://github.com/thindery/pantry-pal/pull/75) | 6cfa7de | 6372881 |
+| PP-128 Admin auth hardening leftovers | [#77](https://github.com/thindery/pantry-pal/pull/77) | 64340ad | 6372881 |
+| PP-171 Quick Scan test flake | [#79](https://github.com/thindery/pantry-pal/pull/79) | 5cfc003 | 6372881 |
+| PP-124 Signed Resend webhook + email_events (migration 028) | [#80](https://github.com/thindery/pantry-pal/pull/80) | 6372881 | 6372881 (backup overnight-pre-028-20261125-0033.sql) |
+| PP-126 Subscription funnel tiles in admin | [#81](https://github.com/thindery/pantry-pal/pull/81) | 0a76827 | ee1bbd7 |
+| PP-145 Desktop Pantry layout and 44px icon targets | [#82](https://github.com/thindery/pantry-pal/pull/82) | 132d36b | ee1bbd7 |
+| PP-135 Cancellation / ended email copy (real tier, never guessed) | [#83](https://github.com/thindery/pantry-pal/pull/83) | 0b473da | ee1bbd7 |
+| PP-155 E2E analytics consent path | [#84](https://github.com/thindery/pantry-pal/pull/84) | ee1bbd7 | ee1bbd7 |
+| PP-146 /design-system refreshed to the shipped UI | [#86](https://github.com/thindery/pantry-pal/pull/86) | 0d1035c | e02f14a |
+| PP-125 Admin Marketing / email view (replaces closed #85) | [#87](https://github.com/thindery/pantry-pal/pull/87) | 33fce85 | e02f14a |
+| PP-067 Production CSP without `unsafe-eval` | [#88](https://github.com/thindery/pantry-pal/pull/88) | e02f14a | e02f14a |
+| PP-072 /design-system gated to admins | [#89](https://github.com/thindery/pantry-pal/pull/89) | 3ffaa73 | 3981b53 |
+| PP-127 Admin links to GA4 / Search Console / Cloudflare | [#90](https://github.com/thindery/pantry-pal/pull/90) | 3981b53 | 3981b53 |
+| PP-172 (new, P1) Middleware fails closed if Auth.js is misconfigured | [#91](https://github.com/thindery/pantry-pal/pull/91) | b20bf7f | b20bf7f |
+| PP-150 E2E inventory +/- (minted test session + in-memory API; test-only) | [#92](https://github.com/thindery/pantry-pal/pull/92) | 8c857f4 | test-only, no runtime change |
+| PP-151 E2E shopping list (same harness; test-only) | [#93](https://github.com/thindery/pantry-pal/pull/93) | 0366501 | test-only, no runtime change |
+| PP-173 (new, P2) Scan page hydration error when Quick Scan is off | [#94](https://github.com/thindery/pantry-pal/pull/94) | 1094760 | 1094760 (read from the frontend container) |
+| PP-149 E2E barcode lookup and add, normal mode (partly done: camera Quick Scan add still open) | [#95](https://github.com/thindery/pantry-pal/pull/95) | cfe329e | test-only, no runtime change |
+| PP-149 Quick Scan camera add (finishes ticket, generated fake webcam) | [#96](https://github.com/thindery/pantry-pal/pull/96) | 28fe947 | test-only, no runtime change |
+| PP-154 transactional email triggers (Postgres integration: welcome + 4 signed Stripe webhooks, Resend and Stripe faked) | [#97](https://github.com/thindery/pantry-pal/pull/97) | 0e05f4b | test-only, no runtime change |
+| PP-174 (new, P0) Billing portal 500: `stripe.billing_portal` namespace (Manage billing + already-subscribed redirect) | [#98](https://github.com/thindery/pantry-pal/pull/98) | a614caf | a614caf (deployed about 2:33 AM CT, read from the frontend container) |
+| PP-152 / PP-153 backend part: Postgres billing integration (checkout → webhook → Pro, no duplicate, confirm, cancel/reactivate, portal, subscription.deleted); Stripe faked, test-only. Browser run with Stripe test keys still blocked | [#99](https://github.com/thindery/pantry-pal/pull/99) | b014bd0 | test-only, no runtime change |
+| PP-148 local part: e2e auth paths (legacy redirects, Google start with fake client, signed-in redirect + welcome once, sign-out). Real Google round trip still blocked. Filed PP-175 (P2 sign-out race) | [#100](https://github.com/thindery/pantry-pal/pull/100) | 616c0cc | test-only, no runtime change |
+| PP-175 (new, P2) Sign-out sticks when session refreshes are in flight (`signOutCompletely`; e2e 20/20 vs 4/20 failing before) | [#101](https://github.com/thindery/pantry-pal/pull/101) | 16ec349 | d33df7a (deployed about 3:05 AM CT) |
+| PP-176 (new, P1) Postgres guard: removing an item keeps its history, product cache, owner-only, empty group dropped | [#102](https://github.com/thindery/pantry-pal/pull/102) | fa719f3 | test-only, no runtime change |
+| PP-177 (new, P2 billing data) Refunds find their invoice via InvoicePayment (live dahlia `charge.refunded` has no `invoice`, verified read-only), so the paid row is marked refunded and the PP-094 rule runs | [#103](https://github.com/thindery/pantry-pal/pull/103) | 2cbf0e4 | 2cbf0e4 (deployed about 3:14 AM CT) |
+| PP-177 backfill: 3 refunded Nov 21 duplicate invoices set `succeeded` → `refunded` in admin_transactions (backup pre-pp177-admin-transactions-20261125-0916.sql; nothing deleted; entitlement untouched) | — | data fix | live DB |
+| Docs: 38 stale ticket files (PP-001–PP-056) had To Do / Open status lines although this board marks them Done; synced so the fix-and-test routine does not pick them up | [#104](https://github.com/thindery/pantry-pal/pull/104) | 6889416 | docs only |
+
+Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
+
+### Final state (3:30 AM CT)
+
+- Live build: **2cbf0e4** (read from the pantry-pal-frontend container and the public build-id.txt), which is the last code commit on origin/main; later commits are docs only, so no further deploy was needed. Frontend and backend containers healthy; smoke from the Lead's box: `/`, `/pricing/`, `/checkout/success/`, `/checkout/cancel/`, `/auth/signin/`, `/privacy/` 200; `/admin/`, `/dashboard/`, `/design-system/` 307; Stripe webhook unsigned 400; `/api/public/offer` `enabled: false`.
+- Every open ticket left on the board is blocked or backlog (see below). Nothing unblocked remains for the 9:00 AM fix-and-test run.
+
+### Not done by the Lead: PR #62 ($1 offer, PP-166)
+
+PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) and is live from build 86c57ec onward. `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is unset in `.env.prod` and `/api/public/offer` returns `enabled: false`, so the offer is dormant. Left as is: no revert and no coupon created.
+
+### Still open
+
+- PP-136: no reliable "first paid renewal after a promo" signal while the offer is dormant. Once PP-166 is turned on, `invoice.upcoming` for the first full-price renewal is the signal, but it needs that Stripe event enabled on the webhook endpoint (a live Stripe change, so Tylor's call).
+- PP-137: an opt-in low-stock digest is a new recurring customer email. Needs Tylor's yes.
+- PP-115, PP-114: backlog (research / real data first).
+
+### Blocked, and why
+
+- PP-164 (local ads hub): waiting on Tylor.
+- PP-139, PP-140: need Tylor's yes.
+- PP-166 / PR #62: merged dormant; enabling it means a live Stripe coupon, which is Tylor's call.
+- GROWTH-010 (Search Console, other domains): blocked on verification tokens.
+- PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 open).
+- PP-148 (real Google sign-up / login E2E), PP-152–PP-153 (Stripe checkout, cancel): need a Google test account and Stripe test-mode keys. (PP-154 shipped as a backend integration test with signed local webhooks.)
+- PP-119 (Bing import), PP-121 (GA4 Viewer for the read-only service account): need Tylor's sign-in.
+- PP-129 (full-access Resend key): needs Tylor's yes.
+- PP-124 operator step: create the Resend webhook for `https://www.mypantryhub.com/api/webhooks/resend` in the mypantryhub Resend account and put `RESEND_WEBHOOK_SECRET` in `/opt/pantry-pal/.env.prod`. The Resend connector here is on a different account. Until then, email rates show "Pending webhook".
+- Coding agents: agy out of credits since ~12:50 AM; Hermes out (HTTP 429). Topping up costs money, so not done.
+
+### Notes
+
+- Data: the 3 refunded Nov 21 duplicate invoices are now `refunded` in admin_transactions (PP-177 backfill), so paid-conversion counts no longer include them.
+- Pre-existing deploy warning "nginx container not running; skipped vhost reload" comes from the script's compose path; nginx is up.
+- After PP-067, a signed-in check of the barcode scanner and a Stripe redirect is still worth doing by hand. Rollback is a one-line revert.
+
+---
 
 ## Open tickets by priority
 
@@ -34,58 +115,41 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed) |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
-| PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
-| PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
+| PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
+| PP-153 | E2E: cancel subscription and billing portal | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 
-### P1 — next up, high impact (13)
+### P1 — next up, high impact (6)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed) |
-| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | 🔍 In review (PR, branch seo/PP-106-honest-jsonld-faq; not deployed) |
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed) |
-| PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
-| PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
-| PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
-| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
+| PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
-| PP-149 | E2E: barcode scan including Quick Scan | 📋 Backlog | E2E |
-| PP-150 | E2E: inventory quantity +/- | 📋 Backlog | E2E |
-| PP-151 | E2E: shopping list | 📋 Backlog | E2E |
-| PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
-### P2 — soon (18)
+### P2 — soon (9)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-067 | Tighten CSP (unsafe-eval/inline) | 📋 Open | Security |
-| PP-110 | AEO content cluster and comparison pages | 📋 Open | In Review (PR open 2026-11-25) |
+| PP-110 | AEO content cluster and comparison pages | 📋 Open | SEO / AEO |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |
 | PP-115 | Nearby grocery weekly ads / deals search | 📋 Backlog | Features |
 | PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | 📋 Open — needs Tylor sign-in | Analytics / GSC |
 | PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | 📋 Open (CF token done) | Analytics / GSC |
-| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | 📋 Open | Marketing dashboard |
-| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | 📋 Open | Marketing dashboard |
-| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | 📋 Open | Marketing dashboard |
-| PP-128 | Admin auth hardening leftovers | 📋 Open | Marketing dashboard |
-| PP-135 | Cancellation and win-back email design | 📋 Open | Email design |
 | PP-136 | Promo or trial-ending reminder (only if relevant) | 📋 Open | Email design |
 | PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
-| PP-145 | Desktop Pantry layout and 44px icon targets | 📋 Open | Design review |
-| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | 📋 Open | Design review |
-| PP-155 | E2E: analytics consent path | 📋 Backlog | E2E |
 
-### P3 — someday (3)
+### P3 — someday (2)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-072 | Gate public design-system | 📋 Open | Security |
 | PP-129 | Optional full-access Resend read key | 📋 Backlog — needs Tylor’s yes | Marketing dashboard |
 | PP-137 | Low-stock or expiring-items digest (only if relevant) | 📋 Open | Email design |
 
@@ -200,12 +264,12 @@ Triage board for work that is not done. Area inventories later in this file stay
 |--------|-------|----------|--------|
 | PP-065 | Shopping-session add-to-inventory tier limits | P1 | ✅ Done |
 | PP-066 | Shorten API bearer JWT TTL to 1h | P1 | ✅ Done |
-| PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | 📋 Open |
+| PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | ✅ Done (#88, overnight 2026-11-25) |
 | PP-068 | Gitleaks secret scan in CI | P2 | ✅ Done |
 | PP-069 | Sanitize Stripe webhook error responses | P2 | ✅ Done |
 | PP-070 | nginx require-cloudflare include (ops) | P2 | ✅ Done (template; host reload pending deploy) |
 | PP-071 | Trusted proxy IP for rate limiting | P2 | ✅ Done |
-| PP-072 | Gate public design-system | P3 | 📋 Open |
+| PP-072 | Gate public design-system | P3 | ✅ Done (#89, overnight 2026-11-25) |
 | PP-073 | Add security.txt | P3 | ✅ Done (live 200 after deploy) |
 | PP-074 | Remove/harden Clerk JWT fallback | P3 | ✅ Done |
 
@@ -241,8 +305,9 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 | PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
-| PP-166 | Handle customer.subscription.created before enabling it on the live webhook | P0 | 🔄 In progress |
-| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094 (`78427fd` live) |
+| PP-167 | Handle customer.subscription.created before enabling it on the live webhook (commit messages say PP-166) | P0 | ✅ Done (live `0753f20`) |
+| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Merged dark (offer off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set), Remy overnight Nov 25 |
+| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094; live webhook now includes refund + subscription.created events |
 
 ## Billing & email audit (2026-11-22)
 
@@ -275,16 +340,16 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed) |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open (Tylor copy follow-up; 206 items counted) |
 | PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
-| PP-104 | Allow public OG images and add favicon/logo assets | P0 | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |
-| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed) |
-| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 🔍 In review (PR, branch seo/PP-106-honest-jsonld-faq; not deployed) |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
+| PP-104 | Allow public OG images and add favicon/logo assets | P0 | 📋 Open |
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 📋 Open |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 📋 Open |
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed) |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
 | PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
-| PP-110 | AEO content cluster and comparison pages | P2 | In Review (PR open 2026-11-25) |
+| PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open (drafts in `.agents/docs/pp-directory-drafts.md`; nothing submitted) |
 
 
@@ -312,12 +377,12 @@ Tylor asked for the same email-send visibility another project already has in ad
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-123 | Extend `email_sends` and log every helper attempt | P1 | 📋 Open |
-| PP-124 | Resend webhook (signature + idempotency) and `email_events` | P1 | 📋 Open |
-| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | P2 | 📋 Open |
-| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | P2 | 📋 Open |
-| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | P2 | 📋 Open |
-| PP-128 | Admin auth hardening leftovers | P2 | 📋 Open |
+| PP-123 | Extend `email_sends` and log every helper attempt | P1 | ✅ Done (#68, overnight 2026-11-25) |
+| PP-124 | Resend webhook (signature + idempotency) and `email_events` | P1 | ✅ Done (#80, overnight 2026-11-25) |
+| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | P2 | ✅ Done (#87, overnight 2026-11-25) |
+| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | P2 | ✅ Done (#81, overnight 2026-11-25) |
+| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | P2 | ✅ Done (#90, overnight 2026-11-25) |
+| PP-128 | Admin auth hardening leftovers | P2 | ✅ Done (#77, overnight 2026-11-25) |
 | PP-129 | Optional full-access Resend read key | P3 | 📋 Backlog — needs Tylor’s yes |
 
 ## Email design (2026-11-22)
@@ -359,9 +424,9 @@ Tylor asked for a designer-style review of every screen, in the same spirit as B
 | PP-141 | Fix logged-out `/pricing/` CTAs and the sign-in upgrade path | P0 | ✅ Done (pending deploy) |
 | PP-142 | Accessible color tokens (primary / accent / danger split) | P1 | ✅ Done (pending deploy) |
 | PP-143 | Marketing UX: sticky-nav overlap, CTA weight, numeral contrast | P1 | ✅ Done (pending deploy) |
-| PP-144 | Sign-in and checkout brand + contrast | P1 | 📋 Open — sign-in done, checkout remaining |
-| PP-145 | Desktop Pantry layout and 44px icon targets | P2 | 📋 Open |
-| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | 📋 Open |
+| PP-144 | Sign-in and checkout brand + contrast | P1 | ✅ Done (#75, overnight 2026-11-25) |
+| PP-145 | Desktop Pantry layout and 44px icon targets | P2 | ✅ Done (#82, overnight 2026-11-25) |
+| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | ✅ Done (#86, overnight 2026-11-25) |
 
 
 ## E2E regression suite (2026-11-22)
@@ -370,15 +435,15 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | ✅ Done (#74, overnight 2026-11-25) |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
-| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
-| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
-| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
-| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
-| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
-| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
+| PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
+| PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
+| PP-155 | E2E: analytics consent path | P2 | ✅ Done (#84, overnight 2026-11-25) |
 
 ## Future / backlog
 
@@ -389,15 +454,15 @@ Documented for later; no implementation in this pass.
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
 | PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
 | PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
-| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | ✅ Done (#74, overnight 2026-11-25) |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
-| PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
-| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
-| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
-| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
-| PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
-| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
+| PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
+| PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
+| PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
+| PP-155 | E2E: analytics consent path | P2 | ✅ Done (#84, overnight 2026-11-25) |
 
 ## Verification
 

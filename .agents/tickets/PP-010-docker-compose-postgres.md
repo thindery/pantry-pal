@@ -1,6 +1,6 @@
 # PP-010: docker-compose — frontend + backend + PostgreSQL 16
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 2 — Playbook structure  
 **Playbook:** `project-director/playbooks/portfolio_stack_baseline.md`  

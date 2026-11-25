@@ -1,6 +1,6 @@
 # PP-029: database/migrations + migrate.py pattern
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `database_migration_python.md`  

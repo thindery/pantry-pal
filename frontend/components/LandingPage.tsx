@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BrandMark } from '@/components/BrandMark';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
+import { OfferBanner } from '@/components/OfferBanner';
 import { BRAND_NAME } from '@/lib/site-content';
 import { 
   ShoppingCart,
@@ -333,6 +334,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 See How It Works
               </button>
             </div>
+            <OfferBanner variant="hero" />
 
             {/* Honest proof points */}
             <div className="hero-enter hero-enter-delay-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 max-w-4xl mx-auto text-left">

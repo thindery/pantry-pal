@@ -221,12 +221,15 @@ export function InventoryView() {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Package className="text-[var(--primary)]" size={18} />
-          <h1 className="text-lg font-serif-heading font-bold text-[var(--foreground)]">{BRAND_NAME}</h1>
+          <h1 className="text-lg font-serif-heading font-bold text-[var(--foreground)]">
+            <span className="md:hidden">{BRAND_NAME}</span>
+            <span className="hidden md:inline">Pantry</span>
+          </h1>
         </div>
         <button
           type="button"
           onClick={() => setShowThresholdSettings(true)}
-          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--primary)] hover:border-[var(--primary-light)] transition-colors"
+          className="min-h-11 min-w-11 h-11 w-11 inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--primary)] hover:border-[var(--primary-light)] transition-colors"
           aria-label="Low stock threshold settings"
           title="Category threshold defaults"
         >
@@ -234,7 +237,7 @@ export function InventoryView() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 md:flex md:w-auto gap-2">
         <DashboardLink
           href="/dashboard/scan-barcode/"
           className="inline-flex items-center justify-center gap-1.5 bg-[var(--primary)] text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[var(--primary-hover)] active:scale-[0.98] transition-colors touch-manipulation"
