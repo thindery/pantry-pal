@@ -98,6 +98,40 @@ def _rendered_payment(tier="pro", amount_cents=499, is_free_invoice=False):
     return captured
 
 
+def _rendered_cancellation_scheduled(period_end="2026-12-21T23:04:21+00:00", tier=None):
+    captured = {}
+
+    def fake_send_email(**kwargs):
+        captured.update(kwargs)
+        return {"skipped": False, "id": "preview"}
+
+    with patch("backend.services.email_service.send_email", side_effect=fake_send_email):
+        email_service.send_cancellation_scheduled(
+            user_id="user-1",
+            email="tylor@example.com",
+            subscription_id="sub_test_123",
+            period_end=period_end,
+            tier=tier,
+        )
+    return captured
+
+
+def _rendered_subscription_ended():
+    captured = {}
+
+    def fake_send_email(**kwargs):
+        captured.update(kwargs)
+        return {"skipped": False, "id": "preview"}
+
+    with patch("backend.services.email_service.send_email", side_effect=fake_send_email):
+        email_service.send_subscription_ended(
+            user_id="user-1",
+            email="tylor@example.com",
+            subscription_id="sub_test_456",
+        )
+    return captured
+
+
 def test_branded_layout_includes_wordmark_and_hello_contact():
     captured = _rendered_welcome()
     html = captured["html"]
@@ -159,6 +193,111 @@ def test_payment_failed_has_single_update_card_cta():
     assert "Update payment method" in captured["html"]
     assert "hello@mypantryhub.com" in captured["html"]
     assert "card_declined" not in captured["html"]
+
+
+def test_cancellation_scheduled_renders_branded_shell_and_keep_my_plan_cta():
+    captured = _rendered_cancellation_scheduled(period_end="2026-12-21T23:04:21+00:00")
+    html = captured["html"]
+    text = captured["text"]
+
+    # Branded shell assertions (PP-131)
+    assert "Pantry Hub" in html
+    assert 'name="color-scheme" content="light dark"' in html
+    assert "hello@mypantryhub.com" in html
+    assert "hello@mypantryhub.com" in text
+    assert "info@mypantryhub.com" not in html
+
+    # Subject and honest copy assertions
+    assert captured["subject"] == "Your Pantry Hub cancellation is scheduled"
+    assert "December 21, 2026" in html
+    assert "December 21, 2026" in text
+    # Tier unknown -> no guessed plan name.
+    assert "Your access continues through December 21, 2026" in html
+    assert "Your access continues through December 21, 2026" in text
+    assert "Pro access" not in html
+
+    # Primary CTA and URL assertions
+    assert "Keep my plan" in html
+    assert "Keep my plan" in text
+    assert "/dashboard/account/" in html
+    assert "/dashboard/account/" in text
+
+    # Idempotency and template assertions
+    assert captured["idempotency_key"] == "cancel.scheduled:sub_test_123"
+    assert captured["template"] == "cancellation_scheduled"
+
+    # No guilt copy or fake social proof
+    assert "we're sorry to see you go" not in html.lower()
+    assert "testimonial" not in html.lower()
+    assert "rated" not in html.lower()
+
+
+def test_cancellation_scheduled_unknown_period_end():
+    captured = _rendered_cancellation_scheduled(period_end=None)
+    html = captured["html"]
+    text = captured["text"]
+
+    assert "until the end of your current billing period" in html
+    assert "until the end of your current billing period" in text
+    assert "Keep my plan" in html
+    assert "/dashboard/account/" in html
+
+
+def test_cancellation_scheduled_family_tier():
+    captured = _rendered_cancellation_scheduled(period_end="2026-12-21T23:04:21+00:00", tier="family")
+    html = captured["html"]
+    text = captured["text"]
+
+    assert "Your Family access continues through December 21, 2026" in html
+    assert "Your Family access continues through December 21, 2026" in text
+    assert "Keep my plan" in html
+    assert "/dashboard/account/" in html
+
+
+def test_subscription_ended_renders_branded_shell_and_free_limits():
+    captured = _rendered_subscription_ended()
+    html = captured["html"]
+    text = captured["text"]
+
+    # Branded shell assertions (PP-131)
+    assert "Pantry Hub" in html
+    assert 'name="color-scheme" content="light dark"' in html
+    assert "hello@mypantryhub.com" in html
+    assert "hello@mypantryhub.com" in text
+    assert "info@mypantryhub.com" not in html
+
+    # Subject and honest status notice
+    assert captured["subject"] == "Your Pantry Hub subscription has ended"
+    assert "You're now on the Free plan" in html
+    assert "You're now on the Free plan" in text
+
+    # List ONLY Free limits from the pricing page (PricingPage.tsx)
+    for feature in email_service.FREE_FEATURES:
+        assert feature in html
+        assert feature in text
+
+    # Ensure paid-only features are NOT included
+    assert "Unlimited pantry items" not in html
+    assert "Cloud sync across devices" not in html
+    assert "Household sharing" not in html
+
+    # CTA and URL assertions
+    assert "Resubscribe" in html
+    assert "Resubscribe" in text
+    assert "/pricing/" in html
+    assert "/pricing/" in text
+
+    # Idempotency and template assertions
+    assert captured["idempotency_key"] == "cancel.ended:sub_test_456"
+    assert captured["template"] == "subscription_ended"
+
+
+def test_cancellation_and_ended_idempotency_keys_unchanged():
+    captured_sched = _rendered_cancellation_scheduled(period_end="2026-12-21T23:04:21+00:00")
+    captured_ended = _rendered_subscription_ended()
+
+    assert captured_sched["idempotency_key"].startswith("cancel.scheduled:")
+    assert captured_ended["idempotency_key"].startswith("cancel.ended:")
 
 
 def test_send_success_writes_sent_and_resend_id(monkeypatch):
@@ -485,3 +624,6 @@ def test_is_suppressed_and_mask_email():
     assert email_service._mask_email(None) == "[EMPTY]"
 
 
+def test_cancellation_scheduled_pro_tier_named():
+    captured = _rendered_cancellation_scheduled(tier="pro")
+    assert "Your Pro access continues through December 21, 2026" in captured["text"]

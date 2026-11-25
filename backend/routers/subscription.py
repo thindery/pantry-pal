@@ -187,6 +187,7 @@ async def cancel_subscription(user_id: str = Depends(require_authenticated_user_
             email=contact.get("email"),
             subscription_id=sub["stripeSubscriptionId"],
             period_end=period_end or sub.get("subscriptionEndDate"),
+            tier=sub.get("tier"),
         )
     except Exception:
         logger.exception("Cancellation email failed after the subscription was updated")
