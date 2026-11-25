@@ -25,6 +25,7 @@ const PUBLIC_PATHS = new Set([
 const PUBLIC_PREFIXES = [
   "/api/auth/",
   "/api/webhooks/stripe",
+  "/api/webhooks/resend",
   "/api/public/offer",
 ];
 
@@ -67,6 +68,13 @@ function getAdminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function getAdminUserIds(): string[] {
+  return (process.env.ADMIN_USER_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
     .filter(Boolean);
 }
 
@@ -117,7 +125,11 @@ export default auth(async (req) => {
       return applyRegionCookie(NextResponse.redirect(signIn), req);
     }
     const adminEmails = getAdminEmails();
-    if (!userEmail || !adminEmails.includes(userEmail)) {
+    const adminUserIds = getAdminUserIds();
+    const userId = req.auth?.user?.id?.trim();
+    const isEmailAdmin = !!(userEmail && adminEmails.includes(userEmail.trim()));
+    const isIdAdmin = !!(userId && adminUserIds.includes(userId));
+    if (!isEmailAdmin && !isIdAdmin) {
       return applyRegionCookie(
         NextResponse.redirect(new URL("/dashboard/", nextUrl)),
         req
