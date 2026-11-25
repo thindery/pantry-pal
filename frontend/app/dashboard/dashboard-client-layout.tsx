@@ -87,10 +87,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <DashboardModals />
         <main className={isScanBarcode ? "h-full min-h-0 overflow-hidden py-0" : "py-6 md:py-8"}>{children}</main>
       </div>
       <DashboardNavbar />
+      <DashboardModals />
       {showThresholdSettings && (
         <ThresholdSettingsModal
           thresholdConfig={thresholdConfig}
