@@ -1,6 +1,6 @@
 # PP-178: Send to Instacart (Beta) on the shopping list
 
-**Status:** 🟡 Built; button hidden until Tylor adds `INSTACART_API_KEY`
+**Status:** ⛔ Blocked: Instacart IDP applications closed (no waitlist as of 2026-11-25). Code is merged and dormant; button hidden until `INSTACART_API_KEY` is set
 **Priority:** P2
 **Phase:** Growth / shopping
 **Created:** 2026-11-25, 2:05 PM America/Chicago
@@ -21,7 +21,11 @@ Shopping list users have to retype their list in a grocery app. Instacart's Deve
 - Shopping list page: "Send to Instacart" with a Beta badge, opens the link in a new tab, loading and error states, GA4 event `instacart_handoff` (`status`, `item_count`).
 - Tests: `tests/test_instacart.py` (HTTP mocked) and `frontend/tests/instacart-button.test.tsx`.
 
-## Tylor still has to
+## Blocker (2026-11-25, 2:10 PM America/Chicago)
+
+Instacart Developer Platform is not accepting new applications and has no waitlist (company.instacart.com/business/developers). No key can be obtained until it reopens. The feature stays off with no key, so nothing is user-visible.
+
+## Tylor still has to (once applications reopen)
 
 1. Sign up at the Instacart Developer Platform (free) and create a **development** key. Add it to the server env as `INSTACART_API_KEY` through a secret field, never chat. Test the button.
 2. Ask Instacart for a **production** key, then set `INSTACART_API_KEY` to it and `INSTACART_API_BASE=https://connect.instacart.com`.
