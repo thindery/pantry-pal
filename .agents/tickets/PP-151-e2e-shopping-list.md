@@ -1,6 +1,6 @@
 # PP-151: E2E — shopping list
 
-**Status:** 📋 Backlog
+**Status:** 🔄 In review
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -46,3 +46,7 @@ Do not confuse this with `/dashboard/shopping-session` (`ShoppingSessionView`, `
 - Depends on the PP-147 harness. No extra runtime dependencies.
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Progress Notes
+
+- 2026-11-25 overnight (Pantry Hub Lead): `e2e/shopping-list.spec.ts` on the PP-150 test session and API stand-in. Covers Regenerate from an out-of-stock pantry item (an in-stock item stays off), manual add, +/- on the need quantity, check/uncheck, list survives reload (localStorage), remove via the row menu, Mark bought raising the pantry quantity by the need amount and dropping the row, and Share not crashing.
