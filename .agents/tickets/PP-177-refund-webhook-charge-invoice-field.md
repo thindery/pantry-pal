@@ -32,5 +32,5 @@ Read-only checks on the live Pantry Hub Stripe account: the webhook endpoint has
 
 Fix: `_invoice_id_for_charge()` uses `charge.invoice` when present, else `stripe.InvoicePayment.list(payment={type: payment_intent, …})`; lookup errors are logged and fall back to the old path. Tests: 2 unit tests, 3 Postgres tests (full refund marks the paid row refunded and applies the PP-094 downgrade; duplicate refund keeps Pro; partial refund records but keeps Pro). Without the fix all 3 Postgres tests fail.
 
-Not done: past `admin_transactions` rows were not rewritten (production data change; needs a reviewed one-off). Step 4 (should a full refund on a still-active subscription drop Pro?) is unchanged PP-094 behavior and remains Tylor's call.
+Backfill (about 3:17 AM CT): the 3 Nov 22 refunds of the Nov 21 duplicates (`in_1UeL09…`, `in_1UeKwi…`, `in_1UeKvQ…`, all on non-linked duplicate subscriptions) were still `succeeded` in `admin_transactions`. After a table backup (`/opt/pantry-pal/backups/pre-pp177-admin-transactions-20261125-0916.sql`), those 3 rows were set to `refunded` (no rows deleted, entitlement untouched). Admin now shows 3 succeeded ($4.99) and 3 refunded ($14.97), instead of 6 succeeded ($19.96). Step 4 (should a full refund on a still-active subscription drop Pro?) is unchanged PP-094 behavior and remains Tylor's call.
 

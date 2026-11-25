@@ -66,6 +66,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-175 (new, P2) Sign-out sticks when session refreshes are in flight (`signOutCompletely`; e2e 20/20 vs 4/20 failing before) | [#101](https://github.com/thindery/pantry-pal/pull/101) | 16ec349 | d33df7a (deployed about 3:05 AM CT) |
 | PP-176 (new, P1) Postgres guard: removing an item keeps its history, product cache, owner-only, empty group dropped | [#102](https://github.com/thindery/pantry-pal/pull/102) | fa719f3 | test-only, no runtime change |
 | PP-177 (new, P2 billing data) Refunds find their invoice via InvoicePayment (live dahlia `charge.refunded` has no `invoice`, verified read-only), so the paid row is marked refunded and the PP-094 rule runs | [#103](https://github.com/thindery/pantry-pal/pull/103) | 2cbf0e4 | 2cbf0e4 (deployed about 3:14 AM CT) |
+| PP-177 backfill: 3 refunded Nov 21 duplicate invoices set `succeeded` → `refunded` in admin_transactions (backup pre-pp177-admin-transactions-20261125-0916.sql; nothing deleted; entitlement untouched) | — | data fix | live DB |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
