@@ -129,6 +129,12 @@ class ReceiptScanRequest(BaseModel):
         return v
 
 
+class CheckoutConfirmRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sessionId: str = Field(..., min_length=11, max_length=255, pattern=r"^cs_[A-Za-z0-9_]+$")
+
+
 class CheckoutRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

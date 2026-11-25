@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 import stripe
 
+import re
 import uuid
 
 from psycopg2.extras import Json
@@ -435,6 +436,65 @@ async def create_checkout_session(
     if not session.url:
         raise ValueError("Checkout session created without URL")
     return {"sessionId": session.id, "url": session.url}
+
+
+_CHECKOUT_SESSION_ID_RE = re.compile(r"^cs_[A-Za-z0-9_]{8,250}$")
+
+
+def confirm_checkout_session(user_id: str, session_id: str) -> dict[str, Any]:
+    """PP-168: let the success page confirm a paid Checkout Session with Stripe.
+
+    A late `checkout.session.completed` webhook used to leave Settings on Free
+    for a moment after payment. This reads the session from Stripe, checks it
+    belongs to the signed-in user (server-set metadata.userId), and when it is
+    paid and the subscription is active/trialing applies the same entitlement
+    path the webhooks use. Idempotent: calling it again, or the webhook
+    arriving later, is a no-op refresh of the same linked subscription.
+    """
+    if not session_id or not _CHECKOUT_SESSION_ID_RE.match(session_id):
+        raise ValueError("Invalid checkout session id")
+    invalid_request = getattr(stripe, "InvalidRequestError", None) or getattr(
+        getattr(stripe, "error", None), "InvalidRequestError", None
+    )
+    try:
+        session = _to_dict(stripe.checkout.Session.retrieve(session_id))
+    except Exception as exc:
+        if invalid_request is not None and isinstance(exc, invalid_request):
+            raise PermissionError("Checkout session not found") from exc
+        raise
+    metadata = session.get("metadata") or {}
+    if not user_id or metadata.get("userId") != user_id:
+        raise PermissionError("Checkout session does not belong to this user")
+
+    status = session.get("status")
+    payment_status = session.get("payment_status")
+    subscription_id = session.get("subscription")
+    if isinstance(subscription_id, dict):
+        subscription_id = subscription_id.get("id")
+
+    applied = False
+    if (
+        session.get("mode") == "subscription"
+        and status == "complete"
+        and payment_status in {"paid", "no_payment_required"}
+        and subscription_id
+    ):
+        sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+        if _is_active_or_trialing(sub.get("status")):
+            applied = _apply_subscription_entitlement(user_id, metadata.get("tier"), sub)
+
+    stored = get_user_subscription(user_id) or {}
+    tier = stored.get("tier") or "free"
+    confirmed = tier != "free" and _is_active_or_trialing(stored.get("subscriptionStatus"))
+    return {
+        "confirmed": confirmed,
+        "applied": applied,
+        "tier": tier,
+        "sessionStatus": status,
+        "paymentStatus": payment_status,
+        "amountTotal": session.get("amount_total"),
+        "currency": (session.get("currency") or "").lower() or None,
+    }
 
 
 async def create_portal_session(
