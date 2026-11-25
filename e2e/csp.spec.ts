@@ -11,7 +11,7 @@ const PAGES = ["/", "/pricing/", "/auth/signin/", "/privacy/", "/checkout/succes
 test.describe("Content-Security-Policy @smoke", () => {
   for (const path of PAGES) {
     test(`no CSP violations on ${path}`, async ({ page }) => {
-      await page.route(/googletagmanager\.com|google-analytics\.com|cloudflareinsights\.com/, (route) => route.abort());
+      await page.route(/googletagmanager\.com|google-analytics\.com|cloudflareinsights\.com|googlesyndication\.com|adtrafficquality\.google/, (route) => route.abort());
       const violations: string[] = [];
       page.on("console", (msg) => {
         if (/Content Security Policy|Content-Security-Policy|unsafe-eval/i.test(msg.text())) {
@@ -44,7 +44,7 @@ test.describe("Content-Security-Policy @smoke", () => {
 });
 
 test("PP-072: /design-system is not public @smoke", async ({ page }) => {
-  await page.route(/googletagmanager\.com|google-analytics\.com|cloudflareinsights\.com/, (route) => route.abort());
+  await page.route(/googletagmanager\.com|google-analytics\.com|cloudflareinsights\.com|googlesyndication\.com|adtrafficquality\.google/, (route) => route.abort());
   await page.goto("/design-system/");
   await expect(page).toHaveURL(/\/auth\/signin/);
   await expect(page.getByText("Shipped UI reference")).toHaveCount(0);

@@ -1,3 +1,5 @@
+import { AdSense } from "@/components/marketing/AdSense";
+
 export const dynamic = "force-dynamic";
 
 export default function PricingLayout({
@@ -5,5 +7,10 @@ export default function PricingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <AdSense />
+      {children}
+    </>
+  );
 }
