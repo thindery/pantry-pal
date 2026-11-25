@@ -63,7 +63,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
 | PP-067 | Tighten CSP (unsafe-eval/inline) | 📋 Open | Security |
-| PP-110 | AEO content cluster and comparison pages | 📋 Open | SEO / AEO |
+| PP-110 | AEO content cluster and comparison pages | 📋 Open | In Review (PR open 2026-11-25) |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |
 | PP-115 | Nearby grocery weekly ads / deals search | 📋 Backlog | Features |
@@ -284,7 +284,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 | PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed) |
 | PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
-| PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
+| PP-110 | AEO content cluster and comparison pages | P2 | In Review (PR open 2026-11-25) |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open (drafts in `.agents/docs/pp-directory-drafts.md`; nothing submitted) |
 
 

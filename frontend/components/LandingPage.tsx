@@ -182,6 +182,14 @@ export const FAQS = [
     answer: 'Yes. The Family plan lets up to 5 household members share one pantry inventory.',
   },
   {
+    question: `Is there a ${BRAND_NAME} app for iPhone or Android?`,
+    answer: `Not in the App Store or Google Play. ${BRAND_NAME} runs in the web browser on your phone, tablet, or computer, including the camera for barcode and receipt scanning.`,
+  },
+  {
+    question: 'What if a barcode is not found?',
+    answer: `${BRAND_NAME} checks products it has already looked up, then Open Food Facts, then UPCitemdb. If none of them knows the barcode, you type a name once and keep scanning.`,
+  },
+  {
     question: 'What happens to my data if I cancel?',
     answer: 'If you cancel a paid plan, your account moves to the Free plan and your pantry items stay in your account. Free plan limits apply after that, and you can upgrade again at any time.',
   },

@@ -41,6 +41,16 @@ export function MarketingFooter() {
                   How receipt scanning works
                 </Link>
               </li>
+              <li>
+                <Link href="/guides/barcode-vs-receipt-vs-manual/" className="hover:text-white transition-colors">
+                  Barcode vs receipt vs manual
+                </Link>
+              </li>
+              <li>
+                <Link href="/guides/pantry-hub-vs-grocy/" className="hover:text-white transition-colors">
+                  Pantry Hub vs Grocy
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

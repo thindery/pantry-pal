@@ -22,6 +22,8 @@ const PUBLIC_PATHS = new Set([
   "/robots.txt",
   "/guides/barcode-scanning",
   "/guides/receipt-scanning",
+  "/guides/barcode-vs-receipt-vs-manual",
+  "/guides/pantry-hub-vs-grocy",
   // PP-104: social card images must load for crawlers and link unfurlers
   "/og-image",
   "/pricing/og-image",
