@@ -6,7 +6,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/dashboard/", "/admin/", "/api/"],
+      // App, API, auth, checkout, and internal design surfaces are not search
+      // landing pages (PP-105). Auth/checkout pages also send noindex (PP-103).
+      disallow: [
+        "/dashboard/",
+        "/admin/",
+        "/api/",
+        "/auth/",
+        "/checkout/",
+        "/design-system/",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

@@ -1,6 +1,6 @@
 # PP-105: Indexation hygiene — 404 unknown routes, slash/sitemap/robots, noindex auth/checkout
 
-**Status:** 📋 Open
+**Status:** 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed)
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -42,3 +42,11 @@ Other crawl issues:
 - [ ] Sitemap locs match canonicals; sign-in is not in the sitemap; `lastmod` is not “now” on every generation
 - [ ] Robots.txt matches the indexation policy
 - [ ] `/design-system` is not a useful public document (redirect, 404, or auth-gated)
+
+## Implementation (2026-11-25, SEO desk overnight sweep)
+
+- `middleware.ts`: unauthenticated requests to unknown *pages* fall through to a real 404 (new `app/not-found.tsx`, `noindex, nofollow`). Protected prefixes and any `/api/*` path outside the public allowlist keep the sign-in redirect. `/design-system` moved from public to protected (covers PP-072's gate).
+- Trailing slash: `lib/trailing-slash.ts` 301s page paths without a slash to the slash form (query kept). API paths, files (`/sitemap.xml`), and `/og-image` routes are not touched, so `skipTrailingSlashRedirect` stays for the API proxy.
+- `app/sitemap.ts`: home loc now `https://www.mypantryhub.com/`, sign-in removed, fixed per-page `lastModified` dates (bump in the same commit as a real content change).
+- `app/robots.ts`: also disallows `/auth/`, `/checkout/`, `/design-system/`.
+- Tests: `tests/indexation.test.ts` (3 new). Local `next start`: `/this-page-does-not-exist-xyz/` 404 noindex, `/blog/` 404, `/pricing` 301 → `/pricing/` 200, `/design-system/` 307 to sign-in, `/api/items` 307 to sign-in (unchanged), `/og-image` 200.
