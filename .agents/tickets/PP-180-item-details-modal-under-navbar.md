@@ -1,6 +1,6 @@
 # PP-180: Item Details modal title hidden under the desktop navbar
 
-**Status:** 📋 Open
+**Status:** ✅ Done (live 2026-11-25, 5:03 PM CT, build `5fec893`, [PR #125](https://github.com/thindery/pantry-pal/pull/125), merge `5fec893`)
 **Priority:** P2
 **Phase:** UI polish
 **Created:** 2026-11-25, 3:05 PM America/Chicago
@@ -44,3 +44,11 @@ On desktop (`/dashboard/`), opening a pantry item shows the **Item Details** mod
 - No dependency changes unless truly needed. If one is, stop and explain why.
 - **No commits, no pushes, no secrets.** Leave changes in the working tree for review.
 - Don't touch the stray `2026-07-30` file or `.agents/email-previews/`.
+
+## Resolution (2026-11-25)
+
+- `<DashboardModals />` moved out of the `relative z-0` wrapper to render after `<DashboardNavbar />`, so the Item Details (`EditItemModal`, z-[10000]) and Link Barcode overlays paint above the z-[9999] navbar and the backdrop dims it.
+- Scan confirm overlay in `dashboard-modals.tsx` raised from `z-50` to `z-[10000]`.
+- New test `frontend/tests/dashboard-modals-stacking.test.tsx`.
+- Checks: vitest 47 files / 264 tests, `tsc`, eslint (0 errors), `next build`, CI green, pre-deploy Playwright smoke 30 passed. Smoke after deploy: `/`, `/pricing/`, `/auth/signin/` 200; `/dashboard/` 307 to sign-in.
+- Not changed (outside allowed paths): `ThresholdSettingsModal` overlay is `z-[100]`, still below the navbar on desktop. Follow-up if it matters.
