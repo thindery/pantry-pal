@@ -1,6 +1,6 @@
 # PP-187: Shopping list product info popup, and a clearer "Have X · need Y" line
 
-**Status:** 📋 Open
+**Status:** ✅ Done (live 2026-11-25, 5:26 PM CT, build `a356ed4`, [PR #128](https://github.com/thindery/pantry-pal/pull/128), merge `a356ed4`)
 **Priority:** P2
 **Phase:** Shopping list UX
 **Created:** 2026-11-25, 3:10 PM America/Chicago
@@ -46,3 +46,11 @@
 - No backend changes unless a needed field is missing from the API. If one is, stop and explain.
 - Don't touch the stray `2026-07-30` file or `.agents/email-previews/`.
 - PP-181 is reserved for the "P" product name bug (in progress in another worktree).
+
+## Resolution (2026-11-25)
+
+- `ShoppingListRow`: thumbnail + name is one button (`View details for <name>`) that opens the new `ShoppingItemInfoModal`; checkbox, stepper and ⋯ menu unchanged.
+- `ShoppingItemInfoModal`: read-only details, nutrition/ingredients tabs when present, "Why it's on your list", "Edit in pantry" opens `EditItemModal`. Manual items show name, quantity and "Added manually". Portaled to `document.body` at `z-[10000]`; Esc, backdrop and X close it.
+- Row text is now "You have X · alert at Y"; popup says "Added because you have X and your alert is Y. Suggested: buy N, based on how fast you use it." (or "..., 2× your alert level." with under 7 days of usage, same rule as `calculateSuggestedQuantity`).
+- Grouped rows (`GroupListRow`) were not changed.
+- Checks: vitest 48 files / 278 tests, `tsc`, eslint (0 errors), `next build`, CI green, pre-deploy Playwright smoke 31 passed. Smoke after deploy: `/`, `/pricing/`, `/auth/signin/` 200; `/dashboard/` 307 to sign-in.
