@@ -20,7 +20,7 @@ vi.mock("@/services/ai", async () => {
 vi.mock("@/services/recipeService", () => ({ createRecipe: (...a: unknown[]) => createRecipe(...a) }));
 vi.mock("@/lib/analytics", () => ({ trackEvent: (...a: unknown[]) => trackEvent(...a) }));
 
-import { AiRecipeBuilder } from "@/components/dashboard/AiRecipeBuilder";
+import { AiRecipeBuilder, truncateOptionLabel } from "@/components/dashboard/AiRecipeBuilder";
 
 const inventory = [
   { id: "1", name: "Eggs", quantity: 12, unit: "units", category: "dairy", lastUpdated: "" },
@@ -162,5 +162,48 @@ describe("AiRecipeBuilder", () => {
     for (const banned of ["gemini", "ollama", "gemma", "google", "openai", "gpt", "llama"]) {
       expect(text).not.toContain(banned);
     }
+  });
+});
+
+describe("truncateOptionLabel", () => {
+  it("leaves short names alone and ellipsizes long ones at 40 characters", () => {
+    expect(truncateOptionLabel("Spinach")).toBe("Spinach");
+    const long = "Great Value Organic Extra Virgin Olive Oil Cold Pressed 16.9 fl oz";
+    const shown = truncateOptionLabel(long);
+    expect(shown.endsWith("…")).toBe(true);
+    expect(shown.length).toBeLessThanOrEqual(41);
+    expect(shown.startsWith("Great Value Organic Extra Virgin")).toBe(true);
+  });
+});
+
+describe("must-use options", () => {
+  it("truncates long pantry names in the select and keeps the full name as the value and title", async () => {
+    const long = "Great Value Organic Extra Virgin Olive Oil Cold Pressed 16.9 fl oz";
+    getAiRecipeStatus.mockResolvedValue({ enabled: true, eligible: true, usage });
+    suggestAiRecipes.mockResolvedValue({ recipes: [idea], cached: false, usage });
+    const longInventory = [
+      ...inventory,
+      { id: "4", name: long, quantity: 1, unit: "bottles", category: "pantry", lastUpdated: "" },
+    ] as PantryItem[];
+    render(
+      <AiRecipeBuilder
+        inventory={longInventory}
+        shoppingList={[]}
+        onAddShoppingItems={vi.fn()}
+        onRecipeSaved={vi.fn()}
+        onUpgrade={vi.fn()}
+      />,
+    );
+    const pick = await screen.findByLabelText("Add a must-use item");
+    const option = pick.querySelector(`option[value="${CSS.escape(long)}"]`) as HTMLOptionElement;
+    expect(option).toBeTruthy();
+    expect(option).toHaveAttribute("title", long);
+    expect(option?.textContent).toBe(truncateOptionLabel(long));
+    expect(option?.textContent).not.toBe(long);
+    fireEvent.change(pick, { target: { value: long } });
+    fireEvent.click(screen.getByRole("button", { name: /Suggest recipes/ }));
+    await waitFor(() =>
+      expect(suggestAiRecipes).toHaveBeenCalledWith(expect.objectContaining({ mustUse: [long] })),
+    );
   });
 });

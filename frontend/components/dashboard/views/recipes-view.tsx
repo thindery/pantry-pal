@@ -168,7 +168,7 @@ export function RecipesView() {
   const isFreeCapReached = !isPaid && recipes.length >= FREE_MAX_SAVED_RECIPES;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 min-w-0 max-w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-serif-heading font-bold text-[var(--foreground)]">

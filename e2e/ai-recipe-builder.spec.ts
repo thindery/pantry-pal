@@ -117,4 +117,60 @@ test.describe("AI recipe builder", () => {
     await expect.poll(() => statusCalls, { timeout: 20_000 }).toBeGreaterThan(0);
     await expect(page.getByTestId("ai-recipe-builder")).toHaveCount(0);
   });
+
+  test("does not overflow horizontally at 390px with long pantry names @smoke", async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await signInAsTestUser(context, baseURL!);
+    const page = await context.newPage();
+    const longName = "Great Value Organic Extra Virgin Olive Oil Cold Pressed 16.9 fl oz";
+    await installMockApi(page, [
+      { id: "e2e-eggs", name: "Eggs", quantity: 12, unit: "units", category: "dairy", lastUpdated: "2026-11-20T12:00:00.000Z" },
+      { id: "e2e-spinach", name: "Spinach", quantity: 1, unit: "bags", category: "produce", lastUpdated: "2026-11-10T12:00:00.000Z" },
+      { id: "e2e-oil", name: longName, quantity: 1, unit: "bottles", category: "pantry", lastUpdated: "2026-11-01T12:00:00.000Z" },
+    ]);
+    const ok = (data: unknown) => ({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data }) });
+    await page.route("**/api/ai/recipes/status*", (route) =>
+      route.fulfill(ok({ enabled: true, eligible: true, usage: { usedTokens: 5000, limitTokens: 50000, resetsAt: null }, pausedUntil: null })),
+    );
+    await page.route("**/api/ai/recipes/suggest*", (route) =>
+      route.fulfill(ok({
+        recipes: [{
+          title: "E2E Spinach Omelet with Extra Virgin Olive Oil",
+          minutes: 10,
+          servings: "2",
+          ingredients: [
+            { raw: "4 eggs", name: "eggs" },
+            { raw: "1 cup spinach", name: "spinach" },
+            { raw: `2 tbsp ${longName}`, name: longName },
+          ],
+          instructions: ["Whisk the eggs.", "Cook with the spinach."],
+          usesSoon: ["Spinach", longName],
+        }],
+        cached: false,
+        usage: { usedTokens: 8000, limitTokens: 50000, resetsAt: null },
+      })),
+    );
+    await page.route(/\/api\/recipes\/?(\?.*)?$/, (route) => route.fulfill(ok([])));
+
+    await page.goto("/dashboard/recipes/");
+    const builder = page.getByTestId("ai-recipe-builder");
+    await expect(builder).toBeVisible({ timeout: 20_000 });
+    const pick = builder.getByLabel("Add a must-use item");
+    await expect(pick).toBeVisible();
+    // The option value stays the full name; the visible label is shortened.
+    await expect(pick.locator("option").filter({ hasText: "Great Value Organic Extra Virgin" })).toHaveCount(1);
+    await pick.selectOption(longName);
+    await builder.getByRole("button", { name: "Suggest recipes" }).click();
+    await expect(builder.getByTestId("ai-recipe-idea")).toBeVisible();
+    await expect(builder.getByText(/Uses up:/)).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const root = document.documentElement;
+      return { scrollWidth: root.scrollWidth, clientWidth: root.clientWidth };
+    });
+    expect(overflow.scrollWidth, `page is ${overflow.scrollWidth}px wide at ${overflow.clientWidth}px viewport`).toBeLessThanOrEqual(overflow.clientWidth);
+    await page.screenshot({ path: "test-results/pp183-mobile-fixed.png", fullPage: true });
+    await context.close();
+  });
+
 });

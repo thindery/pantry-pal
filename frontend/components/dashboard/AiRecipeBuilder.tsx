@@ -34,6 +34,15 @@ export interface AiRecipeBuilderProps {
   onUpgrade?: () => void;
 }
 
+export const OPTION_LABEL_MAX = 40;
+
+/** Keep native <select> options short so long pantry names cannot widen the control. */
+export function truncateOptionLabel(name: string, max = OPTION_LABEL_MAX): string {
+  const text = name.trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, max).trimEnd()}…`;
+}
+
 function asRecipe(idea: AiRecipeIdea, index: number): Recipe {
   return {
     id: `ai-idea-${index}`,
@@ -180,10 +189,10 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
   };
 
   const fieldClass =
-    "w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)]";
+    "w-full max-w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)]";
 
   return (
-    <section data-testid="ai-recipe-builder" className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+    <section data-testid="ai-recipe-builder" className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 space-y-4 min-w-0 max-w-full overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
         <div>
           <h2 className="font-serif-heading font-semibold text-lg text-[var(--foreground)] flex items-center gap-2">
@@ -194,7 +203,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
           </p>
         </div>
         {percent !== null && (
-          <div className="text-xs text-[var(--muted)] min-w-[10rem]" data-testid="ai-usage-meter">
+          <div className="text-xs text-[var(--muted)] min-w-0 w-full sm:w-40" data-testid="ai-usage-meter">
             <span>AI use this week: {percent}%</span>
             <div className="mt-1 h-1.5 rounded-full bg-[var(--surface-muted)] overflow-hidden" aria-hidden="true">
               <div className="h-full bg-[var(--accent)]" style={{ width: `${percent}%` }} />
@@ -203,8 +212,8 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
         )}
       </div>
 
-      <form onSubmit={handleSuggest} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <label className="text-xs font-medium text-[var(--muted)] space-y-1">
+      <form onSubmit={handleSuggest} className="grid grid-cols-1 sm:grid-cols-3 gap-3 min-w-0">
+        <label className="text-xs font-medium text-[var(--muted)] space-y-1 min-w-0">
           <span>Servings</span>
           <select aria-label="Servings" className={fieldClass} value={servings} onChange={(e) => setServings(Number(e.target.value))}>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
@@ -214,7 +223,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
             ))}
           </select>
         </label>
-        <label className="text-xs font-medium text-[var(--muted)] space-y-1">
+        <label className="text-xs font-medium text-[var(--muted)] space-y-1 min-w-0">
           <span>Diet</span>
           <select aria-label="Diet" className={fieldClass} value={diet} onChange={(e) => setDiet(e.target.value)}>
             {AI_DIET_OPTIONS.map((d) => (
@@ -224,7 +233,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
             ))}
           </select>
         </label>
-        <label className="text-xs font-medium text-[var(--muted)] space-y-1">
+        <label className="text-xs font-medium text-[var(--muted)] space-y-1 min-w-0">
           <span>Time</span>
           <select
             aria-label="Time"
@@ -240,15 +249,16 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
           </select>
         </label>
 
-        <div className="sm:col-span-3 space-y-1">
+        <div className="sm:col-span-3 space-y-1 min-w-0">
           <span className="text-xs font-medium text-[var(--muted)]">Must use (up to 5)</span>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 min-w-0 w-full">
             {mustUse.map((m) => (
               <span
                 key={m}
-                className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--foreground)]"
+                title={m}
+                className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--foreground)] max-w-full min-w-0"
               >
-                {m}
+                <span className="truncate">{m}</span>
                 <button type="button" aria-label={`Remove ${m}`} onClick={() => setMustUse(mustUse.filter((x) => x !== m))}>
                   <X size={12} />
                 </button>
@@ -257,7 +267,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
             {mustUse.length < 5 && (
               <select
                 aria-label="Add a must-use item"
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
+                className="w-full max-w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
                 value={mustUsePick}
                 onChange={(e) => addMustUse(e.target.value)}
               >
@@ -265,8 +275,8 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
                 {inStock
                   .filter((n) => !mustUse.some((m) => m.toLowerCase() === n.toLowerCase()))
                   .map((n) => (
-                    <option key={n} value={n}>
-                      {n}
+                    <option key={n} value={n} title={n}>
+                      {truncateOptionLabel(n)}
                     </option>
                   ))}
               </select>
@@ -274,7 +284,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
           </div>
         </div>
 
-        <label className="sm:col-span-3 text-xs font-medium text-[var(--muted)] space-y-1">
+        <label className="sm:col-span-3 text-xs font-medium text-[var(--muted)] space-y-1 min-w-0">
           <span>Anything else? (optional)</span>
           <input
             aria-label="Note"
@@ -310,7 +320,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
       )}
 
       {ideas.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-testid="ai-recipe-ideas">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-w-0" data-testid="ai-recipe-ideas">
           {ideas.map((idea, index) => {
             const coverage = calculateRecipeCoverage(asRecipe(idea, index), inventory);
             const missing = coverage.items.filter((c) => c.status === "missing");
@@ -319,11 +329,11 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
               <article
                 key={`${idea.title}-${index}`}
                 data-testid="ai-recipe-idea"
-                className="border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-3 bg-[var(--background)]"
+                className="border border-[var(--border)] rounded-2xl p-4 flex flex-col gap-3 bg-[var(--background)] min-w-0 max-w-full overflow-hidden"
               >
                 <div>
-                  <h3 className="font-serif-heading font-semibold text-[var(--foreground)]">{idea.title}</h3>
-                  <p className="text-xs text-[var(--muted)] mt-1 flex items-center gap-2">
+                  <h3 className="font-serif-heading font-semibold text-[var(--foreground)] break-words">{idea.title}</h3>
+                  <p className="text-xs text-[var(--muted)] mt-1 flex flex-wrap items-center gap-2">
                     {idea.minutes ? (
                       <span className="inline-flex items-center gap-1">
                         <Clock size={12} /> {idea.minutes} min
@@ -335,12 +345,12 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
                     </span>
                   </p>
                   {idea.usesSoon.length > 0 && (
-                    <p className="text-xs text-emerald-800 mt-1">Uses up: {idea.usesSoon.join(", ")}</p>
+                    <p className="text-xs text-emerald-800 mt-1 break-words">Uses up: {idea.usesSoon.join(", ")}</p>
                   )}
                 </div>
                 <ul className="text-sm space-y-0.5">
                   {coverage.items.map((c, i) => (
-                    <li key={i} className={c.status === "missing" ? "text-[var(--muted)]" : "text-[var(--foreground)]"}>
+                    <li key={i} className={`${c.status === "missing" ? "text-[var(--muted)]" : "text-[var(--foreground)]"} break-words`}>
                       {c.status === "have" ? "✓ " : c.status === "missing" ? "+ " : "? "}
                       {c.ingredient.raw || c.ingredient.name}
                     </li>
