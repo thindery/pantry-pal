@@ -1,6 +1,6 @@
 # PP-175: Sign-out can be undone by an in-flight session refresh
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25)
 **Priority:** P2
 **Phase:** Auth
 **Created:** 2026-11-25, 3:10 AM America/Chicago (overnight sweep, found while writing PP-148 e2e)
@@ -26,3 +26,8 @@ Not yet reproduced on production (needs a signed-in check by hand).
 
 - `e2e/auth-paths.spec.ts` sign-out test passes repeatedly (`--repeat-each 20`) **without** the `networkidle` wait.
 - No change to Google sign-in or the session lifetime.
+
+## Fix (overnight 2026-11-25)
+
+Confirmed the cause with response headers: every middleware response after the click (`/api/auth/token`, `/api/auth/session`, route prefetches) carries a fresh `authjs.session-token`. New `frontend/lib/sign-out.ts` `signOutCompletely()` signs out with `redirect: false`, waits 300 ms for in-flight responses, checks `getSession()`, signs out again if the session came back (up to 3 tries), then `window.location.assign("/")`. Used by `UserButton` and the account page. The e2e no longer waits for `networkidle`: 20/20 pass with the fix, 4/20 fail without it. Vitest covers the retry logic.
+

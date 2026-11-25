@@ -70,13 +70,11 @@ test.describe("Auth paths", () => {
 
     await page.setViewportSize({ width: 390, height: 844 }); // the account-page sign-out button is mobile-only
     await page.goto("/dashboard/account/");
-    // Let the page's own session/token requests settle first. A request still in flight when
-    // sign-out lands can re-set the session cookie (Auth.js rolling session); tracked in PP-175.
-    await page.waitForLoadState("networkidle");
+    // PP-175: no networkidle wait on purpose. Sign out right away, while the page's own
+    // session/token requests are still in flight, and it must still stick.
     const signedOut = page.waitForResponse((r) => r.url().includes("/api/auth/signout") && r.request().method() === "POST");
     await page.getByRole("button", { name: "Sign out of Pantry Hub" }).click();
     expect((await signedOut).status()).toBe(200);
-    // Auth.js builds the callback from its own host (localhost on the harness), so check the path only.
     await expect.poll(() => new URL(page.url()).pathname).toBe("/");
     await expect
       .poll(async () => (await context.cookies(baseURL!)).some((c) => c.name === "authjs.session-token"))
