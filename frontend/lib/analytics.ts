@@ -14,7 +14,6 @@ export const SIGN_UP_TRACKED_KEY = "ph_sign_up_tracked";
 export const FIRST_SCAN_TRACKED_KEY = "ph_first_scan_tracked";
 export const CHECKOUT_SESSION_STORAGE_KEY = "ph_checkout_session_id";
 export const PURCHASE_TRACKED_PREFIX = "ph_purchase_tracked:";
-export const DEFAULT_PURCHASE_VALUE = 4.99;
 export const DEFAULT_PURCHASE_CURRENCY = "USD";
 
 export function isValidMeasurementId(id?: string | null): boolean {
@@ -318,7 +317,10 @@ export function getCheckoutTransactionId(): string | null {
 }
 
 /**
- * Fires the `purchase` key event with value, currency, and transaction_id.
+ * Fires the `purchase` key event with currency, transaction_id, and the amount
+ * Stripe actually charged (`value`, in major units). When the amount is unknown,
+ * `value` is omitted rather than guessed, so the $1 offer, yearly, and Family
+ * purchases are never reported as the $4.99 Pro list price (PP-166).
  * Deduped per Stripe session id in sessionStorage so a refresh does not double-fire.
  * Returns true if the event was dispatched or queued, false if already tracked.
  */
@@ -333,9 +335,11 @@ export function trackPurchase(options?: {
     ? options!.transaction_id!.trim()
     : getCheckoutTransactionId();
   const params: Record<string, unknown> = {
-    value: options?.value ?? DEFAULT_PURCHASE_VALUE,
     currency: options?.currency ?? DEFAULT_PURCHASE_CURRENCY,
   };
+  if (typeof options?.value === "number" && Number.isFinite(options.value) && options.value >= 0) {
+    params.value = options.value;
+  }
   if (transactionId) {
     params.transaction_id = transactionId;
   }
