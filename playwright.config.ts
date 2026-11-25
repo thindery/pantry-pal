@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { e2eAuthSecret } from "./e2e/support/auth";
 
 const rawBaseUrl = process.env.E2E_BASE_URL;
 const baseURL = rawBaseUrl || "http://127.0.0.1:3100";
@@ -52,6 +53,8 @@ export default defineConfig({
         "npm run build:frontend && npm run start -w @pantry-pal/frontend -- -p 3100",
       url: "http://127.0.0.1:3100",
       timeout: 240000,
+      // PP-150: throwaway Auth.js secret for minted test sessions (local only).
+      env: { AUTH_SECRET: e2eAuthSecret(), AUTH_TRUST_HOST: "true" },
       // Never silently reuse a stale server (the deploy gate must test this checkout).
       reuseExistingServer: !process.env.CI && process.env.E2E_REUSE_SERVER === "1",
     },

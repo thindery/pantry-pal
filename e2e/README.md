@@ -37,3 +37,7 @@ npx playwright test e2e/analytics-consent.spec.ts
 ## CSP (PP-067)
 
 `npx playwright test e2e/csp.spec.ts` checks the production build sends a CSP without `unsafe-eval` and that public pages raise no `securitypolicyviolation` events. Tagged `@smoke`, so it also runs in the pre-deploy gate.
+
+## Signed-in specs (PP-150)
+
+`e2e/support/auth.ts` mints an Auth.js JWT session cookie for a fake user (`e2e-user@example.test`) using a throwaway `AUTH_SECRET` that `playwright.config.ts` passes to the local harness server only. `e2e/support/mock-api.ts` is a stateful in-memory stand-in for the FastAPI routes the dashboard calls, so reloads see saved state and no real account or inventory is touched. Backend behavior stays covered by pytest. Run: `npx playwright test e2e/inventory-quantity.spec.ts`.

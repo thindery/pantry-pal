@@ -1,6 +1,6 @@
 # PP-150: E2E — inventory quantity +/-
 
-**Status:** 📋 Backlog
+**Status:** 🔄 In review
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -44,3 +44,7 @@ Prove a signed-in user can raise and lower pantry quantities from the inventory 
 - Depends on the PP-147 harness. No extra runtime dependencies.
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Progress Notes
+
+- 2026-11-25 overnight (Pantry Hub Lead): `e2e/inventory-quantity.spec.ts` covers +, -, persistence across reload, minus disabled at 0 with the out-of-stock border, and + from 0. Signed in with a minted Auth.js JWT for a fake user (`e2e/support/auth.ts`, throwaway harness-only AUTH_SECRET derived at runtime) instead of Google OAuth, so it does not wait on PP-148. API is a stateful in-memory stand-in (`e2e/support/mock-api.ts`); quantity changes persist via `POST /api/activities`, which is what the app calls. Real backend behavior stays covered by pytest.
