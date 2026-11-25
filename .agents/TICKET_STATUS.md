@@ -241,6 +241,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 | PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
+| PP-166 | Handle customer.subscription.created before enabling it on the live webhook | P0 | 🔄 In progress |
 | GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094 (`78427fd` live) |
 
 ## Billing & email audit (2026-11-22)
