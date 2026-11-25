@@ -20,6 +20,8 @@ const PUBLIC_PATHS = new Set([
   "/build-id.txt",
   "/sitemap.xml",
   "/robots.txt",
+  "/guides/barcode-scanning",
+  "/guides/receipt-scanning",
   // PP-104: social card images must load for crawlers and link unfurlers
   "/og-image",
   "/pricing/og-image",

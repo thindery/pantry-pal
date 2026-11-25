@@ -17,6 +17,8 @@ export const SITEMAP_PAGES: ReadonlyArray<{
   { path: "/pricing/", lastModified: "2026-11-24", changeFrequency: "monthly", priority: 0.9 },
   { path: "/privacy/", lastModified: "2026-11-22", changeFrequency: "yearly", priority: 0.5 },
   { path: "/terms/", lastModified: "2026-07-10", changeFrequency: "yearly", priority: 0.5 },
+  { path: "/guides/barcode-scanning/", lastModified: "2026-11-25", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/guides/receipt-scanning/", lastModified: "2026-11-25", changeFrequency: "monthly", priority: 0.7 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

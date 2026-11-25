@@ -23,6 +23,8 @@ describe("PP-105 indexation hygiene", () => {
       "https://www.mypantryhub.com/pricing/",
       "https://www.mypantryhub.com/privacy/",
       "https://www.mypantryhub.com/terms/",
+      "https://www.mypantryhub.com/guides/barcode-scanning/",
+      "https://www.mypantryhub.com/guides/receipt-scanning/",
     ]);
     expect(urls.some((u) => u.includes("/auth/"))).toBe(false);
     for (const e of entries) {
