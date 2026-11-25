@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { CheckCircle2, Loader2, AlertCircle, ShoppingCart } from 'lucide-react';
+import { BrandMark } from '@/components/BrandMark';
 import { BRAND_NAME } from '@/lib/site-content';
 import { getCheckoutTransactionId, trackPurchase } from '@/lib/analytics';
 import { confirmCheckoutSession } from '@/services/subscription';
@@ -59,33 +62,63 @@ export const CheckoutResult: React.FC<CheckoutResultProps> = ({ status, onClose 
 
   if (status === 'success') {
     return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-emerald-600">
-        <div className="text-center text-white p-8">
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-5xl mx-auto mb-6 animate-in zoom-in duration-500">
-            🎉
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[var(--marketing-bg)] p-4 overflow-y-auto">
+        <div className="w-full max-w-md rounded-2xl bg-white shadow-lg border border-slate-100 p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <BrandMark />
           </div>
-          <h1 className="text-3xl font-bold mb-4">{confirmed ? 'You’re all set!' : 'Confirming your purchase…'}</h1>
-          <p role="status" aria-live="polite" className="text-emerald-100 text-lg mb-2">
+
+          <div
+            className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 ${
+              confirmed
+                ? 'bg-[var(--primary-light)] text-[var(--primary)]'
+                : confirmError
+                  ? 'bg-rose-50 text-[var(--danger)]'
+                  : 'bg-[var(--primary-light)] text-[var(--primary)]'
+            }`}
+            aria-hidden="true"
+          >
+            {confirmed ? (
+              <CheckCircle2 className="w-8 h-8" />
+            ) : confirmError ? (
+              <AlertCircle className="w-8 h-8" />
+            ) : (
+              <Loader2 className="w-8 h-8 animate-spin" />
+            )}
+          </div>
+
+          <h1 className="font-serif-heading text-2xl font-bold text-slate-900 mb-3">
+            {confirmed ? 'You’re all set!' : 'Confirming your purchase…'}
+          </h1>
+
+          <p role="status" aria-live="polite" className="text-slate-600 mb-2 text-base">
             {confirmed
               ? 'Your subscription is now active.'
               : confirmError
                 ? 'We couldn’t confirm your payment yet. Please retry, or check Settings in a moment.'
                 : 'We’re checking your payment with Stripe. This can take a moment.'}
           </p>
-          <p className="text-emerald-200">
-            {confirmed ? `Redirecting you back to ${BRAND_NAME}…` : 'Please don’t start another checkout.'}
+
+          <p className="text-sm text-slate-500 mb-6">
+            {confirmed
+              ? `Taking you back to ${BRAND_NAME} in a few seconds…`
+              : 'Please don’t start another checkout.'}
           </p>
+
           {confirmError && (
             <button
+              type="button"
               onClick={() => setRetry(value => value + 1)}
-              className="mt-6 mr-3 px-6 py-3 bg-white text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-colors"
+              className="w-full mb-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             >
               Retry confirmation
             </button>
           )}
+
           <button
+            type="button"
             onClick={onClose}
-            className="mt-8 px-6 py-3 bg-white text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-colors"
+            className="w-full flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2"
           >
             Continue to App
           </button>
@@ -95,21 +128,43 @@ export const CheckoutResult: React.FC<CheckoutResultProps> = ({ status, onClose 
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900">
-      <div className="text-center text-white p-8 max-w-md">
-        <div className="w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
-          😔
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[var(--marketing-bg)] p-4 overflow-y-auto">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-lg border border-slate-100 p-8 text-center">
+        <div className="flex justify-center mb-6">
+          <BrandMark />
         </div>
-        <h1 className="text-2xl font-bold mb-4">Checkout Cancelled</h1>
-        <p className="text-slate-400 mb-8">
-          No worries! You can upgrade anytime from the settings. You're still on the free plan.
+
+        <div
+          className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6 text-slate-600"
+          aria-hidden="true"
+        >
+          <ShoppingCart className="w-8 h-8" />
+        </div>
+
+        <h1 className="font-serif-heading text-2xl font-bold text-slate-900 mb-3">
+          Checkout cancelled
+        </h1>
+
+        <p className="text-sm text-slate-600 mb-6">
+          You’re still on the Free plan. You can upgrade anytime from Settings or Pricing.
         </p>
+
         <button
+          type="button"
           onClick={onClose}
-          className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors"
+          className="w-full flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2"
         >
           Return to App
         </button>
+
+        <div className="mt-4">
+          <Link
+            href="/pricing"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 underline-offset-2 hover:underline"
+          >
+            View Pricing
+          </Link>
+        </div>
       </div>
     </div>
   );
