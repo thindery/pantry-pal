@@ -19,6 +19,7 @@ import { usePantry } from "@/contexts/pantry-provider";
 import { useConfirm } from "@/hooks/use-confirm";
 import { calculateRecipeCoverage } from "@/lib/recipe-coverage";
 import { FREE_MAX_SAVED_RECIPES } from "@/lib/recipe-constants";
+import { AiRecipeBuilder } from "@/components/dashboard/AiRecipeBuilder";
 import {
   createRecipe,
   deleteRecipe,
@@ -29,7 +30,7 @@ import {
 export function RecipesView() {
   const router = useRouter();
   const confirm = useConfirm();
-  const { inventory, isPaid, error: showErrorToast } = usePantry();
+  const { inventory, isPaid, error: showErrorToast, shoppingList, addBatchShoppingItems } = usePantry();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -214,6 +215,14 @@ export function RecipesView() {
           </button>
         </div>
       )}
+
+      <AiRecipeBuilder
+        inventory={inventory}
+        shoppingList={shoppingList}
+        onAddShoppingItems={addBatchShoppingItems}
+        onRecipeSaved={(created) => setRecipes((prev) => [created, ...prev])}
+        onUpgrade={() => router.push("/pricing/")}
+      />
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 text-[var(--muted)]">

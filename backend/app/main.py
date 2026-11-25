@@ -15,6 +15,7 @@ from backend.middleware.rate_limit import RateLimitMiddleware
 from backend.models.responses import error_response
 from backend.routers import (
     activities,
+    ai,
     admin,
     barcode,
     client_errors,
@@ -119,6 +120,7 @@ def create_app() -> FastAPI:
     app.include_router(email_preferences.router)
     app.include_router(weekly_ads.router)
     app.include_router(instacart.router)
+    app.include_router(ai.router)
 
     return app
 

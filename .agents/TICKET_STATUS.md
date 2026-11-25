@@ -143,6 +143,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 |--------|-------|--------|------|
 | PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | 📋 Open | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
+| PP-183 | AI recipe builder (Pro): recipes from my pantry, adjust, save, add missing; metered weekly tokens, fail closed | 🔨 Built, PR open | Pro AI |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (the "500" came from the checker's proxy) | ✅ Closed — already satisfied (301 verified 2026-11-25) | SEO / AEO |
@@ -505,3 +506,13 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-178 | Send to Instacart (Beta) button on the shopping list (hidden until `INSTACART_API_KEY` is set) | P2 | ⛔ Blocked: Instacart IDP applications closed. Code merged ([#110](https://github.com/thindery/pantry-pal/pull/110)), dormant without `INSTACART_API_KEY` |
+
+## Tickets from Tylor's Nov 25 voice call
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | 📋 Open |
+| PP-180 | Item Details modal title hidden under the desktop navbar (modal rendered inside `relative z-0` wrapper) | P2 | 📋 Open |
+| PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 📋 Open |
+| PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
+| PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | 📋 Open |
