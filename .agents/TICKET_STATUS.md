@@ -15,12 +15,12 @@ Last updated: 2026-11-25, 1:45 AM CT (overnight sweep; live build b20bf7f — se
 
 | | Count |
 |--|-------|
-| Done | 130 (previous 110 plus 20 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 150, 155, 168–172) |
+| Done | 131 (previous 110 plus 21 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 150, 151, 155, 168–172) |
 | In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 9 · P2: 9 · P3: 2 (25 on the board below) |
+| Open by priority | P0: 5 · P1: 8 · P2: 9 · P3: 2 (24 on the board below) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -55,6 +55,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-127 Admin links to GA4 / Search Console / Cloudflare | [#90](https://github.com/thindery/pantry-pal/pull/90) | 3981b53 | 3981b53 |
 | PP-172 (new, P1) Middleware fails closed if Auth.js is misconfigured | [#91](https://github.com/thindery/pantry-pal/pull/91) | b20bf7f | b20bf7f |
 | PP-150 E2E inventory +/- (minted test session + in-memory API; test-only) | [#92](https://github.com/thindery/pantry-pal/pull/92) | 8c857f4 | test-only, no runtime change |
+| PP-151 E2E shopping list (same harness; test-only) | [#93](https://github.com/thindery/pantry-pal/pull/93) | 0366501 | test-only, no runtime change |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
@@ -103,7 +104,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (9)
+### P1 — next up, high impact (8)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -114,7 +115,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
 | PP-149 | E2E: barcode scan including Quick Scan | 📋 Backlog | E2E |
-| PP-151 | E2E: shopping list | 📋 Backlog | E2E |
 | PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
 
 ### P2 — soon (9)
@@ -423,8 +423,8 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
-| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
-| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
+| PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
+| PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
 | PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
 | PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
@@ -442,8 +442,8 @@ Documented for later; no implementation in this pass.
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | 📋 Backlog |
-| PP-150 | E2E: inventory quantity +/- | P1 | 📋 Backlog |
-| PP-151 | E2E: shopping list | P1 | 📋 Backlog |
+| PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
+| PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
 | PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
 | PP-154 | E2E: transactional emails triggered | P1 | 📋 Backlog |
