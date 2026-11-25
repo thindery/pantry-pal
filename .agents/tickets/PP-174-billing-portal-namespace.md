@@ -1,6 +1,6 @@
 # PP-174: Billing portal 500s (wrong Stripe SDK namespace)
 
-**Status:** 🔄 In review (overnight 2026-11-25)
+**Status:** ✅ Done (overnight 2026-11-25, PR #98, live in a614caf)
 **Priority:** P0
 **Phase:** Billing
 **Created:** 2026-11-25, 2:35 AM America/Chicago
