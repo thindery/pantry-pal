@@ -1,6 +1,6 @@
 # PP-181: Don't cache or serve 1–2 character product names
 
-**Status:** 🔨 In progress
+**Status:** ✅ Done (live 2026-11-25, 3:19 PM CT, build d70df3c, [PR #117](https://github.com/thindery/pantry-pal/pull/117))
 **Priority:** P1 (customer-facing bad product identity; leftover data from PP-075)
 **Phase:** User-reported bug
 **Created:** 2026-11-25
@@ -37,14 +37,14 @@ PP-075 fixed the input on 2026-11-21 at 4:40 PM CT, but:
 
 ## Acceptance Criteria
 
-- [ ] `is_usable_product_name` / `isUsableProductName` reject 1–2 character names
-- [ ] Cached junk names are not treated as lookup hits
-- [ ] A short Open Food Facts name falls through to UPCitemdb
-- [ ] A successful provider refresh updates junk-named pantry items for that barcode
-- [ ] POST with name `"P"` is rejected (422)
-- [ ] Scanner and scan-view tests: typing "P"/"F" does not commit
-- [ ] `npm run test:backend` and the new frontend tests pass
-- [ ] Data repair: backup first; never delete rows
+- [x] `is_usable_product_name` / `isUsableProductName` reject 1–2 character names
+- [x] Cached junk names are not treated as lookup hits
+- [x] A short Open Food Facts name falls through to UPCitemdb
+- [x] A successful provider refresh updates junk-named pantry items for that barcode
+- [x] POST with name `"P"` is rejected (422)
+- [x] Scanner and scan-view tests: typing "P"/"F" does not commit
+- [x] `npm run test:backend` and the new frontend tests pass
+- [x] Data repair: backup first; never delete rows
 
 ## Allowed paths
 
@@ -68,3 +68,17 @@ Ban dependency churn unless required. Coding agents: no commits, pushes, or secr
 - Recreating pantry items Tylor removed from the pantry on 2026-11-25
 - Adding a new barcode provider
 - Changing the 60-day cache TTL for usable names
+
+
+## Done
+
+Merged as [PR #117](https://github.com/thindery/pantry-pal/pull/117) (`d70df3c`) and deployed to OVH. Frontend container build id: `d70df3c`. CI: gitleaks, quality, test, postgres-integration, and e2e-smoke all passed.
+
+### Data repair (2026-11-25)
+
+Backup: `/opt/pantry-pal/backups/pp181-pre-junk-name-repair-20261125-2111.sql`. No rows deleted.
+
+- `810035212374` cache already had the UPCitemdb title from a lookup at 2:58 PM CT (America/Chicago) when the item was opened. Left as-is.
+- That user's pantry item was removed from the pantry at 2:59 PM CT the same day (`removed_from_pantry`). Not recreated.
+- `070038626039` cache still named "F": Open Food Facts and UPCitemdb have no record, so it was left alone. After this deploy, a scan asks for a name instead of treating "F" as a known product.
+- Other junk names: 0 pantry items with 1–2 character names; 1 remaining junk cache row (`F`). Activity history still shows "P" (3 rows) and "F" (5 rows).
