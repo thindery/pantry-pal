@@ -12,6 +12,11 @@ const scriptSrc = [
   ...(isDev ? ["'unsafe-eval'"] : []),
   "https://www.googletagmanager.com",
   "https://static.cloudflareinsights.com",
+  // AdSense (public marketing pages only load the script; CSP is site-wide)
+  "https://pagead2.googlesyndication.com",
+  "https://*.googlesyndication.com",
+  "https://*.adtrafficquality.google",
+  "https://*.googleadservices.com",
 ].join(" ");
 
 export const CONTENT_SECURITY_POLICY = [
@@ -19,8 +24,8 @@ export const CONTENT_SECURITY_POLICY = [
   `script-src ${scriptSrc}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https: blob:",
-  "connect-src 'self' https://www.mypantryhub.com https://mypantryhub.com https://api.stripe.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://cloudflareinsights.com",
-  "frame-src https://js.stripe.com https://hooks.stripe.com",
+  "connect-src 'self' https://www.mypantryhub.com https://mypantryhub.com https://api.stripe.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://pagead2.googlesyndication.com https://*.adtrafficquality.google https://*.google.com",
+  "frame-src https://js.stripe.com https://hooks.stripe.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.googlesyndication.com https://www.google.com https://*.adtrafficquality.google",
   "font-src 'self' data:",
   "object-src 'none'",
   "base-uri 'self'",

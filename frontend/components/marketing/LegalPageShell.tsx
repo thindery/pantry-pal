@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdSense } from "@/components/marketing/AdSense";
 import { ArrowLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -28,6 +29,7 @@ export function LegalPageShell({
 }: LegalPageShellProps) {
   return (
     <div className="marketing-page min-h-screen flex flex-col">
+      <AdSense />
       <MarketingNav />
       <main className="flex-1 pb-16">
         <section className="pt-12 pb-10 px-4 sm:px-6 lg:px-8 border-b border-[var(--marketing-border)]">
