@@ -40,3 +40,24 @@ test("no AdSense on the protected app (redirects to sign-in) @smoke", async ({ p
   await expect(page.locator('meta[name="google-adsense-account"]')).toHaveCount(0);
   await expect(page.locator('script[src*="googlesyndication.com"]')).toHaveCount(0);
 });
+
+test("privacy policy discloses AdSense while the script is present @smoke", async ({ page }) => {
+  await page.goto("/privacy/");
+  await expect(page.locator(`script[src^="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${CLIENT}"]`)).toHaveCount(1);
+  const section = page.locator("#cookies");
+  await expect(section).toBeVisible();
+  await expect(section.getByText("Google AdSense", { exact: false })).toBeVisible();
+  await expect(section).not.toContainText("We do not use third-party advertising cookies");
+  await expect(page.getByRole("link", { name: "How Google uses information from sites that use our services" })).toHaveAttribute(
+    "href",
+    "https://policies.google.com/technologies/partner-sites",
+  );
+  await expect(page.getByRole("link", { name: "Google Ads Settings" }).first()).toHaveAttribute(
+    "href",
+    "https://adssettings.google.com",
+  );
+  await expect(page.getByRole("link", { name: "aboutads.info" }).first()).toHaveAttribute(
+    "href",
+    "https://www.aboutads.info",
+  );
+});

@@ -342,10 +342,13 @@ test.describe("Analytics consent path", () => {
     await expect(section).toBeVisible();
 
     await expect(page.getByText("Google Analytics 4 (GA4)", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("Google AdSense", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("Global Privacy Control (GPC)", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("Cloudflare Web Analytics", { exact: false }).first()).toBeVisible();
     await expect(
       page.getByText("IP anonymization is permanently on", { exact: false }).first()
     ).toBeVisible();
+    await expect(page.getByRole("link", { name: "How Google uses information from sites that use our services" })).toBeVisible();
+    await expect(page.locator("#cookies")).not.toContainText("We do not use third-party advertising cookies");
   });
 });
