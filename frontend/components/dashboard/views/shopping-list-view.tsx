@@ -40,6 +40,7 @@ export function ShoppingListView() {
     addManualShoppingItem,
     shareShoppingList,
     clearShoppingList,
+    setEditingItem,
   } = usePantry();
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -90,6 +91,7 @@ export function ShoppingListView() {
           onUpdateQuantity={updateShoppingItemQuantity}
           onMarkBought={markItemAsBought}
           onRemove={removeShoppingItem}
+          onEditPantryItem={setEditingItem}
         />
       );
     });

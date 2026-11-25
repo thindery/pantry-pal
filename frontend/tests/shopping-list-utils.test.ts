@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateSuggestedQuantity,
+  getShoppingItemPopupReason,
   getShoppingItemReason,
   getSuggestedQuantityCap,
   groupShoppingListByCategory,
+  hasUsageHistory,
   mergePreservedQuantity,
   normalizeShoppingListSort,
   sortShoppingListItems,
@@ -202,7 +204,7 @@ describe("getShoppingItemReason", () => {
     expect(getShoppingItemReason(item)).toBe("Added manually");
   });
 
-  it("returns short Have N · need M subline without alert text", () => {
+  it("returns short You have N · alert at M subline without need text", () => {
     const item: ShoppingListItem = {
       id: "2",
       name: "Milk",
@@ -217,12 +219,11 @@ describe("getShoppingItemReason", () => {
       lowStockThreshold: 2,
     };
     const reason = getShoppingItemReason(item);
-    expect(reason).toBe("Have 1 · need 3");
-    expect(reason).not.toContain("warn at or below");
-    expect(reason).not.toContain("alert");
+    expect(reason).toBe("You have 1 · alert at 2");
+    expect(reason).not.toContain("need");
   });
 
-  it("formats 0 quantity as Have 0 · need M", () => {
+  it("formats 0 quantity as You have 0 · alert at M", () => {
     const item: ShoppingListItem = {
       id: "3",
       name: "Eggs",
@@ -235,7 +236,122 @@ describe("getShoppingItemReason", () => {
       addedAt: new Date().toISOString(),
       reason: "low_stock",
     };
-    expect(getShoppingItemReason(item)).toBe("Have 0 · need 2");
+    expect(getShoppingItemReason(item)).toBe("You have 0 · alert at 1");
+  });
+});
+
+describe("getShoppingItemPopupReason", () => {
+  const item: ShoppingListItem = {
+    id: "item-1",
+    name: "Oat Milk",
+    category: "dairy",
+    currentQuantity: 0,
+    suggestedQuantity: 2,
+    unit: "cartons",
+    isManual: false,
+    isChecked: false,
+    addedAt: new Date().toISOString(),
+    reason: "low_stock",
+    lowStockThreshold: 1,
+  };
+
+  it("returns Added manually for manual items", () => {
+    expect(getShoppingItemPopupReason({ ...item, isManual: true })).toBe(
+      "Added manually"
+    );
+  });
+
+  it("returns usage-based reason when hasUsageHistory is true", () => {
+    const reason = getShoppingItemPopupReason(item, {
+      threshold: 1,
+      hasUsageHistory: true,
+    });
+    expect(reason).toBe(
+      "Added because you have 0 and your alert is 1. Suggested: buy 2, based on how fast you use it."
+    );
+  });
+
+  it("returns fallback 2x alert level reason when no usage history", () => {
+    const reason = getShoppingItemPopupReason(item, {
+      threshold: 1,
+      hasUsageHistory: false,
+    });
+    expect(reason).toBe(
+      "Added because you have 0 and your alert is 1. Suggested: buy 2, 2× your alert level."
+    );
+  });
+
+  it("computes usage history from activity list", () => {
+    const now = 1774000000000;
+    const fourteenDaysAgo = now - 14 * 24 * 3600 * 1000;
+    const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
+      {
+        itemId: "item-1",
+        type: "REMOVE",
+        amount: 2,
+        timestamp: new Date(fourteenDaysAgo).toISOString(),
+      },
+    ];
+
+    const withHistory = getShoppingItemPopupReason(item, {
+      activities,
+      itemId: "item-1",
+      now,
+    });
+    expect(withHistory).toContain("based on how fast you use it");
+
+    const withoutHistory = getShoppingItemPopupReason(item, {
+      activities: [],
+      itemId: "item-1",
+      now,
+    });
+    expect(withoutHistory).toContain("2× your alert level");
+  });
+});
+
+describe("hasUsageHistory", () => {
+  const now = 1774000000000;
+
+  it("returns false for empty or non-matching activities", () => {
+    expect(hasUsageHistory([], "item-1", now)).toBe(false);
+    expect(
+      hasUsageHistory(
+        [
+          {
+            itemId: "other-item",
+            type: "REMOVE",
+            amount: 5,
+            timestamp: new Date(now - 14 * 86400000).toISOString(),
+          },
+        ],
+        "item-1",
+        now
+      )
+    ).toBe(false);
+  });
+
+  it("returns false if history window is shorter than 7 days", () => {
+    const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
+      {
+        itemId: "item-1",
+        type: "REMOVE",
+        amount: 3,
+        timestamp: new Date(now - 3 * 86400000).toISOString(),
+      },
+    ];
+    expect(hasUsageHistory(activities, "item-1", now)).toBe(false);
+  });
+
+  it("returns true when REMOVE history extends 7+ days", () => {
+    const activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] = [
+      {
+        itemId: "item-1",
+        type: "REMOVE",
+        amount: 3,
+        timestamp: new Date(now - 8 * 86400000).toISOString(),
+      },
+    ];
+    expect(hasUsageHistory(activities, "item-1", now)).toBe(true);
   });
 });
 
