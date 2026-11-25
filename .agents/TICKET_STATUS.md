@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-24, 11:30 PM CT (PP-165 GA4 key events + login_events, in progress; GROWTH-001 closed as duplicate)
+Last updated: 2026-11-24, 11:55 PM CT (PP-167 subscription.created handler live 0753f20, renumbered from PP-166; webhook events added)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -15,12 +15,12 @@ Last updated: 2026-11-24, 11:30 PM CT (PP-165 GA4 key events + login_events, in 
 
 | | Count |
 |--|-------|
-| Done | 108 (previous plus PP-163 keep history on remove, live 613d37d) |
-| In progress | 1 (PP-165 GA4 key events + login_events) |
+| Done | 110 (previous plus PP-167 customer.subscription.created handler, live 0753f20) |
+| In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 2 (PP-067 CSP, PP-072 design-system) |
-| Open by priority | P0: 5 · P1: 14 · P2: 18 · P3: 3 (40 including backlog and security-open) |
+| Open by priority | P0: 5 · P1: 13 · P2: 18 · P3: 3 (39 including backlog and security-open) |
 | User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
 
 ---
@@ -40,7 +40,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
 
-### P1 — next up, high impact (14)
+### P1 — next up, high impact (13)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -58,7 +58,6 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-150 | E2E: inventory quantity +/- | 📋 Backlog | E2E |
 | PP-151 | E2E: shopping list | 📋 Backlog | E2E |
 | PP-154 | E2E: transactional emails triggered | 📋 Backlog | E2E |
-| PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | 🔄 In progress | Analytics / growth |
 
 ### P2 — soon (18)
 
@@ -242,8 +241,10 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-161 | Suggested matches at the top of the Group with… picker | P2 | ✅ Done (live `67a20c9`) |
 | PP-162 | Remove from pantry button in the Item Details sheet | P1 | ✅ Done (live `67a20c9`) |
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
-| PP-166 | $1 first-month offer test on Pro monthly (PR open, needs Tylor's yes before coupon/deploy) | P1 | 🔄 In review |
-| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094 (`78427fd` live) |
+| PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
+| PP-167 | Handle customer.subscription.created before enabling it on the live webhook (commit messages say PP-166) | P0 | ✅ Done (live `0753f20`) |
+| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Merged dark (offer off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set) — Remy overnight Nov 25 |
+| GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094; live webhook now includes refund + subscription.created events |
 
 ## Billing & email audit (2026-11-22)
 
@@ -303,7 +304,7 @@ Follow-up to PP-109 after Tylor asked to put analytics and Search Console under 
 | PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | P2 | 📋 Open (CF token done; GA4 SA still open) |
 | PP-122 | Update the privacy policy to disclose analytics | P1 | ✅ Done |
 | PP-130 | Privacy compliance (CCPA/CPRA, GPC, EU consent) | P1 | ✅ Done |
-| PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | 🔄 In progress (GROWTH-002) |
+| PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
 
 
 ## Marketing dashboard (2026-11-22)

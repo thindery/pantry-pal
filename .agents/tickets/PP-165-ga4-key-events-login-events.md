@@ -1,7 +1,7 @@
 # PP-165: GA4 key events (sign_up, begin_checkout, purchase) and login_events rows
 
-**Status:** 🔄 In progress
-**Updated:** 2026-11-24, 11:26 PM America/Chicago
+**Status:** ✅ Done
+**Updated:** 2026-11-24, 11:38 PM America/Chicago
 **Priority:** P1
 **Phase:** Growth (Remy GROWTH-002)
 **Created:** 2026-11-24
@@ -93,10 +93,16 @@ Checks (reviewer will also run the production build): `.venv/bin/python -m pytes
 
 ## Acceptance Criteria
 
-- [ ] `sign_up` still fires once on successful registration (existing welcome-email first-attempt hook)
-- [ ] `begin_checkout` still fires when Pro checkout starts (existing PricingPage hook)
-- [ ] `purchase` fires on confirmed Pro success with `value: 4.99`, `currency: "USD"`, and `transaction_id` = Stripe session id; refresh does not double-fire
-- [ ] GA4 measurement ID remains `G-LEW78LC3EF` (already wired); key events `sign_up`, `begin_checkout`, and `purchase` are marked in GA4
-- [ ] Each successful login inserts a `login_events` row with `user_id`, timestamp, and `method` (no IPs or secrets); migration 025 + rollback exist
-- [ ] `users.created_at` exists with a default for new signups
-- [ ] Backend pytest, Vitest, typecheck, and lint pass
+- [x] `sign_up` still fires once on successful registration (existing welcome-email first-attempt hook)
+- [x] `begin_checkout` still fires when Pro checkout starts (existing PricingPage hook)
+- [x] `purchase` fires on confirmed Pro success with `value: 4.99`, `currency: "USD"`, and `transaction_id` = Stripe session id; refresh does not double-fire
+- [x] GA4 measurement ID remains `G-LEW78LC3EF` (already wired); key events `sign_up`, `begin_checkout`, and `purchase` are marked in GA4
+- [x] Each successful login inserts a `login_events` row with `user_id`, timestamp, and `method` (no IPs or secrets); migration 025 + rollback exist
+- [x] `users.created_at` exists with a default for new signups
+- [x] Backend pytest, Vitest, typecheck, and lint pass
+
+## Outcome
+
+Shipped in `9b19fa8` and deployed to production 2026-11-24, 11:38 PM America/Chicago. Live `build-id.txt` is `9b19fa8`. Migration `025_login_events_method_and_user_created_at` applied on OVH. PR https://github.com/thindery/pantry-pal/pull/61.
+
+GA4 property 565428577 (stream Pantry Hub Web, measurement ID `G-LEW78LC3EF`, already wired) has key events `sign_up`, `begin_checkout`, and `purchase` marked ONCE_PER_EVENT.

@@ -71,7 +71,8 @@ ssh ovh "
     echo 'Deploy failed — attempting to restore running containers...' >&2
     # Unique project name pantry-pal — never default \"deploy\" from working_dir.
     # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
-    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d 2>/dev/null || true
+    # PP-169: --no-recreate so a failed migration/health step never swaps in the new image.
+    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d --no-recreate 2>/dev/null || true
     exit \"\$exit_code\"
   }
   trap on_deploy_failure ERR
@@ -125,11 +126,15 @@ ssh ovh "
   # Build first, then up, so a failed image build cannot be treated as success.
   echo 'Building images...'
   docker compose -p pantry-pal build
+  # PP-169: migrate with the NEW backend image before swapping containers, so the
+  # new code never serves requests against an old schema. A failed migration
+  # aborts here and leaves the previous containers running (ERR trap).
+  echo 'Ensuring database is up...'
+  docker compose -p pantry-pal up -d --wait db
+  echo 'Running database migrations (before starting new containers)...'
+  docker compose -p pantry-pal run --rm --no-deps backend python database/migrate.py migrate
   echo 'Starting containers...'
   docker compose -p pantry-pal up -d
-
-  echo 'Running database migrations...'
-  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate
 
   echo 'Waiting for services to become healthy...'
   health_ok=0
