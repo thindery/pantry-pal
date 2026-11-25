@@ -127,6 +127,27 @@ describe("BarcodeScanner unknown product naming", () => {
     );
   });
 
+  it("does not commit a 1-character name", async () => {
+    const onBarcodeDetected = vi.fn();
+    render(
+      <BarcodeScanner
+        onBarcodeDetected={onBarcodeDetected}
+        onCancel={vi.fn()}
+        autoStart={false}
+        quickScan={false}
+      />
+    );
+
+    const input = await lookupUnknownBarcode();
+    fireEvent.change(input, { target: { value: "P" } });
+    expect(screen.getByPlaceholderText("Enter product name")).toHaveValue("P");
+    expect(screen.getByText(/at least 3 characters/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add to Inventory/i })).toBeDisabled();
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: /Add to Inventory/i }));
+    expect(onBarcodeDetected).not.toHaveBeenCalled();
+  });
+
   it("does not commit an empty name", async () => {
     const onBarcodeDetected = vi.fn();
     render(

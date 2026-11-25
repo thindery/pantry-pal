@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { ScanBarcodeView } from "@/components/dashboard/views/scan-barcode-view";
 import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct } from "@/types";
+import { isUsableProductName } from "@/lib/product-name";
 
 const knownProduct: BarcodeProduct = {
   barcode: "012345678905",
@@ -156,11 +157,15 @@ vi.mock("@/components/BarcodeScanner", () => ({
               onChange={(e) => setUnknownName(e.target.value)}
               placeholder="Enter product name"
             />
+            {unknownName.trim() && !isUsableProductName(unknownName) && (
+              <p>Please enter a name with at least 3 characters.</p>
+            )}
             <div className="flex gap-2">
               <button
                 data-testid="add-unknown"
-                disabled={!unknownName.trim()}
+                disabled={!isUsableProductName(unknownName)}
                 onClick={() => {
+                  if (!isUsableProductName(unknownName)) return;
                   onBarcodeDetected({
                     ...unknownProduct,
                     name: unknownName.trim(),
@@ -542,6 +547,22 @@ describe("ScanBarcodeView unknown product naming", () => {
       1,
       { silent: true }
     );
+  });
+
+  it("does not save a 1-character name", async () => {
+    render(<ScanBarcodeView />);
+
+    fireEvent.click(screen.getByTestId("simulate-scan"));
+    const input = await screen.findByTestId("unknown-name-input");
+    fireEvent.change(input, { target: { value: "F" } });
+    expect(input).toHaveValue("F");
+    expect(screen.getByText(/at least 3 characters/i)).toBeInTheDocument();
+
+    const addButton = screen.getByTestId("add-unknown");
+    expect(addButton).toBeDisabled();
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.click(addButton);
+    expect(mockHandleSaveScannedProduct).not.toHaveBeenCalled();
   });
 
   it("does not save when the name is empty", async () => {

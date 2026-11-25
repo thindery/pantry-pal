@@ -35,16 +35,29 @@ async def lookup_barcode(barcode: str, user_id: str = Depends(require_authentica
         return {"success": True, "cached": True, "stale": True, "product": stale}
 
     result = await barcode_service.lookup_external_product(clean)
-    if not result.get("success") or not result.get("product"):
-        raise HTTPException(status_code=404, detail=result)
-    barcode_service.save_product(result["product"])
-    return {"success": True, "cached": False, "product": result["product"]}
+    product = result.get("product") if result.get("success") else None
+    if not product or not barcode_service.is_usable_product_name(product.get("name")):
+        raise HTTPException(
+            status_code=404,
+            detail={
+                **{k: v for k, v in result.items() if k != "product"},
+                "success": False,
+                "cached": False,
+                "needsName": True,
+                "error": result.get("error") or "Product not found",
+            },
+        )
+    barcode_service.save_product(product)
+    barcode_service.apply_name_to_junk_barcode_items(clean, product["name"])
+    return {"success": True, "cached": False, "product": product}
 
 
 async def _refresh_barcode(barcode: str) -> None:
     result = await barcode_service.lookup_external_product(barcode)
-    if result.get("success") and result.get("product"):
-        barcode_service.save_product(result["product"])
+    product = result.get("product") if result.get("success") else None
+    if product and barcode_service.is_usable_product_name(product.get("name")):
+        barcode_service.save_product(product)
+        barcode_service.apply_name_to_junk_barcode_items(barcode, product["name"])
     else:
         barcode_service.mark_product_needs_sync(barcode, result.get("error"))
 
@@ -74,6 +87,17 @@ async def save_barcode_product(
                     {"remaining": tier_check["remaining"]},
                 ),
             )
+
+    if not barcode_service.is_usable_product_name(body.name):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "cached": False,
+                "needsName": True,
+                "error": "Please enter a product name (at least 3 characters).",
+            },
+        )
 
     barcode_service.save_product(
         {

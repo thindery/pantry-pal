@@ -5,6 +5,7 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct, PantryItem } from "@/types";
 import { ApiError } from "@/services/apiService";
+import { isUsableProductName } from "@/lib/product-name";
 
 const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
 const SESSION_FLUSH_MS = 800;
@@ -167,9 +168,9 @@ export function ScanBarcodeView() {
     setTimeout(() => recentScansRef.current.delete(product.barcode), 3000);
 
     // Unknown product (no name) - show modal and reset any stale name
-    if (!product.name || product.name.trim() === "") {
+    if (!isUsableProductName(product.name)) {
       setUnknownProductName("");
-      setUnknownProduct(product);
+      setUnknownProduct({ ...product, name: "" });
       return;
     }
 
@@ -302,7 +303,7 @@ export function ScanBarcodeView() {
   }, [flushAllPending]);
 
   const handleSaveUnknownProduct = useCallback(async () => {
-    if (!unknownProduct || !unknownProductName.trim()) return;
+    if (!unknownProduct || !isUsableProductName(unknownProductName)) return;
 
     setIsSavingUnknown(true);
     try {
@@ -336,7 +337,7 @@ export function ScanBarcodeView() {
   // Commit unknown-product name on explicit Enter key in the modal input
   const handleUnknownNameKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" && unknownProductName.trim()) {
+      if (e.key === "Enter" && isUsableProductName(unknownProductName)) {
         e.preventDefault();
         handleSaveUnknownProduct();
       }
@@ -539,6 +540,11 @@ export function ScanBarcodeView() {
               className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none mb-4"
               autoFocus
             />
+            {unknownProductName.trim() && !isUsableProductName(unknownProductName) && (
+              <p className="text-sm text-amber-700 -mt-2 mb-4">
+                Please enter a name with at least 3 characters.
+              </p>
+            )}
 
             <div className="flex gap-3">
               <button
@@ -553,7 +559,7 @@ export function ScanBarcodeView() {
               </button>
               <button
                 onClick={handleSaveUnknownProduct}
-                disabled={isSavingUnknown || !unknownProductName.trim()}
+                disabled={isSavingUnknown || !isUsableProductName(unknownProductName)}
                 className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
                 {isSavingUnknown ? "Saving..." : "Add Product"}

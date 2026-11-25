@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 3:05 PM CT (Tylor's 1:54 PM yes: $1 offer live, PP-136 live, PP-137 built and off, PP-164 hub live, PP-140 slot off; live build 9afc316)
+Last updated: 2026-11-25, 3:15 PM CT (PP-181 junk product names in progress on fix/PP-181-junk-product-names)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -40,6 +40,7 @@ Last updated: 2026-11-25, 3:05 PM CT (Tylor's 1:54 PM yes: $1 offer live, PP-136
 | PP-119 Bing import | — | Needs Tylor's Microsoft sign-in. |
 | PP-129 Resend read key | this PR | 🟡 `RESEND_READ_API_KEY` placeholder added. The connected Resend account is not the mypantryhub one, so Tylor creates the key. |
 | GROWTH-010 Search Console | — | ✅ All 4 `sc-domain` properties (flowruns, getmd2pdf, agentpaige, userkudos) already show `siteOwner` (verified); sitemaps submitted for all 4 (userkudos today). No DNS tokens needed. |
+| PP-181 Don't cache 1–2 character product names | this PR | 🔨 In progress. Root cause is leftover PP-075 first-letter data plus no backend guard. |
 
 ## Overnight 2026-11-25
 
@@ -140,6 +141,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
+| PP-181 | Don't cache or serve 1–2 character product names | 🔨 In progress | User-reported |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-107 | HTTP should 301 to HTTPS (the "500" came from the checker's proxy) | ✅ Closed — already satisfied (301 verified 2026-11-25) | SEO / AEO |
