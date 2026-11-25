@@ -23,6 +23,7 @@ import {
 } from "@/lib/shopping-list-utils";
 import { ShoppingListRow } from "@/components/dashboard/ShoppingListRow";
 import { InstacartButton } from "@/components/dashboard/InstacartButton";
+import { InAppAdSlot } from "@/components/InAppAdSlot";
 import type { ShoppingListItem, ShoppingListSortBy } from "@/types";
 
 export function ShoppingListView() {
@@ -290,6 +291,7 @@ export function ShoppingListView() {
           </button>
         </div>
       )}
+      <InAppAdSlot surface="shopping-list-footer" />
     </div>
   );
 }
