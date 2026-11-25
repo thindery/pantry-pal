@@ -54,7 +54,13 @@ export default defineConfig({
       url: "http://127.0.0.1:3100",
       timeout: 240000,
       // PP-150: throwaway Auth.js secret for minted test sessions (local only).
-      env: { AUTH_SECRET: e2eAuthSecret(), AUTH_TRUST_HOST: "true" },
+      env: {
+        AUTH_SECRET: e2eAuthSecret(),
+        AUTH_TRUST_HOST: "true",
+        // PP-148: fake Google client so the sign-in button renders; tests intercept accounts.google.com.
+        AUTH_GOOGLE_ID: "e2e-fake-google-client-id",
+        AUTH_GOOGLE_SECRET: "e2e-fake-google-client-secret",
+      },
       // Never silently reuse a stale server (the deploy gate must test this checkout).
       reuseExistingServer: !process.env.CI && process.env.E2E_REUSE_SERVER === "1",
     },
