@@ -237,12 +237,80 @@ export function groupShoppingListByCategory<T extends ShoppingListItem>(
   return groups;
 }
 
+export function hasUsageHistory(
+  activities: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[] | undefined,
+  itemId?: string | null,
+  now: number = Date.now()
+): boolean {
+  if (!activities || !itemId) return false;
+  const removeActivities = activities.filter(
+    (a) => a.itemId === itemId && a.type === "REMOVE" && a.amount > 0
+  );
+  if (removeActivities.length === 0) return false;
+  const totalUsed = removeActivities.reduce((sum, a) => sum + a.amount, 0);
+  if (totalUsed <= 0) return false;
+  const validTimestamps = removeActivities
+    .map((a) => new Date(a.timestamp).getTime())
+    .filter((t) => !Number.isNaN(t));
+  if (validTimestamps.length === 0) return false;
+  const oldestTimestamp = Math.min(...validTimestamps);
+  const daysOfHistory = (now - oldestTimestamp) / (1000 * 60 * 60 * 24);
+  return daysOfHistory >= 7;
+}
+
 export function getShoppingItemReason(
-  item: Pick<ShoppingListItem, "isManual" | "currentQuantity" | "suggestedQuantity">,
-  _threshold?: number
+  item: Pick<ShoppingListItem, "isManual" | "currentQuantity" | "suggestedQuantity"> & {
+    lowStockThreshold?: number;
+  },
+  threshold?: number
 ): string {
   if (item.isManual) return "Added manually";
-  return `Have ${item.currentQuantity} · need ${item.suggestedQuantity}`;
+  const alert = threshold ?? item.lowStockThreshold ?? 1;
+  return `You have ${item.currentQuantity} · alert at ${alert}`;
+}
+
+export interface ShoppingItemPopupReasonOptions {
+  threshold?: number;
+  hasUsageHistory?: boolean;
+  activities?: Pick<Activity, "itemId" | "type" | "amount" | "timestamp">[];
+  itemId?: string | null;
+  now?: number;
+}
+
+export function getShoppingItemPopupReason(
+  item: Pick<ShoppingListItem, "isManual" | "currentQuantity" | "suggestedQuantity"> & {
+    lowStockThreshold?: number;
+  },
+  optionsOrThreshold?: number | ShoppingItemPopupReasonOptions,
+  legacyHasUsageHistory?: boolean
+): string {
+  if (item.isManual) return "Added manually";
+
+  let threshold: number | undefined;
+  let hasUsage = false;
+
+  if (typeof optionsOrThreshold === "number") {
+    threshold = optionsOrThreshold;
+    hasUsage = Boolean(legacyHasUsageHistory);
+  } else if (optionsOrThreshold) {
+    threshold = optionsOrThreshold.threshold;
+    if (typeof optionsOrThreshold.hasUsageHistory === "boolean") {
+      hasUsage = optionsOrThreshold.hasUsageHistory;
+    } else if (optionsOrThreshold.activities && optionsOrThreshold.itemId) {
+      hasUsage = hasUsageHistory(
+        optionsOrThreshold.activities,
+        optionsOrThreshold.itemId,
+        optionsOrThreshold.now
+      );
+    }
+  }
+
+  const alert = threshold ?? item.lowStockThreshold ?? 1;
+  const explanation = hasUsage
+    ? `Suggested: buy ${item.suggestedQuantity}, based on how fast you use it.`
+    : `Suggested: buy ${item.suggestedQuantity}, 2× your alert level.`;
+
+  return `Added because you have ${item.currentQuantity} and your alert is ${alert}. ${explanation}`;
 }
 
 export function getSuggestedQuantityCap(threshold: number): number {

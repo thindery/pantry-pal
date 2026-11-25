@@ -5,6 +5,7 @@ import { Check, Minus, MoreVertical, Plus, Trash2 } from "lucide-react";
 import type { PantryItem, ShoppingListItem } from "@/types";
 import { categoryIcon } from "@/lib/category-icons";
 import { getShoppingItemReason } from "@/lib/shopping-list-utils";
+import { ShoppingItemInfoModal } from "@/components/dashboard/ShoppingItemInfoModal";
 
 interface ShoppingListRowProps {
   item: ShoppingListItem;
@@ -13,6 +14,7 @@ interface ShoppingListRowProps {
   onUpdateQuantity: (id: string, quantity: number) => void;
   onMarkBought: (item: ShoppingListItem) => void;
   onRemove: (id: string) => void;
+  onEditPantryItem?: (item: PantryItem) => void;
 }
 
 function ItemThumb({
@@ -54,8 +56,10 @@ export function ShoppingListRow({
   onUpdateQuantity,
   onMarkBought,
   onRemove,
+  onEditPantryItem,
 }: ShoppingListRowProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -96,22 +100,34 @@ export function ShoppingListRow({
         {item.isChecked && <Check size={12} strokeWidth={3} />}
       </button>
 
-      <ItemThumb item={item} pantryItem={pantryItem} />
+      <button
+        type="button"
+        onClick={() => setInfoOpen(true)}
+        className="flex items-center gap-2 min-w-0 flex-1 text-left rounded-lg hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] py-0.5"
+        aria-label={`View details for ${item.name}`}
+      >
+        <ItemThumb item={item} pantryItem={pantryItem} />
 
-      <div className="min-w-0 flex-1">
-        <p
-          className={`text-sm font-medium leading-snug line-clamp-2 ${
-            item.isChecked
-              ? "line-through text-[var(--muted)]"
-              : "text-[var(--foreground)]"
-          }`}
-        >
-          {item.name}
-        </p>
-        <p className="text-xs text-[var(--muted)] leading-tight mt-0.5">
-          {getShoppingItemReason(item)}
-        </p>
-      </div>
+        <div className="min-w-0 flex-1">
+          <p
+            className={`text-sm font-medium leading-snug line-clamp-2 ${
+              item.isChecked
+                ? "line-through text-[var(--muted)]"
+                : "text-[var(--foreground)]"
+            }`}
+          >
+            {item.name}
+          </p>
+          <p className="text-xs text-[var(--muted)] leading-tight mt-0.5">
+            {getShoppingItemReason(
+              item,
+              pantryItem
+                ? item.lowStockThreshold ?? pantryItem.targetQuantity ?? undefined
+                : undefined
+            )}
+          </p>
+        </div>
+      </button>
 
       <div className="flex items-center gap-0.5 shrink-0">
         <button
@@ -186,6 +202,16 @@ export function ShoppingListRow({
           </div>
         )}
       </div>
+
+      {infoOpen && (
+        <ShoppingItemInfoModal
+          item={item}
+          pantryItem={pantryItem}
+          isOpen={infoOpen}
+          onClose={() => setInfoOpen(false)}
+          onEditInPantry={onEditPantryItem}
+        />
+      )}
     </div>
   );
 }
