@@ -154,6 +154,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
+| PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle (built locally, off, waiting for Tylor to deploy) | 🔨 Built | Pro AI |
 | PP-110 | AEO content cluster and comparison pages | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |

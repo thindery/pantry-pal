@@ -60,6 +60,8 @@ export default defineConfig({
         // PP-148: fake Google client so the sign-in button renders; tests intercept accounts.google.com.
         AUTH_GOOGLE_ID: "e2e-fake-google-client-id",
         AUTH_GOOGLE_SECRET: "e2e-fake-google-client-secret",
+        // PP-186: makes the minted test user an admin so /admin can be exercised (local harness only).
+        ADMIN_EMAILS: "e2e-user@example.test",
       },
       // Never silently reuse a stale server (the deploy gate must test this checkout).
       reuseExistingServer: !process.env.CI && process.env.E2E_REUSE_SERVER === "1",
