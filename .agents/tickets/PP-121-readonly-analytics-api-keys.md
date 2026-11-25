@@ -51,7 +51,7 @@ $0 only. Stop if anything asks for billing.
 ## Acceptance Criteria
 
 - [x] Cloudflare read-only token is in Keychain (`pantry-hub` / `pantry-hub-cf-analytics-api-token`) and verifies `active`
-- [ ] GA4 service account exists in a reused GCP project; JSON is in Keychain as `pantry-hub-ga4-service-account-json`
+- [x] GA4 service account exists in a reused GCP project; JSON is in Keychain as `pantry-hub-ga4-service-account-json` (2026-11-25: `pantry-hub-ga4-reader@gen-lang-client-0502314230.iam.gserviceaccount.com`)
 - [ ] Tylor has added the SA as GA4 Viewer
 - [ ] A runReport call succeeds (empty rows are OK)
 - [ ] No key values are in git, client code, or chat
@@ -59,3 +59,7 @@ $0 only. Stop if anything asks for billing.
 ## Progress (2026-11-22 deploy)
 
 PP-117 is live (property **Pantry Hub** `565428577`, Measurement ID `G-LEW78LC3EF`). The Cloudflare read-only token was already in Keychain. Still open: create the GA4 service account in a reused GCP project and have Tylor add it as **Viewer**. **Priority:** P2.
+
+## 2026-11-25
+
+Service account and key done (Keychain `pantry-hub` / `pantry-hub-ga4-service-account-json`). **Tylor:** analytics.google.com → Admin → Pantry Hub property → Property access management → add `pantry-hub-ga4-reader@gen-lang-client-0502314230.iam.gserviceaccount.com` as **Viewer**. Then the runReport check closes this ticket.

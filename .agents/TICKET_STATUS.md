@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 12:30 PM CT (SEO stack PP-101/103/104/105/106/108/110 merged and live at 0cc57ed; AdSense live at 63683d9; PP-107 closed)
+Last updated: 2026-11-25, 3:05 PM CT (Tylor's 1:54 PM yes: $1 offer live, PP-136 live, PP-137 built and off, PP-164 hub live, PP-140 slot off; live build 9afc316)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -21,10 +21,25 @@ Last updated: 2026-11-25, 12:30 PM CT (SEO stack PP-101/103/104/105/106/108/110 
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
 | Open by priority | P0: 5 · P1: 6 · P2: 9 · P3: 2 (22 on the board below) |
-| User action pending | Deploy security fixes to OVH (nginx + TRUST_PROXY + security.txt); Tylor: Bing Webmaster import (PP-119); GA4 Viewer for the read-only SA (PP-121) |
+| User action pending | Tylor: Bing Webmaster import (PP-119); add GA4 Viewer for the read-only SA (PP-121); create a Resend read key in the mypantryhub Resend account (PP-129); OK the low-stock email copy (PP-137); AdSense in-app ad unit (PP-140); recipes and photos (PP-139) |
 
 ---
 
+
+## Afternoon 2026-11-25 (after Tylor's "agree with all of this. get it done", 1:54 PM CT)
+
+| Ticket | PR | State |
+|--------|----|-------|
+| PP-166 $1 first month on Pro monthly | [#108](https://github.com/thindery/pantry-pal/pull/108) | ✅ Live 1:57 PM CT. Live coupon `pro-monthly-first-month-1usd` ($3.99 off once, Pro product); env set on OVH; `/api/public/offer` enabled; banner on `/pricing` and the homepage verified in a browser. Live Checkout Session dry run showed $4.99 → $1.00 and was expired; no charge. GA4 `purchase` no longer falls back to 4.99. |
+| PP-136 Renewal reminder after a promo | [#109](https://github.com/thindery/pantry-pal/pull/109) | ✅ Live. `invoice.upcoming` added to `we_1Twvx9RHCLA4QETrTSnoc38P`. Dry run over live subs: only Tylor's comp sub qualifies (renews Dec 21 at $4.99); the paying customer's full-price sub gets nothing. |
+| PP-137 Weekly opt-in low-stock email | [#112](https://github.com/thindery/pantry-pal/pull/112) | ✅ Built and deployed, **switched off** (`LOW_STOCK_DIGEST_ENABLED` unset; toggle hidden). OVH cron Sun 15:00 UTC (9 AM CST) no-ops until the flag is set. Copy in the ticket for Tylor. |
+| PP-164 Local weekly-ads hub v1 | [#113](https://github.com/thindery/pantry-pal/pull/113) | ✅ Live at `/dashboard/weekly-ads/` (migration 030, Springfield-area seed, national fallback). |
+| PP-140 Free-only in-app ad slot | [#114](https://github.com/thindery/pantry-pal/pull/114) | 🟡 Code live, switched off; needs an AdSense ad unit from Tylor. |
+| PP-139 Public recipes + affiliate plan | [#115](https://github.com/thindery/pantry-pal/pull/115) | 🟡 Plan done; build waits on Tylor's recipes/photos; no signup. |
+| PP-121 GA4 read-only SA | — | 🟡 SA `pantry-hub-ga4-reader@gen-lang-client-0502314230.iam.gserviceaccount.com` created; key in Mini Keychain (`pantry-hub` / `pantry-hub-ga4-service-account-json`). Tylor adds it as Viewer. |
+| PP-119 Bing import | — | Needs Tylor's Microsoft sign-in. |
+| PP-129 Resend read key | this PR | 🟡 `RESEND_READ_API_KEY` placeholder added. The connected Resend account is not the mypantryhub one, so Tylor creates the key. |
+| GROWTH-010 Search Console | — | ✅ All 4 `sc-domain` properties (flowruns, getmd2pdf, agentpaige, userkudos) already show `siteOwner` (verified); sitemaps submitted for all 4 (userkudos today). No DNS tokens needed. |
 
 ## Overnight 2026-11-25
 
@@ -89,13 +104,13 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 ### Blocked, and why
 
 - PP-164 (local ads hub): ✅ v1 link-out shipped Nov 25 at /dashboard/weekly-ads/ (Springfield-area seed; national fallback elsewhere).
-- PP-139, PP-140: need Tylor's yes.
+- PP-139 (plan done), PP-140 (slot built, off): approved Nov 25; waiting on recipes/photos and an AdSense ad unit.
 - PP-166: ✅ live Nov 25 1:57 PM CT after Tylor's yes.
 - GROWTH-010 (Search Console, other domains): blocked on verification tokens.
 - PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 merged 2026-11-25 and deployed; AdSense PR #106 live).
 - PP-148 (real Google sign-up / login E2E), PP-152–PP-153 (Stripe checkout, cancel): need a Google test account and Stripe test-mode keys. (PP-154 shipped as a backend integration test with signed local webhooks.)
-- PP-119 (Bing import), PP-121 (GA4 Viewer for the read-only service account): need Tylor's sign-in.
-- PP-129 (full-access Resend key): needs Tylor's yes.
+- PP-119 (Bing import), PP-121 (GA4 Viewer for the read-only service account, SA created Nov 25): need Tylor's sign-in.
+- PP-129 (Resend read key): approved Nov 25; Tylor creates it in the mypantryhub Resend account (connector is a different account).
 - PP-124 operator step: create the Resend webhook for `https://www.mypantryhub.com/api/webhooks/resend` in the mypantryhub Resend account and put `RESEND_WEBHOOK_SECRET` in `/opt/pantry-pal/.env.prod`. The Resend connector here is on a different account. Until then, email rates show "Pending webhook".
 - Coding agents: agy out of credits since ~12:50 AM; Hermes out (HTTP 429). Topping up costs money, so not done.
 

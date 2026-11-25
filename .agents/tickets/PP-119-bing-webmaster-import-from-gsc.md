@@ -34,3 +34,7 @@ Do not buy Microsoft Advertising or any paid webmaster add-on.
 ## Unblocked
 
 PP-118 is done: the Search Console Domain property `mypantryhub.com` is verified and the sitemap was submitted. This ticket still needs Tylor's Microsoft / Google login to import into Bing Webmaster Tools. **Priority:** P2.
+
+## 2026-11-25
+
+Approved by Tylor; nothing an agent can do without his Microsoft sign-in. **Tylor:** bing.com/webmasters → sign in → Import from Google Search Console → pick `mypantryhub.com` (the other verified domains can come along in the same import).
