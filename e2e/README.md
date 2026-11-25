@@ -14,6 +14,11 @@ Run the smoke suite (pre-deploy gate):
 npm run test:e2e:smoke
 ```
 
+Run the analytics consent E2E spec (PP-155):
+```bash
+npx playwright test e2e/analytics-consent.spec.ts
+```
+
 ## Environment Variables
 
 - `E2E_BASE_URL`: Target base URL (default: `http://127.0.0.1:3100`).
