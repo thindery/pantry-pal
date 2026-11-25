@@ -839,6 +839,7 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
             email=_recipient_email(user_id, subscription.get("customer")),
             subscription_id=event_id or "",
             period_end=updates.get("subscriptionEndDate"),
+            tier=tier,
         )
 
 

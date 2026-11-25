@@ -301,6 +301,8 @@ FAMILY_FEATURES = [
     "Admin controls",
     "Family meal planning",
 ]
+# Free plan limits copied directly from frontend/components/PricingPage.tsx (TIERS[0].features).
+# Read from PricingPage.tsx TIERS[0].features. Hard-coded to match the exact Free plan limits shown there.
 FREE_FEATURES = [
     "Up to 50 pantry items",
     "5 AI receipt scans/month",
@@ -588,24 +590,32 @@ def send_cancellation_scheduled(
     email: Optional[str],
     subscription_id: str,
     period_end: Optional[str] = None,
+    tier: Optional[str] = None,
 ) -> dict[str, Any]:
+    # Only name the plan when the caller knows it; never guess Pro for a Family user.
+    tier_key = (tier or "").strip().lower()
+    plan = {"pro": "Pro", "family": "Family"}.get(tier_key)
+    subject_access = f"Your {plan} access" if plan else "Your access"
     pretty_end = _format_period_end(period_end)
-    end_line = (
-        f" You'll keep access until {pretty_end}."
-        if pretty_end
-        else " You'll keep access until the end of the current period."
-    )
-    end_html = (
-        f" You'll keep access until {_html_escape(pretty_end)}."
-        if pretty_end
-        else " You'll keep access until the end of the current period."
-    )
+    if pretty_end:
+        access_line = f"{subject_access} continues through {pretty_end}."
+        access_html = f"{_html_escape(subject_access)} continues through {_html_escape(pretty_end)}."
+    else:
+        access_line = f"{subject_access} continues until the end of your current billing period."
+        access_html = f"{_html_escape(subject_access)} continues until the end of your current billing period."
+    preheader = access_line
     account = f"{_app_url()}/dashboard/account/"
-    body_html = f'<p style="margin:0 0 16px 0;">We\'ve scheduled your cancellation.{end_html}</p>'
-    body_text = f"We've scheduled your cancellation.{end_line}"
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">Your cancellation is scheduled. {access_html}</p>
+      <p style="margin:0 0 16px 0;">If you change your mind, you can keep your plan anytime before your billing period ends.</p>
+    """
+    body_text = (
+        f"Your cancellation is scheduled. {access_line}\n\n"
+        "If you change your mind, you can keep your plan anytime before your billing period ends."
+    )
     html, text = _wrap(
         title="Your Pantry Hub cancellation is scheduled",
-        preheader="You'll keep access until the end of the current period.",
+        preheader=preheader,
         body_html=body_html,
         body_text=body_text,
         cta_label="Keep my plan",
@@ -630,18 +640,18 @@ def send_subscription_ended(
 ) -> dict[str, Any]:
     pricing = f"{_app_url()}/pricing/"
     body_html = f"""
-      <p style="margin:0 0 16px 0;">Your Pantry Hub paid plan has ended and this account is now on the Free plan.</p>
-      <p style="margin:0 0 8px 0;font-weight:700;">On Free you still have</p>
+      <p style="margin:0 0 16px 0;">Your paid plan has ended. You're now on the Free plan.</p>
+      <p style="margin:0 0 8px 0;font-weight:700;">What's included with Free</p>
       {_feature_list_html(FREE_FEATURES)}
     """
     feature_text = "\n".join(f"- {item}" for item in FREE_FEATURES)
     body_text = (
-        "Your Pantry Hub paid plan has ended and this account is now on the Free plan.\n\n"
-        f"On Free you still have:\n{feature_text}"
+        "Your paid plan has ended. You're now on the Free plan.\n\n"
+        f"What's included with Free:\n{feature_text}"
     )
     html, text = _wrap(
         title="Your Pantry Hub subscription has ended",
-        preheader="Your account is now on the Free plan. You can resubscribe any time.",
+        preheader="You're now on the Free plan. You can resubscribe any time.",
         body_html=body_html,
         body_text=body_text,
         cta_label="Resubscribe",
