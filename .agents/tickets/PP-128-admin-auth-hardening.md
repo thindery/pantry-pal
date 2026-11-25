@@ -1,6 +1,6 @@
 # PP-128: Harden leftover admin auth issues
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25, PR #77, merge 64340ad)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -38,7 +38,16 @@
 
 ## Acceptance Criteria
 
-- [ ] `NEXT_PUBLIC_ADMIN_EMAILS` is gone from committed env templates and is not referenced in app code
-- [ ] `/admin` is denied without `isAdmin` even if someone talks to the page without middleware
-- [ ] `is_admin_user` no longer calls Clerk
-- [ ] Stripe and Resend webhook routes remain unauthenticated (signature-verified) public endpoints
+- [x] `NEXT_PUBLIC_ADMIN_EMAILS` is gone from committed env templates and is not referenced in app code
+- [x] `/admin` is denied without `isAdmin` even if someone talks to the page without middleware
+- [x] `is_admin_user` no longer calls Clerk
+- [x] Stripe and Resend webhook routes remain unauthenticated (signature-verified) public endpoints
+
+## Implementation Notes
+
+- **Env templates**: Removed `NEXT_PUBLIC_ADMIN_EMAILS` from `.env.example` and `frontend/.env.example`. Preserved server-only placeholder `ADMIN_EMAILS=you@example.com`.
+- **Server-side gate**: Added server component gate to `frontend/app/admin/layout.tsx` using `await auth()`. Redirects missing session to `/auth/signin/` and non-admin session to `/dashboard/`.
+- **Backend admin check**: Updated `is_admin_user` in `backend/clerk_auth.py` to decide admin strictly from `user_id` (`ADMIN_USER_IDS`) and verified request `email` (`ADMIN_EMAILS`, trimmed, case-insensitive). Removed `_email_from_clerk_user` and all network calls.
+- **Allowlist alignment**: NextAuth JWT and session callbacks (`frontend/lib/auth.config.ts`) and `frontend/middleware.ts` now honor `ADMIN_USER_IDS` alongside `ADMIN_EMAILS`, matching the backend user ID (`sub`).
+- **Webhooks**: Added `/api/webhooks/resend` to `PUBLIC_PREFIXES` in `frontend/middleware.ts` alongside `/api/webhooks/stripe`.
+- **Tests**: Added backend tests in `tests/test_admin_auth.py` and frontend Vitest tests in `frontend/tests/admin-gate.test.tsx`.

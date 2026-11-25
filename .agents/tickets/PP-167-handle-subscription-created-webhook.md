@@ -1,10 +1,12 @@
-# PP-166: Handle customer.subscription.created so the webhook can subscribe to it
+# PP-167: Handle customer.subscription.created so the webhook can subscribe to it
 
-**Status:** 🔄 In progress
+**Status:** ✅ Done
+**Updated:** 2026-11-24, 11:55 PM America/Chicago
 **Priority:** P0 (billing / entitlement)
 **Phase:** Production follow-up (GROWTH-001 / Remy)
 **Created:** 2026-11-24
 **Depends on:** PP-089, PP-090, PP-091, PP-094
+**Renumbered:** 2026-11-25 — first filed as PP-166, which was already the $1 first-month offer (PR #62). Commits `cdd3053` and merge `0753f20` say PP-166 in their messages; history was not rewritten.
 **Source:** Remy asked to add `customer.subscription.created`, `charge.refunded`, and `charge.refund.updated` to the live Stripe webhook. Refund events already have a handler. `customer.subscription.created` does not, so this must ship before those events are enabled.
 
 ---
@@ -25,7 +27,7 @@
 
 - `backend/services/stripe_service.py`
 - `tests/test_stripe_checkout_guard.py`
-- `.agents/tickets/PP-166-handle-subscription-created-webhook.md`
+- `.agents/tickets/PP-167-handle-subscription-created-webhook.md`
 - `.agents/TICKET_STATUS.md`
 
 No commits or pushes by coding agents, no secrets, no dependency changes.
@@ -36,5 +38,5 @@ No commits or pushes by coding agents, no secrets, no dependency changes.
 - [x] Does not grant on incomplete
 - [x] Does not replace a different linked active sub
 - [x] Pytest coverage
-- [ ] Merged and deployed; live `build-id.txt` matches
-- [ ] Then (separate step, after deploy): add the three events to webhook endpoint `we_1Twvx9RHCLA4QETrTSnoc38P` only; keep every existing event; do not change URL or signing secret
+- [x] Merged (PR #64, `0753f20`) and deployed; live build id `0753f20`
+- [x] Then: added the three events to webhook endpoint `we_1Twvx9RHCLA4QETrTSnoc38P` only; existing events, URL, and signing secret unchanged; status enabled. Resent a historical `customer.subscription.created` for a canceled duplicate sub; 200 OK; entitlements unchanged.

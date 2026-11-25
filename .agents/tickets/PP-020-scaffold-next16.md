@@ -1,6 +1,6 @@
 # PP-020: Scaffold Next 16 frontend
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `portfolio_stack_baseline.md`, `nextjs_config_and_conventions.md`  

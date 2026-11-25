@@ -1,6 +1,6 @@
 # PP-005: Archive pantry-pal-api + project-director portfolio map
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P1  
 **Phase:** 1 — Monorepo  
 **Created:** 2026-07-10  

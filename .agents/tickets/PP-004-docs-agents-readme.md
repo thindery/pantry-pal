@@ -1,6 +1,6 @@
 # PP-004: AGENTS.md + README monorepo rewrite
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 1 — Monorepo  
 **Created:** 2026-07-10  

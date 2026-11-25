@@ -1,6 +1,6 @@
 # PP-014: nginx vhost template (placeholder domain)
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 2 — Playbook structure  
 **Playbook:** `project-director/playbooks/ovh_deployment.md`  

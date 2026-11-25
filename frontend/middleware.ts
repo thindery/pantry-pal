@@ -28,6 +28,8 @@ const PUBLIC_PATHS = new Set([
 const PUBLIC_PREFIXES = [
   "/api/auth/",
   "/api/webhooks/stripe",
+  "/api/webhooks/resend",
+  "/api/public/offer",
 ];
 
 const PROTECTED_PREFIXES = [
@@ -35,6 +37,8 @@ const PROTECTED_PREFIXES = [
   // PP-105: internal style guide is not a public document
   "/design-system",
   "/admin",
+  // PP-072: internal component reference, admins only.
+  "/design-system",
   "/api/user/",
   "/api/subscription",
   "/api/customer-portal",
@@ -71,6 +75,13 @@ function getAdminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function getAdminUserIds(): string[] {
+  return (process.env.ADMIN_USER_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
     .filter(Boolean);
 }
 
@@ -111,7 +122,10 @@ export default auth(async (req) => {
   requestHeaders.delete("x-user-id");
   requestHeaders.delete("x-user-email");
 
-  const isLoggedIn = !!req.auth;
+  // PP-172: require a real session user. When Auth.js is misconfigured (for
+  // example a missing AUTH_SECRET) `req.auth` can be a truthy non-session
+  // value, and `!!req.auth` let anonymous visitors through as "logged in".
+  const isLoggedIn = !!req.auth?.user;
   const userEmail = req.auth?.user?.email?.toLowerCase();
 
   if (isLoggedIn) {
@@ -121,14 +135,23 @@ export default auth(async (req) => {
     }
   }
 
-  if (normalizePath(pathname).startsWith("/admin")) {
+  const normalizedPath = normalizePath(pathname);
+  if (
+    normalizedPath.startsWith("/admin") ||
+    normalizedPath === "/design-system" ||
+    normalizedPath.startsWith("/design-system/")
+  ) {
     if (!isLoggedIn) {
       const signIn = new URL("/auth/signin", nextUrl);
       signIn.searchParams.set("callbackUrl", pathname);
       return applyRegionCookie(NextResponse.redirect(signIn), req);
     }
     const adminEmails = getAdminEmails();
-    if (!userEmail || !adminEmails.includes(userEmail)) {
+    const adminUserIds = getAdminUserIds();
+    const userId = req.auth?.user?.id?.trim();
+    const isEmailAdmin = !!(userEmail && adminEmails.includes(userEmail.trim()));
+    const isIdAdmin = !!(userId && adminUserIds.includes(userId));
+    if (!isEmailAdmin && !isIdAdmin) {
       return applyRegionCookie(
         NextResponse.redirect(new URL("/dashboard/", nextUrl)),
         req

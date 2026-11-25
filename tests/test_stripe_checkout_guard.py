@@ -530,3 +530,20 @@ def test_subscription_created_refreshes_the_same_linked_sub():
         stripe_service.process_webhook("customer.subscription.created", {"object": _created_sub()})
     mock_update.assert_called_once()
     assert mock_update.call_args.args[1]["stripeSubscriptionId"] == "sub_1"
+
+
+def test_invoice_for_charge_falls_back_to_invoice_payment_lookup():
+    """PP-177: dahlia charges have no `invoice`; resolve it by payment intent."""
+    listed = {"data": [{"invoice": "in_from_payment"}]}
+    with patch("backend.services.stripe_service.stripe.InvoicePayment.list", return_value=listed) as mock_list:
+        assert stripe_service._invoice_id_for_charge({"payment_intent": "pi_1"}) == "in_from_payment"
+    mock_list.assert_called_once_with(payment={"type": "payment_intent", "payment_intent": "pi_1"}, limit=1)
+
+
+def test_invoice_for_charge_prefers_the_legacy_field_and_survives_errors():
+    with patch("backend.services.stripe_service.stripe.InvoicePayment.list") as mock_list:
+        assert stripe_service._invoice_id_for_charge({"invoice": "in_legacy", "payment_intent": "pi_1"}) == "in_legacy"
+    mock_list.assert_not_called()
+    with patch("backend.services.stripe_service.stripe.InvoicePayment.list", side_effect=RuntimeError("boom")):
+        assert stripe_service._invoice_id_for_charge({"payment_intent": "pi_2"}) is None
+    assert stripe_service._invoice_id_for_charge({}) is None
