@@ -141,6 +141,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
+| PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | 📋 Open | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
