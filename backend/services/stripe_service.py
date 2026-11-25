@@ -647,6 +647,8 @@ def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
         _handle_subscription_deleted(obj)
     elif event_type in {"charge.refunded", "charge.refund.updated"}:
         _handle_charge_refunded(obj)
+    elif event_type == "invoice.upcoming":
+        _handle_invoice_upcoming(obj)
     return {"received": True}
 
 
@@ -767,6 +769,67 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
             period_end=(existing or {}).get("subscriptionEndDate"),
             is_free_invoice=int(invoice.get("amount_paid") or 0) == 0,
         )
+
+
+def _invoice_was_discounted(invoice: dict[str, Any]) -> bool:
+    """True when a real invoice charged less than its subtotal because of a discount."""
+    subtotal = int(invoice.get("subtotal") or 0)
+    if subtotal <= 0:
+        return False
+    discounted = sum(
+        int(entry.get("amount") or 0)
+        for entry in (invoice.get("total_discount_amounts") or [])
+        if isinstance(entry, dict)
+    )
+    return discounted > 0 and int(invoice.get("total") or 0) < subtotal
+
+
+def _handle_invoice_upcoming(invoice: dict[str, Any]) -> None:
+    """PP-136: remind a subscriber before the first full-price renewal after a promotion.
+
+    Sends only when all of these hold, so plain ``active`` renewals never get a
+    "promotion ending" mail and nothing pretends to be a trial:
+    - the upcoming invoice will charge money (amount_due > 0) and carries no discount;
+    - the subscription is active or trialing and is not set to cancel;
+    - the subscription is trialing, or its latest real invoice was discounted
+      (for example the PP-166 $1 first month or a 100%-off promotion).
+    Idempotent per subscription and renewal date, so Stripe retries or resent
+    events never send twice.
+    """
+    amount_due = int(invoice.get("amount_due") or 0)
+    if amount_due <= 0 or _invoice_was_discounted(invoice):
+        return
+    subscription_id = _subscription_id_from_invoice(invoice)
+    if not subscription_id:
+        return
+    sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+    metadata = sub.get("metadata") or {}
+    user_id = metadata.get("userId")
+    if not user_id:
+        return
+    status = sub.get("status")
+    if not _is_active_or_trialing(status) or sub.get("cancel_at_period_end"):
+        return
+    if status != "trialing":
+        latest = sub.get("latest_invoice")
+        if isinstance(latest, str) and latest:
+            latest = _to_dict(stripe.Invoice.retrieve(latest))
+        if not isinstance(latest, dict) or not _invoice_was_discounted(latest):
+            return
+    _, period_end = _period_unix(sub)
+    renewal_ts = period_end or invoice.get("next_payment_attempt") or invoice.get("period_end")
+    if not renewal_ts:
+        return
+    email_service.send_renewal_reminder(
+        user_id=user_id,
+        email=_recipient_email(user_id, invoice.get("customer") or sub.get("customer")),
+        subscription_id=subscription_id,
+        renewal_date=_iso_from_unix(renewal_ts),
+        amount_cents=amount_due,
+        currency=invoice.get("currency") or "usd",
+        tier=metadata.get("tier"),
+        interval=_obj_get(_obj_get(_obj_get(_subscription_item(sub), "price"), "recurring"), "interval"),
+    )
 
 
 def _handle_invoice_failed(invoice: dict[str, Any]) -> None:
