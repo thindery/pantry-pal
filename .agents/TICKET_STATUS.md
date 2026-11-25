@@ -62,6 +62,7 @@ Sweep by Pantry Hub Lead, about 12:00–6:45 AM CT. Every PR ran backend pytest,
 | PP-154 transactional email triggers (Postgres integration: welcome + 4 signed Stripe webhooks, Resend and Stripe faked) | [#97](https://github.com/thindery/pantry-pal/pull/97) | 0e05f4b | test-only, no runtime change |
 | PP-174 (new, P0) Billing portal 500: `stripe.billing_portal` namespace (Manage billing + already-subscribed redirect) | [#98](https://github.com/thindery/pantry-pal/pull/98) | a614caf | a614caf (deployed about 2:33 AM CT, read from the frontend container) |
 | PP-152 / PP-153 backend part: Postgres billing integration (checkout → webhook → Pro, no duplicate, confirm, cancel/reactivate, portal, subscription.deleted); Stripe faked, test-only. Browser run with Stripe test keys still blocked | [#99](https://github.com/thindery/pantry-pal/pull/99) | b014bd0 | test-only, no runtime change |
+| PP-148 local part: e2e auth paths (legacy redirects, Google start with fake client, signed-in redirect + welcome once, sign-out). Real Google round trip still blocked. Filed PP-175 (P2 sign-out race) | [#100](https://github.com/thindery/pantry-pal/pull/100) | 616c0cc | test-only, no runtime change |
 
 Offer branch: commit 30c61c4 on `pp-offer-1dollar` adds a test that an offer session reports amount_total 100, so GA4 gets $1.
 
