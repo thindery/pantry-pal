@@ -34,7 +34,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed) |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
@@ -275,7 +275,7 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open (Tylor copy follow-up; 206 items counted) |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed) |
 | PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed) |
 | PP-104 | Allow public OG images and add favicon/logo assets | P0 | 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed) |

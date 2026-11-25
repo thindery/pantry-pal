@@ -13,7 +13,7 @@ export const SITEMAP_PAGES: ReadonlyArray<{
   changeFrequency: "weekly" | "monthly" | "yearly";
   priority: number;
 }> = [
-  { path: "/", lastModified: "2026-11-22", changeFrequency: "weekly", priority: 1 },
+  { path: "/", lastModified: "2026-11-25", changeFrequency: "weekly", priority: 1 },
   { path: "/pricing/", lastModified: "2026-11-24", changeFrequency: "monthly", priority: 0.9 },
   { path: "/privacy/", lastModified: "2026-11-22", changeFrequency: "yearly", priority: 0.5 },
   { path: "/terms/", lastModified: "2026-07-10", changeFrequency: "yearly", priority: 0.5 },

@@ -17,7 +17,6 @@ import {
   Home,
   ScanLine,
   CreditCard,
-  Database,
   Shield,
   X
 } from 'lucide-react';
@@ -29,12 +28,16 @@ interface LandingPageProps {
   onGoToDashboard?: () => void;
 }
 
-// Honest proof points — no invented user counts, ratings, or quotes (PP-101)
+// Honest proof points — no invented user counts, ratings, or quotes (PP-101).
+// "Used by households across the country" and "Hundreds of items tracked" are
+// Tylor's approved lines (2026-11-22; 206 pantry_items rows counted). If a fresh
+// count drops under ~200, swap the second line for "Tracking pantry items for
+// households across the country". Never a more precise public number.
 const PROOF_POINTS = [
-  { icon: Home, title: 'Built by a home cook', detail: 'An independent app made for real pantries.' },
+  { icon: Home, title: 'Used by households across the country', detail: 'An independent app built by a home cook for real pantries.' },
+  { icon: ClipboardList, title: 'Hundreds of items tracked', detail: 'Every add and use goes into one running pantry list.' },
   { icon: ScanLine, title: 'Scan a barcode, done in seconds', detail: 'Quick Scan updates your counts as you put groceries away.' },
   { icon: CreditCard, title: 'Free to start', detail: 'No credit card required to create an account.' },
-  { icon: Database, title: 'Looks up 3M+ products', detail: 'Barcode data from Open Food Facts, a public product database.' },
 ];
 
 // Features data
@@ -56,8 +59,8 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: 'Smart Analytics',
-    description: 'Track usage patterns, identify waste, and get insights on your household consumption.',
+    title: 'Usage History',
+    description: 'See what your household used and when, so restocking starts from what is running low.',
   },
   {
     icon: ShoppingCart,
