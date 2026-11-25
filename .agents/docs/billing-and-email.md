@@ -25,6 +25,7 @@ Endpoint: `POST /api/webhooks/stripe` (`backend/routers/webhooks.py`), verified 
 | `customer.subscription.updated` | Update status / price / period end | None |
 | `customer.subscription.deleted` | Downgrade to Free unless another active/trialing sub exists | None (PP-100) |
 | Refund events (`charge.refunded` or equivalent) | Not handled (PP-094) | None |
+| `invoice.upcoming` (PP-136, enabled on the live endpoint 2026-11-25) | Only when the next invoice charges money with no discount, the sub is active/trialing and not cancelling, and the sub is trialing or its latest invoice was discounted (the $1 first month, a 100%-off promo) | `renewal_reminder`: "Your Pro plan renews at $4.99/month on <date>", manage-billing link. Once per subscription + renewal date. Never says "trial". Stripe sends this event on the account's upcoming-renewal setting (default 3 days before). |
 
 App-owned emails to add (all via Resend, after PP-096):
 

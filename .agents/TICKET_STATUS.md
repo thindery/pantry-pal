@@ -82,7 +82,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 
 ### Still open
 
-- PP-136: no reliable "first paid renewal after a promo" signal while the offer is dormant. Once PP-166 is turned on, `invoice.upcoming` for the first full-price renewal is the signal, but it needs that Stripe event enabled on the webhook endpoint (a live Stripe change, so Tylor's call).
+- PP-136: ✅ done Nov 25 — `invoice.upcoming` enabled on the live webhook; renewal reminder before the first full-price renewal after a promo.
 - PP-137: an opt-in low-stock digest is a new recurring customer email. Needs Tylor's yes.
 - PP-115, PP-114: backlog (research / real data first).
 
@@ -142,7 +142,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-115 | Nearby grocery weekly ads / deals search | 📋 Backlog | Features |
 | PP-119 | Import mypantryhub.com into Bing Webmaster Tools from Search Console | 📋 Open — needs Tylor sign-in | Analytics / GSC |
 | PP-121 | Mint read-only analytics API keys for dashboards / Pantry Hub Lead | 📋 Open (CF token done) | Analytics / GSC |
-| PP-136 | Promo or trial-ending reminder (only if relevant) | 📋 Open | Email design |
+| PP-136 | Promo or trial-ending reminder (only if relevant) | ✅ Done (Nov 25) | Email design |
 | PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
 
@@ -397,7 +397,7 @@ Tylor liked the first live payment-confirmation mail but found it visually bare,
 | PP-133 | Payment confirmation — what the plan unlocks | P1 | ✅ Done |
 | PP-134 | Payment-failed email design | P1 | ✅ Done |
 | PP-135 | Cancellation and win-back email design | P2 | 📋 Open |
-| PP-136 | Promo or trial-ending reminder (only if relevant) | P2 | 📋 Open |
+| PP-136 | Promo or trial-ending reminder (only if relevant) | P2 | ✅ Done Nov 25 (`invoice.upcoming` live) |
 | PP-137 | Low-stock or expiring-items digest (only if relevant) | P3 | 📋 Open |
 
 ## Revenue options (2026-11-22)
