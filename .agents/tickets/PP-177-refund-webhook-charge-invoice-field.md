@@ -1,6 +1,6 @@
 # PP-177: Refund webhook relies on `charge.invoice`, which newer Stripe API versions drop
 
-**Status:** 📋 Open (needs a read-only check of the live webhook endpoint's API version first)
+**Status:** ✅ Done (overnight 2026-11-25); step 4 (policy) still Tylor's call
 **Priority:** P2 (billing data accuracy; entitlement is still handled by `customer.subscription.deleted`)
 **Phase:** Billing
 **Created:** 2026-11-25, 3:10 AM America/Chicago (overnight sweep, code review)
@@ -25,3 +25,12 @@ Today this is mostly harmless: refunds of the Nov 21 duplicates were paired with
 4. Decide with Tylor whether a full refund alone (subscription still active) should drop Pro; today the code says yes when it can find the subscription.
 
 No live Stripe change, refund or charge is needed for steps 1–3.
+
+## Done (overnight 2026-11-25)
+
+Read-only checks on the live Pantry Hub Stripe account: the webhook endpoint has `api_version: null` (account default), and the latest real `charge.refunded` event is on `2026-06-24.dahlia` with **no `invoice` key**; `GET /v1/invoice_payments?payment[type]=payment_intent&payment[payment_intent]=…` returns its invoice. So every refund so far was recorded as a separate `refunded` row and the paid row stayed `succeeded` (inflating paid counts), and the PP-094 downgrade never ran.
+
+Fix: `_invoice_id_for_charge()` uses `charge.invoice` when present, else `stripe.InvoicePayment.list(payment={type: payment_intent, …})`; lookup errors are logged and fall back to the old path. Tests: 2 unit tests, 3 Postgres tests (full refund marks the paid row refunded and applies the PP-094 downgrade; duplicate refund keeps Pro; partial refund records but keeps Pro). Without the fix all 3 Postgres tests fail.
+
+Not done: past `admin_transactions` rows were not rewritten (production data change; needs a reviewed one-off). Step 4 (should a full refund on a still-active subscription drop Pro?) is unchanged PP-094 behavior and remains Tylor's call.
+
