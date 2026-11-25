@@ -48,6 +48,7 @@ const PROTECTED_PREFIXES = [
   "/api/user/",
   "/api/subscription",
   "/api/email-preferences",
+  "/api/weekly-ads",
   "/api/customer-portal",
   "/api/admin",
   "/api/items",

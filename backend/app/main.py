@@ -31,6 +31,7 @@ from backend.routers import (
     shopping_sessions,
     subscription,
     webhooks,
+    weekly_ads,
 )
 from database.db import close_pool, init_pool, ping_database
 
@@ -116,6 +117,7 @@ def create_app() -> FastAPI:
     app.include_router(item_groups.router)
     app.include_router(offer.router)
     app.include_router(email_preferences.router)
+    app.include_router(weekly_ads.router)
     app.include_router(instacart.router)
 
     return app
