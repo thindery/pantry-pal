@@ -1,6 +1,6 @@
 # PP-101: Remove unverifiable social proof, ratings schema, and placeholder testimonials
 
-**Status:** 📋 Open (Tylor copy follow-up, 2026-11-22 4:26 PM CT)
+**Status:** 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed)
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -82,3 +82,11 @@ That is a waste/expiry-adjacent claim. Rephrase to shipped behavior only (for ex
 - [ ] Review / `aggregateRating` JSON-LD stays completely absent
 - [ ] No expiration, expiry, “expiring soon,” or “identify waste” claims remain on the marketing site
 - [ ] This follow-up is product copy only after this ticket update; implement via the usual code path, do not sneak it into a tickets-only commit
+
+## Follow-up implementation (2026-11-25, SEO desk overnight sweep)
+
+- Hero proof row now uses Tylor's two approved lines: "Used by households across the country" and "Hundreds of items tracked" (based on the 206-row count above; re-count read-only before merge if it may have dropped under ~200). Dropped the "Looks up 3M+ products" point to keep four cards.
+- Smart Analytics card → "Usage History": "See what your household used and when, so restocking starts from what is running low." No "identify waste" or expiry wording remains on marketing pages.
+- No review / `aggregateRating` markup (PP-106 confirmed none).
+- Sitemap home `lastModified` bumped to 2026-11-25 for this copy change.
+- Local `next start` HTML: both approved lines present once; 0 hits for identify waste, expir*, aggregateRating, 50,000, thousands of households, App Store.
