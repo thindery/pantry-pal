@@ -1,6 +1,6 @@
 # PP-027: OpenAPI export + frontend type generation
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P2  
 **Phase:** 3 — Modernization  
 **Playbook:** `openapi_type_generation.md`  

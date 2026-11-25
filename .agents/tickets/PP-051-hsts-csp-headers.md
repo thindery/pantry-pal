@@ -1,6 +1,6 @@
 # PP-051: Add HSTS and Content-Security-Policy
 
-**Status:** 📋 Open  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P2  
 **Phase:** 3 — Security remediation  
 **Playbook:** `agent_paige_security_audit.md`, `nextjs_config_and_conventions.md`  
