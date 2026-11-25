@@ -26,7 +26,11 @@ A full-access (or read) key would only be useful as a fallback: backfilling hist
 
 ## Acceptance Criteria
 
-- [ ] Tylor has explicitly approved creating a read/full-access key
+- [x] Tylor has explicitly approved creating a read/full-access key (chat, 2026-11-25 1:54 PM CT)
 - [ ] The send-only key remains the only key used to send mail
 - [ ] The read key is not committed, not logged, and not exposed to the client
 - [ ] The Marketing dashboard still works if the read key is absent (PP-123–PP-124 data)
+
+## 2026-11-25
+
+`RESEND_READ_API_KEY` placeholder added to `.env.example` / `.env.prod.example`; nothing reads it yet and the send path still uses `RESEND_API_KEY`. The Resend connector on the Lead's side is a different Resend account (justwithai / peak-collective / getmd2pdf), so it cannot mint a mypantryhub key. **Tylor:** in the mypantryhub Resend account → API Keys → Create, name `pantry-hub-read`, permission Full access (Resend has no read-only level), then put it in `/opt/pantry-pal/.env.prod` as `RESEND_READ_API_KEY` or hand it over through the vault.

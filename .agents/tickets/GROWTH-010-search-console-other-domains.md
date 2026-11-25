@@ -13,3 +13,7 @@ These Cloudflare zones have no Search Console property and no GA4 tag. They are 
 - [ ] Add GA4 or the Cloudflare beacon only if the product becomes an active growth target.
 
 No secrets in this file or in git.
+
+## 2026-11-25 3:00 PM CT
+
+All four `sc-domain` properties (flowruns.com, getmd2pdf.com, agentpaige.com, userkudos.com) list as `siteOwner` (verified) in Search Console. Sitemaps are submitted for all four; flowruns, getmd2pdf and agentpaige were submitted at 11:30 AM CT and userkudos at 2:50 PM CT. Every `/sitemap.xml` returns 200 XML. No DNS TXT tokens are needed.
