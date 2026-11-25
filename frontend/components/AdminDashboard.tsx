@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles, MarketingView } from './admin';
+import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles, MarketingView, AiProviderPanel } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import type { Period, DashboardMetrics } from '../types/admin';
 import { getDashboardMetrics } from '../services/adminService';
@@ -343,6 +343,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           <div className="p-6 max-w-2xl">
             <h1 className="text-2xl font-bold text-slate-900 mb-6">Feature Management</h1>
             <FeatureFlagsPanel />
+            <div className="mt-6">
+              <AiProviderPanel />
+            </div>
           </div>
         )}
       </main>

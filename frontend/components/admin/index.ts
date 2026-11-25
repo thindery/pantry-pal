@@ -6,3 +6,4 @@ export { TransactionsList } from './TransactionsList';
 export { FunnelTiles } from './FunnelTiles';
 export { MarketingView } from './MarketingView';
 export { AnalyticsLinksCard, ANALYTICS_TOOLS } from './AnalyticsLinksCard';
+export { AiProviderPanel } from './AiProviderPanel';

@@ -202,3 +202,32 @@ export const getMockDashboardMetrics = (period: Period = '7d'): DashboardMetrics
     },
   };
 };
+
+// PP-186: receipt AI provider (admin-only setting, stored server-side)
+export type AiProviderId = 'ollama' | 'gemini';
+
+export interface AiProviderSettings {
+  provider: AiProviderId;
+  options: AiProviderId[];
+  enabled: boolean;
+  ollamaConfigured: boolean;
+  geminiConfigured: boolean;
+}
+
+function unwrapData<T>(res: T | { data: T }): T {
+  if (res && typeof res === 'object' && 'data' in res && (res as { data: T }).data) {
+    return (res as { data: T }).data;
+  }
+  return res as T;
+}
+
+export const getAiProviderSettings = async (): Promise<AiProviderSettings> =>
+  unwrapData(await fetchApi<AiProviderSettings | { data: AiProviderSettings }>('/api/admin/ai-provider'));
+
+export const setAiProvider = async (provider: AiProviderId): Promise<AiProviderSettings> =>
+  unwrapData(
+    await fetchApi<AiProviderSettings | { data: AiProviderSettings }>('/api/admin/ai-provider', {
+      method: 'PUT',
+      body: JSON.stringify({ provider }),
+    })
+  );

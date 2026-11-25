@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import BaseModel, ConfigDict
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from backend.auth_session import resolve_authenticated_user
 from backend.clerk_auth import is_admin_user
 from backend.models.responses import error_response, success_response
-from backend.services import admin_service
+from backend.services import admin_service, ai_providers, app_settings
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -89,3 +90,31 @@ async def email_metrics(
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to retrieve email metrics"),
         )
+
+
+
+class AiProviderUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["ollama", "gemini"]
+
+
+def _ai_provider_payload() -> dict:
+    return {"provider": app_settings.get_ai_provider(), "options": list(ai_providers.PROVIDERS), **ai_providers.provider_status()}
+
+
+@router.get("/ai-provider")
+async def get_ai_provider(_admin: str = Depends(require_admin)):
+    return success_response(_ai_provider_payload())
+
+
+@router.put("/ai-provider")
+async def put_ai_provider(body: AiProviderUpdate, admin_id: str = Depends(require_admin)):
+    try:
+        app_settings.set_ai_provider(body.provider, admin_id)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to save AI provider"),
+        )
+    return success_response(_ai_provider_payload())
