@@ -1,6 +1,6 @@
 # PP-107: HTTP should 301 to HTTPS (now returns 500)
 
-**Status:** 📋 Open
+**Status:** ✅ Closed 2026-11-25 — already satisfied; no code change
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -30,3 +30,10 @@
 - [ ] `http://mypantryhub.com/` and `http://www.mypantryhub.com/` redirect to `https://www.mypantryhub.com/` (or the same path on HTTPS www)
 - [ ] A non-home HTTP path (e.g. `http://www.mypantryhub.com/pricing/`) redirects to the HTTPS canonical for that path
 - [ ] Verified from the box (not the Mini; Cloudflare may challenge the Mini)
+
+
+## Closure evidence (2026-11-25, ~12 PM CT)
+- `curl -I` with a browser User-Agent from OVH: `http://mypantryhub.com/` → 301 `Location: https://www.mypantryhub.com/`; `http://mypantryhub.com/pricing/?a=1` → 301 `https://www.mypantryhub.com/pricing/?a=1`; `http://www.mypantryhub.com/` → 301 `https://www.mypantryhub.com/`.
+- OVH nginx on 127.0.0.1 with `Host: www.mypantryhub.com`: 301 (the `:80` redirect blocks already exist in `deploy/nginx/pantry-pal.conf`).
+- The "HTTP 500 / Server: Pingora" in the original report came from the checking agent's egress proxy, not from Pantry Hub. Requests without a browser User-Agent get a Cloudflare managed challenge (403), which is also not a Pantry Hub fault.
+- Cloudflare zone: `always_use_https` is off, SSL mode full. Turning on Always Use HTTPS is optional hardening, not needed for the 301.

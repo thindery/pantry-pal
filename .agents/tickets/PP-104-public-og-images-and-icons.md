@@ -1,6 +1,6 @@
 # PP-104: Allow public OG images and add favicon/logo assets
 
-**Status:** 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

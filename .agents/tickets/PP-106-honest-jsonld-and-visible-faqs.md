@@ -1,6 +1,6 @@
 # PP-106: Honest, valid JSON-LD and FAQ answers present in the HTML
 
-**Status:** 🔍 In review (PR, branch seo/PP-106-honest-jsonld-faq; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

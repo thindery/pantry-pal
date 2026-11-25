@@ -1,6 +1,6 @@
 # PP-103: Fix inherited canonicals, doubled titles, and page-level social metadata
 
-**Status:** 🔍 In review (PR, branch seo/PP-103-canonicals-titles; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

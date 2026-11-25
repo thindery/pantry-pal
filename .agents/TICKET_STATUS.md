@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 3:30 AM CT (overnight sweep; live build 2cbf0e4 — see "Overnight 2026-11-25")
+Last updated: 2026-11-25, 12:30 PM CT (SEO stack PP-101/103/104/105/106/108/110 merged and live at 0cc57ed; AdSense live at 63683d9; PP-107 closed)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -92,7 +92,7 @@ PR #62 was merged at 12:39 AM CT under the thindery account (not by this sweep) 
 - PP-139, PP-140: need Tylor's yes.
 - PP-166 / PR #62: merged dormant; enabling it means a live Stripe coupon, which is Tylor's call.
 - GROWTH-010 (Search Console, other domains): blocked on verification tokens.
-- PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 open).
+- PP-101–PP-111: owned by the SEO & AEO Desk (PRs #69–#73, #76, #78 merged 2026-11-25 and deployed; AdSense PR #106 live).
 - PP-148 (real Google sign-up / login E2E), PP-152–PP-153 (Stripe checkout, cancel): need a Google test account and Stripe test-mode keys. (PP-154 shipped as a backend integration test with signed local webhooks.)
 - PP-119 (Bing import), PP-121 (GA4 Viewer for the read-only service account): need Tylor's sign-in.
 - PP-129 (full-access Resend key): needs Tylor's yes.
@@ -115,9 +115,9 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
-| PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | ✅ Done (live 2026-11-25; Tylor copy follow-up remains) | SEO / AEO |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | ✅ Done (live 2026-11-25) | SEO / AEO |
+| PP-104 | Allow public OG images and add favicon/logo assets | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 
@@ -125,10 +125,10 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | 📋 Open | SEO / AEO |
-| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | 📋 Open | SEO / AEO |
-| PP-107 | HTTP should 301 to HTTPS (now returns 500) | 📋 Open | SEO / AEO |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | ✅ Done (live 2026-11-25) | SEO / AEO |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
+| PP-107 | HTTP should 301 to HTTPS (the "500" came from the checker's proxy) | ✅ Closed — already satisfied (301 verified 2026-11-25) | SEO / AEO |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
 
@@ -136,7 +136,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-110 | AEO content cluster and comparison pages | 📋 Open | SEO / AEO |
+| PP-110 | AEO content cluster and comparison pages | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | 📋 Backlog | SEO / AEO |
 | PP-115 | Nearby grocery weekly ads / deals search | 📋 Backlog | Features |
@@ -340,16 +340,16 @@ Live site + repo audit for signups via organic/AEO and a $0 marketing plan. July
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | 📋 Open (Tylor copy follow-up; 206 items counted) |
+| PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | P0 | ✅ Done (live 2026-11-25; Tylor copy follow-up remains) |
 | PP-102 | Stop advertising the decommissioned Voice Assistant / Gemini | P0 | ✅ Done |
-| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | 📋 Open |
-| PP-104 | Allow public OG images and add favicon/logo assets | P0 | 📋 Open |
-| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | 📋 Open |
-| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | 📋 Open |
-| PP-107 | HTTP should 301 to HTTPS (now returns 500) | P1 | 📋 Open |
-| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | 📋 Open |
+| PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | P0 | ✅ Done (live 2026-11-25) |
+| PP-104 | Allow public OG images and add favicon/logo assets | P0 | ✅ Done (live 2026-11-25) |
+| PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | P1 | ✅ Done (live 2026-11-25) |
+| PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | P1 | ✅ Done (live 2026-11-25) |
+| PP-107 | HTTP should 301 to HTTPS (the "500" came from the checker's proxy) | P1 | ✅ Closed — already satisfied (301 verified 2026-11-25) |
+| PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | P1 | ✅ Done (live 2026-11-25) |
 | PP-109 | Add Search Console and $0 analytics (split into PP-117–PP-122) | P1 | 📋 Split |
-| PP-110 | AEO content cluster and comparison pages | P2 | 📋 Open |
+| PP-110 | AEO content cluster and comparison pages | P2 | ✅ Done (live 2026-11-25) |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | P2 | 📋 Open (drafts in `.agents/docs/pp-directory-drafts.md`; nothing submitted) |
 
 
