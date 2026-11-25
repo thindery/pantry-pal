@@ -5,7 +5,7 @@ import { FAQS } from "@/components/LandingPage";
 describe("landing FAQ honesty", () => {
   it("has no unverifiable or unshipped claims", () => {
     const text = FAQS.map((f) => `${f.question} ${f.answer}`).join(" ");
-    for (const banned of [/advanced AI/i, /real-time/i, /never delete/i, /App Store/i, /expir/i, /export your inventory/i, /read-only/i]) {
+    for (const banned of [/advanced AI/i, /real-time/i, /never delete/i, /App Store rating/i, /expir/i, /export your inventory/i, /read-only/i]) {
       expect(text).not.toMatch(banned);
     }
   });

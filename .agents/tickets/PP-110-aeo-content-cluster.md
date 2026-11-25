@@ -1,6 +1,6 @@
 # PP-110: AEO content cluster and comparison pages
 
-**Status:** 📋 Open
+**Status:** In Review (PR open 2026-11-25)
 **Priority:** P2
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -32,3 +32,10 @@ Volumes are unknown; do not invent them. Target questions are qualitative (see t
 - [ ] No invented search volumes, ratings, or competitor prices unless cited from a page opened at write time
 - [ ] No unshipped features (voice, native apps) and no expiration / “identify waste” claims, even as roadmap copy
 - [ ] FAQ / schema on new pages matches visible text character for character
+
+## Implementation (2026-11-25, overnight SEO sweep)
+- `/guides/pantry-hub-vs-grocy/`: honest comparison table (Grocy facts from grocy.info, v4.7.1, read 2026-11-25). No expiry claims for Pantry Hub.
+- `/guides/barcode-vs-receipt-vs-manual/`: answer-first entry-method guide.
+- Home FAQ +2 (mobile app / barcode not found), 7/7 JSON-LD == visible text.
+- Sitemap 8 URLs, footer links, middleware public paths.
+- Tests: typecheck ok, lint 0 errors, vitest 189/189, next build ok, local 200 + self canonicals.
