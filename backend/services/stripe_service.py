@@ -525,6 +525,8 @@ def process_webhook(event_type: str, data: Any) -> dict[str, Any]:
         _handle_invoice_paid(obj)
     elif event_type == "invoice.payment_failed":
         _handle_invoice_failed(obj)
+    elif event_type == "customer.subscription.created":
+        _handle_subscription_created(obj)
     elif event_type == "customer.subscription.updated":
         _handle_subscription_updated(obj)
     elif event_type == "customer.subscription.deleted":
@@ -584,6 +586,22 @@ def _apply_subscription_entitlement(user_id: str, tier: Optional[str], sub: dict
         },
     )
     return True
+
+
+def _handle_subscription_created(subscription: dict[str, Any]) -> None:
+    """Grant entitlement when Stripe first reports a paid/trialing subscription.
+
+    Uses the same path as checkout.session.completed, so whichever event
+    arrives first grants Pro and the other is a no-op refresh of the same
+    linked subscription. Never replaces a different already-linked
+    active/trialing subscription (PP-089 duplicate-sub guard). Incomplete
+    created events are ignored until payment succeeds.
+    """
+    metadata = subscription.get("metadata") or {}
+    user_id = metadata.get("userId")
+    if not user_id or not _is_active_or_trialing(subscription.get("status")):
+        return
+    _apply_subscription_entitlement(user_id, metadata.get("tier"), subscription)
 
 
 def _handle_checkout_completed(session: dict[str, Any]) -> None:

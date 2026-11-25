@@ -458,3 +458,75 @@ def test_refund_of_duplicate_subscription_does_not_downgrade():
     ) as mock_down:
         stripe_service.process_webhook("charge.refunded", {"object": charge})
     mock_down.assert_not_called()
+
+
+
+def _created_sub(status="active", sub_id="sub_1"):
+    return {
+        "id": sub_id,
+        "customer": "cus_1",
+        "status": status,
+        "metadata": {"userId": "user-1", "tier": "pro"},
+        "items": {
+            "data": [
+                {
+                    "price": {"id": "price_1"},
+                    "current_period_start": 1,
+                    "current_period_end": 2,
+                }
+            ]
+        },
+    }
+
+
+def test_subscription_created_grants_pro_when_active():
+    with patch("backend.services.stripe_service.get_user_subscription", return_value=None), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook("customer.subscription.created", {"object": _created_sub()})
+    mock_update.assert_called_once()
+    user_id, fields = mock_update.call_args.args
+    assert user_id == "user-1"
+    assert fields["tier"] == "pro"
+    assert fields["subscriptionStatus"] == "active"
+    assert fields["stripeSubscriptionId"] == "sub_1"
+
+
+def test_subscription_created_ignores_incomplete():
+    with patch("backend.services.stripe_service.update_user_subscription") as mock_update:
+        stripe_service.process_webhook(
+            "customer.subscription.created",
+            {"object": _created_sub(status="incomplete")},
+        )
+    mock_update.assert_not_called()
+
+
+def test_subscription_created_does_not_replace_linked_active_sub():
+    existing = {
+        "stripeSubscriptionId": "sub_kept",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+    }
+    with patch("backend.services.stripe_service.get_user_subscription", return_value=existing), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook(
+            "customer.subscription.created",
+            {"object": _created_sub(sub_id="sub_dup")},
+        )
+    mock_update.assert_not_called()
+
+
+def test_subscription_created_refreshes_the_same_linked_sub():
+    existing = {
+        "stripeSubscriptionId": "sub_1",
+        "subscriptionStatus": "active",
+        "tier": "pro",
+        "stripeCustomerId": "cus_1",
+    }
+    with patch("backend.services.stripe_service.get_user_subscription", return_value=existing), patch(
+        "backend.services.stripe_service.update_user_subscription"
+    ) as mock_update:
+        stripe_service.process_webhook("customer.subscription.created", {"object": _created_sub()})
+    mock_update.assert_called_once()
+    assert mock_update.call_args.args[1]["stripeSubscriptionId"] == "sub_1"
