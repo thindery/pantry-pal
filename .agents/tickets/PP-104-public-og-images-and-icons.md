@@ -1,6 +1,6 @@
 # PP-104: Allow public OG images and add favicon/logo assets
 
-**Status:** 📋 Open
+**Status:** 🔍 In review (PR, branch seo/PP-104-public-og-icons; not deployed)
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
@@ -36,3 +36,11 @@ Also live 404s:
 - [ ] Favicon (and ideally apple-touch-icon) returns 200
 - [ ] Organization logo URL and SoftwareApplication screenshot URL return 200 image responses
 - [ ] Unknown *page* routes are not accidentally made public while doing this (keep PP-105’s 404 behavior in mind)
+
+## Implementation (2026-11-25, SEO desk overnight sweep)
+
+- `middleware.ts`: `/og-image` and `/pricing/og-image` added to `PUBLIC_PATHS` (exact paths only; no new page routes made public).
+- `public/`: `favicon.ico` (16–64px), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png`, `logo.png` (512, Organization logo), `og-image.png` (1200×630, rendered from the existing `/og-image` route so the static PNG matches it; SoftwareApplication `screenshot` URL now 200s).
+- `app/layout.tsx`: `metadata.icons` for favicon + apple-touch-icon.
+- Local test (`next start`, unauthenticated): `/og-image` 200 image/png, `/pricing/og-image` 200 image/png, `/favicon.ico` 200, `/logo.png` 200, `/apple-touch-icon.png` 200, unknown page routes still 307 (PP-105 handles 404s).
+- A real product screenshot for `screenshot` is PP-108's job.

@@ -19,6 +19,9 @@ const PUBLIC_PATHS = new Set([
   "/build-id.txt",
   "/sitemap.xml",
   "/robots.txt",
+  // PP-104: social card images must load for crawlers and link unfurlers
+  "/og-image",
+  "/pricing/og-image",
 ]);
 
 const PUBLIC_PREFIXES = [
