@@ -584,6 +584,56 @@ def send_payment_failed(
     )
 
 
+def send_renewal_reminder(
+    *,
+    user_id: str,
+    email: Optional[str],
+    subscription_id: str,
+    renewal_date: Optional[str],
+    amount_cents: int,
+    currency: str = "usd",
+    tier: Optional[str] = None,
+    interval: Optional[str] = None,
+) -> dict[str, Any]:
+    """PP-136: heads-up before the first full-price renewal after a promotion.
+
+    Never calls the promotion a trial. Amount and date come from Stripe's
+    upcoming invoice and subscription, not from the price list.
+    """
+    tier_key = (tier or "").strip().lower()
+    plan = {"pro": "Pro", "family": "Family"}.get(tier_key, "Pantry Hub")
+    cur = (currency or "usd").upper()
+    amount = f"${(amount_cents or 0) / 100:.2f}" if cur == "USD" else f"{(amount_cents or 0) / 100:.2f} {cur}"
+    per = {"month": "/month", "year": "/year"}.get((interval or "").strip().lower(), "")
+    pretty_date = _format_period_end(renewal_date) or "your next billing date"
+    account = f"{_app_url()}/dashboard/account/"
+    plan_label = f"{plan} plan" if plan != "Pantry Hub" else "Pantry Hub plan"
+    first = f"Your promotional price ends soon. On {pretty_date}, your {plan_label} renews at {amount}{per} on the card you have on file."
+    second = "You don't need to do anything to keep your plan. To change or cancel before then, manage your billing."
+    body_html = f"""
+      <p style="margin:0 0 16px 0;">{_html_escape(first)}</p>
+      <p style="margin:0 0 16px 0;">{_html_escape(second)}</p>
+    """
+    body_text = f"{first}\n\n{second}"
+    html, text = _wrap(
+        title=f"Your {plan_label} renews on {pretty_date}",
+        preheader=f"Your plan renews at {amount}{per} on {pretty_date}.",
+        body_html=body_html,
+        body_text=body_text,
+        cta_label="Manage billing",
+        cta_url=account,
+    )
+    return send_email(
+        to=email,
+        subject=f"Your {plan_label} renews at {amount}{per} on {pretty_date}",
+        html=html,
+        text=text,
+        template="renewal_reminder",
+        idempotency_key=f"renewal.reminder:{subscription_id}:{renewal_date or 'unknown'}",
+        user_id=user_id,
+    )
+
+
 def send_cancellation_scheduled(
     *,
     user_id: str,
