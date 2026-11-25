@@ -465,3 +465,230 @@ def get_funnel_metrics(period: Period = "7d") -> dict[str, Any]:
         "cancelScheduledPeriod": cancel_scheduled_period,
         "cancelScheduledAllTime": cancel_scheduled_all_time,
     }
+
+
+def _mask_email_str(email: Optional[str]) -> str:
+    """Mask email for admin viewing (e.g. t***@domain.com)."""
+    if not email:
+        return "[EMPTY]"
+    parts = email.split("@", 1)
+    if len(parts) == 2:
+        name, domain = parts
+        first = name[0] if name else ""
+        return f"{first}***@{domain}"
+    return "***"
+
+
+def get_email_metrics(period: Period = "7d") -> dict[str, Any]:
+    """Retrieve marketing and transactional email visibility metrics (PP-125)."""
+    import os
+    from backend.services.email_service import DEFAULT_FROM
+
+    now = datetime.now(timezone.utc)
+    days = 7 if period == "7d" else 30 if period == "30d" else 90
+    cutoff = (now - timedelta(days=days)).isoformat()
+
+    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    webhook_secret = (os.getenv("RESEND_WEBHOOK_SECRET") or "").strip()
+    from_addr = (os.getenv("RESEND_FROM_EMAIL") or "").strip() or DEFAULT_FROM
+
+    config = {
+        "resend_configured": bool(resend_key),
+        "from_address": from_addr,
+        "webhook_secret_present": bool(webhook_secret),
+    }
+
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            # 1. sends_by_template (exclude status = 'backfill')
+            cur.execute(
+                """
+                SELECT template, COUNT(*) AS count
+                FROM email_sends
+                WHERE status <> 'backfill' AND created_at >= %s
+                GROUP BY template
+                ORDER BY count DESC
+                """,
+                (cutoff,),
+            )
+            sends_by_template = [
+                {"template": str(r["template"]), "count": int(r["count"])}
+                for r in (cur.fetchall() or [])
+            ]
+
+            # 2. sends_by_day (exclude status = 'backfill')
+            cur.execute(
+                """
+                SELECT DATE(created_at) AS day, COUNT(*) AS count
+                FROM email_sends
+                WHERE status <> 'backfill' AND created_at >= %s
+                GROUP BY DATE(created_at)
+                ORDER BY day ASC
+                """,
+                (cutoff,),
+            )
+            sends_by_day = [
+                {"day": str(r["day"]), "count": int(r["count"])}
+                for r in (cur.fetchall() or [])
+            ]
+
+            # 3. status counts (all statuses in period, or non-backfill)
+            cur.execute(
+                """
+                SELECT status, COUNT(*) AS count
+                FROM email_sends
+                WHERE status <> 'backfill' AND created_at >= %s
+                GROUP BY status
+                """,
+                (cutoff,),
+            )
+            status_counts = {str(r["status"]): int(r["count"]) for r in (cur.fetchall() or [])}
+
+            # 4. Webhook presence check: check if any webhook-backed row exists
+            # Either email_events table has rows OR email_sends has status in ('delivered', 'bounced', 'complained')
+            # email_events exists since migration 028 (PP-124). No try/except here:
+            # a failed statement would abort the Postgres transaction.
+            cur.execute("SELECT 1 FROM email_events LIMIT 1")
+            has_webhook_rows = bool(cur.fetchone())
+
+            if not has_webhook_rows:
+                cur.execute(
+                    """
+                    SELECT 1 FROM email_sends
+                    WHERE status IN ('delivered', 'bounced', 'complained')
+                    LIMIT 1
+                    """
+                )
+                if cur.fetchone():
+                    has_webhook_rows = True
+
+            # 5. rates calculation
+            if not has_webhook_rows:
+                rates: Optional[dict[str, Any]] = None
+                rates_reason: Optional[str] = "pending webhook"
+            else:
+                rates_reason = None
+                # Base is sent-or-later rows: sent, delivered, bounced, complained
+                cur.execute(
+                    """
+                    SELECT
+                        COUNT(*) AS total_sent,
+                        COALESCE(SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END), 0) AS delivered,
+                        COALESCE(SUM(CASE WHEN status = 'bounced' THEN 1 ELSE 0 END), 0) AS bounced,
+                        COALESCE(SUM(CASE WHEN status = 'complained' THEN 1 ELSE 0 END), 0) AS complained
+                    FROM email_sends
+                    WHERE status IN ('sent', 'delivered', 'bounced', 'complained')
+                      AND created_at >= %s
+                    """,
+                    (cutoff,),
+                )
+                rate_row = cur.fetchone() or {}
+                tot = int(rate_row.get("total_sent") or 0)
+                if tot > 0:
+                    rates = {
+                        "delivered": round(int(rate_row.get("delivered") or 0) / tot, 4),
+                        "bounced": round(int(rate_row.get("bounced") or 0) / tot, 4),
+                        "complained": round(int(rate_row.get("complained") or 0) / tot, 4),
+                        "total_sent": tot,
+                    }
+                else:
+                    rates = {
+                        "delivered": 0.0,
+                        "bounced": 0.0,
+                        "complained": 0.0,
+                        "total_sent": 0,
+                    }
+
+            # 6. recent_failures (status = 'failed', limit 20: created_at, template, to_email masked, error_message)
+            cur.execute(
+                """
+                SELECT created_at, template, to_email, error_message
+                FROM email_sends
+                WHERE status = 'failed'
+                ORDER BY created_at DESC
+                LIMIT 20
+                """
+            )
+            recent_failures = []
+            for r in (cur.fetchall() or []):
+                created_at_val = r["created_at"]
+                if isinstance(created_at_val, datetime):
+                    created_at_str = created_at_val.isoformat()
+                else:
+                    created_at_str = str(created_at_val)
+                recent_failures.append({
+                    "created_at": created_at_str,
+                    "template": str(r.get("template") or ""),
+                    "to_email": _mask_email_str(r.get("to_email")),
+                    "error_message": str(r.get("error_message") or ""),
+                })
+
+            # 7. suppressions (count + latest 20 masked emails with reason/created_at)
+            cur.execute("SELECT COUNT(*) AS count FROM email_suppressions")
+            suppressions_count = int((cur.fetchone() or {}).get("count") or 0)
+
+            cur.execute(
+                """
+                SELECT email, reason, created_at
+                FROM email_suppressions
+                ORDER BY created_at DESC
+                LIMIT 20
+                """
+            )
+            suppressions_items = []
+            for r in (cur.fetchall() or []):
+                created_at_val = r["created_at"]
+                if isinstance(created_at_val, datetime):
+                    created_at_str = created_at_val.isoformat()
+                else:
+                    created_at_str = str(created_at_val)
+                suppressions_items.append({
+                    "email": _mask_email_str(r.get("email")),
+                    "reason": str(r.get("reason") or ""),
+                    "created_at": created_at_str,
+                })
+
+            suppressions = {
+                "count": suppressions_count,
+                "items": suppressions_items,
+            }
+
+            # 8. recent_sends (limit 50: created_at, masked to_email, template, subject, status, resend_id)
+            cur.execute(
+                """
+                SELECT created_at, to_email, template, subject, status, resend_id
+                FROM email_sends
+                WHERE status <> 'backfill'
+                ORDER BY created_at DESC
+                LIMIT 50
+                """
+            )
+            recent_sends = []
+            for r in (cur.fetchall() or []):
+                created_at_val = r["created_at"]
+                if isinstance(created_at_val, datetime):
+                    created_at_str = created_at_val.isoformat()
+                else:
+                    created_at_str = str(created_at_val)
+                recent_sends.append({
+                    "created_at": created_at_str,
+                    "to_email": _mask_email_str(r.get("to_email")),
+                    "template": str(r.get("template") or ""),
+                    "subject": str(r.get("subject") or ""),
+                    "status": str(r.get("status") or ""),
+                    "resend_id": r.get("resend_id"),
+                })
+
+    return {
+        "period": period,
+        "config": config,
+        "sends_by_template": sends_by_template,
+        "sends_by_day": sends_by_day,
+        "status_counts": status_counts,
+        "rates": rates,
+        "rates_reason": rates_reason,
+        "recent_failures": recent_failures,
+        "suppressions": suppressions,
+        "recent_sends": recent_sends,
+    }
+

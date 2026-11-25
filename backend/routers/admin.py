@@ -75,3 +75,17 @@ async def alerts(_admin: str = Depends(require_admin)):
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to retrieve alerts"),
         )
+
+
+@router.get("/email-metrics")
+async def email_metrics(
+    period: Literal["7d", "30d", "90d"] = Query("7d"),
+    _admin: str = Depends(require_admin),
+):
+    try:
+        return success_response(admin_service.get_email_metrics(period))
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve email metrics"),
+        )

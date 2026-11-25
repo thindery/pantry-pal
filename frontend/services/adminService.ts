@@ -39,6 +39,69 @@ export interface FunnelMetrics {
   cancelScheduledAllTime?: number;
 }
 
+export interface EmailConfig {
+  resend_configured: boolean;
+  from_address: string;
+  webhook_secret_present: boolean;
+}
+
+export interface EmailTemplateCount {
+  template: string;
+  count: number;
+}
+
+export interface EmailDayCount {
+  day: string;
+  count: number;
+}
+
+export interface EmailRates {
+  delivered: number;
+  bounced: number;
+  complained: number;
+  total_sent: number;
+}
+
+export interface EmailRecentFailure {
+  created_at: string;
+  template: string;
+  to_email: string;
+  error_message: string;
+}
+
+export interface EmailSuppressionItem {
+  email: string;
+  reason: string;
+  created_at: string;
+}
+
+export interface EmailSuppressions {
+  count: number;
+  items: EmailSuppressionItem[];
+}
+
+export interface EmailRecentSend {
+  created_at: string;
+  to_email: string;
+  template: string;
+  subject: string;
+  status: string;
+  resend_id: string | null;
+}
+
+export interface EmailMetrics {
+  period: Period;
+  config: EmailConfig;
+  sends_by_template: EmailTemplateCount[];
+  sends_by_day: EmailDayCount[];
+  status_counts: Record<string, number>;
+  rates: EmailRates | null;
+  rates_reason: string | null;
+  recent_failures: EmailRecentFailure[];
+  suppressions: EmailSuppressions;
+  recent_sends: EmailRecentSend[];
+}
+
 // Helper for API calls
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
@@ -76,6 +139,16 @@ export const getFunnelMetrics = async (period: Period = '7d'): Promise<FunnelMet
     return (res as { data: FunnelMetrics }).data;
   }
   return res as FunnelMetrics;
+};
+
+export const getEmailMetrics = async (period: Period = '7d'): Promise<EmailMetrics> => {
+  const res = await fetchApi<EmailMetrics | { success: boolean; data: EmailMetrics }>(
+    `/api/admin/email-metrics?period=${period}`
+  );
+  if (res && typeof res === 'object' && 'data' in res && res.data) {
+    return (res as { data: EmailMetrics }).data;
+  }
+  return res as EmailMetrics;
 };
 
 export const getTransactions = (limit: number = 10): Promise<Transaction[]> =>
