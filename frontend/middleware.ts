@@ -109,7 +109,10 @@ export default auth(async (req) => {
   requestHeaders.delete("x-user-id");
   requestHeaders.delete("x-user-email");
 
-  const isLoggedIn = !!req.auth;
+  // PP-172: require a real session user. When Auth.js is misconfigured (for
+  // example a missing AUTH_SECRET) `req.auth` can be a truthy non-session
+  // value, and `!!req.auth` let anonymous visitors through as "logged in".
+  const isLoggedIn = !!req.auth?.user;
   const userEmail = req.auth?.user?.email?.toLowerCase();
 
   if (isLoggedIn) {
