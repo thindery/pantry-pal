@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutCompletely } from "@/lib/sign-out";
 import {
   Camera,
   ChevronRight,
@@ -199,7 +200,7 @@ export function AccountView() {
 
       <button
         type="button"
-        onClick={() => signOut({ callbackUrl: "/" })}
+        onClick={() => void signOutCompletely("/")}
         className="md:hidden w-full flex items-center justify-center gap-2 px-4 py-3 border border-[var(--border)] rounded-xl text-[var(--muted)] font-medium hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] transition-colors"
       >
         <LogOut size={18} />
