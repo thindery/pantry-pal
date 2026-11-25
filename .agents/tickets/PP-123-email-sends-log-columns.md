@@ -1,6 +1,6 @@
 # PP-123: Extend email_sends and log every helper attempt
 
-**Status:** 📋 Open
+**Status:** 🔄 In review
 **Priority:** P1
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -39,8 +39,20 @@ Pantry Hub’s Resend key is send-only and cannot be used to backfill this from 
 
 ## Acceptance Criteria
 
-- [ ] Migration extends `email_sends` with recipient, subject, status, and error fields; welcome backfill rows are excluded from send counts
-- [ ] The helper logs every attempt and no longer deletes failed claims
-- [ ] Idempotency for already-sent mail still holds
-- [ ] Tests cover sent, failed, and skip-already-sent paths
-- [ ] No secret values in logs, git, or chat
+- [x] Migration extends `email_sends` with recipient, subject, status, and error fields; welcome backfill rows are excluded from send counts
+- [x] The helper logs every attempt and no longer deletes failed claims
+- [x] Idempotency for already-sent mail still holds
+- [x] Tests cover sent, failed, and skip-already-sent paths
+- [x] No secret values in logs, git, or chat
+
+## Progress notes
+
+- Added migrations `027_email_sends_log_columns.sql` and `027_email_sends_log_columns.rollback.sql` with columns `to_email`, `subject`, `status` (with CHECK constraint), `error_message`, `updated_at`, `opened_at`, `clicked_at`, backfill logic marking welcome rows with `resend_id IS NULL` as `backfill`, and indexes on `(status, created_at)` and `resend_id`.
+- Updated `backend/services/email_service.py`:
+  - `_record_send` inserts claims as `pending` with `to_email` and `subject`, and re-claims `failed` rows atomically on retry.
+  - `send_email` updates to `sent` on success with `resend_id` and `updated_at`; on failure updates to `failed` with sanitized `error_message` (truncated to 500 chars, no API keys/bodies) without deleting the row.
+  - `already_sent` checks for existing non-failed rows (`status != 'failed'`), allowing retries after failure while keeping welcome backfill rows suppressed.
+  - Added `count_sent` helper excluding `status = 'backfill'` rows by default and documented SQL filter `WHERE status <> 'backfill'`.
+- Added unit tests in `tests/test_email_service.py` verifying success logging, failure logging without delete, error sanitization, already_sent skipping, retry re-claiming without duplicate key, and backfill exclusion from counts while blocking welcome emails.
+
+- Reviewed by Pantry Hub Lead 2026-11-25: migration applied on a throwaway Postgres 16 (001–025 then 027), welcome rows → `backfill`, re-apply and rollback round-trip clean; failed-row re-claim and backfill block verified in psql. Migration is 027 because 026 is reserved by the PP-166 offer branch.

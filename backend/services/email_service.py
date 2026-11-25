@@ -31,12 +31,60 @@ def _api_key() -> str:
     return (os.getenv("RESEND_API_KEY") or "").strip()
 
 
+def _sanitize_error(error: Any) -> str:
+    msg = str(error) if error is not None else ""
+    if not msg:
+        msg = type(error).__name__ if error is not None else "Unknown error"
+    api_key = _api_key()
+    if api_key and api_key in msg:
+        msg = msg.replace(api_key, "[REDACTED]")
+    return msg[:500]
+
+
+def count_sent(
+    *,
+    template: Optional[str] = None,
+    user_id: Optional[str] = None,
+    status: Optional[str] = None,
+) -> int:
+    """Count sent emails excluding backfill rows (status <> 'backfill').
+
+    Dashboards can also query directly using the SQL filter:
+        WHERE status <> 'backfill'
+    """
+    try:
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                conditions = ["status <> 'backfill'"]
+                params: list[Any] = []
+                if status:
+                    conditions.append("status = %s")
+                    params.append(status)
+                if template:
+                    conditions.append("template = %s")
+                    params.append(template)
+                if user_id:
+                    conditions.append("user_id = %s")
+                    params.append(user_id)
+                query = f"SELECT COUNT(*) AS cnt FROM email_sends WHERE {' AND '.join(conditions)}"
+                cur.execute(query, tuple(params))
+                row = cur.fetchone()
+                if not row:
+                    return 0
+                if isinstance(row, dict):
+                    return int(row.get("cnt") or 0)
+                return int(row[0] or 0)
+    except Exception:
+        logger.exception("email_sends count failed")
+        return 0
+
+
 def already_sent(idempotency_key: str) -> bool:
     try:
         with db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT 1 FROM email_sends WHERE idempotency_key = %s",
+                    "SELECT 1 FROM email_sends WHERE idempotency_key = %s AND (status IS NULL OR status != 'failed')",
                     (idempotency_key,),
                 )
                 return cur.fetchone() is not None
@@ -45,18 +93,33 @@ def already_sent(idempotency_key: str) -> bool:
         return False
 
 
-def _record_send(user_id: Optional[str], template: str, idempotency_key: str, resend_id: Optional[str]) -> bool:
+def _record_send(
+    user_id: Optional[str],
+    template: str,
+    idempotency_key: str,
+    resend_id: Optional[str] = None,
+    to_email: Optional[str] = None,
+    subject: Optional[str] = None,
+) -> bool:
+    initial_status = "sent" if resend_id else "pending"
     try:
         with db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (idempotency_key) DO NOTHING
+                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id, to_email, subject, status, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    ON CONFLICT (idempotency_key) DO UPDATE
+                    SET status = EXCLUDED.status,
+                        resend_id = EXCLUDED.resend_id,
+                        error_message = NULL,
+                        to_email = EXCLUDED.to_email,
+                        subject = EXCLUDED.subject,
+                        updated_at = NOW()
+                    WHERE email_sends.status = 'failed'
                     RETURNING id
                     """,
-                    (str(uuid.uuid4()), user_id, template, idempotency_key, resend_id),
+                    (str(uuid.uuid4()), user_id, template, idempotency_key, resend_id, to_email, subject, initial_status),
                 )
                 return cur.fetchone() is not None
     except Exception:
@@ -94,7 +157,14 @@ def send_email(
         log("Transactional email %s not sent; missing %s", template, ", ".join(missing))
         return {"skipped": True, "reason": "not_configured"}
 
-    if not _record_send(user_id, template, idempotency_key, None):
+    if not _record_send(
+        user_id,
+        template,
+        idempotency_key,
+        resend_id=None,
+        to_email=to,
+        subject=subject,
+    ):
         return {"skipped": True, "reason": "already_sent"}
 
     try:
@@ -111,26 +181,34 @@ def send_email(
             }
         )
         resend_id = result.get("id") if isinstance(result, dict) else getattr(result, "id", None)
-        if resend_id:
-            with db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "UPDATE email_sends SET resend_id = %s WHERE idempotency_key = %s",
-                        (resend_id, idempotency_key),
-                    )
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE email_sends
+                    SET status = 'sent', resend_id = %s, updated_at = NOW()
+                    WHERE idempotency_key = %s
+                    """,
+                    (resend_id, idempotency_key),
+                )
         logger.info("Sent transactional email %s id=%s", template, resend_id)
         return {"skipped": False, "id": resend_id}
-    except Exception:
+    except Exception as exc:
         logger.exception("Failed to send transactional email %s", template)
+        clean_err = _sanitize_error(exc)
         try:
             with db_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(
-                        "DELETE FROM email_sends WHERE idempotency_key = %s AND resend_id IS NULL",
-                        (idempotency_key,),
+                        """
+                        UPDATE email_sends
+                        SET status = 'failed', error_message = %s, updated_at = NOW()
+                        WHERE idempotency_key = %s
+                        """,
+                        (clean_err, idempotency_key),
                     )
         except Exception:
-            logger.exception("Could not release email send claim %s", template)
+            logger.exception("Could not record email send failure %s", template)
         return {"skipped": True, "reason": "send_failed"}
 
 # Brand tokens from frontend/app/globals.css. Button uses the darker green for contrast.
