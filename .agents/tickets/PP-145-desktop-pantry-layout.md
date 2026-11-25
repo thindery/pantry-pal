@@ -1,6 +1,6 @@
 # PP-145: Desktop Pantry layout and 44px icon targets
 
-**Status:** ✅ Ready for review
+**Status:** ✅ Done (overnight 2026-11-25, PR #82, merge 132d36b)
 **Priority:** P2
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22

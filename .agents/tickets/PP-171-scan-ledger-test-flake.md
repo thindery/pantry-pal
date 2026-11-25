@@ -1,6 +1,6 @@
 # PP-171: Fix flaky "clears the session list" Quick Scan test
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #79, merge 5cfc003)
 **Priority:** P2 (CI reliability)
 **Phase:** Production follow-up
 **Created:** 2026-11-25

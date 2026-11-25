@@ -1,6 +1,6 @@
 # PP-151: E2E — shopping list
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #93, merge 0366501)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

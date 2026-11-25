@@ -1,6 +1,6 @@
 # PP-155: E2E — analytics consent path
 
-**Status:** 📋 Backlog
+**Status:** ✅ Done (overnight 2026-11-25, PR #84, merge ee1bbd7)
 **Priority:** P2
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

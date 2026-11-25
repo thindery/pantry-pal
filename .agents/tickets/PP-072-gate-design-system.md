@@ -1,6 +1,6 @@
 # PP-072: Gate or remove public design-system
 
-**Status:** 🔄 In review  
+**Status:** ✅ Done (overnight 2026-11-25, PR #89, merge 3ffaa73)
 **Priority:** P3  
 **Phase:** Security remediation (audit 2026-07-25)  
 **Finding:** SEC-208  

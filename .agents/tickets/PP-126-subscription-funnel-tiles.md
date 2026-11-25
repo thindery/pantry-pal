@@ -1,6 +1,6 @@
 # PP-126: Subscription funnel tiles on the admin dashboard
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #81, merge 0a76827)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22

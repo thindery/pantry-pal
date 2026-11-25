@@ -1,6 +1,6 @@
 # PP-166: $1 first-month offer test on Pro monthly
 
-**Status:** 🔄 In progress (PR open, not merged, not deployed)
+**Status:** ✅ Merged dark (PR #62, Nov 25 12:39 AM CT); off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set, which needs Tylor's own yes
 **Updated:** 2026-11-24 America/Chicago
 **Priority:** P1
 **Phase:** Revenue experiments

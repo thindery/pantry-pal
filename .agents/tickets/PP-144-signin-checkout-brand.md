@@ -1,6 +1,6 @@
 # PP-144: Sign-in and checkout brand + contrast
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #75, merge 6cfa7de)
 **Priority:** P1
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22

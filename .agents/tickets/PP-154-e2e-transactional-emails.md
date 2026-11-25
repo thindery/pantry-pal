@@ -1,6 +1,6 @@
 # PP-154: E2E — transactional emails triggered
 
-**Status:** 🔄 In review (overnight 2026-11-25)
+**Status:** ✅ Done (overnight 2026-11-25, PR #97, merge 0e05f4b)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

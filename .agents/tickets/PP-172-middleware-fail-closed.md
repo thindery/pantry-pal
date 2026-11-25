@@ -1,6 +1,6 @@
 # PP-172: Middleware must fail closed when Auth.js is misconfigured
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #91, merge b20bf7f)
 **Priority:** P1
 **Phase:** Security (found during the 2026-11-25 overnight sweep)
 **Created:** 2026-11-25

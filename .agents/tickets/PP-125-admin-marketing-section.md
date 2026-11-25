@@ -1,6 +1,6 @@
 # PP-125: Admin Marketing section for email visibility
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #87, merge 33fce85)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22

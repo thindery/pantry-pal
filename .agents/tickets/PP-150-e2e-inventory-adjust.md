@@ -1,6 +1,6 @@
 # PP-150: E2E — inventory quantity +/-
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #92, merge 8c857f4)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

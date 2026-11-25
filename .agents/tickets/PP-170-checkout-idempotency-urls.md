@@ -1,6 +1,6 @@
 # PP-170: Checkout idempotency key includes the redirect URLs
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #67, merge fa09890)
 **Priority:** P2 (billing robustness)
 **Phase:** Production follow-up
 **Created:** 2026-11-25

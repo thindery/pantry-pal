@@ -1,6 +1,6 @@
 # PP-124: Resend webhook endpoint with signature verify and idempotency
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #80, merge 6372881)
 **Priority:** P1
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22

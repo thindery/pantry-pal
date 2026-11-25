@@ -1,6 +1,6 @@
 # PP-168: Pro success page confirms the purchase with the backend
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #65, merge ed5aaf6)
 **Priority:** P1 (billing / entitlement display)
 **Phase:** Production follow-up
 **Created:** 2026-11-25

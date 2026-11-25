@@ -1,6 +1,6 @@
 # PP-146: Refresh /design-system to the shipped UI and brand guide
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #86, merge 0d1035c)
 **Priority:** P2
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22

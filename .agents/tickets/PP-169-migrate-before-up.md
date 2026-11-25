@@ -1,6 +1,6 @@
 # PP-169: Deploy runs migrations before starting the new containers
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #66, merge 723d3d6)
 **Priority:** P1 (data / deploy safety)
 **Phase:** Production follow-up
 **Created:** 2026-11-25

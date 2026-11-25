@@ -1,6 +1,6 @@
 # PP-173: Scan page hydration error when Quick Scan is off
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #94, merge 1094760)
 **Priority:** P2
 **Phase:** Bug (found by the PP-149 e2e work, 2026-11-25 overnight)
 **Created:** 2026-11-25

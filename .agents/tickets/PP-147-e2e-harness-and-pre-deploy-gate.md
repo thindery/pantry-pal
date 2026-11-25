@@ -1,6 +1,6 @@
 # PP-147: E2E harness (official Playwright) and pre-deploy smoke gate
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #74, merge 8575f0c)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

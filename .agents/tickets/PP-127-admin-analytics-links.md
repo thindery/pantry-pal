@@ -1,6 +1,6 @@
 # PP-127: Link the admin dashboard out to GA4 and Search Console
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #90, merge 3981b53)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22

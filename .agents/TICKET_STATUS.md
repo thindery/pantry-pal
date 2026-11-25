@@ -107,8 +107,8 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-101 | Remove unverifiable social proof, ratings schema, and placeholder testimonials | 📋 Open (Tylor copy follow-up; 206 items counted) | SEO / AEO |
 | PP-103 | Fix inherited canonicals, doubled titles, and page-level social metadata | 📋 Open | SEO / AEO |
 | PP-104 | Allow public OG images and add favicon/logo assets | 📋 Open | SEO / AEO |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 📋 Backlog | E2E |
-| PP-153 | E2E: cancel subscription and billing portal | 📋 Backlog | E2E |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
+| PP-153 | E2E: cancel subscription and billing portal | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 
 ### P1 — next up, high impact (6)
 
@@ -253,12 +253,12 @@ Triage board for work that is not done. Area inventories later in this file stay
 |--------|-------|----------|--------|
 | PP-065 | Shopping-session add-to-inventory tier limits | P1 | ✅ Done |
 | PP-066 | Shorten API bearer JWT TTL to 1h | P1 | ✅ Done |
-| PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | 📋 Open |
+| PP-067 | Tighten CSP (unsafe-eval/inline) | P2 | ✅ Done (#88, overnight 2026-11-25) |
 | PP-068 | Gitleaks secret scan in CI | P2 | ✅ Done |
 | PP-069 | Sanitize Stripe webhook error responses | P2 | ✅ Done |
 | PP-070 | nginx require-cloudflare include (ops) | P2 | ✅ Done (template; host reload pending deploy) |
 | PP-071 | Trusted proxy IP for rate limiting | P2 | ✅ Done |
-| PP-072 | Gate public design-system | P3 | 📋 Open |
+| PP-072 | Gate public design-system | P3 | ✅ Done (#89, overnight 2026-11-25) |
 | PP-073 | Add security.txt | P3 | ✅ Done (live 200 after deploy) |
 | PP-074 | Remove/harden Clerk JWT fallback | P3 | ✅ Done |
 
@@ -366,12 +366,12 @@ Tylor asked for the same email-send visibility another project already has in ad
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-123 | Extend `email_sends` and log every helper attempt | P1 | 📋 Open |
-| PP-124 | Resend webhook (signature + idempotency) and `email_events` | P1 | 📋 Open |
-| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | P2 | 📋 Open |
-| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | P2 | 📋 Open |
-| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | P2 | 📋 Open |
-| PP-128 | Admin auth hardening leftovers | P2 | 📋 Open |
+| PP-123 | Extend `email_sends` and log every helper attempt | P1 | ✅ Done (#68, overnight 2026-11-25) |
+| PP-124 | Resend webhook (signature + idempotency) and `email_events` | P1 | ✅ Done (#80, overnight 2026-11-25) |
+| PP-125 | Admin Marketing section (sends, rates, failures, opt-outs) | P2 | ✅ Done (#87, overnight 2026-11-25) |
+| PP-126 | Subscription funnel tiles (signups, trials, Pro, churn) | P2 | ✅ Done (#81, overnight 2026-11-25) |
+| PP-127 | Links out to GA4 / Search Console / Cloudflare (do not duplicate PP-117–PP-122) | P2 | ✅ Done (#90, overnight 2026-11-25) |
+| PP-128 | Admin auth hardening leftovers | P2 | ✅ Done (#77, overnight 2026-11-25) |
 | PP-129 | Optional full-access Resend read key | P3 | 📋 Backlog — needs Tylor’s yes |
 
 ## Email design (2026-11-22)
@@ -413,9 +413,9 @@ Tylor asked for a designer-style review of every screen, in the same spirit as B
 | PP-141 | Fix logged-out `/pricing/` CTAs and the sign-in upgrade path | P0 | ✅ Done (pending deploy) |
 | PP-142 | Accessible color tokens (primary / accent / danger split) | P1 | ✅ Done (pending deploy) |
 | PP-143 | Marketing UX: sticky-nav overlap, CTA weight, numeral contrast | P1 | ✅ Done (pending deploy) |
-| PP-144 | Sign-in and checkout brand + contrast | P1 | 📋 Open — sign-in done, checkout remaining |
-| PP-145 | Desktop Pantry layout and 44px icon targets | P2 | 📋 Open |
-| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | 📋 Open |
+| PP-144 | Sign-in and checkout brand + contrast | P1 | ✅ Done (#75, overnight 2026-11-25) |
+| PP-145 | Desktop Pantry layout and 44px icon targets | P2 | ✅ Done (#82, overnight 2026-11-25) |
+| PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | ✅ Done (#86, overnight 2026-11-25) |
 
 
 ## E2E regression suite (2026-11-22)
@@ -424,15 +424,15 @@ Tylor asked for Pantry Hub to keep working with no regressions. Tickets only in 
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | ✅ Done (#74, overnight 2026-11-25) |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
 | PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
-| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
 | PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
-| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
+| PP-155 | E2E: analytics consent path | P2 | ✅ Done (#84, overnight 2026-11-25) |
 
 ## Future / backlog
 
@@ -443,15 +443,15 @@ Documented for later; no implementation in this pass.
 | PP-114 | Revisit social proof with real data (testimonials, counts, Review schema) | P2 | 📋 Backlog |
 | PP-115 | Nearby grocery weekly ads / deals search | P2 | 📋 Backlog |
 | PP-129 | Optional full-access Resend read key (needs Tylor’s yes) | P3 | 📋 Backlog |
-| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | 📋 Backlog |
+| PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | P1 | ✅ Done (#74, overnight 2026-11-25) |
 | PP-148 | E2E: sign-up and login | P1 | 📋 Backlog |
 | PP-149 | E2E: barcode scan including Quick Scan | P1 | ✅ Done (#95 + #96, overnight 2026-11-25) |
 | PP-150 | E2E: inventory quantity +/- | P1 | ✅ Done (#92, overnight 2026-11-25) |
 | PP-151 | E2E: shopping list | P1 | ✅ Done (#93, overnight 2026-11-25) |
-| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 📋 Backlog |
-| PP-153 | E2E: cancel subscription and billing portal | P0 | 📋 Backlog |
+| PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
+| PP-153 | E2E: cancel subscription and billing portal | P0 | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) |
 | PP-154 | E2E: transactional emails triggered | P1 | ✅ Done (#97, overnight 2026-11-25) |
-| PP-155 | E2E: analytics consent path | P2 | 📋 Backlog |
+| PP-155 | E2E: analytics consent path | P2 | ✅ Done (#84, overnight 2026-11-25) |
 
 ## Verification
 

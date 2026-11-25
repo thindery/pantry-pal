@@ -1,6 +1,6 @@
 # PP-149: E2E — barcode scan including Quick Scan
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #95, #96, merge 28fe947)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22

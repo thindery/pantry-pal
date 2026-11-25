@@ -1,6 +1,6 @@
 # PP-128: Harden leftover admin auth issues
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #77, merge 64340ad)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22

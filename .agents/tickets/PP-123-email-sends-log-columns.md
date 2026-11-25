@@ -1,6 +1,6 @@
 # PP-123: Extend email_sends and log every helper attempt
 
-**Status:** 🔄 In review
+**Status:** ✅ Done (overnight 2026-11-25, PR #68, merge e58fc58)
 **Priority:** P1
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
