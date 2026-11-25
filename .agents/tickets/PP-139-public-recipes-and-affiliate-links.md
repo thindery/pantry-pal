@@ -1,6 +1,6 @@
 # PP-139: Public first-party recipes and affiliate links
 
-**Status:** 📋 Open
+**Status:** 🟡 Plan done (2026-11-25); build waits on real recipes and photos from Tylor; no program signup
 **Priority:** P2
 **Phase:** Revenue options (research 2026-11-22)
 **Created:** 2026-11-22
@@ -29,8 +29,29 @@ This ticket plans the public recipe library and the affiliate path. **Do not sig
 
 ## Acceptance Criteria
 
-- [ ] A short content plan: first recipe topics, who writes and photographs them, and how they stay original
-- [ ] Public recipe URL design (not behind auth) and an honest disclosure snippet, drafted in-repo, not published until Tylor approves
-- [ ] A “needs Tylor’s yes” checklist for Amazon Associates and Instacart (Impact) — no application until he agrees, and not before there is real public content
+- [x] A short content plan: first recipe topics, who writes and photographs them, and how they stay original (below)
+- [x] Public recipe URL design (not behind auth) and an honest disclosure snippet, drafted in-repo, not published until Tylor approves (below)
+- [x] A “needs Tylor’s yes” checklist for Amazon Associates and Instacart (Impact) — no application until he agrees, and not before there is real public content (below)
 - [ ] Implementation (later): at least a first public recipe live, with disclosure, before any affiliate links go on it
 - [ ] No program account is created from this ticket without a recorded yes from Tylor
+
+## Plan (2026-11-25, Tylor approved the ticket in chat 1:54 PM CT)
+
+### Content plan
+- First 6 recipes, all built from pantry staples the app already tracks: weeknight chili, black-bean tacos, baked oatmeal, pasta e fagioli, sheet-pan chicken and vegetables, freezer breakfast burritos.
+- Tylor cooks and photographs each one (real photos only, no stock or AI images). The agent drafts the write-up from his notes; Tylor edits and approves each page before it goes live.
+- Original wording and our own measured steps; never paraphrase another site's recipe. Each page lists real prep/cook times from his test cook.
+
+### URL design (public, no sign-in)
+- Index: `/recipes/` (listed in the sitemap only once at least 3 recipes are live).
+- Recipe: `/recipes/<slug>/` (for example `/recipes/weeknight-chili/`). Separate from private saved recipes at `/dashboard/recipes/` (PP-138), which stay private.
+- Recipe JSON-LD only with real fields (no invented ratings or reviews); coordinate with PP-106.
+
+### Disclosure snippet (shown right above the first product link, not only in the footer)
+> Pantry Hub may earn a commission if you buy through links on this page. It doesn't change the price you pay. We only link to things we'd use in this recipe.
+
+### Needs Tylor's yes (no application made)
+- [ ] At least 3 recipes live with real photos (Amazon and Impact both review the site).
+- [ ] Amazon Associates application under Peak Collective LLC (grocery 1%, kitchen tools 4.50%; recheck rates that day).
+- [ ] Instacart publisher program via Impact (up to $10 per new-customer first order; recheck; IDP closed to new applicants as of 2026-11-22).
+- [ ] Add the program-required disclosure wording once accepted.
