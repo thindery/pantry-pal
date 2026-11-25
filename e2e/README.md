@@ -33,3 +33,7 @@ npx playwright test e2e/analytics-consent.spec.ts
 - **Test Authentication**: Use a test-only way to obtain a signed-in browser state (such as Playwright `storageState` from a dedicated Google test account or test-env session helper). Never use real customer accounts or fixtures with customer data.
 - **ALLOW_TEST_AUTH**: `ALLOW_TEST_AUTH=1` with `x-user-id` / `x-user-email` is backend-only (`backend/auth_session.py`, `backend/clerk_auth.py`) for API setup/seeding. It is strictly disabled on production OVH servers and must **never** be enabled in `.env.prod`. It does not create a NextAuth frontend cookie session by itself.
 - **Stripe & Resend**: Stripe keys (`sk_test_`, `pk_test_`, `whsec_`) and mock Resend configurations must come from environment variables only (never committed to git). Never point tests at live Stripe keys (`sk_live_`) or real customer email addresses.
+
+## CSP (PP-067)
+
+`npx playwright test e2e/csp.spec.ts` checks the production build sends a CSP without `unsafe-eval` and that public pages raise no `securitypolicyviolation` events. Tagged `@smoke`, so it also runs in the pre-deploy gate.
