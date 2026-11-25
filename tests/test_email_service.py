@@ -179,6 +179,9 @@ def test_send_success_writes_sent_and_resend_id(monkeypatch):
             executed_queries.append((query.strip(), params))
 
         def fetchone(self):
+            last_q = executed_queries[-1][0] if executed_queries else ""
+            if "email_suppressions" in last_q:
+                return None
             return {"id": "new-claim-id"}
 
     class MockConn:
@@ -441,4 +444,44 @@ def test_backfill_rows_excluded_from_counts_and_block_welcome(monkeypatch):
         assert "template = %s" in filtered_query
         assert "user_id = %s" in filtered_query
         assert filtered_params == ("sent", "welcome", "user-1")
+
+
+def test_is_suppressed_and_mask_email():
+    executed_queries = []
+
+    class MockCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def execute(self, query, params=None):
+            executed_queries.append((query.strip(), params))
+
+        def fetchone(self):
+            last_p = executed_queries[-1][1]
+            if last_p == ("suppressed@example.com",):
+                return {"?column?": 1}
+            return None
+
+    class MockConn:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def cursor(self):
+            return MockCursor()
+
+    with patch("backend.services.email_service.db_connection", return_value=MockConn()):
+        assert email_service.is_suppressed("suppressed@example.com") is True
+        assert email_service.is_suppressed("clean@example.com") is False
+        assert email_service.is_suppressed("") is False
+
+    assert email_service._mask_email("user@example.com") == "u***r@example.com"
+    assert email_service._mask_email("ab@example.com") == "a***@example.com"
+    assert email_service._mask_email(None) == "[EMPTY]"
+
 
