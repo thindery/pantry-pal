@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 3:20 PM CT (PP-181 live at d70df3c; [PR #117](https://github.com/thindery/pantry-pal/pull/117))
+Last updated: 2026-11-25, 4:11 PM CT (PP-182 live at 1fab3f1; [PR #120](https://github.com/thindery/pantry-pal/pull/120))
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -41,6 +41,7 @@ Last updated: 2026-11-25, 3:20 PM CT (PP-181 live at d70df3c; [PR #117](https://
 | PP-129 Resend read key | this PR | 🟡 `RESEND_READ_API_KEY` placeholder added. The connected Resend account is not the mypantryhub one, so Tylor creates the key. |
 | GROWTH-010 Search Console | — | ✅ All 4 `sc-domain` properties (flowruns, getmd2pdf, agentpaige, userkudos) already show `siteOwner` (verified); sitemaps submitted for all 4 (userkudos today). No DNS tokens needed. |
 | PP-181 Don't cache 1–2 character product names | [#117](https://github.com/thindery/pantry-pal/pull/117) | ✅ Live 3:19 PM CT, build `d70df3c`. Cache for `810035212374` already had the real UPCitemdb name; pantry item had been removed. `F` cache left (no provider name). |
+| PP-182 Privacy discloses AdSense and analytics | [#120](https://github.com/thindery/pantry-pal/pull/120) | ✅ Live 4:11 PM CT, build `1fab3f1`. `/privacy/` no longer claims we do not use third-party advertising cookies; it discloses Google AdSense on public marketing pages, opt-out links (partner-sites, Ads Settings, aboutads.info), GA4 `G-LEW78LC3EF` (consent-gated), and Cloudflare Web Analytics. Deployed after PP-186 (`32cb176`) was live; no rollback. Status docs: this PR. |
 
 ## Overnight 2026-11-25
 
@@ -141,7 +142,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | 📋 Open | Legal |
+| PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | ✅ Done (live 4:11 PM CT, `1fab3f1`, [#120](https://github.com/thindery/pantry-pal/pull/120)) | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
 | PP-105 | Indexation hygiene: 404 unknown routes, slash/sitemap/robots, noindex auth/checkout | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-106 | Honest, valid JSON-LD and FAQ answers present in the HTML | ✅ Done (live 2026-11-25) | SEO / AEO |
