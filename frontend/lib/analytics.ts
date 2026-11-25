@@ -12,6 +12,10 @@ export const CF_BEACON_TOKEN = (
 
 export const SIGN_UP_TRACKED_KEY = "ph_sign_up_tracked";
 export const FIRST_SCAN_TRACKED_KEY = "ph_first_scan_tracked";
+export const CHECKOUT_SESSION_STORAGE_KEY = "ph_checkout_session_id";
+export const PURCHASE_TRACKED_PREFIX = "ph_purchase_tracked:";
+export const DEFAULT_PURCHASE_VALUE = 4.99;
+export const DEFAULT_PURCHASE_CURRENCY = "USD";
 
 export function isValidMeasurementId(id?: string | null): boolean {
   if (!id) return false;
@@ -275,5 +279,75 @@ export function trackFirstScan(source: "barcode" | "receipt"): void {
     trackEvent("first_scan", { source });
   } catch {
     trackEvent("first_scan", { source });
+  }
+}
+
+function isUsableCheckoutId(value?: string | null): value is string {
+  const trimmed = (value ?? "").trim();
+  return Boolean(trimmed) && !trimmed.includes("{");
+}
+
+/**
+ * Stash the Stripe Checkout Session id so the success page can use it as
+ * purchase.transaction_id if the success URL is missing session_id.
+ */
+export function stashCheckoutSessionId(sessionId?: string | null): void {
+  if (typeof window === "undefined" || !isUsableCheckoutId(sessionId)) return;
+  try {
+    sessionStorage.setItem(CHECKOUT_SESSION_STORAGE_KEY, sessionId.trim());
+  } catch {
+    // Ignore sessionStorage errors (private mode, etc.)
+  }
+}
+
+/**
+ * Prefer ?session_id= on the success URL (Stripe substitutes
+ * {CHECKOUT_SESSION_ID}), then the stashed session id.
+ */
+export function getCheckoutTransactionId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("session_id");
+    if (isUsableCheckoutId(fromUrl)) return fromUrl.trim();
+    const stored = sessionStorage.getItem(CHECKOUT_SESSION_STORAGE_KEY);
+    if (isUsableCheckoutId(stored)) return stored.trim();
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fires the `purchase` key event with value, currency, and transaction_id.
+ * Deduped per Stripe session id in sessionStorage so a refresh does not double-fire.
+ * Returns true if the event was dispatched or queued, false if already tracked.
+ */
+export function trackPurchase(options?: {
+  transaction_id?: string | null;
+  value?: number;
+  currency?: string;
+}): boolean {
+  if (typeof window === "undefined") return false;
+
+  const transactionId = isUsableCheckoutId(options?.transaction_id)
+    ? options!.transaction_id!.trim()
+    : getCheckoutTransactionId();
+  const params: Record<string, unknown> = {
+    value: options?.value ?? DEFAULT_PURCHASE_VALUE,
+    currency: options?.currency ?? DEFAULT_PURCHASE_CURRENCY,
+  };
+  if (transactionId) {
+    params.transaction_id = transactionId;
+  }
+
+  const dedupeKey = `${PURCHASE_TRACKED_PREFIX}${transactionId ?? "unknown"}`;
+  try {
+    if (sessionStorage.getItem(dedupeKey)) return false;
+    sessionStorage.setItem(dedupeKey, "true");
+    trackEvent("purchase", params);
+    return true;
+  } catch {
+    trackEvent("purchase", params);
+    return true;
   }
 }

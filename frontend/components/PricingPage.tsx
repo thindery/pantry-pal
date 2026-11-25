@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 import { BrandMark } from '@/components/BrandMark';
-import { trackEvent } from '@/lib/analytics';
+import { stashCheckoutSessionId, trackEvent } from '@/lib/analytics';
 
 interface PricingPageProps {
   onClose: () => void;
@@ -122,7 +122,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
     setError(null);
 
     try {
-      const successUrl = `${window.location.origin}/checkout/success`;
+      const successUrl = `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${window.location.origin}/checkout/cancel`;
 
       const checkout = await createCheckoutSession(
@@ -132,6 +132,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
         cancelUrl
       );
 
+      stashCheckoutSessionId(checkout.sessionId);
       trackEvent('begin_checkout', {
         tier,
         interval: billingInterval,
