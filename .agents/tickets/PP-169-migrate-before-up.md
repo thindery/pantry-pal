@@ -15,7 +15,7 @@
 
 ## Behavior
 
-After `docker compose build`: `up -d --wait db` (no-op when the DB is already healthy), then `run --rm --no-deps backend python database/migrate.py migrate` with the new image, then `up -d`. A failed migration exits non-zero before any app container is replaced; the ERR trap keeps the previous containers running. No `--remove-orphans`, no `down`, no volume changes.
+After `docker compose build`: `up -d --wait db` (no-op when the DB is already healthy), then `run --rm --no-deps backend python database/migrate.py migrate` with the new image, then `up -d`. A failed migration exits non-zero before any app container is replaced; the ERR trap now uses `up -d --no-recreate`, so it restarts anything stopped but never swaps in the new image after a failed migration. No `--remove-orphans`, no `down`, no volume changes.
 
 ## Acceptance Criteria
 

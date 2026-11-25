@@ -71,7 +71,8 @@ ssh ovh "
     echo 'Deploy failed — attempting to restore running containers...' >&2
     # Unique project name pantry-pal — never default \"deploy\" from working_dir.
     # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
-    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d 2>/dev/null || true
+    # PP-169: --no-recreate so a failed migration/health step never swaps in the new image.
+    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d --no-recreate 2>/dev/null || true
     exit \"\$exit_code\"
   }
   trap on_deploy_failure ERR
