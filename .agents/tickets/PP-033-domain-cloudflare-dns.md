@@ -1,6 +1,6 @@
 # PP-033: Domain purchase + Cloudflare DNS
 
-**Status:** 🔄 In progress  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 3 — Modernization  
 **Playbook:** `cloudflare_dns.md`  

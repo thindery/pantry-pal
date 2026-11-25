@@ -1,10 +1,10 @@
 # PP-144: Sign-in and checkout brand + contrast
 
-**Status:** 📋 Open — sign-in done, checkout remaining
+**Status:** ✅ Done (overnight 2026-11-25, PR #75, merge 6cfa7de)
 **Priority:** P1
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 4:55 PM America/Chicago
+**Updated:** 2026-11-25
 **Depends on:** PP-142 (checkout button color)
 **Blocks:** —
 **Doc:** `.agents/docs/design-review-2026-11-22.md`
@@ -25,9 +25,9 @@ Checkout success is an emoji party on `emerald-600` (body text 3.77:1). Checkout
 
 ## Acceptance Criteria
 
-- [ ] Sign-in shows the Pantry Hub mark and links to home, Privacy, and Terms
-- [ ] Checkout success and cancel use brand tokens; text contrast ≥4.5:1
-- [ ] No emoji as the primary visual on those screens
+- [x] Sign-in shows the Pantry Hub mark and links to home, Privacy, and Terms
+- [x] Checkout success and cancel use brand tokens; text contrast ≥4.5:1
+- [x] No emoji as the primary visual on those screens
 
 ## Out of scope
 
@@ -39,4 +39,4 @@ Checkout success is an emoji party on `emerald-600` (body text 3.77:1). Checkout
 ## Progress
 
 - [x] Sign-in mark, back link, Privacy/Terms, and “free to start” line (2026-11-22 design-review pass)
-- [ ] Checkout success/cancel — left for a follow-up because `CheckoutResult.tsx` had in-flight analytics edits from another worker
+- [x] Checkout success/cancel: restyled with brand tokens, BrandMark, Lora headings, Lucide icons, no emojis, AA contrast, and /pricing link.

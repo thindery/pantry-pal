@@ -9,17 +9,19 @@ Never creates duplicates on deploy/restart when catalog already exists.
 
 from __future__ import annotations
 
+import hashlib
 import os
 from datetime import datetime, timezone
 from typing import Any, Optional
 
 import stripe
 
+import re
 import uuid
 
 from psycopg2.extras import Json
 
-from backend.services import admin_service, email_service
+from backend.services import admin_service, email_service, first_month_offer
 from backend.services.subscription_service import (
     downgrade_to_free,
     get_user_subscription,
@@ -335,18 +337,38 @@ def _first_active_subscription(customer_id: Optional[str], exclude_id: Optional[
     return None
 
 
-def _open_checkout_session(customer_id: str, price_id: str) -> Optional[dict[str, str]]:
+def _open_checkout_session(
+    customer_id: str, price_id: str, offer_marker: str = ""
+) -> Optional[dict[str, str]]:
     listed = stripe.checkout.Session.list(customer=customer_id, status="open", limit=10)
     for raw in listed.auto_paging_iter():
         session = _to_dict(raw)
         if session.get("mode") != "subscription" or not session.get("url"):
             continue
+        # PP-166: only reuse a session whose offer marker matches, so the first-month
+        # price is never served to (or withheld from) the wrong checkout.
+        if ((session.get("metadata") or {}).get("offer") or "") != offer_marker:
+            continue
         return {"sessionId": session["id"], "url": session["url"]}
     return None
 
 
+def _has_ever_subscribed(customer_id: str, stored: Optional[dict[str, Any]]) -> bool:
+    """True if this account has any past or present subscription (offer is first-time only)."""
+    if (stored or {}).get("stripeSubscriptionId"):
+        return True
+    try:
+        listed = stripe.Subscription.list(customer=customer_id, status="all", limit=1)
+        data = _obj_get(listed, "data") or []
+        return len(data) > 0
+    except Exception:
+        # Fail safe: if Stripe cannot confirm eligibility, skip the discount.
+        __import__("logging").getLogger(__name__).exception("Could not check offer eligibility")
+        return True
+
+
 def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
-    session = stripe.billingPortal.Session.create(customer=customer_id, return_url=return_url)
+    session = stripe.billing_portal.Session.create(customer=customer_id, return_url=return_url)
     return {"sessionId": _obj_get(session, "id") or "", "url": session.url}
 
 
@@ -373,6 +395,21 @@ def _ensure_customer_email(customer_id: Optional[str], email: Optional[str] = No
         updates["name"] = name
     if updates:
         stripe.Customer.modify(customer_id, **updates)
+
+
+def checkout_idempotency_key(
+    user_id: str, tier: str, billing_interval: str, success_url: str, cancel_url: str
+) -> str:
+    """PP-170: Stripe rejects a reused idempotency key with different params.
+
+    Two checkouts for the same user/tier/interval from different origins
+    (www vs apex, or a different return path) used to share a key and fail
+    with an idempotency error. Hashing the redirect URLs into the key keeps
+    retries of the *same* request deduped while letting a changed request
+    through. The URLs are hashed, never stored in the key in clear text.
+    """
+    digest = hashlib.sha256(f"{success_url}\n{cancel_url}".encode("utf-8")).hexdigest()[:16]
+    return f"pantryhub-checkout-{user_id}-{tier}-{billing_interval}-{digest}"
 
 
 async def create_checkout_session(
@@ -417,24 +454,101 @@ async def create_checkout_session(
         )
         return _portal_redirect(customer_id, cancel_url or success_url)
 
-    reused = _open_checkout_session(customer_id, price_id)
+    # PP-166: $1 first-month offer. Pro monthly only, first-time subscribers only, and
+    # only while STRIPE_PRO_FIRST_MONTH_COUPON_ID is set. Otherwise nothing changes.
+    offer_coupon = first_month_offer.coupon_for(tier, billing_interval)
+    if offer_coupon and _has_ever_subscribed(customer_id, existing):
+        offer_coupon = None
+
+    reused = _open_checkout_session(customer_id, price_id, first_month_offer.OFFER_MARKER if offer_coupon else "")
     if reused:
         return reused
+
+    metadata = {"userId": user_id, "tier": tier}
+    create_params: dict[str, Any] = {}
+    idempotency_key = checkout_idempotency_key(user_id, tier, billing_interval, success_url, cancel_url)
+    if offer_coupon:
+        metadata["offer"] = first_month_offer.OFFER_MARKER
+        # Stripe does not allow `discounts` together with `allow_promotion_codes`.
+        create_params["discounts"] = [{"coupon": offer_coupon}]
+        # A different request body under the same key would make Stripe reject it.
+        idempotency_key = f"{idempotency_key}-offer-{offer_coupon}"
+    else:
+        create_params["allow_promotion_codes"] = True
 
     session = stripe.checkout.Session.create(
         customer=customer_id,
         line_items=[{"price": price_id, "quantity": 1}],
         mode="subscription",
-        allow_promotion_codes=True,
-        subscription_data={"metadata": {"userId": user_id, "tier": tier}},
+        subscription_data={"metadata": dict(metadata)},
         success_url=success_url,
         cancel_url=cancel_url,
-        metadata={"userId": user_id, "tier": tier},
-        idempotency_key=f"pantryhub-checkout-{user_id}-{tier}-{billing_interval}",
+        metadata=metadata,
+        idempotency_key=idempotency_key,
+        **create_params,
     )
     if not session.url:
         raise ValueError("Checkout session created without URL")
     return {"sessionId": session.id, "url": session.url}
+
+
+_CHECKOUT_SESSION_ID_RE = re.compile(r"^cs_[A-Za-z0-9_]{8,250}$")
+
+
+def confirm_checkout_session(user_id: str, session_id: str) -> dict[str, Any]:
+    """PP-168: let the success page confirm a paid Checkout Session with Stripe.
+
+    A late `checkout.session.completed` webhook used to leave Settings on Free
+    for a moment after payment. This reads the session from Stripe, checks it
+    belongs to the signed-in user (server-set metadata.userId), and when it is
+    paid and the subscription is active/trialing applies the same entitlement
+    path the webhooks use. Idempotent: calling it again, or the webhook
+    arriving later, is a no-op refresh of the same linked subscription.
+    """
+    if not session_id or not _CHECKOUT_SESSION_ID_RE.match(session_id):
+        raise ValueError("Invalid checkout session id")
+    invalid_request = getattr(stripe, "InvalidRequestError", None) or getattr(
+        getattr(stripe, "error", None), "InvalidRequestError", None
+    )
+    try:
+        session = _to_dict(stripe.checkout.Session.retrieve(session_id))
+    except Exception as exc:
+        if invalid_request is not None and isinstance(exc, invalid_request):
+            raise PermissionError("Checkout session not found") from exc
+        raise
+    metadata = session.get("metadata") or {}
+    if not user_id or metadata.get("userId") != user_id:
+        raise PermissionError("Checkout session does not belong to this user")
+
+    status = session.get("status")
+    payment_status = session.get("payment_status")
+    subscription_id = session.get("subscription")
+    if isinstance(subscription_id, dict):
+        subscription_id = subscription_id.get("id")
+
+    applied = False
+    if (
+        session.get("mode") == "subscription"
+        and status == "complete"
+        and payment_status in {"paid", "no_payment_required"}
+        and subscription_id
+    ):
+        sub = _to_dict(stripe.Subscription.retrieve(subscription_id))
+        if _is_active_or_trialing(sub.get("status")):
+            applied = _apply_subscription_entitlement(user_id, metadata.get("tier"), sub)
+
+    stored = get_user_subscription(user_id) or {}
+    tier = stored.get("tier") or "free"
+    confirmed = tier != "free" and _is_active_or_trialing(stored.get("subscriptionStatus"))
+    return {
+        "confirmed": confirmed,
+        "applied": applied,
+        "tier": tier,
+        "sessionStatus": status,
+        "paymentStatus": payment_status,
+        "amountTotal": session.get("amount_total"),
+        "currency": (session.get("currency") or "").lower() or None,
+    }
 
 
 async def create_portal_session(
@@ -447,7 +561,7 @@ async def create_portal_session(
     if not subscription or not subscription.get("stripeCustomerId"):
         raise ValueError("No Stripe customer found for this user")
     _ensure_customer_email(subscription["stripeCustomerId"], email=email, name=name)
-    session = stripe.billingPortal.Session.create(
+    session = stripe.billing_portal.Session.create(
         customer=subscription["stripeCustomerId"],
         return_url=return_url,
     )
@@ -634,6 +748,10 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
             "status": "succeeded",
             "tier": tier,
             "stripeEventId": invoice.get("id"),
+            # PP-166: tag offer subscriptions, and mark fully discounted (comp) invoices
+            # so admin revenue and offer metrics can exclude them.
+            "offer": (sub.get("metadata") or {}).get("offer"),
+            "isComp": first_month_offer.invoice_is_comp(invoice),
         }
     )
     applied = _apply_subscription_entitlement(user_id, tier, sub)
@@ -721,6 +839,7 @@ def _handle_subscription_updated(subscription: dict[str, Any]) -> None:
             email=_recipient_email(user_id, subscription.get("customer")),
             subscription_id=event_id or "",
             period_end=updates.get("subscriptionEndDate"),
+            tier=tier,
         )
 
 
@@ -757,12 +876,46 @@ def _handle_subscription_deleted(subscription: dict[str, Any]) -> None:
     )
 
 
+def _invoice_id_for_charge(charge: dict[str, Any]) -> Optional[str]:
+    """Find the invoice a charge paid.
+
+    PP-177: API 2025-03-31.basil and later (this account's webhooks are on
+    2026-06-24.dahlia) dropped `Charge.invoice`; the link is an InvoicePayment
+    keyed by the payment intent. Older payloads still carry `invoice`.
+    """
+    invoice = charge.get("invoice")
+    if isinstance(invoice, dict):
+        invoice = invoice.get("id")
+    if invoice:
+        return invoice
+    payment_intent = charge.get("payment_intent")
+    if isinstance(payment_intent, dict):
+        payment_intent = payment_intent.get("id")
+    if not payment_intent:
+        return None
+    try:
+        payments = stripe.InvoicePayment.list(
+            payment={"type": "payment_intent", "payment_intent": payment_intent},
+            limit=1,
+        )
+    except Exception:
+        __import__("logging").getLogger(__name__).exception("Could not look up invoice for refunded charge")
+        return None
+    for payment in _obj_get(payments, "data") or []:
+        found = _obj_get(payment, "invoice")
+        if isinstance(found, dict):
+            found = found.get("id")
+        if found:
+            return found
+    return None
+
+
 def _handle_charge_refunded(charge: dict[str, Any]) -> None:
     amount = int(charge.get("amount") or 0)
     refunded_amount = int(charge.get("amount_refunded") or 0)
     if not charge.get("refunded") and refunded_amount <= 0:
         return
-    invoice_id = charge.get("invoice")
+    invoice_id = _invoice_id_for_charge(charge)
     customer_id = charge.get("customer")
     subscription_id = None
     if invoice_id:

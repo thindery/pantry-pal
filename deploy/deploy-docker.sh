@@ -24,6 +24,26 @@ fi
 echo $$ > "$LOCAL_LOCK"
 trap 'rm -f "$LOCAL_LOCK"' EXIT
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# PP-147: Pre-deploy smoke gate. Run locally before SSHing to OVH.
+if [ "${SKIP_E2E_SMOKE:-0}" = "1" ]; then
+    echo "⚠️  WARNING: SKIP_E2E_SMOKE=1 is set! Skipping local E2E smoke tests. Emergency rollback use only."
+else
+    git -C "$REPO_ROOT" fetch -q origin "$TAG" 2>/dev/null || true
+    LOCAL_HEAD=$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)
+    REMOTE_HEAD=$(git -C "$REPO_ROOT" rev-parse "origin/$TAG" 2>/dev/null || echo unknown)
+    if [ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]; then
+        echo "⚠️  WARNING: smoke runs against this checkout ($LOCAL_HEAD), but OVH deploys origin/$TAG ($REMOTE_HEAD). Run from an up-to-date checkout of $TAG."
+    fi
+    echo "Running local E2E smoke suite before deploy..."
+    if ! (cd "$REPO_ROOT" && npm run test:e2e:smoke); then
+        echo "❌ E2E smoke suite failed! Aborting deploy without connecting to server." >&2
+        exit 1
+    fi
+    echo "✅ E2E smoke suite passed."
+fi
+
 echo "Deploying pantry-pal version $TAG to OVH server..."
 
 ssh ovh "
@@ -71,7 +91,8 @@ ssh ovh "
     echo 'Deploy failed — attempting to restore running containers...' >&2
     # Unique project name pantry-pal — never default \"deploy\" from working_dir.
     # Do NOT use --remove-orphans (can sweep siblings sharing a project label).
-    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d 2>/dev/null || true
+    # PP-169: --no-recreate so a failed migration/health step never swaps in the new image.
+    cd \"\$REMOTE_DIR\" 2>/dev/null && docker compose -p pantry-pal up -d --no-recreate 2>/dev/null || true
     exit \"\$exit_code\"
   }
   trap on_deploy_failure ERR
@@ -125,11 +146,15 @@ ssh ovh "
   # Build first, then up, so a failed image build cannot be treated as success.
   echo 'Building images...'
   docker compose -p pantry-pal build
+  # PP-169: migrate with the NEW backend image before swapping containers, so the
+  # new code never serves requests against an old schema. A failed migration
+  # aborts here and leaves the previous containers running (ERR trap).
+  echo 'Ensuring database is up...'
+  docker compose -p pantry-pal up -d --wait db
+  echo 'Running database migrations (before starting new containers)...'
+  docker compose -p pantry-pal run --rm --no-deps backend python database/migrate.py migrate
   echo 'Starting containers...'
   docker compose -p pantry-pal up -d
-
-  echo 'Running database migrations...'
-  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate
 
   echo 'Waiting for services to become healthy...'
   health_ok=0
