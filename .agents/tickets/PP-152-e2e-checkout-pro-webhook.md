@@ -1,6 +1,6 @@
 # PP-152: E2E — checkout to Pro (Stripe test mode + webhook → plan active)
 
-**Status:** 📋 Backlog
+**Status:** 🟡 Partly done (backend integration shipped overnight 2026-11-25; real Stripe test-mode browser run blocked on test keys)
 **Priority:** P0
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -50,3 +50,9 @@ Prove the revenue path: a Free test user can start Checkout, pay with a **Stripe
 - Depends on the PP-147 harness. No extra runtime dependencies except optional Stripe CLI in the test environment (not a package.json dependency).
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Overnight 2026-11-25: backend part shipped
+
+`tests/test_billing_checkout_postgres.py` (+ shared `tests/billing_harness.py`) drives the real `/api/subscription/checkout`, `/checkout/confirm`, `/tier`, `/status` and a locally signed `checkout.session.completed` to the real `/api/webhooks/stripe` against Postgres, with Stripe as an in-memory fake. Covers: Free → checkout URL, reused open session, nothing granted before the webhook, webhook → active Pro, second checkout → billing portal (no duplicate), success-page confirm, confirm rejects another user's session, unpaid session grants nothing. Runs in CI `postgres-integration`.
+
+Still open: the browser + real Stripe **test-mode** run (card 4242) needs `sk_test_`/`whsec_` test keys and a PP-148 Google test account. Not available on the Mini.

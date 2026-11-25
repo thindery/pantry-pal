@@ -1,6 +1,6 @@
 # PP-013: deploy/deploy-docker.sh scaffold
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 2 — Playbook structure  
 **Playbook:** `project-director/playbooks/ovh_deployment.md`  

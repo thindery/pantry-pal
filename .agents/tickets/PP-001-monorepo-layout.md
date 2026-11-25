@@ -1,6 +1,6 @@
 # PP-001: Monorepo layout — frontend/ + backend/ clean copy
 
-**Status:** 🔄 To Do  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P0  
 **Phase:** 1 — Monorepo  
 **Playbook:** `project-director/playbooks/new_project_scaffold.md`  

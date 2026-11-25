@@ -1,6 +1,6 @@
 # PP-047: Server-side item tier limits
 
-**Status:** 📋 Open  
+**Status:** ✅ Done (synced to TICKET_STATUS.md, 2026-11-25)
 **Priority:** P1  
 **Phase:** 3 — Security remediation  
 **Playbook:** `agent_paige_security_audit.md`, `billing_and_database.md`  

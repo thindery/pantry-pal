@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 import { BrandMark } from '@/components/BrandMark';
 import { stashCheckoutSessionId, trackEvent } from '@/lib/analytics';
+import { OfferBanner } from '@/components/OfferBanner';
 
 interface PricingPageProps {
   onClose: () => void;
@@ -202,6 +203,8 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
             Choose the plan that fits your household. Start free and upgrade when you need more power.
           </p>
         </div>
+
+        <OfferBanner variant="pricing" />
 
         {/* Billing Toggle */}
         <div className="flex justify-center mb-10">

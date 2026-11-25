@@ -1,6 +1,6 @@
 # PP-125: Admin Marketing section for email visibility
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25, PR #87, merge 33fce85)
 **Priority:** P2
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -43,3 +43,7 @@ Tylor wants the same kind of visibility another project already has: a dashboard
 - [ ] Sends-by-template, sends-by-day, recent failures, opt-outs, and a recent-send table are backed by `email_sends` / `email_events` (or honest empty states)
 - [ ] Rates use webhook-backed statuses when present and do not invent numbers
 - [ ] No API keys or webhook secrets appear in the UI or client bundle
+
+## Progress Notes
+
+- 2026-11-25 overnight: `GET /api/admin/email-metrics` (require_admin) + Marketing view in the admin sidebar with funnel tiles, sends by template/day (backfill excluded), status counts, rates only when webhook rows exist (else "Pending webhook"), recent failures, suppressions, recent sends (masked recipients, resend_id), and a config chip (booleans + From address, no secrets). Optional send-test skipped on purpose (no email sending).

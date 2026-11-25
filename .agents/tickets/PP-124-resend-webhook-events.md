@@ -1,6 +1,6 @@
 # PP-124: Resend webhook endpoint with signature verify and idempotency
 
-**Status:** 📋 Open
+**Status:** ✅ Done (overnight 2026-11-25, PR #80, merge 6372881)
 **Priority:** P1
 **Phase:** Marketing dashboard (2026-11-22)
 **Created:** 2026-11-22
@@ -33,8 +33,29 @@ Sends are (or will be) logged when the helper calls Resend, but nothing records 
 
 ## Acceptance Criteria
 
-- [ ] Signature verification is required and tested
-- [ ] Event ids are unique / idempotent
-- [ ] Delivered, bounced, complained, opened, and clicked update the send row (and complaints land in suppressions)
-- [ ] The route is callable without a login and is on the public middleware allowlist
-- [ ] Secret names are documented; values are not committed
+- [x] Signature verification is required and tested
+- [x] Event ids are unique / idempotent
+- [x] Delivered, bounced, complained, opened, and clicked update the send row (and complaints land in suppressions)
+- [x] The route is callable without a login and is on the public middleware allowlist
+- [x] Secret names are documented; values are not committed
+
+## Progress notes
+
+- Added migrations `028_email_events.sql` and `028_email_events.rollback.sql` creating:
+  - `email_events` (id PK = svix-id / Resend event id, resend_id index, email_send_id, event_type, occurred_at, created_at, payload JSONB storing only redacted metadata: type, created_at, email_id, subject, tags, bounce/complaint type).
+  - `email_suppressions` (email PK lowercased, reason CHECK complained/bounced, source_event_id, created_at, updated_at).
+- Implemented `backend/services/resend_webhook.py`:
+  - `verify_svix(payload, headers, secret)`: verified with stdlib `hmac`, `hashlib`, `base64` only (no extra dependencies); handles `whsec_` prefix; verifies `v1` signature matches `svix-signature` header; enforces 5-minute timestamp tolerance; raises `SvixVerificationError` on failure.
+  - `process_event(event, event_id)`: idempotent event ingestion with `ON CONFLICT (id) DO NOTHING` returning `{"duplicate": True}`; handles `email.sent` (pending/failed -> sent), `email.delivered` (sent -> delivered unless already bounced/complained), `email.bounced` (sets status to bounced, upserts `email_suppressions` if permanent bounce), `email.complained` (sets status to complained, upserts `email_suppressions`), `email.opened` (sets opened_at if null), `email.clicked` (sets clicked_at and opened_at if null), and `email.failed` (sets status to failed with error message).
+- Updated `backend/services/email_service.py`:
+  - Added `is_suppressed(email)` and masked email logging (`_mask_email`).
+  - In `send_email`, skips non-billing emails for suppressed recipients with reason `'suppressed'`.
+  - Billing-critical templates (`payment_*`, `cancel*`, `subscription_ended`) bypass suppression with a warning log and documented code comment.
+- Added endpoint `POST /api/webhooks/resend` in `backend/routers/webhooks.py`:
+  - 503 if `RESEND_WEBHOOK_SECRET` is unset; 400 generic error on invalid or missing signature; 200 `{"received": True}` on valid/duplicate payloads without session requirement.
+  - Exempted `/api/webhooks/resend` from rate limiting in `backend/middleware/rate_limit.py`.
+- Added `/api/webhooks/resend` to `PUBLIC_PREFIXES` in `frontend/middleware.ts`.
+- Documented `RESEND_WEBHOOK_SECRET=whsec_YOUR_RESEND_WEBHOOK_SECRET` in `.env.example` and `.env.prod.example`.
+- Added comprehensive unit tests in `tests/test_resend_webhook.py` and `tests/test_email_service.py`.
+- **Operator step required for production deployment:**
+  In the Resend dashboard (mypantryhub account) add webhook `https://www.mypantryhub.com/api/webhooks/resend` for the listed events and put its signing secret in `/opt/pantry-pal/.env.prod` as `RESEND_WEBHOOK_SECRET` (do NOT do that step now).

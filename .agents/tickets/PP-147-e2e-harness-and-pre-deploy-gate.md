@@ -1,6 +1,6 @@
 # PP-147: E2E harness (official Playwright) and pre-deploy smoke gate
 
-**Status:** 📋 Backlog
+**Status:** ✅ Done (overnight 2026-11-25, PR #74, merge 8575f0c)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
@@ -43,12 +43,26 @@ Flashwright (`flashwright-test`, a single-maintainer fork of Playwright 1.64.1, 
 
 ## Assertions / done criteria
 
-- [ ] Official `@playwright/test` (pinned to 1.64.1 or the current stable, not a Flashwright alias) is in root `package.json` **devDependencies only** (no prod dependency, no unrelated package bumps, no lockfile churn beyond this addition)
-- [ ] `playwright.config.ts` and `e2e/` exist; a trivial smoke test (for example the marketing homepage at `/` renders) passes locally
-- [ ] Test env and seed-user setup are documented (see Test env below); Stripe **TEST** mode keys and any Resend test/mock config come from server/CI env only and are never committed
-- [ ] `./deploy/deploy-docker.sh` runs `test:e2e:smoke` (or equivalent) **before** SSHing to OVH, and exits non-zero without deploying if the suite fails
-- [ ] Production is unchanged: `ALLOW_TEST_AUTH` stays off in `.env.prod` / `.env.prod.example`; no test keys in git; no customer data in fixtures
-- [ ] Ticket log notes the official `@playwright/test` version actually installed
+- [x] Official `@playwright/test` (pinned to 1.64.1 or the current stable, not a Flashwright alias) is in root `package.json` **devDependencies only** (no prod dependency, no unrelated package bumps, no lockfile churn beyond this addition)
+- [x] `playwright.config.ts` and `e2e/` exist; a trivial smoke test (for example the marketing homepage at `/` renders) passes locally
+- [x] Test env and seed-user setup are documented (see Test env below); Stripe **TEST** mode keys and any Resend test/mock config come from server/CI env only and are never committed
+- [x] `./deploy/deploy-docker.sh` runs `test:e2e:smoke` (or equivalent) **before** SSHing to OVH, and exits non-zero without deploying if the suite fails
+- [x] Production is unchanged: `ALLOW_TEST_AUTH` stays off in `.env.prod` / `.env.prod.example`; no test keys in git; no customer data in fixtures
+- [x] Ticket log notes the official `@playwright/test` version actually installed
+
+## Progress
+
+- Installed official `@playwright/test@1.64.1` (exact devDependency in root `package.json`).
+- Installed Chromium browser (`npx playwright install chromium`).
+- Added `playwright.config.ts` with Chromium project, retries (0 local / 1 in CI), reporter list + html (never open), baseURL default `http://127.0.0.1:3100`, auto-webServer on demand, and production domain protection guard (`mypantryhub.com` requires `E2E_ALLOW_PROD_READONLY=1`).
+- Added `e2e/smoke.spec.ts` with `@smoke` tests verifying `/` and `/pricing` without requiring a backend.
+- Added `e2e/README.md` documenting test commands, environment variables, production guard, auth, seed-user rules, and secret hygiene.
+- Added `test:e2e` and `test:e2e:smoke` npm scripts to root `package.json`.
+- Updated `deploy/deploy-docker.sh` with pre-SSH local smoke gate and `SKIP_E2E_SMOKE=1` emergency escape hatch.
+- Added e2e test artifacts to `.gitignore` (`test-results/`, `playwright-report/`, `playwright/.cache/`, `e2e/.auth/`).
+- Added non-production `e2e-smoke` job to `.github/workflows/ci.yml`.
+- Verified `npm run test:e2e:smoke`, `npm run typecheck`, and `npm run lint` all pass.
+
 
 ## Test env and seed user
 
