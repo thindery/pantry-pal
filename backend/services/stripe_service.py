@@ -21,7 +21,7 @@ import uuid
 
 from psycopg2.extras import Json
 
-from backend.services import admin_service, email_service
+from backend.services import admin_service, email_service, first_month_offer
 from backend.services.subscription_service import (
     downgrade_to_free,
     get_user_subscription,
@@ -337,14 +337,34 @@ def _first_active_subscription(customer_id: Optional[str], exclude_id: Optional[
     return None
 
 
-def _open_checkout_session(customer_id: str, price_id: str) -> Optional[dict[str, str]]:
+def _open_checkout_session(
+    customer_id: str, price_id: str, offer_marker: str = ""
+) -> Optional[dict[str, str]]:
     listed = stripe.checkout.Session.list(customer=customer_id, status="open", limit=10)
     for raw in listed.auto_paging_iter():
         session = _to_dict(raw)
         if session.get("mode") != "subscription" or not session.get("url"):
             continue
+        # PP-166: only reuse a session whose offer marker matches, so the first-month
+        # price is never served to (or withheld from) the wrong checkout.
+        if ((session.get("metadata") or {}).get("offer") or "") != offer_marker:
+            continue
         return {"sessionId": session["id"], "url": session["url"]}
     return None
+
+
+def _has_ever_subscribed(customer_id: str, stored: Optional[dict[str, Any]]) -> bool:
+    """True if this account has any past or present subscription (offer is first-time only)."""
+    if (stored or {}).get("stripeSubscriptionId"):
+        return True
+    try:
+        listed = stripe.Subscription.list(customer=customer_id, status="all", limit=1)
+        data = _obj_get(listed, "data") or []
+        return len(data) > 0
+    except Exception:
+        # Fail safe: if Stripe cannot confirm eligibility, skip the discount.
+        __import__("logging").getLogger(__name__).exception("Could not check offer eligibility")
+        return True
 
 
 def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
@@ -434,20 +454,38 @@ async def create_checkout_session(
         )
         return _portal_redirect(customer_id, cancel_url or success_url)
 
-    reused = _open_checkout_session(customer_id, price_id)
+    # PP-166: $1 first-month offer. Pro monthly only, first-time subscribers only, and
+    # only while STRIPE_PRO_FIRST_MONTH_COUPON_ID is set. Otherwise nothing changes.
+    offer_coupon = first_month_offer.coupon_for(tier, billing_interval)
+    if offer_coupon and _has_ever_subscribed(customer_id, existing):
+        offer_coupon = None
+
+    reused = _open_checkout_session(customer_id, price_id, first_month_offer.OFFER_MARKER if offer_coupon else "")
     if reused:
         return reused
+
+    metadata = {"userId": user_id, "tier": tier}
+    create_params: dict[str, Any] = {}
+    idempotency_key = checkout_idempotency_key(user_id, tier, billing_interval, success_url, cancel_url)
+    if offer_coupon:
+        metadata["offer"] = first_month_offer.OFFER_MARKER
+        # Stripe does not allow `discounts` together with `allow_promotion_codes`.
+        create_params["discounts"] = [{"coupon": offer_coupon}]
+        # A different request body under the same key would make Stripe reject it.
+        idempotency_key = f"{idempotency_key}-offer-{offer_coupon}"
+    else:
+        create_params["allow_promotion_codes"] = True
 
     session = stripe.checkout.Session.create(
         customer=customer_id,
         line_items=[{"price": price_id, "quantity": 1}],
         mode="subscription",
-        allow_promotion_codes=True,
-        subscription_data={"metadata": {"userId": user_id, "tier": tier}},
+        subscription_data={"metadata": dict(metadata)},
         success_url=success_url,
         cancel_url=cancel_url,
-        metadata={"userId": user_id, "tier": tier},
-        idempotency_key=checkout_idempotency_key(user_id, tier, billing_interval, success_url, cancel_url),
+        metadata=metadata,
+        idempotency_key=idempotency_key,
+        **create_params,
     )
     if not session.url:
         raise ValueError("Checkout session created without URL")
@@ -710,6 +748,10 @@ def _handle_invoice_paid(invoice: dict[str, Any]) -> None:
             "status": "succeeded",
             "tier": tier,
             "stripeEventId": invoice.get("id"),
+            # PP-166: tag offer subscriptions, and mark fully discounted (comp) invoices
+            # so admin revenue and offer metrics can exclude them.
+            "offer": (sub.get("metadata") or {}).get("offer"),
+            "isComp": first_month_offer.invoice_is_comp(invoice),
         }
     )
     applied = _apply_subscription_entitlement(user_id, tier, sub)

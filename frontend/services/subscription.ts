@@ -70,6 +70,39 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
   return response.json();
 }
 
+// PP-166: first-month offer (public, no auth, never includes the coupon id)
+export interface FirstMonthOffer {
+  enabled: boolean;
+  tier?: 'pro';
+  interval?: 'month';
+  listPriceCents?: number;
+  offerPriceCents?: number;
+  discountCents?: number;
+  months?: number;
+}
+
+export async function getFirstMonthOffer(): Promise<FirstMonthOffer> {
+  try {
+    const response = await fetch(`${API_URL}/api/public/offer`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return { enabled: false };
+    const body = (await response.json()) as { data?: FirstMonthOffer };
+    const data = body?.data;
+    if (
+      !data ||
+      data.enabled !== true ||
+      typeof data.listPriceCents !== 'number' ||
+      typeof data.offerPriceCents !== 'number'
+    ) {
+      return { enabled: false };
+    }
+    return data;
+  } catch {
+    return { enabled: false };
+  }
+}
+
 // API Functions
 export async function getTierInfo(): Promise<UserTierInfo> {
   const response = await fetchApi<{ success: boolean; data: UserTierInfo }>('/api/subscription/tier');
