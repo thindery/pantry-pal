@@ -50,7 +50,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | 📋 Open | SEO / AEO |
 | PP-123 | Extend `email_sends` and log every helper attempt | 📋 Open | Marketing dashboard |
 | PP-124 | Resend webhook (signature + idempotency) and `email_events` | 📋 Open | Marketing dashboard |
-| PP-166 | $1 first-month offer test on Pro monthly (PR open; Tylor must approve coupon + deploy) | 🔄 In review | Revenue |
+| PP-166 | $1 first-month offer test on Pro monthly (merged dark Nov 25; live only once the coupon env is set) | ✅ Merged (off) | Revenue |
 | PP-144 | Sign-in and checkout brand + contrast | 📋 Open — sign-in done, checkout remaining | Design review |
 | PP-147 | E2E harness (official Playwright) and pre-deploy smoke gate | 📋 Backlog | E2E |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
@@ -243,7 +243,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-163 | Keep activity history when an item is removed; log a Removed activity | P1 | ✅ Done (live `613d37d`) |
 | PP-165 | GA4 key events (sign_up, begin_checkout, purchase) and login_events rows | P1 | ✅ Done (live `9b19fa8`) |
 | PP-167 | Handle customer.subscription.created before enabling it on the live webhook (commit messages say PP-166) | P0 | ✅ Done (live `0753f20`) |
-| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Merged dark (offer off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set) — Remy overnight Nov 25 |
+| PP-166 | $1 first-month offer on Pro monthly ([PR #62](https://github.com/thindery/pantry-pal/pull/62), branch `pp-offer-1dollar`) | P1 | ✅ Merged dark (offer off until `STRIPE_PRO_FIRST_MONTH_COUPON_ID` is set), Remy overnight Nov 25 |
 | GROWTH-001 | Duplicate subscription checkout (Remy report) | P0 | ✅ Closed — duplicate of PP-089 to PP-094; live webhook now includes refund + subscription.created events |
 
 ## Billing & email audit (2026-11-22)

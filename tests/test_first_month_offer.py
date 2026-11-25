@@ -86,7 +86,7 @@ def test_offer_unset_checkout_is_exactly_as_before():
     assert "discounts" not in kwargs
     assert kwargs["metadata"] == {"userId": "user-1", "tier": "pro"}
     assert kwargs["subscription_data"] == {"metadata": {"userId": "user-1", "tier": "pro"}}
-    assert kwargs["idempotency_key"] == "pantryhub-checkout-user-1-pro-month"
+    assert kwargs["idempotency_key"] == stripe_service.checkout_idempotency_key("user-1", "pro", "month", SUCCESS, CANCEL)
     assert open_mock.call_args.args[2] == ""
 
 
@@ -100,7 +100,7 @@ def test_pro_monthly_with_offer_applies_coupon(monkeypatch):
     assert kwargs["line_items"] == [{"price": "price_pro_m", "quantity": 1}]
     assert kwargs["metadata"]["offer"] == first_month_offer.OFFER_MARKER
     assert kwargs["subscription_data"]["metadata"]["offer"] == first_month_offer.OFFER_MARKER
-    assert kwargs["idempotency_key"] == "pantryhub-checkout-user-1-pro-month-offer-FIRST1"
+    assert kwargs["idempotency_key"] == stripe_service.checkout_idempotency_key("user-1", "pro", "month", SUCCESS, CANCEL) + "-offer-FIRST1"
     assert open_mock.call_args.args[2] == first_month_offer.OFFER_MARKER
     assert result["url"] == "https://checkout.stripe.test/c/1"
 
@@ -113,7 +113,7 @@ def test_other_plans_never_get_the_coupon(monkeypatch, tier, interval):
     assert "discounts" not in kwargs
     assert kwargs["allow_promotion_codes"] is True
     assert "offer" not in kwargs["metadata"]
-    assert kwargs["idempotency_key"] == f"pantryhub-checkout-user-1-{tier}-{interval}"
+    assert kwargs["idempotency_key"] == stripe_service.checkout_idempotency_key("user-1", tier, interval, SUCCESS, CANCEL)
 
 
 def test_returning_subscriber_gets_normal_checkout(monkeypatch):
@@ -122,7 +122,7 @@ def test_returning_subscriber_gets_normal_checkout(monkeypatch):
     kwargs = create_mock.call_args.kwargs
     assert "discounts" not in kwargs
     assert kwargs["allow_promotion_codes"] is True
-    assert kwargs["idempotency_key"] == "pantryhub-checkout-user-1-pro-month"
+    assert kwargs["idempotency_key"] == stripe_service.checkout_idempotency_key("user-1", "pro", "month", SUCCESS, CANCEL)
 
 
 def test_eligibility_skipped_when_offer_off():
