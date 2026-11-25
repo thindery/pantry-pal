@@ -125,11 +125,15 @@ ssh ovh "
   # Build first, then up, so a failed image build cannot be treated as success.
   echo 'Building images...'
   docker compose -p pantry-pal build
+  # PP-169: migrate with the NEW backend image before swapping containers, so the
+  # new code never serves requests against an old schema. A failed migration
+  # aborts here and leaves the previous containers running (ERR trap).
+  echo 'Ensuring database is up...'
+  docker compose -p pantry-pal up -d --wait db
+  echo 'Running database migrations (before starting new containers)...'
+  docker compose -p pantry-pal run --rm --no-deps backend python database/migrate.py migrate
   echo 'Starting containers...'
   docker compose -p pantry-pal up -d
-
-  echo 'Running database migrations...'
-  docker compose -p pantry-pal run --rm backend python database/migrate.py migrate
 
   echo 'Waiting for services to become healthy...'
   health_ok=0
