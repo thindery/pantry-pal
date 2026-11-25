@@ -1,10 +1,10 @@
 # PP-154: E2E — transactional emails triggered
 
-**Status:** 📋 Backlog
+**Status:** 🔄 In review (overnight 2026-11-25)
 **Priority:** P1
 **Phase:** E2E regression suite (2026-11-22)
 **Created:** 2026-11-22
-**Updated:** 2026-11-22, 5:00 PM America/Chicago
+**Updated:** 2026-11-25, 2:20 AM America/Chicago
 **Depends on:** PP-147, PP-148; payment and cancel cases also need PP-152 / PP-153
 **Blocks:** —
 **Coder later:** agy or Hermes — tickets only in this pass; no implementation, installs, or deploys now
@@ -52,3 +52,16 @@ Drive welcome via the sign-in path (a new test user). Drive payment and cancel v
 - Depends on the PP-147 harness. No extra runtime dependencies and no paid email-testing SaaS.
 - No commits, pushes, secrets, or deploys by the coding agent unless a later ticket says so. Stage explicit paths only.
 - Coder later is agy or Hermes.
+
+## Implementation note (overnight 2026-11-25)
+
+Done as a Postgres integration test, `tests/test_email_triggers_postgres.py`, run by `npm run test:postgres` (CI job postgres-integration), rather than a browser spec. The trigger for four of the five emails is a Stripe webhook, not a browser action, so a backend test covers the real path without a Google login or Stripe test-mode account:
+
+- Welcome: real `POST /api/emails/welcome` for a seeded `users` row; retry returns `already_sent`.
+- Payment confirmation, payment failed, cancellation scheduled, subscription ended: real `/api/webhooks/stripe` with HMAC-signed events (local test secret, real `stripe.Webhook.construct_event`). Same-event redelivery and a second event for the same object both send nothing more.
+- Stripe API reads (`Subscription.retrieve` / `list`) and `resend.Emails.send` are in-process fakes; recipients are `@example.test`. No network, no real key.
+- Asserts the Resend payload (`to`, `from`) and the `email_sends` row (`template`, `idempotency_key`, `resend_id`, `to_email`).
+- Missing `RESEND_API_KEY` returns `not_configured`, writes no row, and never calls Resend.
+- Red/green checked: removing the idempotency guards and the subscription-ended send makes 4 of the 5 tests fail.
+
+Not covered here: the in-app `POST /api/subscription/cancel` path (left to PP-153 with Stripe test mode).
