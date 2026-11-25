@@ -480,3 +480,9 @@ npm run build:frontend
 3. **PP-035:** Stop Railway services after production smoke passes
 
 See **`deploy/CUTOVER.md`** for the full checklist.
+
+## Instacart handoff (2026-11-25)
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-178 | Send to Instacart (Beta) button on the shopping list (hidden until `INSTACART_API_KEY` is set) | P2 | 🟡 Built; waiting on Tylor's Instacart Developer Platform key |
