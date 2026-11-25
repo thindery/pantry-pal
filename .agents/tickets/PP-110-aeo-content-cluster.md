@@ -1,6 +1,6 @@
 # PP-110: AEO content cluster and comparison pages
 
-**Status:** In Review (PR open 2026-11-25)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed
 **Priority:** P2
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

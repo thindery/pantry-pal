@@ -1,6 +1,6 @@
 # PP-101: Remove unverifiable social proof, ratings schema, and placeholder testimonials
 
-**Status:** 🔍 In review (follow-up copy PR, branch seo/PP-101-approved-proof-copy; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed (Tylor copy follow-up for unverified items remains)
 **Priority:** P0
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

@@ -1,6 +1,6 @@
 # PP-108: First public content set and truthful landing (Quick Scan, receipts, screenshots)
 
-**Status:** 🔍 In review (PR, branch seo/PP-108-truthful-landing-howto-pages; screenshot item still open; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed (screenshot item still open)
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22

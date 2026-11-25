@@ -1,6 +1,6 @@
 # PP-105: Indexation hygiene — 404 unknown routes, slash/sitemap/robots, noindex auth/checkout
 
-**Status:** 🔍 In review (PR, branch seo/PP-105-indexation-hygiene; not deployed)
+**Status:** ✅ Done — merged 2026-11-25 and deployed (0cc57ed); live smoke passed
 **Priority:** P1
 **Phase:** SEO / AEO / marketing (audit 2026-11-22)
 **Created:** 2026-11-22
