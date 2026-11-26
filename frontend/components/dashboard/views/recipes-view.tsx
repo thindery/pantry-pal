@@ -321,7 +321,7 @@ export function RecipesView() {
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {coverage.haveCount}/{coverage.totalCount} in pantry ({coverage.coveragePercentage}%)
+                        {coverage.haveCount + coverage.stapleCount}/{coverage.totalCount} in pantry ({coverage.coveragePercentage}%)
                       </span>
                     )}
                   </div>

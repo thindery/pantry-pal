@@ -262,7 +262,7 @@ export interface Recipe {
   createdAt: string;
 }
 
-export type RecipeCoverageStatus = "have" | "missing" | "unsure";
+export type RecipeCoverageStatus = "have" | "missing" | "unsure" | "staple";
 
 export interface RecipeIngredientCoverage {
   ingredient: RecipeIngredient;
@@ -274,6 +274,7 @@ export interface RecipeCoverage {
   recipeId: string;
   items: RecipeIngredientCoverage[];
   haveCount: number;
+  stapleCount: number;
   missingCount: number;
   unsureCount: number;
   totalCount: number;
