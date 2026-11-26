@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
+import { PUBLIC_RECIPES_INDEXABLE } from "@/content/recipes/config";
 
 export function MarketingNav() {
   return (
@@ -9,6 +10,14 @@ export function MarketingNav() {
           <BrandMark />
         </Link>
         <div className="flex items-center gap-6">
+          {PUBLIC_RECIPES_INDEXABLE ? (
+            <Link
+              href="/recipes/"
+              className="text-sm text-slate-600 hover:text-slate-900 transition-colors hidden sm:inline"
+            >
+              Recipes
+            </Link>
+          ) : null}
           <Link
             href="/pricing/"
             className="text-sm text-slate-600 hover:text-slate-900 transition-colors hidden sm:inline"

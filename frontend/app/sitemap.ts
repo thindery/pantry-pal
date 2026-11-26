@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { RECIPES } from "@/content/recipes";
+import { MIN_RECIPES_FOR_SITEMAP, PUBLIC_RECIPES_INDEXABLE } from "@/content/recipes/config";
 import { SITE_URL } from "@/lib/site-content";
 
 /**
@@ -23,8 +25,28 @@ export const SITEMAP_PAGES: ReadonlyArray<{
   { path: "/guides/pantry-hub-vs-grocy/", lastModified: "2026-11-25", changeFrequency: "monthly", priority: 0.6 },
 ];
 
+/**
+ * PP-184: public recipe pages join the sitemap only when the launch flag is on
+ * AND at least MIN_RECIPES_FOR_SITEMAP recipes exist. `lastModified` is each
+ * recipe's own `updated` date; bump it with real edits. Tag pages stay out.
+ */
+const RECIPES_INDEX_LAST_MODIFIED = RECIPES.map((r) => r.updated).sort().at(-1) ?? "2026-11-26";
+
+export function recipeSitemapPages(): typeof SITEMAP_PAGES {
+  if (!PUBLIC_RECIPES_INDEXABLE || RECIPES.length < MIN_RECIPES_FOR_SITEMAP) return [];
+  return [
+    { path: "/recipes/", lastModified: RECIPES_INDEX_LAST_MODIFIED, changeFrequency: "weekly", priority: 0.8 },
+    ...RECIPES.map((r) => ({
+      path: `/recipes/${r.slug}/`,
+      lastModified: r.updated,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return SITEMAP_PAGES.map((page) => ({
+  return [...SITEMAP_PAGES, ...recipeSitemapPages()].map((page) => ({
     url: `${SITE_URL}${page.path}`,
     lastModified: page.lastModified,
     changeFrequency: page.changeFrequency,

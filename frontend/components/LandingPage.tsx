@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { BrandMark } from '@/components/BrandMark';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { OfferBanner } from '@/components/OfferBanner';
+import { PUBLIC_RECIPES_INDEXABLE } from '@/content/recipes/config';
 import { BRAND_NAME } from '@/lib/site-content';
 import { 
   ShoppingCart,
@@ -458,6 +460,26 @@ const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </section>
+
+      {/* PP-184: recipe library card. Hidden until PUBLIC_RECIPES_INDEXABLE is flipped. */}
+      {PUBLIC_RECIPES_INDEXABLE ? (
+        <section className="py-12 bg-[var(--marketing-surface)]" aria-labelledby="recipes-card-heading">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 id="recipes-card-heading" className="text-2xl md:text-3xl font-serif-heading font-bold text-slate-800 mb-3">
+              Easy pantry recipes
+            </h2>
+            <p className="text-slate-600 mb-5">
+              Cook from pantry staples and leftovers. Free recipes with times, substitutions, and a serving scaler.
+            </p>
+            <Link
+              href="/recipes/"
+              className="inline-block bg-[var(--primary)] text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+            >
+              Browse recipes
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {/* FAQ Section */}
       <section id="faq" className="scroll-mt-24 py-20 bg-white" aria-labelledby="faq-heading">

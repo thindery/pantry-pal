@@ -1,0 +1,53 @@
+import type { Recipe } from "./types";
+
+export const freezerBreakfastBurritos: Recipe = {
+  slug: "freezer-breakfast-burritos",
+  title: "Freezer Breakfast Burritos",
+  seoTitle: "Freezer Breakfast Burritos (Make-Ahead Meal Prep)",
+  metaSummary: "Make-ahead freezer breakfast burritos, 45 minutes",
+  intro:
+    "These make-ahead breakfast burritos take about 45 minutes to assemble and freeze, then reheat from frozen in about two minutes. They use eggs, frozen hash browns, and flour tortillas, with sausage and cheese. The eggs are cooked just shy of done so they stay tender when you reheat.",
+  meal: "breakfast",
+  tags: ["freezer-friendly", "make-ahead"],
+  servings: 8,
+  prepMin: 25,
+  cookMin: 20,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/freezer-breakfast-burritos.webp",
+  imageAlt: "AI-generated illustration of a sliced breakfast burrito, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "lb", item: "breakfast sausage" },
+    { qty: 1, unit: "tbsp", item: "vegetable oil" },
+    { qty: 2, unit: "cup", item: "frozen shredded hash browns" },
+    { qty: 10, item: "large egg", plural: "large eggs" },
+    { qty: 0.25, unit: "cup", item: "milk" },
+    { qty: 0.5, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+    { qty: 1.5, unit: "cup", item: "shredded cheddar cheese" },
+    { qty: 8, item: "burrito-size flour tortilla (10-inch)", plural: "burrito-size flour tortillas (10-inch)" },
+    { qty: null, item: "Salsa", note: "for serving", scalable: false },
+  ],
+  steps: [
+    "Cook the sausage in a large skillet over medium-high heat for 8 minutes, breaking it into small pieces, until browned and cooked through. Move it to a big bowl.",
+    "In the same skillet, heat the oil and cook the hash browns for 8 to 10 minutes, stirring now and then, until golden. Add them to the bowl.",
+    "Whisk the eggs with the milk, salt, and pepper. Pour into a clean, lightly oiled skillet over medium-low heat and stir gently for 3 to 4 minutes. Take them off the heat while they still look a little wet, because they finish cooking when reheated.",
+    "Fold the eggs into the bowl with the sausage and potatoes. Let the filling cool for about 10 minutes so the tortillas do not turn soggy.",
+    "Warm the tortillas briefly so they bend without cracking. Put about ½ cup of filling and a sprinkle of cheese in the center of each, fold in the sides, and roll up tightly.",
+    "Wrap each burrito in parchment or foil. Freeze them in a single layer on a tray for 1 hour, then move them to a freezer bag.",
+    "To eat one, unwrap it, wrap it in a damp paper towel, and microwave from frozen for 1½ to 2 minutes, turning halfway, until steaming hot all the way through (165°F in the center).",
+  ],
+  substitutions: [
+    "Sausage: leave it out and add a can of drained black beans for a vegetarian version.",
+    "Hash browns: use 2 cups of diced, cooked potatoes.",
+    "Cheddar: any melting cheese works, such as pepper jack or mozzarella.",
+    "Flour tortillas: use whole wheat tortillas; corn tortillas are too small and crack when rolled.",
+    "Milk: use water or leave it out; the eggs will just be a little firmer.",
+  ],
+  tips: [
+    "They keep in the freezer for up to three months. Write the date on the bag.",
+    "In a toaster oven, reheat a thawed burrito wrapped in foil at 350°F for about 20 minutes.",
+  ],
+  pantryStaples: ["eggs", "flour tortillas", "hash browns", "shredded cheese"],
+  related: ["leftover-vegetable-frittata", "baked-oatmeal", "black-bean-tacos"],
+};
