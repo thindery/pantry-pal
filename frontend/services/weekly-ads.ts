@@ -1,5 +1,6 @@
 /**
  * PP-164: weekly-ad hub lookup. Link-out only: no deals are fetched or matched.
+ * PP-179: favorite stores per ZIP code.
  */
 
 import { getApiBaseUrl } from '@/lib/env';
@@ -16,6 +17,8 @@ export interface WeeklyAdStore {
   weeklyAdUrl: string;
   storeUrl?: string | null;
   note?: string | null;
+  isFavorite?: boolean;
+  is_favorite?: boolean;
 }
 
 export interface WeeklyAdsResult {
@@ -42,4 +45,30 @@ export async function getWeeklyAds(zip: string): Promise<WeeklyAdsResult> {
   if (!response.ok) throw new Error(response.status === 400 ? 'Enter a 5-digit US ZIP code.' : 'Could not load stores. Please try again.');
   const json = (await response.json()) as { data: WeeklyAdsResult };
   return json.data;
+}
+
+export async function favoriteStore(zip: string, storeId: string): Promise<void> {
+  const token = await getBearerToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (token != null) headers['Authorization'] = `Bearer ${token}`;
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/weekly-ads/favorites/${encodeURIComponent(zip)}/${encodeURIComponent(storeId)}`,
+    { method: 'PUT', headers }
+  );
+  if (!response.ok) {
+    throw new Error(response.status === 400 ? 'Enter a 5-digit US ZIP code.' : 'Could not favorite store. Please try again.');
+  }
+}
+
+export async function unfavoriteStore(zip: string, storeId: string): Promise<void> {
+  const token = await getBearerToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (token != null) headers['Authorization'] = `Bearer ${token}`;
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/weekly-ads/favorites/${encodeURIComponent(zip)}/${encodeURIComponent(storeId)}`,
+    { method: 'DELETE', headers }
+  );
+  if (!response.ok) {
+    throw new Error(response.status === 400 ? 'Enter a 5-digit US ZIP code.' : 'Could not unfavorite store. Please try again.');
+  }
 }

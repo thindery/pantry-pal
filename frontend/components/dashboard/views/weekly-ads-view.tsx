@@ -2,26 +2,51 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, MapPin, Newspaper, ShoppingCart } from "lucide-react";
+import { ExternalLink, MapPin, Newspaper, ShoppingCart, Star } from "lucide-react";
 import { usePantry } from "@/contexts/pantry-provider";
+import { trackEvent } from "@/lib/analytics";
 import {
   cleanZip,
+  favoriteStore,
   getWeeklyAds,
+  unfavoriteStore,
   WEEKLY_ADS_ZIP_KEY,
   type WeeklyAdStore,
   type WeeklyAdsResult,
 } from "@/services/weekly-ads";
 
-function StoreCard({ store }: { store: WeeklyAdStore }) {
+function StoreCard({
+  store,
+  onToggleFavorite,
+}: {
+  store: WeeklyAdStore;
+  onToggleFavorite: (store: WeeklyAdStore) => void;
+}) {
+  const isFav = Boolean(store.isFavorite || store.is_favorite);
   const place = [store.address, [store.city, store.state].filter(Boolean).join(", "), store.zip]
     .filter(Boolean)
     .join(" ");
   return (
     <li className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 shadow-sm flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="font-semibold text-[var(--foreground)]">{store.name}</p>
-        {place && <p className="text-sm text-[var(--muted)]">{place}</p>}
-        {store.note && <p className="text-xs text-[var(--muted)] mt-1">{store.note}</p>}
+      <div className="flex items-start gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(store)}
+          aria-pressed={isFav}
+          aria-label={isFav ? `Remove ${store.name} from favorites` : `Add ${store.name} to favorites`}
+          className="shrink-0 mt-0.5 p-1 rounded-lg hover:bg-[var(--surface-hover,rgba(0,0,0,0.05))] text-[var(--muted)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+        >
+          <Star
+            size={18}
+            className={isFav ? "fill-amber-400 text-amber-400" : "text-[var(--muted)]"}
+            aria-hidden="true"
+          />
+        </button>
+        <div className="min-w-0">
+          <p className="font-semibold text-[var(--foreground)]">{store.name}</p>
+          {place && <p className="text-sm text-[var(--muted)]">{place}</p>}
+          {store.note && <p className="text-xs text-[var(--muted)] mt-1">{store.note}</p>}
+        </div>
       </div>
       <a
         href={store.weeklyAdUrl}
@@ -49,6 +74,24 @@ export function WeeklyAdsView() {
     [shoppingList],
   );
 
+  const favorites = useMemo(
+    () => (result?.stores || []).filter((s) => Boolean(s.isFavorite || s.is_favorite)),
+    [result?.stores],
+  );
+  const nonFavorites = useMemo(
+    () => (result?.stores || []).filter((s) => !Boolean(s.isFavorite || s.is_favorite)),
+    [result?.stores],
+  );
+
+  const fallbackFavorites = useMemo(
+    () => (result?.fallback || []).filter((s) => Boolean(s.isFavorite || s.is_favorite)),
+    [result?.fallback],
+  );
+  const fallbackNonFavorites = useMemo(
+    () => (result?.fallback || []).filter((s) => !Boolean(s.isFavorite || s.is_favorite)),
+    [result?.fallback],
+  );
+
   const lookup = async (raw: string) => {
     const zip = cleanZip(raw);
     if (!zip) {
@@ -66,6 +109,50 @@ export function WeeklyAdsView() {
       setError(err instanceof Error ? err.message : "Could not load stores.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (store: WeeklyAdStore) => {
+    if (!result) return;
+    const currentFav = Boolean(store.isFavorite || store.is_favorite);
+    const nextFav = !currentFav;
+    const currentZip = result.zip;
+
+    // Optimistic update
+    setResult((prev) => {
+      if (!prev) return prev;
+      const updateList = (list: WeeklyAdStore[]) =>
+        list.map((s) => (s.id === store.id ? { ...s, isFavorite: nextFav, is_favorite: nextFav } : s));
+      return {
+        ...prev,
+        stores: updateList(prev.stores),
+        fallback: updateList(prev.fallback),
+      };
+    });
+
+    try {
+      if (nextFav) {
+        await favoriteStore(currentZip, store.id);
+      } else {
+        await unfavoriteStore(currentZip, store.id);
+      }
+      trackEvent("weekly_ad_favorite", {
+        action: nextFav ? "add" : "remove",
+        zip3: currentZip.slice(0, 3),
+      });
+    } catch (err) {
+      // Rollback on error
+      setResult((prev) => {
+        if (!prev) return prev;
+        const rollbackList = (list: WeeklyAdStore[]) =>
+          list.map((s) => (s.id === store.id ? { ...s, isFavorite: currentFav, is_favorite: currentFav } : s));
+        return {
+          ...prev,
+          stores: rollbackList(prev.stores),
+          fallback: rollbackList(prev.fallback),
+        };
+      });
+      setError(err instanceof Error ? err.message : "Could not update favorite store.");
     }
   };
 
@@ -131,11 +218,34 @@ export function WeeklyAdsView() {
           {result && result.covered && (
             <>
               <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Stores near {result.zip}</h2>
-              <ul className="space-y-3">
-                {result.stores.map((store) => (
-                  <StoreCard key={store.id} store={store} />
-                ))}
-              </ul>
+              {favorites.length > 0 ? (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">Your stores</h3>
+                    <ul className="space-y-3">
+                      {favorites.map((store) => (
+                        <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                      ))}
+                    </ul>
+                  </div>
+                  {nonFavorites.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">Other stores nearby</h3>
+                      <ul className="space-y-3">
+                        {nonFavorites.map((store) => (
+                          <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {result.stores.map((store) => (
+                    <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                  ))}
+                </ul>
+              )}
             </>
           )}
           {result && !result.covered && (
@@ -144,11 +254,34 @@ export function WeeklyAdsView() {
                 We don&apos;t have local stores for {result.zip} yet. These national chains let you pick a
                 store near you and see its weekly ad:
               </p>
-              <ul className="space-y-3">
-                {result.fallback.map((store) => (
-                  <StoreCard key={store.id} store={store} />
-                ))}
-              </ul>
+              {fallbackFavorites.length > 0 ? (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">Your stores</h3>
+                    <ul className="space-y-3">
+                      {fallbackFavorites.map((store) => (
+                        <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                      ))}
+                    </ul>
+                  </div>
+                  {fallbackNonFavorites.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">Other stores nearby</h3>
+                      <ul className="space-y-3">
+                        {fallbackNonFavorites.map((store) => (
+                          <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {result.fallback.map((store) => (
+                    <StoreCard key={store.id} store={store} onToggleFavorite={toggleFavorite} />
+                  ))}
+                </ul>
+              )}
             </>
           )}
           {result && (
