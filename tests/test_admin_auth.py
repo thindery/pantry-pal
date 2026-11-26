@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-from jose import jwt
+import jwt
 
 from backend.auth_session import resolve_authenticated_user
 from backend.routers.admin import require_admin

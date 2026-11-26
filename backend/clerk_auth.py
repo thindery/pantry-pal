@@ -13,8 +13,8 @@ import time
 from typing import Any, Optional
 
 import httpx
-from jose import jwt
-from jose.exceptions import JWTError
+import jwt
+from jwt.exceptions import PyJWTError
 
 _JWKS_CACHE: dict[str, Any] | None = None
 _JWKS_CACHE_AT: float = 0.0
@@ -82,7 +82,7 @@ def _fetch_clerk_jwks() -> dict[str, Any]:
 def _get_signing_key(token: str) -> Optional[dict[str, Any]]:
     try:
         header = jwt.get_unverified_header(token)
-    except JWTError:
+    except PyJWTError:
         return None
     kid = header.get("kid")
     if not kid:
@@ -105,13 +105,14 @@ def verify_clerk_session_token(token: str) -> tuple[Optional[str], Optional[str]
     if not signing_key:
         return None, None
     try:
+        key = jwt.PyJWK.from_dict(signing_key).key
         claims = jwt.decode(
             token,
-            signing_key,
+            key,
             algorithms=[signing_key.get("alg", "RS256")],
             options={"verify_aud": False},
         )
-    except JWTError:
+    except PyJWTError:
         return None, None
     sub = claims.get("sub")
     if not isinstance(sub, str) or not sub:

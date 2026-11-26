@@ -10,6 +10,6 @@ stripe==15.3.0
 resend==2.6.0
 pytest==9.1.1
 psycopg2-binary==2.9.9
-python-jose[cryptography]==3.5.0
+PyJWT[crypto]==2.15.1
 Pillow==13.0.0
 pytesseract==0.3.13
