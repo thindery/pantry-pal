@@ -94,10 +94,11 @@ describe("AiRecipeBuilder", () => {
     fireEvent.change(screen.getByLabelText("Servings"), { target: { value: "4" } });
     fireEvent.change(screen.getByLabelText("Diet"), { target: { value: "vegetarian" } });
     fireEvent.change(screen.getByLabelText("Time"), { target: { value: "30" } });
-    // only in-stock items are offered as must-use
-    const pick = screen.getByLabelText("Add a must-use item");
-    expect(pick).not.toHaveTextContent("Rice");
-    fireEvent.change(pick, { target: { value: "Spinach" } });
+    const pick = screen.getByLabelText("Search your pantry");
+    fireEvent.focus(pick);
+    fireEvent.change(pick, { target: { value: "Spi" } });
+    fireEvent.click(await screen.findByRole("option", { name: "Spinach" }));
+    expect(screen.queryByRole("option", { name: "Rice" })).toBeNull();
     fireEvent.change(screen.getByLabelText("Note"), { target: { value: "one pan" } });
     fireEvent.click(screen.getByRole("button", { name: /Suggest recipes/ }));
 
@@ -108,6 +109,8 @@ describe("AiRecipeBuilder", () => {
       maxMinutes: 30,
       mustUse: ["Spinach"],
       note: "one pan",
+      excludeTitles: [],
+      regenerate: false,
     });
     expect(screen.getByText("Uses up: Spinach")).toBeInTheDocument();
     expect(screen.getByText("2/3 in pantry")).toBeInTheDocument();
@@ -163,6 +166,32 @@ describe("AiRecipeBuilder", () => {
       expect(text).not.toContain(banned);
     }
   });
+
+  it("sends excludeTitles and regenerate on the second click", async () => {
+    getAiRecipeStatus.mockResolvedValue({ enabled: true, eligible: true, usage });
+    suggestAiRecipes.mockResolvedValue({ recipes: [idea], cached: false, usage });
+    renderBuilder();
+    fireEvent.click(await screen.findByRole("button", { name: /Suggest recipes/ }));
+    await screen.findByText("Spinach Omelet");
+    expect(suggestAiRecipes).toHaveBeenLastCalledWith(expect.objectContaining({ regenerate: false, excludeTitles: [] }));
+    fireEvent.click(screen.getByRole("button", { name: /Suggest again/ }));
+    await waitFor(() =>
+      expect(suggestAiRecipes).toHaveBeenLastCalledWith(
+        expect.objectContaining({ regenerate: true, excludeTitles: ["Spinach Omelet"] }),
+      ),
+    );
+  });
+
+  it("lets the cook type a few letters and pick a pantry item as a must-use chip", async () => {
+    getAiRecipeStatus.mockResolvedValue({ enabled: true, eligible: true, usage });
+    renderBuilder();
+    const pick = await screen.findByLabelText("Search your pantry");
+    fireEvent.change(pick, { target: { value: "spin" } });
+    fireEvent.click(await screen.findByRole("option", { name: "Spinach" }));
+    expect(screen.getByTitle("Spinach")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Spinach" })).toBeInTheDocument();
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
 });
 
 describe("truncateOptionLabel", () => {
@@ -194,16 +223,15 @@ describe("must-use options", () => {
         onUpgrade={vi.fn()}
       />,
     );
-    const pick = await screen.findByLabelText("Add a must-use item");
-    const option = pick.querySelector(`option[value="${CSS.escape(long)}"]`) as HTMLOptionElement;
-    expect(option).toBeTruthy();
+    const pick = await screen.findByLabelText("Search your pantry");
+    fireEvent.change(pick, { target: { value: "Olive" } });
+    const option = await screen.findByRole("option", { name: truncateOptionLabel(long) });
     expect(option).toHaveAttribute("title", long);
-    expect(option?.textContent).toBe(truncateOptionLabel(long));
-    expect(option?.textContent).not.toBe(long);
-    fireEvent.change(pick, { target: { value: long } });
+    expect(option).not.toHaveTextContent(long);
+    fireEvent.click(option);
     fireEvent.click(screen.getByRole("button", { name: /Suggest recipes/ }));
     await waitFor(() =>
-      expect(suggestAiRecipes).toHaveBeenCalledWith(expect.objectContaining({ mustUse: [long] })),
+      expect(suggestAiRecipes).toHaveBeenCalledWith(expect.objectContaining({ mustUse: [long], regenerate: false })),
     );
   });
 });

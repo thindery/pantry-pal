@@ -22,6 +22,8 @@ export interface AiRecipeOptions {
   maxMinutes: number | null;
   mustUse: string[];
   note: string;
+  excludeTitles?: string[];
+  regenerate?: boolean;
 }
 
 export interface AiRecipeIdea {
@@ -37,6 +39,7 @@ export interface AiRecipeResult {
   recipes: AiRecipeIdea[];
   cached: boolean;
   usage: AiUsage | null;
+  note?: string | null;
 }
 
 export const AI_DIET_OPTIONS: Array<{ value: string; label: string }> = [

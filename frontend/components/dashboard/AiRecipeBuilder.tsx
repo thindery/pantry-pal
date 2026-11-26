@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Clock, Loader2, Plus, ShoppingCart, Sparkles, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, Clock, Loader2, Plus, ShoppingCart, Sparkles } from "lucide-react";
 import type { PantryItem, Recipe, ShoppingListItem } from "@/types";
 import { ApiError } from "@/lib/api-error";
 import { trackEvent } from "@/lib/analytics";
@@ -10,6 +10,7 @@ import { calculateRecipeCoverage } from "@/lib/recipe-coverage";
 import { FREE_MAX_SAVED_RECIPES } from "@/lib/recipe-constants";
 import { buildMissingRecipeShoppingItems } from "@/lib/recipe-shopping-list";
 import { createRecipe } from "@/services/recipeService";
+import { MustUsePicker } from "@/components/dashboard/MustUsePicker";
 import {
   AI_DIET_OPTIONS,
   AI_TIME_OPTIONS,
@@ -34,13 +35,22 @@ export interface AiRecipeBuilderProps {
   onUpgrade?: () => void;
 }
 
-export const OPTION_LABEL_MAX = 40;
+export { OPTION_LABEL_MAX, truncateOptionLabel } from "@/components/dashboard/MustUsePicker";
 
-/** Keep native <select> options short so long pantry names cannot widen the control. */
-export function truncateOptionLabel(name: string, max = OPTION_LABEL_MAX): string {
-  const text = name.trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trimEnd()}…`;
+const MAX_SHOWN_TITLES = 15;
+
+function mergeShownTitles(prev: string[], next: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  // Newest first so the last 15 titles shown stay in the exclude list.
+  for (const title of [...next, ...prev]) {
+    const clean = title.trim();
+    const key = clean.toLowerCase();
+    if (!clean || seen.has(key)) continue;
+    seen.add(key);
+    out.push(clean);
+  }
+  return out.slice(0, MAX_SHOWN_TITLES);
 }
 
 function asRecipe(idea: AiRecipeIdea, index: number): Recipe {
@@ -67,11 +77,11 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
   const [diet, setDiet] = useState("none");
   const [maxMinutes, setMaxMinutes] = useState<number | null>(null);
   const [mustUse, setMustUse] = useState<string[]>([]);
-  const [mustUsePick, setMustUsePick] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ideas, setIdeas] = useState<AiRecipeIdea[]>([]);
+  const [shownTitles, setShownTitles] = useState<string[]>([]);
   const [savedIds, setSavedIds] = useState<Record<number, string>>({});
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -86,15 +96,6 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
     };
   }, []);
 
-  const inStock = useMemo(
-    () =>
-      inventory
-        .filter((i) => i.quantity > 0 && i.name.trim())
-        .map((i) => i.name.trim())
-        .filter((name, idx, arr) => arr.findIndex((n) => n.toLowerCase() === name.toLowerCase()) === idx)
-        .sort((a, b) => a.localeCompare(b)),
-    [inventory],
-  );
 
   if (!status || !status.enabled) return null;
 
@@ -125,25 +126,21 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
     );
   }
 
-  const addMustUse = (name: string) => {
-    const clean = name.trim();
-    if (!clean || mustUse.length >= 5) return;
-    if (mustUse.some((m) => m.toLowerCase() === clean.toLowerCase())) return;
-    setMustUse([...mustUse, clean]);
-    setMustUsePick("");
-  };
-
   const handleSuggest = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setNotice(null);
-    trackEvent("ai_recipe_request", { servings, diet, max_minutes: maxMinutes ?? 0, must_use_count: mustUse.length });
+    const regenerate = shownTitles.length > 0 || ideas.length > 0;
+    const excludeTitles = regenerate ? mergeShownTitles(shownTitles, ideas.map((idea) => idea.title)) : [];
+    trackEvent("ai_recipe_request", { servings, diet, max_minutes: maxMinutes ?? 0, must_use_count: mustUse.length, regenerate });
     try {
-      const result = await suggestAiRecipes({ servings, diet, maxMinutes, mustUse, note: note.trim() });
+      const result = await suggestAiRecipes({ servings, diet, maxMinutes, mustUse, note: note.trim(), excludeTitles, regenerate });
       setIdeas(result.recipes);
       setSavedIds({});
+      setShownTitles((prev) => mergeShownTitles(prev, result.recipes.map((idea) => idea.title)));
       if (result.usage) setStatus((s) => (s ? { ...s, usage: result.usage } : s));
+      if (result.note) setNotice(result.note);
     } catch (err) {
       setIdeas([]);
       setError(err instanceof ApiError || err instanceof Error ? err.message : "AI recipe ideas aren't available right now.");
@@ -192,7 +189,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
     "w-full max-w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)]";
 
   return (
-    <section data-testid="ai-recipe-builder" className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 space-y-4 min-w-0 max-w-full overflow-x-hidden">
+    <section data-testid="ai-recipe-builder" className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 space-y-4 min-w-0 max-w-full">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
         <div>
           <h2 className="font-serif-heading font-semibold text-lg text-[var(--foreground)] flex items-center gap-2">
@@ -249,40 +246,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
           </select>
         </label>
 
-        <div className="sm:col-span-3 space-y-1 min-w-0">
-          <span className="text-xs font-medium text-[var(--muted)]">Must use (up to 5)</span>
-          <div className="flex flex-wrap items-center gap-2 min-w-0 w-full">
-            {mustUse.map((m) => (
-              <span
-                key={m}
-                title={m}
-                className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--foreground)] max-w-full min-w-0"
-              >
-                <span className="truncate">{m}</span>
-                <button type="button" aria-label={`Remove ${m}`} onClick={() => setMustUse(mustUse.filter((x) => x !== m))}>
-                  <X size={12} />
-                </button>
-              </span>
-            ))}
-            {mustUse.length < 5 && (
-              <select
-                aria-label="Add a must-use item"
-                className="w-full max-w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
-                value={mustUsePick}
-                onChange={(e) => addMustUse(e.target.value)}
-              >
-                <option value="">+ Add pantry item</option>
-                {inStock
-                  .filter((n) => !mustUse.some((m) => m.toLowerCase() === n.toLowerCase()))
-                  .map((n) => (
-                    <option key={n} value={n} title={n}>
-                      {truncateOptionLabel(n)}
-                    </option>
-                  ))}
-              </select>
-            )}
-          </div>
-        </div>
+        <MustUsePicker inventory={inventory} selected={mustUse} onChange={setMustUse} />
 
         <label className="sm:col-span-3 text-xs font-medium text-[var(--muted)] space-y-1 min-w-0">
           <span>Anything else? (optional)</span>
