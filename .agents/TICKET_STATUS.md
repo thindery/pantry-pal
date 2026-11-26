@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 11:25 AM CT (PP-192 recipes page compact layout in progress; PP-189 matcher on main #131; PP-191 I-used-this design filed, not built)
+Last updated: 2026-11-26, 11:21 AM CT (PP-189 live at bd8cf4f; PP-192 recipes page compact layout in progress; PP-191 I-used-this design filed, not built)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,11 +16,11 @@ Last updated: 2026-11-26, 11:25 AM CT (PP-192 recipes page compact layout in pro
 | | Count |
 |--|-------|
 | Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
-| In progress | 2 (PP-189, PP-192) |
+| In progress | 1 (PP-192) |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 7 · P2: 11 · P3: 2 (25 on the board below) |
+| Open by priority | P0: 5 · P1: 6 · P2: 11 · P3: 2 (24 on the board below) |
 | User action pending | Tylor: Bing Webmaster import (PP-119); add GA4 Viewer for the read-only SA (PP-121); create a Resend read key in the mypantryhub Resend account (PP-129); OK the low-stock email copy (PP-137); AdSense in-app ad unit (PP-140); recipes and photos (PP-139) |
 
 ---
@@ -151,7 +151,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (live Nov 25, 1:57 PM CT) | ✅ Done (live) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
-| PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | 🟡 In progress | User-reported |
+| PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | ✅ Done (live 11:21 AM CT, `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) | User-reported |
 
 ### P2 — soon (11)
 
@@ -525,7 +525,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | 🟡 In progress (code on main, [#131](https://github.com/thindery/pantry-pal/pull/131), 11:17 AM CT; live deploy may still be pending) |
+| PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | ✅ Done (live 11:21 AM CT, build `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) |
 | PP-192 | Compact recipes page: move the AI generator into a **Suggest with AI** tab; dense list cards so more recipes fit on a phone | P2 | 🟡 In progress |
 
 ## Tickets from Tylor's Nov 26 "I used this" request

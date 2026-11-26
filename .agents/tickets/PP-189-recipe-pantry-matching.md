@@ -1,6 +1,6 @@
 # PP-189: Robust recipe-to-pantry ingredient matching
 
-**Status:** 📋 Open
+**Status:** ✅ Done (live 2026-11-26, 11:21 AM CT, build `bd8cf4f`, [PR #131](https://github.com/thindery/pantry-pal/pull/131), merge `bd8cf4f`)
 **Priority:** P1
 **Phase:** Recipes / cook-from-pantry
 **Created:** 2026-11-26, 11:03 AM America/Chicago
@@ -46,12 +46,12 @@ Saved recipes store `{raw, name}` only. Coverage is already computed at read tim
 
 ## Acceptance Criteria
 
-- [ ] Unit tests cover exactly the example pairs from Tylor's pantry and recipe lines.
-- [ ] Butter matches pantry "Butter", not peanut butter / butter cake / buttermilk / buttery potatoes.
-- [ ] Heavy cream matches "Heavy Whipping Cream", not cream cheese or cream of chicken.
-- [ ] Salt, pepper, and oil show as "Pantry staple" and are not counted as missing.
-- [ ] Coverage is computed at read time.
-- [ ] Touched tests, typecheck, lint, and frontend build pass.
+- [x] Unit tests cover exactly the example pairs from Tylor's pantry and recipe lines.
+- [x] Butter matches pantry "Butter", not peanut butter / butter cake / buttermilk / buttery potatoes.
+- [x] Heavy cream matches "Heavy Whipping Cream", not cream cheese or cream of chicken.
+- [x] Salt, pepper, and oil show as "Pantry staple" and are not counted as missing.
+- [x] Coverage is computed at read time.
+- [x] Touched tests, typecheck, lint, and frontend build pass.
 
 ## Allowed paths
 
@@ -70,3 +70,10 @@ Saved recipes store `{raw, name}` only. Coverage is already computed at read tim
 - No secrets. Commit with explicit paths only; never `git add -A`.
 - Don't touch the stray `2026-07-30` file, `.agents/email-previews/`, or GROWTH-010.
 - PP-188 is reserved for recipe sharing (uncommitted in the `pantry-pal-pp188` worktree).
+
+## Resolution (2026-11-26)
+
+- This was the saved/imported recipe detail view (`Ingredients · 9 total` in `recipe-detail-view.tsx`). AI-saved recipes use the same matcher. Recipes store `{raw, name}` only; coverage is still computed at read time.
+- Matching now strips quantities, units, descriptors, parentheticals, `optional:`, `to season`, and `such as …`, then token-matches the closest pantry item (singular/plural insensitive).
+- Tylor's examples: "very soft unsalted butter" → Butter (2); "heavy cream" → Heavy Whipping Cream (1). Peanut Butter Spread, Butter cake, buttermilk mix, cream cheese, and cream of chicken are rejected. Salt/pepper and oil show as **Pantry staple**.
+- Live build `bd8cf4f`.
