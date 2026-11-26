@@ -28,7 +28,13 @@ fetches, so photographer names and photo URLs could not be verified from the bui
 Add a row here (file, photographer, Unsplash photo URL) for every Unsplash image added by hand.
 Do not add an Unsplash file without its credit row.
 
-## Planned AI images (not yet generated)
+## AI-generated email heroes (PP-199)
 
-See `.agents/tickets/PP-199-email-imagery.md`. Until these exist, emails fall back to the recipe
-illustrations above.
+Original illustrations generated for these emails (not photos). Alt text in emails says "AI illustration".
+
+| File | Source |
+|------|--------|
+| hero-pantry-welcome.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the welcome-email hero. |
+| hero-pantry-shelf.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the "know your pantry" hero. |
+| hero-scan-first-item.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the "scan your first item" hero. |
+| hero-household-pantry.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the Pro onboarding hero. |

@@ -20,26 +20,29 @@ Absolute `https://www.mypantryhub.com/email/<name>.jpg`, JPG (many clients canno
 
 ## Image plan
 
-| Email | Hero now | Recipe cards | Planned better hero (gap) |
-|-------|----------|--------------|---------------------------|
-| R0 confirm | none (keep the opt-in email light) | none | none |
-| R1 welcome | canned-tuna-pasta | black-bean-tacos, easy-red-lentil-soup | `hero-pantry-welcome` |
-| R2 cupboard dinners | rice-and-beans-with-canned-beans | leftover-rice-fried-rice, pasta-e-fagioli | none needed |
-| R3 know your pantry | easy-lasagna (stand-in) | none | `hero-pantry-shelf` |
-| O1 scan first item | baked-potato-soup (stand-in) | none | `hero-scan-first-item` |
-| O2 recipes | sheet-pan-chicken-and-vegetables | none | none needed |
-| O3 Pro | sunday-pot-roast (stand-in) | none | `hero-household-pantry` |
+| Email | Hero now | Recipe cards |
+|-------|----------|--------------|
+| R0 confirm | none (keep the opt-in email light) | none |
+| R1 welcome | `hero-pantry-welcome` | canned-tuna-pasta, black-bean-tacos, easy-red-lentil-soup |
+| R2 cupboard dinners | rice-and-beans-with-canned-beans | leftover-rice-fried-rice, pasta-e-fagioli |
+| R3 know your pantry | `hero-pantry-shelf` | none |
+| O1 scan first item | `hero-scan-first-item` | none |
+| O2 recipes | sheet-pan-chicken-and-vegetables | none |
+| O3 Pro | `hero-household-pantry` | none |
 
-Sources used: (1) the existing AI recipe illustrations (PP-184/193), resized to JPG copies. (2) Unsplash: **none used yet.** Unsplash serves a bot challenge (HTTP 401 "Checking your browser", Anubis) to automated fetches from the build box, so photographer names and photo URLs could not be verified. Per the rule that every Unsplash file needs a credit row, none were added; the manual download route (open the photo page in a normal browser, use its Download button, add a row to CREDITS.md) is documented in `CREDITS.md`. We do not use the paid API and do not work around the challenge. (3) AI gaps below.
+Sources used: (1) the existing AI recipe illustrations (PP-184/193), resized to JPG copies. (2) Unsplash: **none used yet.** Unsplash serves a bot challenge (HTTP 401 "Checking your browser", Anubis) to automated fetches from the build box, so photographer names and photo URLs could not be verified. Per the rule that every Unsplash file needs a credit row, none were added; the manual download route (open the photo page in a normal browser, use its Download button, add a row to CREDITS.md) is documented in `CREDITS.md`. We do not use the paid API and do not work around the challenge. (3) The four dedicated AI heroes below, now shipped.
 
-## Gaps for AI generation (one-line prompts; 4:3, 600x450 final, JPG)
+## AI hero images (added 2026-11-26, 1:19 PM CT)
+
+The four gap images are now in `frontend/public/email/` (600x450 JPG, 51–60 KB) and preferred over the recipe stand-ins. Prompts used:
+
 
 1. `hero-pantry-welcome`: "Warm top-down photo-style illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes, soft morning light, cream background, no text."
 2. `hero-pantry-shelf`: "Bright illustration of a neat pantry shelf with labeled glass jars, pasta, canned goods and a small shopping list, fresh green accents, no text."
 3. `hero-scan-first-item`: "Friendly illustration of a hand holding a phone scanning a can of beans on a kitchen counter, green scan frame around the can, no readable text."
 4. `hero-household-pantry`: "Warm illustration of a family kitchen with a shared pantry and a phone showing a simple stock list, green and cream palette, no readable text."
 
-When a file is delivered: add `frontend/public/email/<name>.jpg` (resized with `magick in.png -resize 600x -strip -quality 76 out.jpg`), add the name to `AVAILABLE_IMAGES` and `ALT` in `backend/services/journey_emails.py`, add a CREDITS row. The hero list already prefers the gap image over the stand-in.
+Shipped in this follow-up: files added, credited, and preferred in `AVAILABLE_IMAGES` / `ALT` / `HEROES`. Recipe stand-ins remain only as fallbacks.
 
 ## Blocker found at deploy (Nov 26, 1:16 PM CT): Cloudflare challenges /email/*.jpg
 

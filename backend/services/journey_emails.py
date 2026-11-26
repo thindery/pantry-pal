@@ -36,6 +36,10 @@ AVAILABLE_IMAGES = frozenset(
         "easy-lasagna",
         "baked-potato-soup",
         "sunday-pot-roast",
+        "hero-pantry-welcome",
+        "hero-pantry-shelf",
+        "hero-scan-first-item",
+        "hero-household-pantry",
     }
 )
 IMAGE_W, IMAGE_H = 600, 450
@@ -52,6 +56,10 @@ ALT = {
     "easy-lasagna": "AI illustration of lasagna",
     "baked-potato-soup": "AI illustration of baked potato soup",
     "sunday-pot-roast": "AI illustration of a Sunday pot roast",
+    "hero-pantry-welcome": "AI illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes",
+    "hero-pantry-shelf": "AI illustration of a neat pantry shelf with labeled glass jars, pasta and canned goods",
+    "hero-scan-first-item": "AI illustration of a hand holding a phone scanning a can of beans",
+    "hero-household-pantry": "AI illustration of a family kitchen with a shared pantry and a phone showing a stock list",
 }
 RECIPE_TITLES = {
     "canned-tuna-pasta": "Canned Tuna Pasta",
