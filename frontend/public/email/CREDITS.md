@@ -30,11 +30,9 @@ Do not add an Unsplash file without its credit row.
 
 ## AI-generated email heroes (PP-199)
 
-Original illustrations generated for these emails (not photos). Alt text in emails says "AI illustration".
+Original illustration generated for these emails (not a photo). Alt text in emails says "AI illustration".
+Tylor approved only the welcome hero on 2026-11-26; the other three candidates were not used.
 
 | File | Source |
 |------|--------|
-| hero-pantry-welcome.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the welcome-email hero. |
-| hero-pantry-shelf.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the "know your pantry" hero. |
-| hero-scan-first-item.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the "scan your first item" hero. |
-| hero-household-pantry.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the Pro onboarding hero. |
+| hero-pantry-welcome.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the welcome-email hero (jars plus canned tomato sauce). |
