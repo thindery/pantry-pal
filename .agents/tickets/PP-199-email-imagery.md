@@ -40,3 +40,9 @@ Sources used: (1) the existing AI recipe illustrations (PP-184/193), resized to 
 4. `hero-household-pantry`: "Warm illustration of a family kitchen with a shared pantry and a phone showing a simple stock list, green and cream palette, no readable text."
 
 When a file is delivered: add `frontend/public/email/<name>.jpg` (resized with `magick in.png -resize 600x -strip -quality 76 out.jpg`), add the name to `AVAILABLE_IMAGES` and `ALT` in `backend/services/journey_emails.py`, add a CREDITS row. The hero list already prefers the gap image over the stand-in.
+
+## Blocker found at deploy (Nov 26, 1:16 PM CT): Cloudflare challenges /email/*.jpg
+
+Live build `92a55d6` serves the files (verified inside the frontend container), but a request to `https://www.mypantryhub.com/email/canned-tuna-pasta.jpg` with Gmail's image-proxy user agent returns `403` with `cf-mitigated: challenge`. Mail-client image proxies cannot solve a challenge, so images would show as broken in Gmail and others. Same for `/recipes/*.webp` if ever hot-linked in mail.
+
+Fix (Tylor's OK needed; it changes live Cloudflare config): add a WAF custom rule, action **Skip** (Bot Fight / managed challenge / rate limiting), for `URI Path starts with /email/`. Click, confirm and unsubscribe links open in a real browser, so they can stay challenged. Do not turn journeys on until the image rule is in and a Gmail test shows the images.

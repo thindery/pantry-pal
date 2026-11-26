@@ -157,7 +157,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
-| PP-193 | Capture-only public recipe newsletter signup (no emails sent) | 🟡 Shipping | Growth / recipes |
+| PP-193 | Capture-only public recipe newsletter signup (no emails sent) | ✅ Live behind flags (build `92a55d6`, #144) | Growth / recipes |
 | PP-192 | Compact recipes page: tabs for the AI generator, denser recipe cards | ✅ Live (build c053497) | Recipes UX |
 | PP-190 | Combine similar pantry items using the PP-189 normalizer (ticket only) | 📋 Open | User-reported |
 | PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle ([#119](https://github.com/thindery/pantry-pal/pull/119); live 4:10 PM CT Nov 25, build `32cb176`, migration 031 app_settings, `AI_RECEIPT_SCAN_ENABLED=1`) | ✅ Done | Pro AI |
@@ -542,9 +542,9 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-194 | Email journeys foundation: send gate (`EMAIL_JOURNEYS_ENABLED`), journey state, click/confirm/unsubscribe endpoints | P2 | 🟡 Shipping (everything behind flags, nothing sends) |
-| PP-195 | Recipe newsletter double opt-in + 3-email welcome journey + one-click unsubscribe | P2 | 🟡 Shipping (copy needs Tylor's OK before the flag turns on) |
-| PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | 🟡 Shipping (enrollment off until `EMAIL_ONBOARDING_SINCE` is set) |
-| PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking shipping. Waiting on Tylor to add the webhook in the Resend dashboard |
+| PP-194 | Email journeys foundation: send gate (`EMAIL_JOURNEYS_ENABLED`), journey state, click/confirm/unsubscribe endpoints | P2 | ✅ Live Nov 26, build `92a55d6`, [#144](https://github.com/thindery/pantry-pal/pull/144), migration 035. Everything off, nothing sends |
+| PP-195 | Recipe newsletter double opt-in + 3-email welcome journey + one-click unsubscribe | P2 | ✅ Live behind flags (build `92a55d6`, #144). Copy needs Tylor's OK before the flag turns on |
+| PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | ✅ Live behind flags (build `92a55d6`, #144). Enrollment off until `EMAIL_ONBOARDING_SINCE` is set, copy needs Tylor's OK |
+| PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking live (#144). Waiting on Tylor to add the webhook in the Resend dashboard (secret not set on prod) |
 | PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
-| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Shipping (recipe illustrations live; 4 AI gap images pending) |
+| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags (build `92a55d6`). Blocked from go-live: Cloudflare challenges `/email/*` for mail image proxies (needs a Skip rule, Tylor's OK). 4 AI gap images pending |
