@@ -1,6 +1,6 @@
 # PP-184: Free public recipe library (SEO): browse page, recipe pages, AI images, scale servings
 
-**Status:** 🟡 Live, unlisted (2026-11-26, PR #135, merge 9e910fc; live build c053497). Waiting on AI images and Tylor's OK before it goes public
+**Status:** 🟡 Live, unlisted (PR #135, 9e910fc). AI illustrations added 2026-11-26. Waiting on Tylor's OK before it goes public
 **Priority:** P2
 **Phase:** Growth / SEO content
 **Created:** 2026-11-25, 3:25 PM America/Chicago
@@ -122,7 +122,16 @@ SEO & AEO Desk, from its PP-184 input:
 - [ ] Confirm GA4 `recipe_view`, `recipe_scale`, and `recipe_cta_click` appear in DebugView.
 - [ ] Affiliate links stay out until PP-139 gets Tylor's yes.
 
-## Batch 2 backlog (topic candidates; no search volumes)
+## Images (shipped 2026-11-26)
+
+The 12 starter recipes now have optimized WebP files at `frontend/public/recipes/<slug>.webp` (about 1000–1152px wide, under ~150KB, quality around 70–80). Alt text still starts with "AI-generated illustration" and the hero caption is "AI illustration, not a photo of this dish." Once the file is present, Recipe JSON-LD includes an absolute `image` URL and the page uses that file as its Open Graph image.
+
+## 100-recipe backlog
+
+The full planning list (about 100 rows, in batches of 12) lives in [.agents/docs/recipe-backlog.md](../docs/recipe-backlog.md). Batch 1 is this live set. Batches 2–3 are the classics plus the best late-November / winter trending picks. Holiday sides and baking are queued in batch 6 for early fall 2027. No search volumes are claimed.
+
+## Batch 2 notes (see the full backlog)
+
 
 Marked **classic** or **trending/seasonal**. Evidence for the trending/seasonal rows is qualitative only, from Google's published Thanksgiving trends, Google Trends analyses reported by other sites, and Google autocomplete / live results. **No volumes are claimed**: Search Console has no usable query data yet and we have no Keyword Planner access. The SEO desk should check keywords and copy before each is written. Timing note: Thanksgiving 2026 is today (Nov 26), and new pages need time to be indexed, so holiday-side pages are mainly for the 2027 season (publish by early October); soups and stews are in season now through winter.
 
