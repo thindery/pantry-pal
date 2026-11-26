@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 3:40 PM CT (PP-234 real Pexels heroes shipping for R3/O1/O3; welcome hero unchanged; send flags off)
+Last updated: 2026-11-26, 3:55 PM CT (PP-234 real Pexels heroes live at `596be58` / #155; EMAIL_MAILING_ADDRESS set on OVH; send flags still off)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -553,7 +553,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking live (#144). Waiting on Tylor to add the webhook in the Resend dashboard (secret not set on prod) |
 | PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
 | PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags. Welcome hero approved. Three real Pexels heroes shipped in PP-234. Still blocked from go-live: Cloudflare challenges `/email/*` (needs a Skip rule, Tylor's OK) |
-| PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | 🟡 Shipping (send flags unchanged) |
+| PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | ✅ Live Nov 26, 3:51 PM CT, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155). Mailing address set on OVH (full street address, not city-only). Send flags unchanged |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 
