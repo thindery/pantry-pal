@@ -97,3 +97,18 @@ A 2026-11-22 test of `send_payment_confirmation` to Tylor landed in Gmail Inbox 
 ## Weekly low-stock email (PP-137)
 
 Opt-in only, off unless `LOW_STOCK_DIGEST_ENABLED=1`. Template `low_stock_digest`, once per user per ISO week, Sundays 9:00 AM CT from the OVH cron (`docker exec pantry-pal-backend python -m backend.jobs.low_stock_digest`). Not billing-critical: suppressed addresses are skipped, and every mail has a one-click unsubscribe (`/api/public/email/unsubscribe?token=`, plus `List-Unsubscribe` headers). Lists only items at or below the user's synced low-stock levels; nothing is sent when nothing is low.
+
+## Email journeys (PP-194..PP-199)
+
+Everything non-transactional goes through `backend/services/email_gate.py`. Env names only (values on OVH):
+
+| Name | Meaning |
+|------|---------|
+| `EMAIL_JOURNEYS_ENABLED` | blank/false = off. `true` = journeys send to everyone eligible. Do not set until Tylor approves the copy in PP-195/PP-196 |
+| `EMAIL_JOURNEYS_TEST_RECIPIENTS` | comma list; with the flag off, only these addresses get journey mail (test mode) |
+| `EMAIL_MAILING_ADDRESS` | postal address line for the footer (CAN-SPAM). Live commercial mail is held without it |
+| `EMAIL_ONBOARDING_SINCE` | ISO timestamp; only accounts created at/after it are enrolled in onboarding. Blank = nobody |
+| `RESEND_WEBHOOK_SECRET` | not set on prod yet (PP-197) |
+
+Runner: `docker exec pantry-pal-backend python -m backend.jobs.email_journeys [--dry-run]` (cron every 10 minutes, to be installed at go-live). Dashboard: Admin -> Marketing. Preview/test: set `EMAIL_JOURNEYS_TEST_RECIPIENTS=thindery@gmail.com`, subscribe that address on /recipes/, confirm, then `--dry-run` or wait for the next run; use `delivered@resend.dev` / `bounced@resend.dev` for webhook tests, never fake addresses at real providers.
+Existing PP-193 subscribers are `pending` (never confirmed) and are not mailed. Backlog confirm is a separate decision.

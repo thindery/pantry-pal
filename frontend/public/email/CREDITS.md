@@ -1,0 +1,34 @@
+# Email image credits (PP-199)
+
+Images here are served at `https://www.mypantryhub.com/email/<file>` and used in Pantry Hub emails.
+JPG, 600px wide, under 200 KB, because many mail clients do not render WebP.
+
+## AI illustrations (Pantry Hub recipe library)
+
+Resized JPG copies of the AI-generated recipe illustrations in `frontend/public/recipes/<slug>.webp`
+(PP-184 / PP-193). Not photos of the dishes. Alt text in emails says "AI illustration".
+
+| File | Source |
+|------|--------|
+| canned-tuna-pasta.jpg | recipes/canned-tuna-pasta.webp |
+| black-bean-tacos.jpg | recipes/black-bean-tacos.webp |
+| easy-red-lentil-soup.jpg | recipes/easy-red-lentil-soup.webp |
+| rice-and-beans-with-canned-beans.jpg | recipes/rice-and-beans-with-canned-beans.webp |
+| leftover-rice-fried-rice.jpg | recipes/leftover-rice-fried-rice.webp |
+| pasta-e-fagioli.jpg | recipes/pasta-e-fagioli.webp |
+| sheet-pan-chicken-and-vegetables.jpg | recipes/sheet-pan-chicken-and-vegetables.webp |
+| easy-lasagna.jpg | recipes/easy-lasagna.webp |
+| baked-potato-soup.jpg | recipes/baked-potato-soup.webp |
+| sunday-pot-roast.jpg | recipes/sunday-pot-roast.webp |
+
+## Unsplash photos (Unsplash License)
+
+None yet. Unsplash serves a bot challenge (HTTP 401 "Checking your browser") to automated
+fetches, so photographer names and photo URLs could not be verified from the build box.
+Add a row here (file, photographer, Unsplash photo URL) for every Unsplash image added by hand.
+Do not add an Unsplash file without its credit row.
+
+## Planned AI images (not yet generated)
+
+See `.agents/tickets/PP-199-email-imagery.md`. Until these exist, emails fall back to the recipe
+illustrations above.

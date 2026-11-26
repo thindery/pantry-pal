@@ -25,7 +25,7 @@ async def subscribe(body: NewsletterSubscribeRequest):
     if body.website.strip():
         return success_response({"subscribed": True})
     try:
-        recipe_newsletter_service.subscribe(
+        result = recipe_newsletter_service.subscribe(
             email=body.email,
             source=body.source,
             recipe_slug=body.recipe_slug,
@@ -35,4 +35,4 @@ async def subscribe(body: NewsletterSubscribeRequest):
             status_code=400,
             detail=error_response("INVALID_EMAIL", "Enter a valid email address."),
         )
-    return success_response({"subscribed": True})
+    return success_response({"subscribed": True, "confirmation_required": bool(result["confirmation_required"])})

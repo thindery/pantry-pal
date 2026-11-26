@@ -10,6 +10,7 @@ export function RecipeNewsletterForm({ recipeSlug }: { recipeSlug?: string }) {
   const [email, setEmail] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,6 +31,13 @@ export function RecipeNewsletterForm({ recipeSlug }: { recipeSlug?: string }) {
         setStatus("error");
         return;
       }
+      let json: { data?: { confirmation_required?: boolean } } | null = null;
+      try {
+        json = await res.json();
+      } catch {
+        json = null;
+      }
+      setNeedsConfirm(Boolean(json?.data?.confirmation_required));
       setStatus("done");
     } catch {
       setStatus("error");
@@ -47,7 +55,9 @@ export function RecipeNewsletterForm({ recipeSlug }: { recipeSlug?: string }) {
       </p>
       {status === "done" ? (
         <p className="mt-2 text-sm text-slate-700" role="status">
-          You&apos;re signed up. {CONSENT}
+          {needsConfirm
+            ? "Almost done. Check your inbox (and spam) for an email from Pantry Hub and tap the confirm button."
+            : `You're signed up. ${CONSENT}`}
         </p>
       ) : (
         <>

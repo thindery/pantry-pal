@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
@@ -12,6 +13,7 @@ from backend.clerk_auth import is_admin_user
 from backend.models.responses import error_response, success_response
 from backend.services import admin_service, ai_providers, app_settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 
@@ -91,6 +93,23 @@ async def email_metrics(
             detail=error_response("INTERNAL_ERROR", "Failed to retrieve email metrics"),
         )
 
+
+@router.get("/email-marketing")
+async def email_marketing(
+    period: Literal["7d", "30d", "90d"] = Query("30d"),
+    _admin: str = Depends(require_admin),
+):
+    """PP-198: subscribers, journeys, per-email engagement, link clicks and recent webhook events."""
+    from backend.services import admin_email_marketing
+
+    try:
+        return success_response(admin_email_marketing.get_email_marketing(period))
+    except Exception:
+        logger.exception("email marketing dashboard failed")
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("INTERNAL_ERROR", "Failed to retrieve email marketing data"),
+        )
 
 
 class AiProviderUpdate(BaseModel):

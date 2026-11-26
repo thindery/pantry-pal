@@ -4,6 +4,7 @@ import type { Period } from '../../types/admin';
 import { getEmailMetrics, type EmailMetrics } from '../../services/adminService';
 import { FunnelTiles } from './FunnelTiles';
 import { AnalyticsLinksCard } from './AnalyticsLinksCard';
+import { EmailMarketingPanel } from './EmailMarketingPanel';
 
 interface MarketingViewProps {
   period: Period;
@@ -100,6 +101,9 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* PP-198: subscribers, journeys, clicks */}
+      <EmailMarketingPanel period={period} />
 
       {/* Funnel Tiles */}
       <FunnelTiles period={period} />
