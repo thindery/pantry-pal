@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 11:03 AM CT (PP-189 recipe pantry matching in progress)
+Last updated: 2026-11-26, 11:19 AM CT (PP-189 matcher on main #131; PP-191 I-used-this design filed, not built)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -167,6 +167,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-136 | Promo or trial-ending reminder (only if relevant) | ✅ Done (Nov 25) | Email design |
 | PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
+| PP-191 | "I used this" / "I cooked this" pantry consumption flow (design) | 📋 Open (design only) | Recipes / pantry UX |
 
 ### P3 — someday (2)
 
@@ -523,4 +524,10 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | 🟡 In progress |
+| PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | 🟡 In progress (code on main, [#131](https://github.com/thindery/pantry-pal/pull/131), 11:17 AM CT; live deploy may still be pending) |
+
+## Tickets from Tylor's Nov 26 "I used this" request
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-191 | "I used this" / "I cooked this" flow: recipe checklist, pantry typeahead, scan-to-use (design only; see `.agents/docs/i-used-this-flow-design.md`) | P2 | 📋 Open (design only; depends on PP-189) |
