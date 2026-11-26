@@ -28,6 +28,7 @@ from backend.routers import (
     recipes,
     item_groups,
     offer,
+    recipe_newsletter,
     scan,
     shopping_sessions,
     subscription,
@@ -117,6 +118,7 @@ def create_app() -> FastAPI:
     app.include_router(recipes.router)
     app.include_router(item_groups.router)
     app.include_router(offer.router)
+    app.include_router(recipe_newsletter.router)
     app.include_router(email_preferences.router)
     app.include_router(weekly_ads.router)
     app.include_router(instacart.router)

@@ -19,6 +19,7 @@ import {
 import { RecipeCard } from "./RecipeCard";
 import { RecipeImage } from "./RecipeImage";
 import { RecipeSignupCta } from "./RecipeSignupCtas";
+import { RecipeNewsletterForm } from "./RecipeNewsletterForm";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -237,6 +238,9 @@ export function RecipeDetail({ recipe, related }: { recipe: RecipeWithImage; rel
 
         <div className="mt-10">
           <RecipeSignupCta placement="end" recipeSlug={recipe.slug} />
+        </div>
+        <div className="mt-6">
+          <RecipeNewsletterForm recipeSlug={recipe.slug} />
         </div>
 
         {related.length > 0 ? (

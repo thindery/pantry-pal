@@ -21,6 +21,8 @@ def _endpoint_key(path: str) -> str:
         return "barcode"
     if path == "/api/client-errors":
         return "client_errors"
+    if path.startswith("/api/public/recipe-newsletter"):
+        return "recipe_newsletter"
     if path.startswith("/api/"):
         return "general"
     return path
@@ -40,6 +42,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             limit = settings.RATE_LIMIT_RECEIPT_SCAN
         elif path.startswith("/api/barcode"):
             limit = settings.RATE_LIMIT_BARCODE
+        elif path.startswith("/api/public/recipe-newsletter"):
+            limit = settings.RATE_LIMIT_NEWSLETTER
         elif path.startswith("/api/"):
             limit = settings.RATE_LIMIT_GENERAL
         else:

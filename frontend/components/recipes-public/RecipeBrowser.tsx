@@ -6,6 +6,7 @@ import { DIET_LABELS, MEAL_LABELS, type DietTag, type MealType } from "@/content
 import type { RecipeWithImage } from "@/content/recipes/images";
 import { RecipeCard } from "./RecipeCard";
 import { RecipeSignupCta } from "./RecipeSignupCtas";
+import { RecipeNewsletterForm } from "./RecipeNewsletterForm";
 import { DEFAULT_FILTERS, QUICK_MINUTES, filterRecipes, type RecipeFilters } from "./recipe-filter";
 
 export const PAGE_SIZE = 12;
@@ -120,6 +121,10 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeWithImage[] }) {
           </button>
         </div>
       ) : null}
+
+      <div className="mt-8">
+        <RecipeNewsletterForm />
+      </div>
     </div>
   );
 }
