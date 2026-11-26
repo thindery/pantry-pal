@@ -18,8 +18,9 @@ import {
 } from "@/lib/recipe-scaling";
 import { RecipeCard } from "./RecipeCard";
 import { RecipeImage } from "./RecipeImage";
-import { RecipeSignupCta } from "./RecipeSignupCtas";
 import { RecipeNewsletterForm } from "./RecipeNewsletterForm";
+import { RecipeSignedInActions } from "./RecipeSignedInActions";
+import { RecipeSignupCta } from "./RecipeSignupCtas";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -89,6 +90,8 @@ export function RecipeDetail({ recipe, related }: { recipe: RecipeWithImage; rel
 
         <h1 className="mt-4 font-serif-heading text-3xl font-bold text-slate-900 sm:text-4xl">{recipe.title}</h1>
         <p className="mt-3 max-w-2xl text-base text-slate-700 sm:text-lg">{recipe.intro}</p>
+
+        <RecipeSignedInActions recipe={recipe} />
 
         <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Stat label="Prep" value={minutesLabel(recipe.prepMin)} />
