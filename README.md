@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 cp .env.example .env.dev
 ./switch-env.sh dev
-# Fill Clerk, Stripe, Gemini keys in .env.dev
+# Fill Clerk, Stripe and AI provider keys in .env.dev
 
 docker compose up -d db
 npm run migrate

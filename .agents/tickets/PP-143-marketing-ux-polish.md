@@ -1,6 +1,6 @@
 # PP-143: Marketing UX — sticky-nav overlap, CTA weight, numeral contrast
 
-**Status:** ✅ Done (pending deploy)
+**Status:** ✅ Done (live; in every deploy since db0ef3e)
 **Priority:** P1
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22
