@@ -1,6 +1,6 @@
 # PP-231: Backend security dependency bumps (Pillow, Starlette/FastAPI, python-jose)
 
-**Status:** 🔨 In progress (2026-11-26)
+**Status:** ✅ Live (2026-11-26, PR #147, build `2946760`)
 **Priority:** P0
 **Phase:** Security
 **Created:** 2026-11-26
@@ -34,3 +34,5 @@
 ## Rules
 
 No new services, no spend, no secrets. Auth behavior unchanged.
+
+**Update:** PP-232 shipped the PyJWT swap; `pip-audit` is clean.

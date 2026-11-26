@@ -1,6 +1,6 @@
 # PP-232: Replace python-jose with PyJWT
 
-**Status:** 🔨 In progress (2026-11-26)
+**Status:** ✅ Live (2026-11-26, PR #153, build `2946760`)
 **Priority:** P2
 **Phase:** Security
 **Created:** 2026-11-26
