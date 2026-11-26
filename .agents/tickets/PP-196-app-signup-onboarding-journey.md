@@ -45,7 +45,7 @@ www.mypantryhub.com
 
 You're getting these getting-started tips because you made a Pantry Hub account.
 Unsubscribe: https://www.mypantryhub.com/api/public/email/unsubscribe?token=<token>&list=<list>
-Pantry Hub, [mailing address added at launch]
+Pantry Hub, 334 E Kearney St #255, Springfield, MO
 ```
 
 
@@ -71,7 +71,7 @@ www.mypantryhub.com
 
 You're getting these getting-started tips because you made a Pantry Hub account.
 Unsubscribe: https://www.mypantryhub.com/api/public/email/unsubscribe?token=<token>&list=<list>
-Pantry Hub, [mailing address added at launch]
+Pantry Hub, 334 E Kearney St #255, Springfield, MO
 ```
 
 
@@ -107,6 +107,6 @@ www.mypantryhub.com
 
 You're getting these getting-started tips because you made a Pantry Hub account.
 Unsubscribe: https://www.mypantryhub.com/api/public/email/unsubscribe?token=<token>&list=<list>
-Pantry Hub, [mailing address added at launch]
+Pantry Hub, 334 E Kearney St #255, Springfield, MO
 ```
 

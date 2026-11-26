@@ -1,6 +1,6 @@
 # PP-234: Ship approved real Pexels photos on three email hero slots
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address)
+**Status:** ✅ Live (2026-11-26, 3:51 PM America/Chicago, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155)). Send flags unchanged.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 3:40 PM America/Chicago
@@ -26,6 +26,10 @@ Tylor rejected the AI options for these three slots ("Looks fakey") and approved
 R1 welcome keeps `hero-pantry-welcome` (approved AI illustration). Recipe-illustration JPGs stay in `frontend/public/email/` for recipe cards and as fallbacks; they are no longer the hero on R3, O1, or O3.
 
 Alt text for the three new files describes the photograph and does not start with "AI illustration". Credit rows are in `frontend/public/email/CREDITS.md`.
+
+## Mailing address (2026-11-26, 3:55 PM CT)
+
+Tylor provided the CAN-SPAM footer address (t94u): `334 E Kearney St #255, Springfield, MO`. It is set as `EMAIL_MAILING_ADDRESS` on OVH (quoted in `.env.prod` so the `#255` suite number is not treated as a comment). `EMAIL_JOURNEYS_ENABLED` and `EMAIL_JOURNEYS_TEST_RECIPIENTS` were not set. Journey copy in PP-195 / PP-196 now uses this address in the footer examples.
 
 ## Still blocked from go-live (unchanged)
 

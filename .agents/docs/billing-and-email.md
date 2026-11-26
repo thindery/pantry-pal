@@ -106,7 +106,7 @@ Everything non-transactional goes through `backend/services/email_gate.py`. Env 
 |------|---------|
 | `EMAIL_JOURNEYS_ENABLED` | blank/false = off. `true` = journeys send to everyone eligible. Do not set until Tylor approves the copy in PP-195/PP-196 |
 | `EMAIL_JOURNEYS_TEST_RECIPIENTS` | comma list; with the flag off, only these addresses get journey mail (test mode) |
-| `EMAIL_MAILING_ADDRESS` | postal address line for the footer (CAN-SPAM). Live commercial mail is held without it |
+| `EMAIL_MAILING_ADDRESS` | postal address line for the footer (CAN-SPAM). Live commercial mail is held without it. Tylor provided `334 E Kearney St #255, Springfield, MO` on 2026-11-26 (3:55 PM CT); set on OVH in `.env.prod` (quoted, because `#` would otherwise be an env comment). Send flags were not changed. |
 | `EMAIL_ONBOARDING_SINCE` | ISO timestamp; only accounts created at/after it are enrolled in onboarding. Blank = nobody |
 | `RESEND_WEBHOOK_SECRET` | not set on prod yet (PP-197) |
 
