@@ -1,0 +1,52 @@
+import type { Recipe } from "./types";
+
+export const chickpeaSaladSandwiches: Recipe = {
+  slug: "chickpea-salad-sandwiches",
+  title: "Chickpea Salad Sandwiches",
+  seoTitle: "Chickpea Salad Sandwiches (No-Cook, 15 Minutes)",
+  metaSummary: "No-cook chickpea salad sandwiches in 15 minutes",
+  intro:
+    "This is a no-cook mashed chickpea salad you can pile onto bread in about 15 minutes. It uses canned chickpeas, mayonnaise, and a few crunchy add-ins from the fridge or pantry. Mash about two-thirds of the chickpeas and leave the rest whole so the filling has some texture.",
+  meal: "lunch",
+  tags: ["vegetarian", "no-cook", "quick"],
+  servings: 4,
+  prepMin: 15,
+  cookMin: 0,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/chickpea-salad-sandwiches.webp",
+  imageAlt: "AI-generated illustration of a chickpea salad sandwich cut in half, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "can", size: "15 oz", item: "chickpeas", note: "drained and rinsed" },
+    { qty: 1 / 3, unit: "cup", item: "mayonnaise" },
+    { qty: 1, unit: "tbsp", item: "Dijon mustard" },
+    { qty: 1, unit: "tbsp", item: "lemon juice" },
+    { qty: 2, unit: "stalk", item: "celery", note: "finely diced" },
+    { qty: 0.25, unit: "cup", item: "red onion", note: "finely diced" },
+    { qty: 2, unit: "tbsp", item: "chopped dill pickles" },
+    { qty: 0.5, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+    { qty: 8, unit: "slice", item: "bread" },
+    { qty: null, item: "Lettuce or sliced tomato", note: "for the sandwiches, optional", scalable: false },
+  ],
+  steps: [
+    "Put the chickpeas in a large bowl and mash roughly two-thirds of them with a fork or potato masher. Leave the rest whole.",
+    "Add the mayonnaise, mustard, and lemon juice and stir until combined.",
+    "Fold in the celery, red onion, pickles, salt, and pepper. Taste and adjust the salt and lemon.",
+    "If you have time, chill the salad for 10 minutes so the flavors blend.",
+    "Spread the salad on four slices of bread, add lettuce or tomato if you like, and top with the remaining bread.",
+  ],
+  substitutions: [
+    "Mayonnaise: use a vegan mayonnaise to make this vegan, or plain Greek yogurt for a tangier filling.",
+    "Dill pickles: use pickle relish, or skip them and add a little extra lemon.",
+    "Celery: use diced cucumber or a handful of chopped walnuts for crunch.",
+    "Bread: use toast, pita, crackers, or a bed of greens.",
+    "A teaspoon of curry powder or a pinch of dried dill changes the flavor.",
+  ],
+  tips: [
+    "The salad keeps in a covered container in the fridge for about three days. Assemble the sandwiches just before eating so the bread stays crisp.",
+    "Drain the chickpeas well so the filling is not watery.",
+  ],
+  pantryStaples: ["canned chickpeas", "mayonnaise", "Dijon mustard", "bread"],
+  related: ["canned-chickpea-curry", "leftover-vegetable-frittata", "black-bean-tacos"],
+};

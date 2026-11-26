@@ -4,7 +4,7 @@ A planning list of about 100 public recipe topics for the Pantry Hub library. **
 
 The SEO & AEO Desk should check keywords and copy before each batch is written. **No search volumes are claimed** here (Search Console still has almost no query data, and we have no Keyword Planner access). Keyword angles are planning hints from the desk's PP-184 input, Google autocomplete, and published Google Trends roundups, not traffic estimates.
 
-Batches are groups of 12. Batches 2 and 3 mix the best late-November / winter trending picks with the classics Tylor asked to have in the backlog (lasagna, Sunday chicken and rice, Sunday pot roast, meatloaf, chicken pot pie, beef stew, spaghetti and meatballs, mac and cheese, chicken noodle soup, enchiladas, and similar weeknight dishes). Holiday sides and baking are in batch 6: those pages are mainly for the 2027 season, so write and publish them by early October. The `trending/seasonal` mark is qualitative only; evidence is in the PP-184 ticket.
+Batch 2 was written and shipped 2026-11-26 (placeholders until AI images land). Batches are groups of 12. Batches 2 and 3 mix the best late-November / winter trending picks with the classics Tylor asked to have in the backlog (lasagna, Sunday chicken and rice, Sunday pot roast, meatloaf, chicken pot pie, beef stew, spaghetti and meatballs, mac and cheese, chicken noodle soup, enchiladas, and similar weeknight dishes). Holiday sides and baking are in batch 6: those pages are mainly for the 2027 season, so write and publish them by early October. The `trending/seasonal` mark is qualitative only; evidence is in the PP-184 ticket.
 
 Meal tags match the public library filters: breakfast, lunch, dinner, or snack. No expiry or food-waste angles.
 

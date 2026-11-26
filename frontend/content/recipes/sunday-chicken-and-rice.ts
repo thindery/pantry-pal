@@ -1,0 +1,53 @@
+import type { Recipe } from "./types";
+
+export const sundayChickenAndRice: Recipe = {
+  slug: "sunday-chicken-and-rice",
+  title: "Sunday Chicken and Rice",
+  seoTitle: "Sunday Chicken and Rice (One Pan, 1 Hour)",
+  metaSummary: "One-pan chicken and rice, about 1 hour",
+  intro:
+    "This is a one-pan chicken and rice dinner that takes about an hour, most of it in the oven. Bone-in chicken bakes over long-grain rice, onions, and broth so the rice soaks up the juices. It is the kind of meal you can put in the oven and leave alone until supper.",
+  meal: "dinner",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 50,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/sunday-chicken-and-rice.webp",
+  imageAlt: "AI-generated illustration of baked chicken pieces on a bed of golden rice in a pan, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "tbsp", item: "olive oil", note: "divided" },
+    { qty: 6, item: "bone-in, skin-on chicken thigh", plural: "bone-in, skin-on chicken thighs" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 2, item: "carrot", plural: "carrots", note: "diced" },
+    { qty: 3, unit: "clove", item: "garlic", note: "minced" },
+    { qty: 1.5, unit: "cup", item: "long-grain white rice", note: "rinsed" },
+    { qty: 3, unit: "cup", item: "chicken broth", note: "hot" },
+    { qty: 1, unit: "tsp", item: "paprika" },
+    { qty: 1, unit: "tsp", item: "dried thyme" },
+    { qty: 1.5, unit: "tsp", item: "salt", note: "divided" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+  ],
+  steps: [
+    "Heat the oven to 375°F (190°C).",
+    "Pat the chicken dry and season it with the paprika, 1 teaspoon of the salt, and the pepper. Heat 1 tablespoon of the oil in a large oven-safe skillet or Dutch oven over medium-high heat and brown the chicken, skin side down, for 5 to 6 minutes. Turn and brown the other side for 2 minutes, then move the chicken to a plate.",
+    "Add the remaining oil, the onion, and the carrots to the pan. Cook for 4 minutes, until the onion softens. Stir in the garlic, thyme, rice, and the remaining ½ teaspoon of salt and cook for 1 minute.",
+    "Pour in the hot broth and scrape up any browned bits. Nestle the chicken on top, skin side up, and bring the liquid to a simmer.",
+    "Cover tightly and bake for 35 to 40 minutes, until the rice is tender and the chicken reaches 165°F (74°C) in the thickest part.",
+    "Rest, covered, for 5 minutes, then fluff the rice around the chicken and serve.",
+  ],
+  substitutions: [
+    "Chicken thighs: use a mix of bone-in thighs and drumsticks. Boneless thighs work too; check them a little earlier.",
+    "Long-grain white rice: basmati or jasmine also work. Brown rice needs more broth and about 20 extra minutes.",
+    "Carrots: use celery, frozen peas stirred in after baking, or skip them.",
+    "If you do not have an oven-safe pan, brown the chicken and start the rice on the stove, then transfer everything to a baking dish and cover tightly with foil.",
+    "Paprika: use smoked paprika or a little garlic powder.",
+  ],
+  tips: [
+    "Hot broth helps the rice cook evenly. Warm it in the microwave or a small pot first.",
+    "If the rice is still firm, add a splash of hot broth, cover, and bake 10 minutes more.",
+  ],
+  pantryStaples: ["long-grain rice", "chicken broth", "onions and carrots", "paprika and thyme"],
+  related: ["sheet-pan-chicken-and-vegetables", "sunday-pot-roast", "classic-meatloaf"],
+};

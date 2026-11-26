@@ -1,0 +1,53 @@
+import type { Recipe } from "./types";
+
+export const whiteChickenChili: Recipe = {
+  slug: "white-chicken-chili",
+  title: "White Chicken Chili",
+  seoTitle: "White Chicken Chili (Canned Beans, 45 Min)",
+  metaSummary: "Mild white chicken chili, 45 minutes",
+  intro:
+    "This is a mild, creamy chili made with canned white beans, canned green chiles, and cooked chicken, ready in about 45 minutes. The beans and chiles come from the pantry, and a little cumin and oregano season the pot. It is thicker than soup and milder than a red chili.",
+  meal: "dinner",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/white-chicken-chili.webp",
+  imageAlt: "AI-generated illustration of a bowl of white chicken chili with cilantro and lime, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "tbsp", item: "olive oil" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 3, unit: "clove", item: "garlic", note: "minced" },
+    { qty: 2, unit: "tsp", item: "ground cumin" },
+    { qty: 1, unit: "tsp", item: "dried oregano" },
+    { qty: 2, unit: "can", size: "15 oz", item: "cannellini or great northern beans", note: "drained and rinsed" },
+    { qty: 2, unit: "can", size: "4 oz", item: "diced green chiles" },
+    { qty: 3, unit: "cup", item: "chicken broth" },
+    { qty: 2, unit: "cup", item: "shredded cooked chicken" },
+    { qty: 0.5, unit: "cup", item: "sour cream or plain yogurt", note: "optional, stirred in off the heat" },
+    { qty: 1, unit: "tsp", item: "salt", note: "plus more to taste" },
+    { qty: 1, item: "lime", plural: "limes", note: "cut into wedges" },
+  ],
+  steps: [
+    "Warm the oil in a large pot over medium heat. Cook the onion for about 5 minutes, until soft.",
+    "Stir in the garlic, cumin, and oregano and cook for 30 seconds.",
+    "Add the beans, green chiles, broth, and salt. Bring to a simmer and cook for 15 minutes.",
+    "Mash about a cup of the beans against the side of the pot to thicken the chili, then stir in the chicken and simmer for 5 minutes, until the chicken is hot.",
+    "Take the pot off the heat and stir in the sour cream, if using. Taste and add salt. Serve with lime wedges.",
+  ],
+  substitutions: [
+    "Cooked chicken: use a rotisserie chicken, leftover turkey, or browned ground chicken cooked with the onion.",
+    "Cannellini beans: use any white bean, or a can of chickpeas.",
+    "Green chiles: use a diced jalapeño cooked with the onion, or a spoonful of salsa verde.",
+    "Sour cream: skip it, or use a splash of cream or canned coconut milk.",
+    "Chicken broth: use vegetable broth or water plus a little extra salt.",
+  ],
+  tips: [
+    "Top with shredded cheese, cilantro, or crushed tortilla chips if you have them.",
+    "It thickens as it sits. Add a splash of broth when you reheat it.",
+  ],
+  pantryStaples: ["canned white beans", "green chiles", "chicken broth", "cumin"],
+  related: ["weeknight-chili", "baked-potato-soup", "lasagna-soup"],
+};

@@ -155,3 +155,10 @@ Marked **classic** or **trending/seasonal**. Evidence for the trending/seasonal 
 | 16 | Cheesy chicken and rice casserole | classic | Comfort casserole using canned condensed cheddar soup | Rice, canned soup, frozen broccoli |
 
 **Proposed batch 2 (8 recipes):** leftover turkey soup, white chicken chili, baked potato soup, easy vegetable soup, lasagna soup, green bean casserole, peanut butter noodles, and chickpea salad sandwiches. That mixes the in-season soups with two classics, and keeps the 2027 holiday sides (sweet potato casserole, cranberry sauce, stuffing, corn casserole, pumpkin) queued for early fall. Same rules apply: our own words, no invented numbers, no affiliate links, unlisted until Tylor says go.
+
+
+## Batch 2, signup CTAs, and newsletter (2026-11-26)
+
+- **Batch 2** (12 recipes from the backlog) is in `frontend/content/recipes/`. Image files are not in the repo yet, so those pages use the gradient placeholder and omit `image` from Recipe JSON-LD until `frontend/public/recipes/<slug>.webp` is added.
+- **Signup CTAs** on `/recipes/`, mid-recipe (after ingredients), and at the end of each recipe page. Copy is limited to barcode scan, pantry inventory, shopping list, and AI recipe ideas. Hidden for signed-in visitors. Links go to `/auth/signin/`.
+- **Newsletter:** there is no existing public email-capture endpoint or in-repo Resend audience/segment wired for a recipe newsletter (Resend is used for transactional mail and the low-stock digest). No "Get new recipes by email" form was added, because it could not actually capture emails. No new email infrastructure was built, and no mail was sent.

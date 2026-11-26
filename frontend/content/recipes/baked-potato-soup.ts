@@ -1,0 +1,52 @@
+import type { Recipe } from "./types";
+
+export const bakedPotatoSoup: Recipe = {
+  slug: "baked-potato-soup",
+  title: "Baked Potato Soup",
+  seoTitle: "Baked Potato Soup (Weeknight, 45 Minutes)",
+  metaSummary: "Creamy baked potato soup on the stove in 45 minutes",
+  intro:
+    "This is a creamy potato soup that tastes like a loaded baked potato, ready in about 45 minutes on the stove. It uses russet potatoes, milk, broth, and pantry seasonings. You can skip baking whole potatoes first; the cubes simmer right in the pot.",
+  meal: "dinner",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/baked-potato-soup.webp",
+  imageAlt: "AI-generated illustration of a bowl of creamy baked potato soup topped with cheese and green onion, not a photo of this dish",
+  ingredients: [
+    { qty: 3, unit: "tbsp", item: "butter" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 2, unit: "clove", item: "garlic", note: "minced" },
+    { qty: 2, unit: "lb", item: "russet potatoes", note: "peeled and cut into ½-inch cubes" },
+    { qty: 4, unit: "cup", item: "chicken or vegetable broth" },
+    { qty: 1, unit: "cup", item: "milk" },
+    { qty: 1, unit: "tsp", item: "salt", note: "plus more to taste" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+    { qty: 0.5, unit: "cup", item: "shredded cheddar cheese", note: "plus more for serving" },
+    { qty: 0.25, unit: "cup", item: "sour cream", note: "optional" },
+    { qty: 2, item: "green onion", plural: "green onions", note: "sliced, for serving" },
+  ],
+  steps: [
+    "Melt the butter in a large pot over medium heat. Cook the onion for about 5 minutes, until soft, then add the garlic for 30 seconds.",
+    "Add the potatoes, broth, salt, and pepper. Bring to a boil, then lower the heat and simmer, partly covered, for 15 to 18 minutes, until the potatoes are very tender.",
+    "Mash about half of the potatoes in the pot, leaving some chunks for texture.",
+    "Stir in the milk and cheddar and warm through over low heat, without boiling, until the cheese melts.",
+    "Taste and add salt. Ladle into bowls and top with sour cream, more cheese, and green onion.",
+  ],
+  substitutions: [
+    "Russet potatoes: leftover baked potatoes, peeled and cubed, can go in with the broth and need only about 10 minutes.",
+    "Milk: use half-and-half for a richer soup, or unsweetened plant milk.",
+    "Cheddar: any melting cheese works, or leave it out and finish with a little extra butter.",
+    "Bacon: cook a few slices first, pour off most of the fat, and use it in place of some of the butter. Crumble the bacon on top.",
+    "Broth: use water plus an extra ½ teaspoon of salt.",
+  ],
+  tips: [
+    "If the soup is thicker than you like, add a splash of milk or broth.",
+    "Reheat gently so the dairy does not split.",
+  ],
+  pantryStaples: ["russet potatoes", "milk", "broth", "shredded cheese"],
+  related: ["white-chicken-chili", "easy-vegetable-soup", "sunday-pot-roast"],
+};

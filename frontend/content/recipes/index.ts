@@ -11,6 +11,19 @@ import { pastaEFagioli } from "./pasta-e-fagioli";
 import { riceAndBeansWithCannedBeans } from "./rice-and-beans-with-canned-beans";
 import { sheetPanChickenAndVegetables } from "./sheet-pan-chicken-and-vegetables";
 import { weeknightChili } from "./weeknight-chili";
+import { bakedPotatoSoup } from "./baked-potato-soup";
+import { chickpeaSaladSandwiches } from "./chickpea-salad-sandwiches";
+import { classicMeatloaf } from "./classic-meatloaf";
+import { easyLasagna } from "./easy-lasagna";
+import { easyVegetableSoup } from "./easy-vegetable-soup";
+import { greenBeanCasserole } from "./green-bean-casserole";
+import { lasagnaSoup } from "./lasagna-soup";
+import { leftoverTurkeySoup } from "./leftover-turkey-soup";
+import { peanutButterNoodles } from "./peanut-butter-noodles";
+import { sundayChickenAndRice } from "./sunday-chicken-and-rice";
+import { sundayPotRoast } from "./sunday-pot-roast";
+import { whiteChickenChili } from "./white-chicken-chili";
+
 
 export type { DietTag, MealType, Recipe, RecipeFaq, RecipeIngredient } from "./types";
 
@@ -28,6 +41,18 @@ export const RECIPES: readonly Recipe[] = [
   easyRedLentilSoup,
   riceAndBeansWithCannedBeans,
   leftoverVegetableFrittata,
+  leftoverTurkeySoup,
+  whiteChickenChili,
+  bakedPotatoSoup,
+  easyVegetableSoup,
+  lasagnaSoup,
+  greenBeanCasserole,
+  easyLasagna,
+  sundayChickenAndRice,
+  sundayPotRoast,
+  classicMeatloaf,
+  peanutButterNoodles,
+  chickpeaSaladSandwiches,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {

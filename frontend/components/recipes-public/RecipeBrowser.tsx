@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Search } from "lucide-react";
 import { DIET_LABELS, MEAL_LABELS, type DietTag, type MealType } from "@/content/recipes";
 import type { RecipeWithImage } from "@/content/recipes/images";
 import { RecipeCard } from "./RecipeCard";
+import { RecipeSignupCta } from "./RecipeSignupCtas";
 import { DEFAULT_FILTERS, QUICK_MINUTES, filterRecipes, type RecipeFilters } from "./recipe-filter";
 
 export const PAGE_SIZE = 12;
@@ -95,8 +96,15 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeWithImage[] }) {
         </p>
       ) : (
         <ul className="mt-4 grid grid-cols-1 gap-3 p-0 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          {shown.map((recipe) => (
-            <RecipeCard key={recipe.slug} recipe={recipe} />
+          {shown.map((recipe, index) => (
+            <Fragment key={recipe.slug}>
+              <RecipeCard recipe={recipe} />
+              {index === 2 ? (
+                <li className="list-none sm:col-span-2 lg:col-span-1">
+                  <RecipeSignupCta placement="index" />
+                </li>
+              ) : null}
+            </Fragment>
           ))}
         </ul>
       )}
