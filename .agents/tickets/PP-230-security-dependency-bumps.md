@@ -1,6 +1,6 @@
 # PP-230: Security dependency bumps (Next.js, Auth.js, zod and transitive)
 
-**Status:** 🔨 In progress (2026-11-26)
+**Status:** ✅ Live (2026-11-26, PR #145, build `2946760`)
 **Priority:** P0
 **Phase:** Security
 **Created:** 2026-11-26
