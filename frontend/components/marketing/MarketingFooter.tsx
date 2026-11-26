@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
+import { PUBLIC_RECIPES_INDEXABLE } from "@/content/recipes/config";
 import { BRAND_NAME, CONTACT_EMAIL, LEGAL_LINE } from "@/lib/site-content";
 
 export function MarketingFooter() {
@@ -31,6 +32,13 @@ export function MarketingFooter() {
                   FAQ
                 </Link>
               </li>
+              {PUBLIC_RECIPES_INDEXABLE ? (
+                <li>
+                  <Link href="/recipes/" className="hover:text-white transition-colors">
+                    Recipes
+                  </Link>
+                </li>
+              ) : null}
               <li>
                 <Link href="/guides/barcode-scanning/" className="hover:text-white transition-colors">
                   How barcode scanning works

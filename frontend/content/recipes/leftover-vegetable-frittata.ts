@@ -1,0 +1,51 @@
+import type { Recipe } from "./types";
+
+export const leftoverVegetableFrittata: Recipe = {
+  slug: "leftover-vegetable-frittata",
+  title: "Leftover Vegetable Frittata",
+  seoTitle: "Leftover Vegetable Frittata (30 Minutes)",
+  metaSummary: "Leftover vegetable frittata, 30 minutes",
+  intro:
+    "This is a fluffy skillet frittata that turns leftover cooked vegetables into breakfast or dinner in about 30 minutes. It uses eggs, milk, shredded cheese, and any roasted, steamed, or sautéed vegetables from the fridge. You start it on the stove and finish it in the oven.",
+  meal: "breakfast",
+  tags: ["vegetarian", "quick", "leftovers"],
+  servings: 4,
+  prepMin: 10,
+  cookMin: 20,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/leftover-vegetable-frittata.webp",
+  imageAlt: "AI-generated illustration of a vegetable frittata in a skillet with a slice removed, not a photo of this dish",
+  ingredients: [
+    { qty: 8, item: "large egg", plural: "large eggs" },
+    { qty: 0.25, unit: "cup", item: "milk" },
+    { qty: 0.75, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+    { qty: 1, unit: "tbsp", item: "olive oil" },
+    { qty: 1, item: "small onion", plural: "small onions", note: "diced, optional" },
+    { qty: 3, unit: "cup", item: "leftover cooked vegetables", note: "chopped; roasted potatoes, broccoli, peppers, mushrooms, or greens" },
+    { qty: 0.75, unit: "cup", item: "shredded cheese", note: "cheddar, Swiss, or mozzarella" },
+  ],
+  steps: [
+    "Heat the oven to 400°F (200°C).",
+    "Whisk the eggs, milk, salt, and pepper in a bowl until no streaks of white remain.",
+    "Warm the oil in a 10-inch oven-safe skillet over medium heat. Cook the onion, if using, for about 4 minutes, until soft.",
+    "Add the leftover vegetables and stir for 2 to 3 minutes, until they are warmed through and any extra moisture has cooked off.",
+    "Pour the eggs over the vegetables and sprinkle on the cheese. Cook for about 3 minutes, until the edges look set.",
+    "Move the skillet to the oven and bake for 10 to 12 minutes, until the center is set and no longer jiggles. The handle will be hot, so use a mitt.",
+    "Let it rest for 5 minutes, then cut into wedges.",
+  ],
+  substitutions: [
+    "Leftover cooked vegetables: use fresh vegetables instead, chopped small and sautéed for 5 to 6 minutes first.",
+    "Cheese: any melting cheese works, or leave it out.",
+    "Milk: use water, cream, or plant milk.",
+    "Add-ins: chopped cooked bacon, ham, or sausage are good with the vegetables.",
+    "Oven-safe skillet: if yours is not, pour the mixture into a greased baking dish after cooking the vegetables.",
+  ],
+  tips: [
+    "Squeeze extra moisture out of thawed or watery vegetables so the frittata does not turn soggy.",
+    "Leftovers keep in the fridge for about three days and reheat well in the microwave.",
+  ],
+  pantryStaples: ["eggs", "milk", "shredded cheese", "olive oil"],
+  related: ["leftover-rice-fried-rice", "freezer-breakfast-burritos", "sheet-pan-chicken-and-vegetables"],
+};
