@@ -194,11 +194,15 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByText(/No recipes match/)).toBeTruthy();
   });
 
-  it("shows a neutral placeholder (not a broken image) while image files are missing", () => {
+  it("renders the committed WebP illustrations, not placeholders", () => {
+    const recipes = allRecipesWithImageState();
+    expect(recipes.every((r) => r.hasImage)).toBe(true);
     render(RecipesPage());
-    const missing = allRecipesWithImageState().filter((r) => !r.hasImage).length;
-    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(missing);
-    expect(missing).toBeGreaterThan(0);
+    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
+    for (const r of RECIPES) {
+      const img = screen.getByRole("img", { name: r.imageAlt });
+      expect(img.getAttribute("src")).toBe(r.image);
+    }
   });
 });
 
@@ -317,6 +321,23 @@ describe("recipe page (PP-184)", () => {
     expect(meta.description).toBe(recipeMetaDescription(getRecipe("weeknight-chili")!));
     expect(JSON.stringify(meta)).not.toContain("servings=");
   });
+
+  it("uses the illustration as the OG image and shows the honest caption", async () => {
+    const meta = await generateMetadata({ params: Promise.resolve({ slug: "canned-tuna-pasta" }) });
+    expect(JSON.stringify(meta.openGraph?.images)).toContain("/recipes/canned-tuna-pasta.webp");
+    expect(JSON.stringify(meta.twitter?.images)).toContain("/recipes/canned-tuna-pasta.webp");
+    const { container } = await renderRecipe("canned-tuna-pasta");
+    expect(screen.queryByTestId("recipe-image-placeholder")).toBeNull();
+    const hero = screen.getByRole("img", { name: getRecipe("canned-tuna-pasta")!.imageAlt });
+    expect(hero.getAttribute("src")).toBe("/recipes/canned-tuna-pasta.webp");
+    expect(screen.getByText("AI illustration, not a photo of this dish.")).toBeTruthy();
+    const recipeLd = JSON.parse(
+      Array.from(container.querySelectorAll('script[type="application/ld+json"]'))
+        .map((n) => n.textContent ?? "")
+        .find((t) => t.includes('"Recipe"')) ?? "{}"
+    );
+    expect(recipeLd.image).toEqual(["https://www.mypantryhub.com/recipes/canned-tuna-pasta.webp"]);
+  });
 });
 
 describe("Recipe JSON-LD (PP-184)", () => {
@@ -334,7 +355,7 @@ describe("Recipe JSON-LD (PP-184)", () => {
       expect(ld.recipeInstructions).toHaveLength(r.steps.length);
       expect(ld.totalTime).toBe(isoDuration(totalMinutes(r)));
       for (const key of ["aggregateRating", "review", "nutrition"]) expect(ld).not.toHaveProperty(key);
-      expect(ld).not.toHaveProperty("image"); // no image until the file exists
+      expect(ld).not.toHaveProperty("image"); // builder omits image when hasImage is false
     }
   });
 
