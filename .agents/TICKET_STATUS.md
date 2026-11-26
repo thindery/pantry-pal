@@ -537,3 +537,14 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-191 | "I used this" / "I cooked this" flow: recipe checklist, pantry typeahead, scan-to-use (design only; see `.agents/docs/i-used-this-flow-design.md`) | P2 | 📋 Open (design only; depends on PP-189) |
+
+## Email journeys (Tylor Nov 26, t79u / t80u / t81u)
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-194 | Email journeys foundation: send gate (`EMAIL_JOURNEYS_ENABLED`), journey state, click/confirm/unsubscribe endpoints | P2 | 🟡 Shipping (everything behind flags, nothing sends) |
+| PP-195 | Recipe newsletter double opt-in + 3-email welcome journey + one-click unsubscribe | P2 | 🟡 Shipping (copy needs Tylor's OK before the flag turns on) |
+| PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | 🟡 Shipping (enrollment off until `EMAIL_ONBOARDING_SINCE` is set) |
+| PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking shipping. Waiting on Tylor to add the webhook in the Resend dashboard |
+| PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
+| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Shipping (recipe illustrations live; 4 AI gap images pending) |

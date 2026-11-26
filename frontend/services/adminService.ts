@@ -151,6 +151,83 @@ export const getEmailMetrics = async (period: Period = '7d'): Promise<EmailMetri
   return res as EmailMetrics;
 };
 
+export interface EmailMarketingStep {
+  step: string;
+  delay_days: number;
+  sent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  click_rate: number | null;
+}
+
+export interface EmailMarketingJourney {
+  journey: string;
+  list: string;
+  enrolled: number;
+  active: number;
+  completed: number;
+  stopped: number;
+  overdue: number;
+  stop_reasons: Record<string, number>;
+  unsubscribed_in_period: number;
+  steps: EmailMarketingStep[];
+}
+
+export interface EmailMarketingTemplate {
+  template: string;
+  category: string;
+  journey: string | null;
+  step: string | null;
+  sent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  complained: number;
+  click_rate: number | null;
+  bounce_rate: number | null;
+}
+
+export interface EmailMarketing {
+  period: Period;
+  config: {
+    journeys_mode: 'off' | 'test' | 'on';
+    test_recipient_count: number;
+    mailing_address_set: boolean;
+    webhook_secret_present: boolean;
+    onboarding_enrollment_on: boolean;
+  };
+  subscribers: {
+    total: number;
+    pending: number;
+    confirmed: number;
+    unsubscribed: number;
+    new_in_period: number;
+    unsubscribed_in_period: number;
+    by_day: { day: string; subscribed: number; confirmed: number; unsubscribed: number; resubscribed: number }[];
+    by_source: { source: string; count: number }[];
+    top_recipes: { recipe_slug: string; count: number }[];
+  };
+  journeys: EmailMarketingJourney[];
+  templates: EmailMarketingTemplate[];
+  top_links: { label: string; path: string; unique_clicks: number; total_clicks: number }[];
+  bot_clicks_ignored: number;
+  tracking: { webhook_events_seen: boolean; open_tracking_seen: boolean; click_source: string };
+  recent_events: { occurred_at: string | null; event_type: string; template: string | null; journey: string | null; to_email: string | null }[];
+}
+
+export const getEmailMarketing = async (period: Period = '30d'): Promise<EmailMarketing> => {
+  const res = await fetchApi<EmailMarketing | { success: boolean; data: EmailMarketing }>(
+    `/api/admin/email-marketing?period=${period}`
+  );
+  if (res && typeof res === 'object' && 'data' in res && res.data) {
+    return (res as { data: EmailMarketing }).data;
+  }
+  return res as EmailMarketing;
+};
+
 export const getTransactions = (limit: number = 10): Promise<Transaction[]> =>
   fetchApi<Transaction[]>(`/api/admin/transactions?limit=${limit}`);
 

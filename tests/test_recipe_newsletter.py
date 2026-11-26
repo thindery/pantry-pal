@@ -33,36 +33,58 @@ def test_normalize_source_and_slug():
     assert normalize_slug("") is None
 
 
-def test_subscribe_inserts_normalized_row_and_sends_no_mail():
+def _fake_db(fetches):
     cursor = MagicMock()
+    cursor.fetchone.side_effect = fetches
     conn = MagicMock()
     conn.cursor.return_value.__enter__.return_value = cursor
+    return cursor, conn
+
+
+def test_subscribe_inserts_pending_row_and_asks_for_confirmation():
+    cursor, conn = _fake_db([None, {"id": "sub-1"}])
     with (
         patch("backend.services.recipe_newsletter_service.db_connection") as db,
-        patch("backend.services.email_service.send_welcome", create=True) as send_welcome,
-        patch("backend.services.email_service.send", create=True) as send,
+        patch("backend.services.email_journeys.send_confirmation") as confirm,
+        patch("backend.services.email_journeys.log_list_event") as log,
     ):
         db.return_value.__enter__.return_value = conn
-        subscribe(email="Pat@Example.com", source="recipe_page", recipe_slug="lasagna-soup")
-        args = cursor.execute.call_args[0]
-        assert "INSERT INTO recipe_newsletter_subscribers" in args[0]
-        assert args[1] == ("pat@example.com", "recipe_page", "lasagna-soup")
-        send_welcome.assert_not_called()
-        send.assert_not_called()
+        result = subscribe(email="Pat@Example.com", source="recipe_page", recipe_slug="lasagna-soup")
+        insert = cursor.execute.call_args_list[1][0]
+        assert "INSERT INTO recipe_newsletter_subscribers" in insert[0] and "'pending'" in insert[0]
+        assert insert[1] == ("pat@example.com", "recipe_page", "lasagna-soup")
+        confirm.assert_called_once_with("sub-1")
+        log.assert_called_once()
+        assert result["status"] == "pending"
 
 
 def test_subscribe_on_index_clears_slug():
-    cursor = MagicMock()
-    conn = MagicMock()
-    conn.cursor.return_value.__enter__.return_value = cursor
-    with patch("backend.services.recipe_newsletter_service.db_connection") as db:
+    cursor, conn = _fake_db([None, {"id": "sub-2"}])
+    with (
+        patch("backend.services.recipe_newsletter_service.db_connection") as db,
+        patch("backend.services.email_journeys.send_confirmation"),
+        patch("backend.services.email_journeys.log_list_event"),
+    ):
         db.return_value.__enter__.return_value = conn
         subscribe(email="a@example.com", source="recipes_index", recipe_slug="lasagna-soup")
-        assert cursor.execute.call_args[0][1] == ("a@example.com", "recipes_index", None)
+        assert cursor.execute.call_args_list[1][0][1] == ("a@example.com", "recipes_index", None)
+
+
+def test_subscribe_confirmed_address_is_not_emailed_again():
+    cursor, conn = _fake_db([{"id": "sub-3", "status": "confirmed"}])
+    with (
+        patch("backend.services.recipe_newsletter_service.db_connection") as db,
+        patch("backend.services.email_journeys.send_confirmation") as confirm,
+    ):
+        db.return_value.__enter__.return_value = conn
+        result = subscribe(email="a@example.com")
+        confirm.assert_not_called()
+        assert result["status"] == "confirmed" and result["confirmation_required"] is False
 
 
 def test_endpoint_stores_valid_signup(client):
     with patch("backend.routers.recipe_newsletter.recipe_newsletter_service.subscribe") as sub:
+        sub.return_value = {"id": "x", "status": "pending", "confirmation_required": False}
         res = client.post(
             "/api/public/recipe-newsletter",
             json={"email": "cook@example.com", "source": "recipes_index"},

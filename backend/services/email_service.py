@@ -138,6 +138,10 @@ def _record_send(
     resend_id: Optional[str] = None,
     to_email: Optional[str] = None,
     subject: Optional[str] = None,
+    send_id: Optional[str] = None,
+    category: str = "transactional",
+    journey: Optional[str] = None,
+    journey_step: Optional[str] = None,
 ) -> bool:
     initial_status = "sent" if resend_id else "pending"
     try:
@@ -145,8 +149,9 @@ def _record_send(
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id, to_email, subject, status, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    INSERT INTO email_sends (id, user_id, template, idempotency_key, resend_id, to_email, subject, status, updated_at,
+                                             category, journey, journey_step)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s)
                     ON CONFLICT (idempotency_key) DO UPDATE
                     SET status = EXCLUDED.status,
                         resend_id = EXCLUDED.resend_id,
@@ -157,7 +162,19 @@ def _record_send(
                     WHERE email_sends.status = 'failed'
                     RETURNING id
                     """,
-                    (str(uuid.uuid4()), user_id, template, idempotency_key, resend_id, to_email, subject, initial_status),
+                    (
+                        send_id or str(uuid.uuid4()),
+                        user_id,
+                        template,
+                        idempotency_key,
+                        resend_id,
+                        to_email,
+                        subject,
+                        initial_status,
+                        category,
+                        journey,
+                        journey_step,
+                    ),
                 )
                 return cur.fetchone() is not None
     except Exception:
@@ -175,11 +192,29 @@ def send_email(
     idempotency_key: str,
     user_id: Optional[str] = None,
     headers: Optional[dict[str, str]] = None,
+    category: str = "transactional",
+    journey: Optional[str] = None,
+    journey_step: Optional[str] = None,
+    send_id: Optional[str] = None,
+    unsubscribe_url: Optional[str] = None,
 ) -> dict[str, Any]:
-    """Send one transactional email, or skip if already sent / not configured."""
+    """Send one email, or skip if already sent / not configured.
+
+    ``category`` is ``transactional`` (receipts, welcome), ``confirmation`` (double opt-in) or
+    ``lifecycle`` / ``marketing`` (journeys). Anything but ``transactional`` goes through the
+    PP-194 gate (``EMAIL_JOURNEYS_ENABLED`` / ``EMAIL_JOURNEYS_TEST_RECIPIENTS``) before it can leave.
+    """
     if not to:
         logger.error("Transactional email %s skipped: no recipient available", template)
         return {"skipped": True, "reason": "missing_recipient"}
+    if category != "transactional":
+        from backend.services import email_gate
+
+        allowed, why = email_gate.check(to, category)
+        if not allowed:
+            return {"skipped": True, "reason": why}
+        if unsubscribe_url:
+            headers = {**(headers or {}), **email_gate.unsubscribe_headers(unsubscribe_url)}
     if already_sent(idempotency_key):
         return {"skipped": True, "reason": "already_sent"}
 
@@ -222,6 +257,10 @@ def send_email(
         resend_id=None,
         to_email=to,
         subject=subject,
+        send_id=send_id,
+        category=category,
+        journey=journey,
+        journey_step=journey_step,
     ):
         return {"skipped": True, "reason": "already_sent"}
 
@@ -380,6 +419,9 @@ def _wrap(
     body_text: str,
     cta_label: Optional[str] = None,
     cta_url: Optional[str] = None,
+    hero_html: str = "",
+    footer_html: str = "",
+    footer_text: str = "",
 ) -> tuple[str, str]:
     """Shared branded shell (PP-131). Table-based HTML plus a plain-text fallback."""
     safe_title = _html_escape(title)
@@ -414,6 +456,7 @@ def _wrap(
               Pantry Hub
             </td>
           </tr>
+          {hero_html}
           <tr>
             <td style="padding:8px 28px 0 28px;">
               <h1 class="ph-title" style="margin:0 0 12px 0;font-size:22px;font-weight:700;line-height:1.3;color:{COLOR_TEXT};">{safe_title}</h1>
@@ -435,6 +478,7 @@ def _wrap(
             <td class="ph-footer" style="padding:8px 28px 28px 28px;font-size:13px;line-height:1.5;color:{COLOR_MUTED};">
               Questions? Reply to this email or write <a class="ph-link" href="mailto:{CONTACT_EMAIL}" style="color:{COLOR_TEXT};text-decoration:underline;">{CONTACT_EMAIL}</a>.<br>
               <a class="ph-link" href="https://www.mypantryhub.com" style="color:{COLOR_MUTED};text-decoration:underline;">www.mypantryhub.com</a>
+              {footer_html}
             </td>
           </tr>
         </table>
@@ -450,6 +494,7 @@ def _wrap(
         f"Pantry Hub\n\n{title}\n\n{body_text}{cta_text}"
         f"\n\nQuestions? Reply to this email or write {CONTACT_EMAIL}."
         f"\nwww.mypantryhub.com"
+        f"{footer_text}"
     )
     return html, text
 
