@@ -16,6 +16,7 @@ Audit notes, research, and long-form findings for PantryPal refactor work.
 | Marketing dashboard (email + funnel visibility, 2026-11-22) | PP-123–PP-129 — `marketing-dashboard.md` |
 | Revenue options (2026-11-22, no signups) | PP-138–PP-140 — `revenue-options.md` |
 | Screen design review (2026-11-22) | PP-141–PP-146 — `design-review-2026-11-22.md` (shots in `../design-review/2026-11-22/`) |
+| "I used this" / "I cooked this" UX (2026-11-26) | PP-191 — `i-used-this-flow-design.md` |
 | Ticket template and priority convention | — `ticket-template.md` |
 
 Ticket sources of truth live in `../tickets/`. Status dashboard: `../TICKET_STATUS.md`.
