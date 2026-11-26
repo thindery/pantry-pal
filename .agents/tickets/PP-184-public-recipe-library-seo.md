@@ -1,6 +1,6 @@
 # PP-184: Free public recipe library (SEO): browse page, recipe pages, AI images, scale servings
 
-**Status:** 🟡 Built, deploying live UNLISTED (2026-11-26); waiting on AI images and Tylor's OK before it goes public
+**Status:** 🟡 Live, unlisted (2026-11-26, PR #135, merge 9e910fc; live build c053497). Waiting on AI images and Tylor's OK before it goes public
 **Priority:** P2
 **Phase:** Growth / SEO content
 **Created:** 2026-11-25, 3:25 PM America/Chicago

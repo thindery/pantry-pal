@@ -517,7 +517,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 |--------|-------|----------|--------|
 | PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | ✅ Done (live 9:10 AM CT Nov 26, build `ceb4b7b`, migration 033) |
 | PP-180 | Item Details modal title hidden under the desktop navbar (modal rendered inside `relative z-0` wrapper) | P2 | ✅ Done (live 5:03 PM CT, build `5fec893`, [#125](https://github.com/thindery/pantry-pal/pull/125)) |
-| PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 📋 Open |
+| PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 🟡 Live, unlisted (PR #135, 9e910fc; live build c053497): noindex, no sitemap, no nav/footer/home links behind PUBLIC_RECIPES_INDEXABLE=false in frontend/content/recipes/config.ts. Waiting on AI images and Tylor's OK; flip checklist and batch 2 backlog are in the ticket |
 | PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
 | PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | ✅ Done (live 5:26 PM CT, build `a356ed4`, [#128](https://github.com/thindery/pantry-pal/pull/128)) |
 
