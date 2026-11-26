@@ -1,6 +1,6 @@
 # PP-185 — Generic "AI" wording: no model or vendor names
 
-**Priority:** P3 · **Status:** Open · **Requested:** Tylor, 2026-11-25 (voice call)
+**Priority:** P3 · **Status:** ✅ Done (2026-11-26) · **Requested:** Tylor, 2026-11-25 (voice call)
 
 ## Goal
 Pantry Hub never names a specific AI model or vendor (Gemini, GPT, Claude, Ollama, Kimi, etc.) anywhere a person can see it. Use "AI" only.
@@ -24,3 +24,8 @@ Pantry Hub never names a specific AI model or vendor (Gemini, GPT, Claude, Ollam
 
 ## Rules
 No dependency changes. No commits, pushes or secrets from coding agents. Don't change the privacy or terms meaning.
+
+
+## Done (2026-11-26)
+- Comments in `scan-usage/page.tsx` and `receipt-scanner.tsx` and the `README.md` line now say "AI" only.
+- New `frontend/tests/no-model-names.test.ts` fails if a model or vendor name appears in code (comments stripped) under `frontend/app`, `frontend/components` or `frontend/content`. `frontend/components/admin/` is exempt: the admin-only provider panel (PP-186) must name providers.

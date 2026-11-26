@@ -2,7 +2,7 @@
 
 - Priority: P2
 - Owner: Pantry Hub Lead
-- Status: OPEN
+- Status: MOSTLY DONE (2026-11-26 triage). Key events shipped in PP-157/PP-165, `login_events` and a signup timestamp in migration 025, beacon in PP-120. Only "request indexing" is left (SEO Desk / Search Console).
 - Created: 2026-11-24 (from the Daily Growth Report)
 
 ## Gap

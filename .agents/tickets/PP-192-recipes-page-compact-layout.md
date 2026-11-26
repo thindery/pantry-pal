@@ -1,6 +1,6 @@
 # PP-192: Compact recipes page — tabs for the AI generator, denser recipe cards
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done (live 2026-11-26, build c053497, PR #132)
 **Priority:** P2
 **Phase:** Recipes UX
 **Created:** 2026-11-26, 11:14 AM America/Chicago

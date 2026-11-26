@@ -16,7 +16,7 @@ Last updated: 2026-11-26, 11:44 AM CT (PP-189 live at bd8cf4f; PP-190 combine-si
 | | Count |
 |--|-------|
 | Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
-| In progress | 1 (PP-192) |
+| In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
@@ -158,7 +158,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
 | PP-193 | Capture-only public recipe newsletter signup (no emails sent) | 🟡 Shipping | Growth / recipes |
-| PP-192 | Compact recipes page: tabs for the AI generator, denser recipe cards | 🟡 In progress | Recipes UX |
+| PP-192 | Compact recipes page: tabs for the AI generator, denser recipe cards | ✅ Live (build c053497) | Recipes UX |
 | PP-190 | Combine similar pantry items using the PP-189 normalizer (ticket only) | 📋 Open | User-reported |
 | PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle ([#119](https://github.com/thindery/pantry-pal/pull/119); live 4:10 PM CT Nov 25, build `32cb176`, migration 031 app_settings, `AI_RECEIPT_SCAN_ENABLED=1`) | ✅ Done | Pro AI |
 | PP-110 | AEO content cluster and comparison pages | ✅ Done (live 2026-11-25) | SEO / AEO |
@@ -447,9 +447,9 @@ Tylor asked for a designer-style review of every screen, in the same spirit as B
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-141 | Fix logged-out `/pricing/` CTAs and the sign-in upgrade path | P0 | ✅ Done (pending deploy) |
-| PP-142 | Accessible color tokens (primary / accent / danger split) | P1 | ✅ Done (pending deploy) |
-| PP-143 | Marketing UX: sticky-nav overlap, CTA weight, numeral contrast | P1 | ✅ Done (pending deploy) |
+| PP-141 | Fix logged-out `/pricing/` CTAs and the sign-in upgrade path | P0 | ✅ Done (live; in every deploy since db0ef3e) |
+| PP-142 | Accessible color tokens (primary / accent / danger split) | P1 | ✅ Done (live; in every deploy since db0ef3e) |
+| PP-143 | Marketing UX: sticky-nav overlap, CTA weight, numeral contrast | P1 | ✅ Done (live; in every deploy since db0ef3e) |
 | PP-144 | Sign-in and checkout brand + contrast | P1 | ✅ Done (#75, overnight 2026-11-25) |
 | PP-145 | Desktop Pantry layout and 44px icon targets | P2 | ✅ Done (#82, overnight 2026-11-25) |
 | PP-146 | Refresh `/design-system` to the shipped UI and brand guide | P2 | ✅ Done (#86, overnight 2026-11-25) |
@@ -520,7 +520,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | ✅ Done (live 9:10 AM CT Nov 26, build `ceb4b7b`, migration 033) |
 | PP-180 | Item Details modal title hidden under the desktop navbar (modal rendered inside `relative z-0` wrapper) | P2 | ✅ Done (live 5:03 PM CT, build `5fec893`, [#125](https://github.com/thindery/pantry-pal/pull/125)) |
 | PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 🟢 Live (PUBLIC_RECIPES_INDEXABLE=true). Batch 2 illustrations shipped (PP-193). Signup CTAs on recipe pages. Tag pages still noindex. Newsletter capture is PP-193 |
-| PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
+| PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | ✅ Done (Nov 26, comments + README + a test that fails if a model name shows in customer-facing code) |
 | PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | ✅ Done (live 5:26 PM CT, build `a356ed4`, [#128](https://github.com/thindery/pantry-pal/pull/128)) |
 | PP-188 | Run shared site-qa after every deploy (local step at the end of deploy/deploy-docker.sh; never fails the deploy; SITE_QA_SKIP=1 skips) | P2 | ✅ Done (Nov 26; hook run 12:51 PM CT: 0 findings) |
 
@@ -530,7 +530,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 |--------|-------|----------|--------|
 | PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | ✅ Done (live 11:21 AM CT, build `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) |
 | PP-190 | Combine similar pantry items using the PP-189 normalizer (group-picker suggestions; ticket only) | P2 | 📋 Open |
-| PP-192 | Compact recipes page: move the AI generator into a **Suggest with AI** tab; dense list cards so more recipes fit on a phone | P2 | 🟡 In progress |
+| PP-192 | Compact recipes page: move the AI generator into a **Suggest with AI** tab; dense list cards so more recipes fit on a phone | P2 | ✅ Done (live Nov 26, build c053497, [PR #132](https://github.com/thindery/pantry-pal/pull/132)) |
 
 ## Tickets from Tylor's Nov 26 "I used this" request
 

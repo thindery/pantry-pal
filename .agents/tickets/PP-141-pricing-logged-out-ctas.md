@@ -1,6 +1,6 @@
 # PP-141: Fix logged-out /pricing/ CTAs and the sign-in upgrade path
 
-**Status:** ✅ Done (pending deploy)
+**Status:** ✅ Done (live; in every deploy since db0ef3e)
 **Priority:** P0
 **Phase:** Design review (2026-11-22)
 **Created:** 2026-11-22

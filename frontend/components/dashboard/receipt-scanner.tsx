@@ -61,7 +61,7 @@ export function ReceiptScanner({ onAddItems, onCancel }: ReceiptScannerProps) {
     setError(null);
 
     try {
-      // Use backend Tesseract.js OCR, not browser Gemini
+      // Use the backend receipt scan, not an in-browser AI call
       const response = await scanReceiptBackend(base64Image);
       const results = response.items ?? [];
       if (results.length === 0) {
