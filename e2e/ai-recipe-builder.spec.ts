@@ -66,17 +66,18 @@ test.describe("AI recipe builder", () => {
     // First suggestion with defaults
     await builder.getByRole("button", { name: "Suggest recipes" }).click();
     await expect(builder.getByTestId("ai-recipe-idea")).toHaveCount(1);
-    expect(suggestBodies[0]).toMatchObject({ servings: 2, diet: "none", maxMinutes: null, mustUse: [] });
+    expect(suggestBodies[0]).toMatchObject({ servings: 2, diet: "none", maxMinutes: null, mustUse: [], excludeTitles: [], regenerate: false });
 
     // Adjust and ask again
     await builder.getByLabel("Servings").selectOption("4");
     await builder.getByLabel("Diet").selectOption("vegetarian");
     await builder.getByLabel("Time").selectOption("30");
-    await builder.getByLabel("Add a must-use item").selectOption("Spinach");
+    await builder.getByLabel("Search your pantry").fill("Spi");
+    await builder.getByRole("option", { name: "Spinach" }).click();
     await builder.getByLabel("Note").fill("one pan");
     await builder.getByRole("button", { name: "Suggest again" }).click();
     await expect.poll(() => suggestBodies.length).toBe(2);
-    expect(suggestBodies[1]).toEqual({ servings: 4, diet: "vegetarian", maxMinutes: 30, mustUse: ["Spinach"], note: "one pan" });
+    expect(suggestBodies[1]).toEqual({ servings: 4, diet: "vegetarian", maxMinutes: 30, mustUse: ["Spinach"], note: "one pan", excludeTitles: ["E2E Spinach Omelet"], regenerate: true });
 
     const idea = builder.getByTestId("ai-recipe-idea").first();
     await expect(idea).toContainText("E2E Spinach Omelet");
@@ -155,11 +156,14 @@ test.describe("AI recipe builder", () => {
     await page.goto("/dashboard/recipes/");
     const builder = page.getByTestId("ai-recipe-builder");
     await expect(builder).toBeVisible({ timeout: 20_000 });
-    const pick = builder.getByLabel("Add a must-use item");
+    const pick = builder.getByLabel("Search your pantry");
     await expect(pick).toBeVisible();
-    // The option value stays the full name; the visible label is shortened.
-    await expect(pick.locator("option").filter({ hasText: "Great Value Organic Extra Virgin" })).toHaveCount(1);
-    await pick.selectOption(longName);
+    await pick.fill("Olive");
+    const option = builder.getByRole("option", { name: /Great Value Organic Extra Virgin/ });
+    await expect(option).toBeVisible();
+    await page.screenshot({ path: "test-results/pp183-typeahead.png", fullPage: true });
+    await option.click();
+    await expect(builder.getByRole("button", { name: /Remove Great Value/ })).toBeVisible();
     await builder.getByRole("button", { name: "Suggest recipes" }).click();
     await expect(builder.getByTestId("ai-recipe-idea")).toBeVisible();
     await expect(builder.getByText(/Uses up:/)).toBeVisible();

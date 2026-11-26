@@ -44,6 +44,9 @@ from backend.services.ai_providers.base import classify_http_failure as _classif
 
 KIND_BAD_JSON = "bad_json"
 
+DEFAULT_TEMPERATURE = 0.6
+REGENERATE_TEMPERATURE = 0.9
+
 OLLAMA_DEFAULT_HOST = _ollama_receipt.DEFAULT_HOST
 OLLAMA_DEFAULT_MODEL = _ollama_receipt.DEFAULT_MODEL
 GEMINI_DEFAULT_MODEL = _gemini_receipt.DEFAULT_MODEL
@@ -112,7 +115,7 @@ def ollama_configured() -> bool:
     return _ollama_receipt.is_configured()
 
 
-def ollama_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int) -> ChatResult:
+def ollama_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int, temperature: float = DEFAULT_TEMPERATURE) -> ChatResult:
     if not ollama_configured():
         raise ProviderError(PROVIDER_OLLAMA, KIND_NOT_CONFIGURED, "no_key")
     host = _ollama_host()
@@ -126,7 +129,7 @@ def ollama_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int
         "stream": False,
         "format": schema,
         "think": False,
-        "options": {"temperature": 0.6, "num_predict": max_output_tokens},
+        "options": {"temperature": temperature, "num_predict": max_output_tokens},
         "messages": [{"role": "user", "content": prompt}],
     }
     try:
@@ -184,7 +187,7 @@ def _to_gemini_schema(schema: Any) -> Any:
     return schema
 
 
-def gemini_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int) -> ChatResult:
+def gemini_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int, temperature: float = DEFAULT_TEMPERATURE) -> ChatResult:
     key = os.getenv("GEMINI_API_KEY", "").strip()
     if not key:
         raise ProviderError(PROVIDER_GEMINI, KIND_NOT_CONFIGURED, "no_key")
@@ -192,7 +195,7 @@ def gemini_chat_json(prompt: str, schema: dict[str, Any], max_output_tokens: int
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0.6,
+            "temperature": temperature,
             "maxOutputTokens": max_output_tokens,
             "responseMimeType": "application/json",
             "responseSchema": _to_gemini_schema(schema),
@@ -231,8 +234,14 @@ _CALLERS = {PROVIDER_OLLAMA: ollama_chat_json, PROVIDER_GEMINI: gemini_chat_json
 _MODELS = {PROVIDER_OLLAMA: ollama_model, PROVIDER_GEMINI: gemini_model}
 
 
-def call_provider(provider: str, prompt: str, schema: dict[str, Any], max_output_tokens: int) -> ChatResult:
-    return _CALLERS[provider](prompt, schema, max_output_tokens)
+def call_provider(
+    provider: str,
+    prompt: str,
+    schema: dict[str, Any],
+    max_output_tokens: int,
+    temperature: float = DEFAULT_TEMPERATURE,
+) -> ChatResult:
+    return _CALLERS[provider](prompt, schema, max_output_tokens, temperature)
 
 
 def model_for(provider: str) -> str:

@@ -445,3 +445,105 @@ def test_normalize_drops_junk():
         ai_recipe_builder.normalize_recipes({"recipes": [{"title": "", "ingredients": [], "steps": []}]}, pantry, 2)
     with pytest.raises(ValueError):
         ai_recipe_builder.normalize_recipes(["nope"], pantry, 2)
+
+
+# ---------- regenerate / exclude titles ----------
+
+def test_regenerate_bypasses_cache_and_excludes_titles(client, auth_headers, world):
+    cached = [
+        {
+            "title": "Spinach Egg Fried Rice",
+            "ingredients": [{"raw": "rice", "name": "rice"}],
+            "instructions": ["cook"],
+            "servings": "2",
+            "usesSoon": [],
+        }
+    ]
+    world["db"].rows["FROM ai_response_cache"] = {"response": json.dumps(cached)}
+    world["post"].return_value = ollama_ok()
+    r = client.post(
+        URL,
+        headers=auth_headers,
+        json={"regenerate": True, "excludeTitles": ["Spinach Egg Fried Rice"]},
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()["data"]
+    assert data["cached"] is False
+    titles = [recipe["title"] for recipe in data["recipes"]]
+    assert "Spinach Egg Fried Rice" not in titles
+    assert "Spinach Omelet" in titles
+    assert world["post"].call_count == 1
+    payload = world["post"].call_args.args[2]
+    prompt = payload["messages"][0]["content"]
+    assert "Do not repeat these recipes: Spinach Egg Fried Rice" in prompt
+    assert payload["options"]["temperature"] == 0.9
+    # still wrote a cache row (write is allowed on regenerate)
+    assert world["db"].sql("INSERT INTO ai_response_cache") or world["db"].sql("ON CONFLICT (cache_key)")
+
+
+def test_all_excluded_returns_note_without_fallback(client, auth_headers, world):
+    world["post"].return_value = ollama_ok()
+    r = client.post(
+        URL,
+        headers=auth_headers,
+        json={
+            "regenerate": True,
+            "excludeTitles": ["Spinach Egg Fried Rice", "Spinach Omelet"],
+        },
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()["data"]
+    assert data["recipes"] == []
+    assert data["note"]
+    assert "already saw" in data["note"].lower() or "similar" in data["note"].lower()
+    assert world["post"].call_count == 1  # no Gemini fallback, no retry
+    for banned in ("gemini", "ollama", "gemma"):
+        assert banned not in data["note"].lower()
+
+
+def test_regenerate_when_capped_makes_zero_calls(client, auth_headers, world):
+    world["usage"].return_value = snap(user_week=50_000)
+    r = client.post(
+        URL,
+        headers=auth_headers,
+        json={"regenerate": True, "excludeTitles": ["Spinach Omelet"]},
+    )
+    assert r.status_code == 429
+    assert world["post"].call_count == 0
+
+
+def test_first_request_still_hits_cache_without_excludes(client, auth_headers, world):
+    cached = [{"title": "Cached", "ingredients": [{"raw": "x", "name": "x"}], "instructions": ["y"], "servings": "2"}]
+    world["db"].rows["FROM ai_response_cache"] = {"response": json.dumps(cached)}
+    r = client.post(URL, headers=auth_headers, json={"servings": 2})
+    assert r.status_code == 200
+    assert r.json()["data"]["cached"] is True
+    assert r.json()["data"]["recipes"][0]["title"] == "Cached"
+    assert world["post"].call_count == 0
+
+
+def test_snake_case_exclude_titles_accepted(client, auth_headers, world):
+    world["post"].return_value = ollama_ok()
+    r = client.post(
+        URL,
+        headers=auth_headers,
+        json={"regenerate": True, "exclude_titles": ["Spinach Egg Fried Rice"]},
+    )
+    assert r.status_code == 200
+    prompt = world["post"].call_args.args[2]["messages"][0]["content"]
+    assert "Do not repeat these recipes: Spinach Egg Fried Rice" in prompt
+
+
+def test_exclude_titles_cap(client, auth_headers, world):
+    assert client.post(
+        URL,
+        headers=auth_headers,
+        json={"excludeTitles": [f"Recipe {i}" for i in range(16)]},
+    ).status_code == 422
+    assert world["post"].call_count == 0
+
+
+def test_default_temperature_on_first_request(client, auth_headers, world):
+    world["post"].return_value = ollama_ok()
+    client.post(URL, headers=auth_headers, json={"servings": 2})
+    assert world["post"].call_args.args[2]["options"]["temperature"] == 0.6

@@ -6,7 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from backend.auth_session import require_authenticated_user_id, resolve_authenticated_user
 from backend.clerk_auth import is_admin_user
@@ -18,13 +18,19 @@ router = APIRouter(prefix="/api/ai", tags=["AI"])
 
 
 class RecipeBuilderRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     servings: int = Field(default=2, ge=1, le=12)
     diet: str = Field(default="none", max_length=20)
     maxMinutes: Optional[int] = Field(default=None, ge=10, le=240)
     mustUse: list[str] = Field(default_factory=list, max_length=5)
     note: str = Field(default="", max_length=120)
+    excludeTitles: list[str] = Field(
+        default_factory=list,
+        max_length=ai_recipe_builder.MAX_EXCLUDE_TITLES,
+        validation_alias=AliasChoices("excludeTitles", "exclude_titles"),
+    )
+    regenerate: bool = False
 
     @field_validator("diet")
     @classmethod
@@ -48,6 +54,11 @@ class RecipeBuilderRequest(BaseModel):
     @classmethod
     def clean_note(cls, v: str) -> str:
         return ai_recipe_builder._clean(v, 120)
+
+    @field_validator("excludeTitles")
+    @classmethod
+    def clean_exclude(cls, v: list[str]) -> list[str]:
+        return ai_recipe_builder.clean_exclude_titles(v)
 
 
 def _tier(user_id: str) -> str:

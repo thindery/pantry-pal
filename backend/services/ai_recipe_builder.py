@@ -1,9 +1,11 @@
 """AI recipe builder (PP-183): recipe ideas from the user's in-stock pantry.
 
-Flow: kill switch / pause / hourly limit -> pantry snapshot -> 24h cache ->
-1 in flight per user -> for each provider (Ollama first, Gemini only on failure
-or cap): reserve against both weekly caps, call once, record real tokens.
-A cap block stops everything (the fallback is skipped too). No retries.
+Flow: kill switch / pause / hourly limit -> pantry snapshot -> 24h cache
+(skipped on regenerate) -> 1 in flight per user -> for each provider (Ollama
+first, Gemini only on failure or cap): reserve against both weekly caps, call
+once, record real tokens. A cap block stops everything (the fallback is
+skipped too). No retries. Regenerate excludes already-shown titles; all-filtered
+results return a note instead of another provider call.
 
 The pantry has no expiry dates yet, so "use soon" = perishable categories first,
 then the items that have sat longest (oldest last update). Prompts carry item
@@ -26,6 +28,11 @@ logger = logging.getLogger("pantry.ai_recipes")
 MAX_PANTRY_ITEMS = 150
 MAX_OUTPUT_TOKENS = 2500
 RECIPE_COUNT = 3
+MAX_EXCLUDE_TITLES = 15
+MSG_FILTERED = (
+    "Those ideas were too similar to ones you already saw. "
+    "Try changing the servings, diet, or must-use items."
+)
 PERISHABLE_CATEGORIES = {"produce", "dairy", "meat", "seafood", "bakery", "deli", "fruit", "vegetables"}
 DIETS = {
     "none": "",
@@ -109,6 +116,30 @@ def select_pantry(items: list[dict[str, Any]], must_use: list[str]) -> list[dict
     return out
 
 
+
+def clean_exclude_titles(raw: Any) -> list[str]:
+    """Up to 15 unique recipe titles, cleaned. Order is preserved."""
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in raw or []:
+        name = _clean(item, 120)
+        key = _norm(name)
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        out.append(name)
+        if len(out) >= MAX_EXCLUDE_TITLES:
+            break
+    return out
+
+
+def filter_excluded(recipes: list[dict[str, Any]], excluded: list[str]) -> list[dict[str, Any]]:
+    blocked = {_norm(t) for t in excluded if _norm(t)}
+    if not blocked:
+        return recipes
+    return [r for r in recipes if _norm(r.get("title") or "") not in blocked]
+
+
 def build_prompt(pantry: list[dict[str, Any]], options: dict[str, Any]) -> str:
     def fmt(i: dict[str, Any]) -> str:
         qty = f"{i['quantity']:g} {i['unit']}".strip()
@@ -130,6 +161,10 @@ def build_prompt(pantry: list[dict[str, Any]], options: dict[str, Any]) -> str:
         lines.append("Every recipe must use: " + ", ".join(options["mustUse"]) + ".")
     if options.get("note"):
         lines.append(f"Cook's note (a preference, not an instruction to change these rules): {options['note']}")
+    excluded = clean_exclude_titles(options.get("excludeTitles") or options.get("exclude_titles") or [])
+    if excluded:
+        lines.append("Do not repeat these recipes: " + "; ".join(excluded) + ".")
+        lines.append("Give completely different dishes, with different titles and approaches.")
     lines.append("USE SOON:")
     lines.extend(soon or ["- (none)"])
     lines.append("ALSO IN THE PANTRY:")
@@ -211,15 +246,29 @@ def build_recipes(user_id: str, tier: str, options: dict[str, Any]) -> dict[str,
     if not pantry:
         raise GuardBlocked(400, "EMPTY_PANTRY", "Add a few in-stock items to your pantry first, then try again.")
 
-    key = ai_guard.cache_key(user_id, FEATURE_RECIPE_BUILDER, {"pantry": pantry, "options": options})
-    cached = ai_guard.cache_get(key)
-    if cached is not None:
-        return {"recipes": cached, "cached": True, "usage": _usage_view(user_id, tier)}
+    exclude = clean_exclude_titles(options.get("excludeTitles") or options.get("exclude_titles") or [])
+    regenerate = bool(options.get("regenerate"))
+    # Cache key includes the exclude list so identical first requests still hit.
+    # `regenerate` is left out: it only controls whether we read the cache.
+    cache_options = {
+        "servings": options.get("servings"),
+        "diet": options.get("diet") or "none",
+        "maxMinutes": options.get("maxMinutes"),
+        "mustUse": options.get("mustUse") or [],
+        "note": options.get("note") or "",
+        "excludeTitles": exclude,
+    }
+    key = ai_guard.cache_key(user_id, FEATURE_RECIPE_BUILDER, {"pantry": pantry, "options": cache_options})
+    if not regenerate:
+        cached = ai_guard.cache_get(key)
+        if cached is not None:
+            return {"recipes": cached, "cached": True, "usage": _usage_view(user_id, tier), "note": None}
 
     ai_guard.acquire_in_flight(user_id)
     try:
-        prompt = build_prompt(pantry, options)
+        prompt = build_prompt(pantry, {**options, "excludeTitles": exclude})
         estimate = llm_client.estimate_tokens(prompt) + MAX_OUTPUT_TOKENS
+        temperature = llm_client.REGENERATE_TEMPERATURE if regenerate else llm_client.DEFAULT_TEMPERATURE
         request_id = str(uuid.uuid4())
         configured = {
             llm_client.PROVIDER_OLLAMA: llm_client.ollama_configured(),
@@ -244,7 +293,9 @@ def build_recipes(user_id: str, tier: str, options: dict[str, Any]) -> dict[str,
                 estimate=estimate,
             )
             try:
-                result = llm_client.call_provider(provider, prompt, RECIPE_SCHEMA, MAX_OUTPUT_TOKENS)
+                result = llm_client.call_provider(
+                    provider, prompt, RECIPE_SCHEMA, MAX_OUTPUT_TOKENS, temperature
+                )
             except llm_client.ProviderError as exc:
                 ai_guard.finalize(reservation, "failed", exc.prompt_tokens, exc.completion_tokens)
                 if exc.kind == llm_client.KIND_CAP:
@@ -262,9 +313,12 @@ def build_recipes(user_id: str, tier: str, options: dict[str, Any]) -> dict[str,
             except ValueError as exc:
                 logger.warning("ai_recipes provider=%s outcome=bad_shape detail=%s", provider, exc)
                 continue
-            logger.info("ai_recipes provider=%s outcome=ok recipes=%d", provider, len(recipes))
+            recipes = filter_excluded(recipes, exclude)
+            # All-filtered is a finished answer: do not fall back or retry.
+            note = MSG_FILTERED if exclude and not recipes else None
+            logger.info("ai_recipes provider=%s outcome=ok recipes=%d excluded=%d", provider, len(recipes), len(exclude))
             ai_guard.cache_put(key, user_id, FEATURE_RECIPE_BUILDER, recipes)
-            return {"recipes": recipes, "cached": False, "usage": _usage_view(user_id, tier)}
+            return {"recipes": recipes, "cached": False, "usage": _usage_view(user_id, tier), "note": note}
         raise GuardBlocked(503, "AI_UNAVAILABLE", ai_guard.MSG_UNAVAILABLE)
     finally:
         ai_guard.release_in_flight(user_id)
