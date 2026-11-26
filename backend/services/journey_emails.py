@@ -37,6 +37,9 @@ AVAILABLE_IMAGES = frozenset(
         "baked-potato-soup",
         "sunday-pot-roast",
         "hero-pantry-welcome",
+        "hero-pantry-shelf",
+        "hero-scan-first-item",
+        "hero-household-pantry",
     }
 )
 IMAGE_W, IMAGE_H = 600, 450
@@ -54,6 +57,9 @@ ALT = {
     "baked-potato-soup": "AI illustration of baked potato soup",
     "sunday-pot-roast": "AI illustration of a Sunday pot roast",
     "hero-pantry-welcome": "AI illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes",
+    "hero-pantry-shelf": "Wooden kitchen shelf of glass jars filled with pasta, flour, and oats",
+    "hero-scan-first-item": "Hands putting glass jars of pasta, walnuts, and oats on a kitchen counter",
+    "hero-household-pantry": "A person placing glass jars of dry goods on a white kitchen shelf",
 }
 RECIPE_TITLES = {
     "canned-tuna-pasta": "Canned Tuna Pasta",
@@ -63,14 +69,14 @@ RECIPE_TITLES = {
     "leftover-rice-fried-rice": "Fried Rice with Leftover Rice",
     "pasta-e-fagioli": "Pasta e Fagioli",
 }
-# Preferred hero first (planned AI gap image), then the recipe illustration that stands in.
+# Preferred hero first, then a recipe-illustration stand-in if the dedicated file is missing.
 HEROES = {
     "recipe_welcome": ["hero-pantry-welcome", "canned-tuna-pasta"],
     "recipe_cupboard_dinners": ["rice-and-beans-with-canned-beans"],
-    "recipe_know_your_pantry": ["easy-lasagna"],
-    "onboarding_scan_first_item": ["baked-potato-soup"],
+    "recipe_know_your_pantry": ["hero-pantry-shelf", "easy-lasagna"],
+    "onboarding_scan_first_item": ["hero-scan-first-item", "baked-potato-soup"],
     "onboarding_recipes": ["sheet-pan-chicken-and-vegetables"],
-    "onboarding_pro": ["sunday-pot-roast"],
+    "onboarding_pro": ["hero-household-pantry", "sunday-pot-roast"],
 }
 SIGN_UP_PATH = "/auth/signin/"
 

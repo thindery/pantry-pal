@@ -36,3 +36,15 @@ Tylor approved only the welcome hero on 2026-11-26; the other three candidates w
 | File | Source |
 |------|--------|
 | hero-pantry-welcome.jpg | AI-generated illustration, Grok Bot, 2026-11-26. Used as the welcome-email hero (jars plus canned tomato sauce). |
+
+## Real photographs (Pexels License) (PP-234)
+
+Tylor approved these three real photographs on 2026-11-26 (option A of the free-license set).
+They replace the recipe-illustration stand-ins on R3, O1, and O3. `hero-pantry-welcome.jpg` is unchanged.
+License: [Pexels License](https://www.pexels.com/license/) (free for commercial and personal use; attribution appreciated, not required).
+
+| File | Photographer | Source | License |
+|------|--------------|--------|---------|
+| hero-pantry-shelf.jpg | Arina Krasnikova | https://www.pexels.com/photo/glass-jars-on-a-wooden-shelf-in-a-kitchen-6654122/ | Pexels License |
+| hero-scan-first-item.jpg | Ron Lach | https://www.pexels.com/photo/food-in-glass-jars-in-kitchen-10568355/ | Pexels License |
+| hero-household-pantry.jpg | RDNE Stock project | https://www.pexels.com/photo/woman-placing-glass-jars-on-a-kitchen-cabinet-8581042/ | Pexels License |
