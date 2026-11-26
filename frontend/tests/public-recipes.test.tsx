@@ -385,12 +385,12 @@ describe("Recipe JSON-LD (PP-184)", () => {
 });
 
 describe("launch gate (PP-184)", () => {
-  it("is off by default: noindex+nofollow on every /recipes page", async () => {
-    expect(PUBLIC_RECIPES_INDEXABLE).toBe(false);
-    expect(browseMetadata.robots).toMatchObject({ index: false, follow: false });
+  it("is on: /recipes and recipe pages are indexable (tag pages stay noindex)", async () => {
+    expect(PUBLIC_RECIPES_INDEXABLE).toBe(true);
+    expect(browseMetadata.robots).toBeUndefined();
     for (const r of RECIPES) {
       const meta = await generateMetadata({ params: Promise.resolve({ slug: r.slug }) });
-      expect(meta.robots).toMatchObject({ index: false, follow: false });
+      expect(meta.robots).toBeUndefined();
     }
   });
 
@@ -413,45 +413,34 @@ describe("launch gate (PP-184)", () => {
     }
   });
 
-  it("is off by default: no sitemap entries", () => {
-    expect(recipeSitemapPages()).toEqual([]);
-    expect(sitemap().some((e) => e.url.includes("/recipes"))).toBe(false);
+  it("sitemap lists /recipes/ and each recipe with real dates, and leaves tags out", () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(MIN_RECIPES_FOR_SITEMAP);
-  });
-
-  it("is off by default: no footer link to /recipes", () => {
-    cleanup();
-    const { container } = render(<MarketingFooter />);
-    expect(Array.from(container.querySelectorAll("a")).some((a) => (a.getAttribute("href") ?? "").includes("/recipes"))).toBe(false);
-  });
-
-  it("is off by default: no nav link to /recipes", () => {
-    cleanup();
-    const { container } = render(<MarketingNav />);
-    expect(Array.from(container.querySelectorAll("a")).some((a) => (a.getAttribute("href") ?? "").includes("/recipes"))).toBe(false);
-  });
-
-  it("when the flag is on, the sitemap lists /recipes/ and each recipe with real dates", async () => {
-    vi.resetModules();
-    vi.doMock("@/content/recipes/config", async (orig) => ({
-      ...(await orig<typeof import("@/content/recipes/config")>()),
-      PUBLIC_RECIPES_INDEXABLE: true,
-    }));
-    const mod = await import("@/app/sitemap");
-    const entries = mod.default();
-    const recipeEntries = entries.filter((e) => e.url.includes("/recipes/"));
+    const recipeEntries = recipeSitemapPages();
     expect(recipeEntries).toHaveLength(13);
-    expect(recipeEntries[0]).toMatchObject({ url: "https://www.mypantryhub.com/recipes/", priority: 0.8, changeFrequency: "weekly" });
+    expect(recipeEntries[0]).toMatchObject({ path: "/recipes/", priority: 0.8, changeFrequency: "weekly" });
     expect(recipeEntries[1]).toMatchObject({ priority: 0.7, changeFrequency: "monthly" });
-    expect(recipeEntries.some((e) => e.url.includes("/tag/"))).toBe(false);
+    expect(recipeEntries.some((e) => e.path.includes("/tag/"))).toBe(false);
     for (const e of recipeEntries) expect(String(e.lastModified)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    vi.doUnmock("@/content/recipes/config");
-    vi.resetModules();
+    const urls = sitemap().map((e) => e.url);
+    expect(urls).toContain("https://www.mypantryhub.com/recipes/");
+    expect(urls).toContain("https://www.mypantryhub.com/recipes/canned-tuna-pasta/");
+    expect(urls.some((u) => u.includes("/tag/"))).toBe(false);
+  });
+
+  it("nav, footer, and homepage card link to /recipes/", () => {
+    cleanup();
+    const hrefOf = (el: { container: HTMLElement }) =>
+      Array.from(el.container.querySelectorAll("a")).map((a) => (a.getAttribute("href") ?? "").replace(/\/$/, ""));
+    const footer = render(<MarketingFooter />);
+    expect(hrefOf(footer)).toContain("/recipes");
+    cleanup();
+    const nav = render(<MarketingNav />);
+    expect(hrefOf(nav)).toContain("/recipes");
   });
 
   it("one flag in one file drives all signals", () => {
     const config = fs.readFileSync(path.join(process.cwd(), "content/recipes/config.ts"), "utf8");
-    expect(config).toMatch(/export const PUBLIC_RECIPES_INDEXABLE = false;/);
+    expect(config).toMatch(/export const PUBLIC_RECIPES_INDEXABLE = true;/);
     for (const file of ["app/recipes/page.tsx", "app/recipes/[slug]/page.tsx", "app/sitemap.ts", "components/marketing/MarketingFooter.tsx", "components/marketing/MarketingNav.tsx", "components/LandingPage.tsx"]) {
       expect(fs.readFileSync(path.join(process.cwd(), file), "utf8")).toContain("PUBLIC_RECIPES_INDEXABLE");
     }

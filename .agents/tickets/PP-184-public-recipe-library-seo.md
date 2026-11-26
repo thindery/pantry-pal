@@ -1,6 +1,6 @@
 # PP-184: Free public recipe library (SEO): browse page, recipe pages, AI images, scale servings
 
-**Status:** 🟡 Live, unlisted (PR #135, 9e910fc). AI illustrations added 2026-11-26. Waiting on Tylor's OK before it goes public
+**Status:** 🟢 Live (2026-11-26). Tylor approved going live. PUBLIC_RECIPES_INDEXABLE=true; tag pages still noindex.
 **Priority:** P2
 **Phase:** Growth / SEO content
 **Created:** 2026-11-25, 3:25 PM America/Chicago
@@ -112,7 +112,7 @@ SEO & AEO Desk, from its PP-184 input:
 
 - [ ] Tylor OKs the batch; at least 3 recipes quality-checked (real test cooks, times, and yields).
 - [ ] AI images committed at `frontend/public/recipes/<slug>.webp` for at least the recipes being launched (optimized, with the illustration alt text and caption already in place). Recipe rich results need an image.
-- [ ] In one deploy: set `PUBLIC_RECIPES_INDEXABLE = true` in `frontend/content/recipes/config.ts`. That removes noindex, adds the sitemap entries (priority 0.8 weekly for `/recipes/`, 0.7 monthly for each recipe, real `lastModified` from each recipe's `updated` field, never `new Date()`), and shows the nav, footer, and homepage links.
+- [x] In one deploy: set `PUBLIC_RECIPES_INDEXABLE = true` in `frontend/content/recipes/config.ts`. That removes noindex, adds the sitemap entries (priority 0.8 weekly for `/recipes/`, 0.7 monthly for each recipe, real `lastModified` from each recipe's `updated` field, never `new Date()`), and shows the nav, footer, and homepage links. Tylor approved 2026-11-26.
 - [ ] Bump a recipe's `updated` date in its content file whenever its content really changes.
 - [ ] Leave tag pages noindex (`RECIPE_TAG_PAGES_INDEXABLE = false`) unless they meet the rule above.
 - [ ] Deploy, verify `build-id.txt`, and check `/recipes/` and one recipe page return 200 with NO `noindex`.

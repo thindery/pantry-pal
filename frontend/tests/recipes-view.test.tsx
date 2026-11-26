@@ -113,6 +113,13 @@ describe("RecipesView compact layout (PP-192)", () => {
     expect(screen.queryByRole("button", { name: /Suggest recipes/ })).toBeNull();
   });
 
+  it("links to the public recipe library", async () => {
+    render(<RecipesView />);
+    const link = await screen.findByRole("link", { name: "Browse the public recipe library" });
+    expect((link.getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/recipes");
+  });
+
+
   it("shows the existing AI builder, including Suggest recipes, after opening Suggest with AI", async () => {
     render(<RecipesView />);
     await screen.findByRole("heading", { name: "Butter Pasta" });
