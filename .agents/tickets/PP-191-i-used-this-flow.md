@@ -1,6 +1,6 @@
 # PP-191: "I used this" / "I cooked this" pantry consumption flow (design)
 
-**Status:** 📋 Open (design only — no code in this ticket)
+**Status:** ✅ Live MVP (eeb003f, [#148](https://github.com/thindery/pantry-pal/pull/148)); design in [#133](https://github.com/thindery/pantry-pal/pull/133)
 **Priority:** P2
 **Phase:** Recipes / cook-from-pantry
 **Created:** 2026-11-26, 11:15 AM America/Chicago
@@ -90,3 +90,18 @@ See the design doc for the full proposal. The later build should:
 - No secrets. Commit with explicit paths only; never `git add -A`.
 - Don't touch the stray `2026-07-30` file, `.agents/email-previews/`, or GROWTH-010.
 - PP-188 is reserved for recipe sharing (uncommitted in `pantry-pal-pp188`). PP-190 is left free for the combine-similar-items ticket. PP-192 is the compact recipes page, already in progress in `pantry-pal-pp192`.
+
+
+---
+
+## Shipped MVP (2026-11-26, 1:25 PM CT)
+
+Built from the recommended scope:
+
+- **I cooked this** on the recipe page: on-page "Mark what you used" checklist, matched in-stock items pre-checked (optional lines unchecked), amount stepper, item picker when several pantry items match, "You'll have 0 left" hint, Deduct / Cancel.
+- **I used it** typeahead on the pantry page (inline listbox, one tap deducts 1 pantry unit, out-of-stock rows say "Already out").
+- **Add / Used** toggle on the barcode scanner. Used deducts 1 from a known item and never creates items; an unknown barcode shows "This isn't in your pantry" with the typeahead.
+- **Undo toast** (9s, bottom on phones). Deducts log `REMOVE` (`MANUAL` / `BARCODE_SCAN`), clamp at 0, items stay in the pantry, all-or-nothing with rollback.
+- Tests: `frontend/tests/i-used-this.test.tsx`.
+
+Not in the MVP (follow-ups): attaching pantry items to Missing/Unsure recipe lines, recipe-unit conversion (default is 1 pantry unit), the "Add to shopping list?" prompt for target-0 items, an "I used it" button on Item Details.

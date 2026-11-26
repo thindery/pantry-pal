@@ -1,6 +1,6 @@
 # PP-190: Combine similar pantry items (reuse the PP-189 normalizer)
 
-**Status:** 📋 Open
+**Status:** ✅ Live (79012f3, [#143](https://github.com/thindery/pantry-pal/pull/143))
 **Priority:** P2
 **Phase:** Pantry / item groups
 **Created:** 2026-11-26, 11:44 AM America/Chicago
@@ -57,3 +57,17 @@ This ticket is **design/build later**. Do not implement it in the same PR that f
 - No dependency changes unless truly needed. If one is, stop and explain why.
 - No secrets. Commit with explicit paths only; never `git add -A`.
 - Don't touch the stray `2026-07-30` file, `.agents/email-previews/`, or GROWTH-010.
+
+
+---
+
+## Shipped (2026-11-26, 1:20 PM CT)
+
+Per Tylor's request, built as **display grouping, on by default**, not manual suggestions:
+
+- `frontend/lib/combine-similar.ts` clusters near-duplicate ungrouped items using the PP-189 tokenizer and `scoreTokenMatch`, plus a conservative leading-brand rule ("Bake house pie crust" = "Pie Crust"; flavors like "graham cracker" are never treated as a brand). Same unit required. Shortest name is the representative; matches never chain.
+- Pantry shows one row with the combined quantity and an expandable list of the real rows; +/- and scanning still act on a specific item. Underlying rows are never merged or deleted.
+- Shopping list rolls similar items up into one row; recipe matching already sums closest-matching rows.
+- Opt-out: Account toggle and a "Combine similar" chip on the pantry. Stored per browser (localStorage) in this release; a server-side per-account sync is a follow-up.
+- Smoke check against the live data shape (read-only names): Pie Crust + Bake house pie crust, the three Cream of chicken rows, cream of mushroom pair and the two cream-style corn rows group; butter, peanut butter, butter cake, cream cheese and heavy cream stay separate.
+- Tests: `frontend/tests/combine-similar.test.ts`.

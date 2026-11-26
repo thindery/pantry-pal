@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 1:15 PM CT (PP-200 session-aware public recipe chrome in progress; Tylor t84u/t85u)
+Last updated: 2026-11-26, 1:25 PM CT (PP-190 combine similar items live at 79012f3; PP-191 I-used-this MVP live at eeb003f; PP-200 session-aware public recipe chrome in progress)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -160,7 +160,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 |--------|-------|--------|------|
 | PP-193 | Capture-only public recipe newsletter signup (no emails sent) | ✅ Live behind flags (build `92a55d6`, #144) | Growth / recipes |
 | PP-192 | Compact recipes page: tabs for the AI generator, denser recipe cards | ✅ Live (build c053497) | Recipes UX |
-| PP-190 | Combine similar pantry items using the PP-189 normalizer (ticket only) | 📋 Open | User-reported |
+| PP-190 | Combine similar pantry items (display only, on by default, opt-out; PP-189 normalizer) | ✅ Live (79012f3, #143) | User-reported |
 | PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle ([#119](https://github.com/thindery/pantry-pal/pull/119); live 4:10 PM CT Nov 25, build `32cb176`, migration 031 app_settings, `AI_RECEIPT_SCAN_ENABLED=1`) | ✅ Done | Pro AI |
 | PP-110 | AEO content cluster and comparison pages | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-111 | Free directory/community plan — drafts only until Tylor approves | 📋 Open (drafts filed; nothing submitted) | SEO / AEO |
@@ -171,7 +171,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-136 | Promo or trial-ending reminder (only if relevant) | ✅ Done (Nov 25) | Email design |
 | PP-139 | Public first-party recipes and affiliate links | 📋 Open | Revenue options |
 | PP-140 | Free-tier and public-recipe ads (Bragle rules) | 📋 Open | Revenue options |
-| PP-191 | "I used this" / "I cooked this" pantry consumption flow (design) | 📋 Open (design only) | Recipes / pantry UX |
+| PP-191 | "I used this" / "I cooked this" pantry consumption flow (MVP built) | ✅ Live (eeb003f, #148) | Recipes / pantry UX |
 
 ### P3 — someday (2)
 
@@ -530,14 +530,14 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | ✅ Done (live 11:21 AM CT, build `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) |
-| PP-190 | Combine similar pantry items using the PP-189 normalizer (group-picker suggestions; ticket only) | P2 | 📋 Open |
+| PP-190 | Combine similar pantry items using the PP-189 normalizer (display grouping, default on, opt-out) | P2 | ✅ Live (79012f3) |
 | PP-192 | Compact recipes page: move the AI generator into a **Suggest with AI** tab; dense list cards so more recipes fit on a phone | P2 | ✅ Done (live Nov 26, build c053497, [PR #132](https://github.com/thindery/pantry-pal/pull/132)) |
 
 ## Tickets from Tylor's Nov 26 "I used this" request
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-191 | "I used this" / "I cooked this" flow: recipe checklist, pantry typeahead, scan-to-use (design only; see `.agents/docs/i-used-this-flow-design.md`) | P2 | 📋 Open (design only; depends on PP-189) |
+| PP-191 | "I used this" / "I cooked this" flow: recipe checklist, pantry typeahead, scan-to-use (design only; see `.agents/docs/i-used-this-flow-design.md`) | P2 | ✅ Live MVP (eeb003f) |
 
 ## Email journeys (Tylor Nov 26, t79u / t80u / t81u)
 
