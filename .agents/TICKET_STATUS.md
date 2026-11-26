@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 1:25 PM CT (PP-190 combine similar items live at 79012f3; PP-191 I-used-this MVP live at eeb003f; PP-200 session-aware public recipe chrome in progress)
+Last updated: 2026-11-26, 3:40 PM CT (PP-234 real Pexels heroes shipping for R3/O1/O3; welcome hero unchanged; send flags off)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -552,7 +552,8 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | ✅ Live behind flags (build `92a55d6`, #144). Enrollment off until `EMAIL_ONBOARDING_SINCE` is set, copy needs Tylor's OK |
 | PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking live (#144). Waiting on Tylor to add the webhook in the Resend dashboard (secret not set on prod) |
 | PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
-| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags (build `92a55d6`). Blocked from go-live: Cloudflare challenges `/email/*` for mail image proxies (needs a Skip rule, Tylor's OK). 4 AI gap images pending |
+| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags. Welcome hero approved. Three real Pexels heroes shipped in PP-234. Still blocked from go-live: Cloudflare challenges `/email/*` (needs a Skip rule, Tylor's OK) |
+| PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | 🟡 Shipping (send flags unchanged) |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 

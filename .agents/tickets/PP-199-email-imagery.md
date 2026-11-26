@@ -25,10 +25,10 @@ Absolute `https://www.mypantryhub.com/email/<name>.jpg`, JPG (many clients canno
 | R0 confirm | none (keep the opt-in email light) | none |
 | R1 welcome | `hero-pantry-welcome` (approved) | canned-tuna-pasta, black-bean-tacos, easy-red-lentil-soup |
 | R2 cupboard dinners | rice-and-beans-with-canned-beans | leftover-rice-fried-rice, pasta-e-fagioli |
-| R3 know your pantry | easy-lasagna (recipe stand-in) | none |
-| O1 scan first item | baked-potato-soup (recipe stand-in) | none |
+| R3 know your pantry | `hero-pantry-shelf` (real photo, PP-234) | none |
+| O1 scan first item | `hero-scan-first-item` (real photo, PP-234) | none |
 | O2 recipes | sheet-pan-chicken-and-vegetables | none |
-| O3 Pro | sunday-pot-roast (recipe stand-in) | none |
+| O3 Pro | `hero-household-pantry` (real photo, PP-234) | none |
 
 Sources used: (1) the existing AI recipe illustrations (PP-184/193), resized to JPG copies. (2) Unsplash: **none used yet.** Unsplash serves a bot challenge (HTTP 401 "Checking your browser", Anubis) to automated fetches from the build box, so photographer names and photo URLs could not be verified. Per the rule that every Unsplash file needs a credit row, none were added; the manual download route (open the photo page in a normal browser, use its Download button, add a row to CREDITS.md) is documented in `CREDITS.md`. We do not use the paid API and do not work around the challenge. (3) One approved dedicated AI hero (`hero-pantry-welcome`); the other three candidates were rejected.
 
@@ -38,7 +38,11 @@ Tylor approved only `hero-pantry-welcome` (jars plus canned tomato sauce; 600x45
 
 
 1. `hero-pantry-welcome`: "Warm top-down photo-style illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes, soft morning light, cream background, no text."
-2. `hero-pantry-shelf`, `hero-scan-first-item`, and `hero-household-pantry` were generated, then rejected by Tylor on 2026-11-26 and removed. Do not re-add them.
+2. The AI versions of `hero-pantry-shelf`, `hero-scan-first-item`, and `hero-household-pantry` were generated, then rejected by Tylor on 2026-11-26 ("Looks fakey") and removed. Do not re-add those AI files. Real Pexels photographs with those filenames were approved (option A) and shipped in PP-234.
+
+## Real photographs (PP-234, 2026-11-26, 3:40 PM CT)
+
+Tylor approved option A of the real free-license set. R3, O1, and O3 now use `hero-pantry-shelf`, `hero-scan-first-item`, and `hero-household-pantry` (Pexels License; credits in `frontend/public/email/CREDITS.md`). `hero-pantry-welcome` is unchanged. Send flags were not changed.
 
 ## Blocker found at deploy (Nov 26, 1:16 PM CT): Cloudflare challenges /email/*.jpg
 
