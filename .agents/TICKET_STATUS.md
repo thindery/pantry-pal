@@ -151,6 +151,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (live Nov 25, 1:57 PM CT) | ✅ Done (live) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
+| PP-230 | Security dependency bumps: Next 16.4.6, next-auth beta.32, @auth/core 0.41.3, zod 4.6.7 (npm audit: 4 critical, 5 high → 0) | P0 | 🔨 PR open |
 | PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | ✅ Done (live 11:21 AM CT, `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) | User-reported |
 | PP-200 | Session-aware public recipe chrome: logged-in header, app nav, pantry match, save to My recipes | 🟡 In progress | User-reported |
 
