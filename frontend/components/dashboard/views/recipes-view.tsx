@@ -226,6 +226,13 @@ export function RecipesView() {
           <p className="text-sm text-[var(--muted)] mt-1">
             Track ingredients against your pantry and cook with what you have.
           </p>
+          <Link
+            href="/recipes/"
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline"
+          >
+            <Globe size={14} aria-hidden="true" />
+            Browse the public recipe library
+          </Link>
         </div>
 
         <button

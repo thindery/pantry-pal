@@ -6,11 +6,11 @@
  *   2. sitemap.xml entries for /recipes/ pages (omitted while false)
  *   3. the "Recipes" links in the nav, footer, and the homepage card (hidden while false)
  *
- * Tylor must OK the first batch of recipes before this flips to true.
- * To launch: change `false` to `true` below, in this one line. Then follow the
+ * Flipped to true on 2026-11-26 after Tylor approved going live.
+ * To unlist: change `true` to `false` below, in this one line. Then follow the
  * flip checklist in .agents/tickets/PP-184-public-recipe-library-seo.md.
  */
-export const PUBLIC_RECIPES_INDEXABLE = false;
+export const PUBLIC_RECIPES_INDEXABLE = true;
 
 /**
  * Tag pages (/recipes/tag/<tag>/) stay noindex and out of the sitemap even
