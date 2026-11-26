@@ -16,6 +16,8 @@ interface GroupListRowProps {
   onRename: (groupId: string, name: string) => Promise<void>;
   onSetTarget: (groupId: string, target: number | null) => Promise<void>;
   onUngroup: (groupId: string) => Promise<void>;
+  /** PP-190: automatic "combine similar" row; display only, nothing to rename/ungroup. */
+  combined?: boolean;
 }
 
 export function GroupListRow({
@@ -28,6 +30,7 @@ export function GroupListRow({
   onRename,
   onSetTarget,
   onUngroup,
+  combined = false,
 }: GroupListRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
@@ -120,7 +123,7 @@ export function GroupListRow({
               <span>have {formatQuantity(combinedQty, primaryUnit)}</span>
               <span className="mx-1">·</span>
               <span>
-                {members.length} {members.length === 1 ? "item" : "items"}
+                {combined ? `${members.length} similar items combined` : `${members.length} ${members.length === 1 ? "item" : "items"}`}
               </span>
               {group.targetQuantity != null && (
                 <>
@@ -132,6 +135,7 @@ export function GroupListRow({
           </div>
         </button>
 
+        {!combined && (
         <button
           type="button"
           onClick={handleOpenManage}
@@ -140,6 +144,7 @@ export function GroupListRow({
         >
           <Settings size={16} />
         </button>
+        )}
       </div>
 
       {isExpanded && (
@@ -159,7 +164,7 @@ export function GroupListRow({
         </div>
       )}
 
-      {showManageModal && (
+      {!combined && showManageModal && (
         <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-[var(--surface)] rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in zoom-in-95 duration-200 space-y-4">
             <div className="flex justify-between items-center">

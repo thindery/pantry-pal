@@ -33,6 +33,8 @@ export function AccountView() {
     handleScanReceiptClick,
     thresholdConfig,
     itemThresholdOverrides,
+    combineSimilar,
+    setCombineSimilar,
   } = usePantry();
 
   const email = session?.user?.email ?? "";
@@ -167,6 +169,34 @@ export function AccountView() {
         thresholdConfig={thresholdConfig}
         itemThresholdOverrides={itemThresholdOverrides}
       />
+
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-semibold text-[var(--foreground)]">Combine similar pantry items</p>
+            <p className="text-sm text-[var(--muted)] mt-1">
+              Show near-duplicates, like two pie crusts from different brands, as one row with a combined
+              quantity. Your items are never merged or deleted, and you can expand a row to see each one.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={combineSimilar !== false}
+            aria-label="Combine similar pantry items"
+            onClick={() => setCombineSimilar(combineSimilar === false)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+              combineSimilar !== false ? "bg-[var(--primary)]" : "bg-slate-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                combineSimilar !== false ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm divide-y divide-[var(--border)]">
         {menuItems.map((item) => {
