@@ -6,6 +6,9 @@ import { usePantry } from "@/contexts/pantry-provider";
 import type { BarcodeProduct, PantryItem } from "@/types";
 import { ApiError } from "@/services/apiService";
 import { isUsableProductName } from "@/lib/product-name";
+import { barcodesMatch } from "@/lib/barcode-variants";
+import { normalizeItemName } from "@/lib/shopping-list-utils";
+import { UsedItTypeahead } from "@/components/dashboard/UsedItTypeahead";
 
 const QUICK_SCAN_STORAGE_KEY = "pantry-quick-scan";
 const SESSION_FLUSH_MS = 800;
@@ -33,8 +36,42 @@ export function ScanBarcodeView() {
     handleSaveScannedProduct,
     handleAdjustQuantity,
     error: showError,
+    info: showInfo,
+    inventory,
+    consumeItems,
     router,
   } = usePantry();
+
+  // PP-191: Add (default) or Used mode. Used deducts 1 from a known pantry item and never creates items.
+  const [scanMode, setScanMode] = useState<"add" | "used">("add");
+  const scanModeRef = useRef<"add" | "used">("add");
+  const inventoryRef = useRef(inventory);
+  const consumeItemsRef = useRef(consumeItems);
+  const [usedEntries, setUsedEntries] = useState<{ itemId: string; name: string; count: number }[]>([]);
+  const [unmatchedUsed, setUnmatchedUsed] = useState<BarcodeProduct | null>(null);
+  useEffect(() => {
+    scanModeRef.current = scanMode;
+    inventoryRef.current = inventory;
+    consumeItemsRef.current = consumeItems;
+  }, [scanMode, inventory, consumeItems]);
+
+  const recordUsed = useCallback((item: PantryItem) => {
+    setUsedEntries((prev) => {
+      const existing = prev.find((e) => e.itemId === item.id);
+      if (existing) {
+        return [{ ...existing, count: existing.count + 1 }, ...prev.filter((e) => e.itemId !== item.id)];
+      }
+      return [{ itemId: item.id, name: item.name, count: 1 }, ...prev];
+    });
+  }, []);
+
+  const deductScannedItem = useCallback(
+    async (item: PantryItem) => {
+      const ok = await consumeItemsRef.current([{ itemId: item.id, amount: 1 }], { source: "BARCODE_SCAN" });
+      if (ok) recordUsed(item);
+    },
+    [recordUsed],
+  );
 
   const [unknownProduct, setUnknownProduct] = useState<BarcodeProduct | null>(null);
   const [scanToasts, setScanToasts] = useState<ScanToast[]>([]);
@@ -167,6 +204,24 @@ export function ScanBarcodeView() {
     recentScansRef.current.add(product.barcode);
     setTimeout(() => recentScansRef.current.delete(product.barcode), 3000);
 
+    // PP-191: Used mode deducts a known item; unknown barcodes never create items.
+    if (scanModeRef.current === "used") {
+      const pantry = inventoryRef.current;
+      const match =
+        pantry.find((i) => barcodesMatch(i.barcode, product.barcode)) ??
+        (isUsableProductName(product.name)
+          ? pantry.find((i) => normalizeItemName(i.name) === normalizeItemName(product.name))
+          : undefined);
+      if (!match) {
+        setUnmatchedUsed(product);
+      } else if ((Number(match.quantity) || 0) <= 0) {
+        showInfo(`Already out of ${match.name}.`);
+      } else {
+        await deductScannedItem(match);
+      }
+      return;
+    }
+
     // Unknown product (no name) - show modal and reset any stale name
     if (!isUsableProductName(product.name)) {
       setUnknownProductName("");
@@ -192,7 +247,7 @@ export function ScanBarcodeView() {
           : "Failed to add item. Please try again."
       );
     }
-  }, [handleSaveScannedProduct, showError, bumpOrAddEntry, showAddedToast]);
+  }, [handleSaveScannedProduct, showError, showInfo, deductScannedItem, bumpOrAddEntry, showAddedToast]);
 
   const flushSessionKey = useCallback(async (key: string) => {
     const pendingTimer = flushTimersRef.current.get(key);
@@ -358,6 +413,32 @@ export function ScanBarcodeView() {
       className="relative flex flex-col h-full min-h-0 overflow-hidden overscroll-none"
       data-testid="scan-barcode-screen"
     >
+      <div
+        className="flex items-center justify-center pt-2 pb-1 shrink-0"
+        role="group"
+        aria-label="Scan mode"
+        data-testid="scan-mode-toggle"
+      >
+        <div className="inline-flex rounded-xl bg-slate-100 p-1">
+          {(["add", "used"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={scanMode === mode}
+              onClick={() => {
+                setScanMode(mode);
+                setUnmatchedUsed(null);
+              }}
+              className={`min-h-[40px] px-5 rounded-lg text-sm font-semibold transition-colors ${
+                scanMode === mode ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {mode === "add" ? "Add" : "Used"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <BarcodeScanner
         autoStart
         quickScan={quickScan}
@@ -368,7 +449,48 @@ export function ScanBarcodeView() {
         onCollapsedChange={setLedgerExpanded}
       />
 
-      {quickScan && (
+      {scanMode === "used" && (
+        <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col pt-2 gap-2 overflow-y-auto" data-testid="used-session">
+          {unmatchedUsed && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+              <p className="text-sm font-medium text-amber-900">
+                This isn&apos;t in your pantry. Pick the item you used:
+              </p>
+              <UsedItTypeahead
+                inventory={inventory}
+                onUse={async (item) => {
+                  await deductScannedItem(item);
+                  setUnmatchedUsed(null);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setUnmatchedUsed(null)}
+                className="text-xs font-semibold text-amber-900 underline"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          <h3 className="text-sm font-semibold text-slate-700 px-1">Used this session</h3>
+          {usedEntries.length > 0 ? (
+            <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-sm">
+              {usedEntries.map((entry) => (
+                <li key={entry.itemId} className="flex items-center gap-2 px-3 py-2">
+                  <span className="flex-1 min-w-0 truncate text-sm font-medium text-slate-800">{entry.name}</span>
+                  <span className="text-sm font-semibold tabular-nums text-slate-800">−{entry.count}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="px-3 py-2.5 text-xs text-slate-400 text-center rounded-xl border border-dashed border-slate-200 bg-white">
+              Scan an item to mark it used
+            </p>
+          )}
+        </div>
+      )}
+
+      {scanMode === "add" && quickScan && (
         <div
           className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col pt-2 overflow-hidden"
           data-testid="quick-scan-ledger"

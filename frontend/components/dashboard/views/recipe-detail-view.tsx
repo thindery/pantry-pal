@@ -21,6 +21,7 @@ import { ApiError } from "@/lib/api-error";
 import { usePantry } from "@/contexts/pantry-provider";
 import { useConfirm } from "@/hooks/use-confirm";
 import { calculateRecipeCoverage } from "@/lib/recipe-coverage";
+import { CookChecklist } from "@/components/dashboard/CookChecklist";
 import { buildMissingRecipeShoppingItems } from "@/lib/recipe-shopping-list";
 import { deleteRecipe, getRecipe, parseRecipe, updateRecipe } from "@/services/recipeService";
 
@@ -39,7 +40,8 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
     }
   }, [params, routeParams]);
 
-  const { inventory, shoppingList, addBatchShoppingItems, error: showErrorToast } = usePantry();
+  const { inventory, shoppingList, addBatchShoppingItems, consumeItems, error: showErrorToast } = usePantry();
+  const [showCook, setShowCook] = useState(false);
   const confirm = useConfirm();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -318,6 +320,16 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
               </p>
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowCook((open) => !open)}
+              aria-expanded={showCook}
+              className="inline-flex items-center gap-2 bg-[var(--primary)] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors shadow-sm"
+            >
+              <ChefHat size={15} />
+              I cooked this
+            </button>
             {coverage.missingCount > 0 && (
               <button
                 type="button"
@@ -328,7 +340,18 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
                 Add Missing ({coverage.missingCount}) to Shopping List
               </button>
             )}
+            </div>
           </div>
+
+          {showCook && (
+            <CookChecklist
+              coverageItems={coverage.items}
+              inventory={inventory}
+              recipeTitle={recipe.title}
+              onConsume={consumeItems}
+              onClose={() => setShowCook(false)}
+            />
+          )}
 
           {/* Progress bar */}
           <div className="w-full bg-[var(--surface-muted)] h-2.5 rounded-full overflow-hidden">

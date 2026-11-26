@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ import {
   normalizeInventorySort,
   sortInventoryItems,
 } from "@/lib/inventory-sort";
+import { formatConsumeAmount } from "@/lib/consume";
 import { barcodesMatch } from "@/lib/barcode-variants";
 import { COMBINE_SIMILAR_STORAGE_KEY, buildSimilarRepresentativeMap } from "@/lib/combine-similar";
 import { useToast } from "@/components/Toast";
@@ -89,7 +91,7 @@ export function usePantryState() {
   const confirm = useConfirm();
 
   // Toast notifications
-  const { toasts, success, error, info, removeToast } = useToast();
+  const { toasts, success, error, info, removeToast, successWithAction } = useToast();
 
   // Local toast state for barcode scan notifications
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error'; visible: boolean} | null>(null);
@@ -1131,6 +1133,94 @@ export function usePantryState() {
     }
   };
 
+  // PP-191: "I used this" / "I cooked this". Deducts a batch, then offers Undo.
+  const inventoryRef = useRef<PantryItem[]>([]);
+  useEffect(() => {
+    inventoryRef.current = inventory;
+  }, [inventory]);
+
+  const applyConsumeDelta = async (
+    item: { id: string; name: string },
+    delta: number,
+    source: Activity["source"],
+  ) => {
+    const activity = await logActivity({
+      itemId: item.id,
+      itemName: item.name,
+      type: delta > 0 ? "ADD" : "REMOVE",
+      amount: Math.abs(delta),
+      source,
+    });
+    prependActivity(activity);
+    setInventory((prev) =>
+      prev.map((i) =>
+        i.id === item.id
+          ? { ...i, quantity: Math.max(0, i.quantity + delta), lastUpdated: new Date().toISOString() }
+          : i,
+      ),
+    );
+  };
+
+  /**
+   * Deduct each line (capped at what is in stock, never below 0, items stay in the pantry).
+   * All-or-nothing: if one line fails, earlier lines are rolled back. Returns true on success.
+   */
+  const consumeItems = async (
+    lines: { itemId: string; amount: number }[],
+    options?: { label?: string; source?: Activity["source"] },
+  ): Promise<boolean> => {
+    const source = options?.source ?? "MANUAL";
+    const planned: { id: string; name: string; amount: number }[] = [];
+    for (const line of lines) {
+      const item = inventoryRef.current.find((i) => i.id === line.itemId);
+      if (!item) continue;
+      const amount = Math.min(Number(line.amount) || 0, Number(item.quantity) || 0);
+      if (amount > 0) planned.push({ id: item.id, name: item.name, amount });
+    }
+    if (planned.length === 0) {
+      info("Already out. Nothing to deduct.");
+      return false;
+    }
+    const applied: typeof planned = [];
+    try {
+      for (const p of planned) {
+        await applyConsumeDelta(p, -p.amount, source);
+        applied.push(p);
+      }
+    } catch (err) {
+      for (const p of applied) {
+        try {
+          await applyConsumeDelta(p, p.amount, source);
+        } catch {
+          // best effort rollback
+        }
+      }
+      error(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't update your pantry. Nothing was changed.",
+      );
+      return false;
+    }
+    let undone = false;
+    const undo = async () => {
+      if (undone) return;
+      undone = true;
+      try {
+        for (const p of applied) await applyConsumeDelta(p, p.amount, source);
+        info("Put it back.");
+      } catch {
+        error("Couldn't undo. Use + on the item to fix it.");
+      }
+    };
+    const message =
+      applied.length === 1
+        ? `Used ${applied[0].name} (${formatConsumeAmount(applied[0].amount)}).`
+        : `Updated ${applied.length} items${options?.label ? ` from ${options.label}` : ""}.`;
+    successWithAction(message, { label: "Undo", onClick: () => void undo() });
+    return true;
+  };
+
   const handleSetToZero = async (id: string) => {
     const item = inventory.find((i) => i.id === id);
     if (!item || item.quantity === 0) return;
@@ -1338,6 +1428,7 @@ export function usePantryState() {
     viewMode, setViewMode,
     sortBy, setSortBy,
     combineSimilar, setCombineSimilar,
+    consumeItems,
     statCardFilter, setStatCardFilter,
     pantryFilter, setPantryFilter,
     itemIsLowStock,

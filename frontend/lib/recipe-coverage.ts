@@ -300,6 +300,7 @@ export function getIngredientCoverage(
     ingredient,
     status,
     haveQuantity,
+    ...(status === "have" ? { matchedItemIds: closest.map((s) => s.item.id) } : {}),
   };
 }
 

@@ -268,6 +268,8 @@ export interface RecipeIngredientCoverage {
   ingredient: RecipeIngredient;
   status: RecipeCoverageStatus;
   haveQuantity: number;
+  /** PP-191: ids of the closest-matching pantry rows (have status only). */
+  matchedItemIds?: string[];
 }
 
 export interface RecipeCoverage {
