@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { trailingSlashTarget } from "@/lib/trailing-slash";
 import robots from "@/app/robots";
-import sitemap from "@/app/sitemap";
+import sitemap, { recipeSitemapPages } from "@/app/sitemap";
+import { SITE_URL } from "@/lib/site-content";
 
 describe("PP-105 indexation hygiene", () => {
   it("301s page paths to the trailing-slash canonical only", () => {
@@ -18,7 +19,7 @@ describe("PP-105 indexation hygiene", () => {
   it("sitemap lists only indexable pages with stable lastmod and canonical locs", () => {
     const entries = sitemap();
     const urls = entries.map((e) => e.url);
-    expect(urls).toEqual([
+    const marketing = [
       "https://www.mypantryhub.com/",
       "https://www.mypantryhub.com/pricing/",
       "https://www.mypantryhub.com/privacy/",
@@ -27,7 +28,12 @@ describe("PP-105 indexation hygiene", () => {
       "https://www.mypantryhub.com/guides/receipt-scanning/",
       "https://www.mypantryhub.com/guides/barcode-vs-receipt-vs-manual/",
       "https://www.mypantryhub.com/guides/pantry-hub-vs-grocy/",
+    ];
+    expect(urls).toEqual([
+      ...marketing,
+      ...recipeSitemapPages().map((p) => `${SITE_URL}${p.path}`),
     ]);
+    expect(urls.some((u) => u.includes("/recipes/tag/"))).toBe(false);
     expect(urls.some((u) => u.includes("/auth/"))).toBe(false);
     for (const e of entries) {
       expect(String(e.lastModified)).toMatch(/^\d{4}-\d{2}-\d{2}$/);

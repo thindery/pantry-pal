@@ -1,0 +1,52 @@
+import type { Recipe } from "./types";
+
+export const easyVegetableSoup: Recipe = {
+  slug: "easy-vegetable-soup",
+  title: "Easy Vegetable Soup",
+  seoTitle: "Easy Vegetable Soup (40-Minute Pantry Lunch)",
+  metaSummary: "Easy vegetable soup, 40 minutes",
+  intro:
+    "This is a simple vegetable soup that takes about 40 minutes and leans on canned tomatoes, frozen vegetables, and broth. An onion and a few spices start the pot, and you can add whatever vegetables you have. It is a good lunch to make once and reheat all week.",
+  meal: "lunch",
+  tags: ["vegan", "vegetarian", "one-pot", "freezer-friendly"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 25,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/easy-vegetable-soup.webp",
+  imageAlt: "AI-generated illustration of a bowl of vegetable soup with carrots and tomatoes, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "tbsp", item: "olive oil" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 2, item: "carrot", plural: "carrots", note: "sliced" },
+    { qty: 2, unit: "stalk", item: "celery", note: "sliced" },
+    { qty: 3, unit: "clove", item: "garlic", note: "minced" },
+    { qty: 1, unit: "tsp", item: "dried Italian seasoning" },
+    { qty: 1, unit: "can", size: "28 oz", item: "diced tomatoes", note: "with their juice" },
+    { qty: 4, unit: "cup", item: "vegetable broth" },
+    { qty: 2, unit: "cup", item: "frozen mixed vegetables" },
+    { qty: 1, unit: "tsp", item: "salt", note: "plus more to taste" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+  ],
+  steps: [
+    "Warm the oil in a large pot over medium heat. Cook the onion, carrots, and celery for about 8 minutes, until the onion is soft.",
+    "Stir in the garlic and Italian seasoning and cook for 30 seconds.",
+    "Add the diced tomatoes, broth, salt, and pepper. Bring to a boil, then lower the heat and simmer for 10 minutes.",
+    "Stir in the frozen vegetables and simmer for 8 to 10 minutes more, until everything is tender.",
+    "Taste and add salt if it needs it.",
+  ],
+  substitutions: [
+    "Frozen mixed vegetables: use any mix of peas, corn, green beans, or leftover roasted vegetables added at the end.",
+    "Diced tomatoes: use crushed tomatoes or a can of tomato sauce plus a cup of water.",
+    "Italian seasoning: use dried oregano, thyme, or a bay leaf.",
+    "Vegetable broth: use chicken broth, or water plus an extra ½ teaspoon of salt.",
+    "Add-ins: a handful of small pasta or leftover rice can go in with the frozen vegetables. Add a little more broth if the pot looks tight.",
+  ],
+  tips: [
+    "A splash of vinegar or lemon juice at the end brightens the soup.",
+    "It freezes well for up to three months. Cool it quickly and freeze in portions.",
+  ],
+  pantryStaples: ["canned tomatoes", "frozen vegetables", "broth", "Italian seasoning"],
+  related: ["easy-red-lentil-soup", "leftover-turkey-soup", "lasagna-soup"],
+};

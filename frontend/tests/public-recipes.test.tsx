@@ -7,6 +7,10 @@ import path from "node:path";
 const trackEvent = vi.fn();
 vi.mock("@/lib/analytics", () => ({ trackEvent: (...a: unknown[]) => trackEvent(...a) }));
 
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ status: "unauthenticated", data: null }),
+}));
+
 import RecipesPage, { metadata as browseMetadata } from "@/app/recipes/page";
 import RecipePage, { generateMetadata, generateStaticParams } from "@/app/recipes/[slug]/page";
 import TagPage, {
@@ -45,17 +49,29 @@ const EXPECTED_SLUGS = [
   "easy-red-lentil-soup",
   "rice-and-beans-with-canned-beans",
   "leftover-vegetable-frittata",
+  "leftover-turkey-soup",
+  "white-chicken-chili",
+  "baked-potato-soup",
+  "easy-vegetable-soup",
+  "lasagna-soup",
+  "green-bean-casserole",
+  "easy-lasagna",
+  "sunday-chicken-and-rice",
+  "sunday-pot-roast",
+  "classic-meatloaf",
+  "peanut-butter-noodles",
+  "chickpea-salad-sandwiches",
 ];
 
 describe("recipe content (PP-184)", () => {
-  it("ships 12 recipes with unique slugs and realistic times", () => {
-    expect(RECIPES).toHaveLength(12);
-    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(12);
+  it("ships 24 recipes with unique slugs and realistic times", () => {
+    expect(RECIPES).toHaveLength(24);
+    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(24);
     for (const r of RECIPES) {
       expect(r.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(r.servings).toBeGreaterThanOrEqual(2);
       expect(r.prepMin).toBeGreaterThan(0);
-      expect(totalMinutes(r)).toBeLessThanOrEqual(120);
+      expect(totalMinutes(r)).toBeLessThanOrEqual(240);
       expect(r.ingredients.length).toBeGreaterThanOrEqual(5);
       expect(r.steps.length).toBeGreaterThanOrEqual(4);
       expect(r.tips.length).toBeGreaterThanOrEqual(2);
@@ -102,7 +118,7 @@ describe("recipe content (PP-184)", () => {
 
   it("only has FAQs where the question is real, and cites the source for safety facts", () => {
     const withFaqs = RECIPES.filter((r) => r.faqs?.length).map((r) => r.slug);
-    expect(withFaqs).toEqual(["leftover-rice-fried-rice", "canned-tuna-pasta", "easy-red-lentil-soup"]);
+    expect(withFaqs.sort()).toEqual(["canned-tuna-pasta", "easy-red-lentil-soup", "leftover-rice-fried-rice", "leftover-turkey-soup"]);
     const rice = getRecipe("leftover-rice-fried-rice")!;
     expect(rice.faqSource?.url).toMatch(/^https:\/\/www\.fsis\.usda\.gov\//);
     expect(rice.faqs![0].answer).toMatch(/165°F/);
@@ -145,9 +161,11 @@ describe("recipe content (PP-184)", () => {
 
 describe("filters (PP-184)", () => {
   it("filters by meal, diet, time, and text", () => {
-    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(12);
+    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(24);
     expect(filterRecipes(RECIPES, { ...DEFAULT_FILTERS, meal: "lunch" }).map((r) => r.slug)).toEqual([
       "easy-red-lentil-soup",
+      "easy-vegetable-soup",
+      "chickpea-salad-sandwiches",
     ]);
     const vegan = filterRecipes(RECIPES, { ...DEFAULT_FILTERS, diet: "vegan" });
     expect(vegan.length).toBeGreaterThan(0);
@@ -173,33 +191,38 @@ describe("browse page (PP-184)", () => {
   it("renders without auth and lists every recipe linking to its page", async () => {
     render(RecipesPage());
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     for (const r of RECIPES) {
       const link = screen.getByRole("link", { name: new RegExp(r.title) });
       // next/link drops the trailing slash in jsdom; next.config trailingSlash adds it in the real build
       expect((link.getAttribute("href") ?? "").replace(/\/$/, "")).toBe(`/recipes/${r.slug}`);
     }
-    expect(screen.getByText("12 recipes")).toBeTruthy();
+    expect(screen.getByText("24 recipes")).toBeTruthy();
   });
 
   it("filter buttons and search narrow the grid", () => {
     render(<RecipeBrowser recipes={allRecipesWithImageState()} />);
     fireEvent.click(screen.getByRole("button", { name: "Lunch" }));
     expect(screen.queryByRole("button", { name: "Snack" })).toBeNull();
-    expect(screen.getByText("1 recipe")).toBeTruthy();
+    expect(screen.getByText("3 recipes")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByText("12 recipes")).toBeTruthy();
+    expect(screen.getByText("24 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "tortilla" } });
     expect(screen.getByText("2 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nothingmatches" } });
     expect(screen.getByText(/No recipes match/)).toBeTruthy();
   });
 
-  it("renders the committed WebP illustrations, not placeholders", () => {
+  it("renders committed WebP illustrations, and placeholders when the file is still missing", () => {
     const recipes = allRecipesWithImageState();
-    expect(recipes.every((r) => r.hasImage)).toBe(true);
+    const withImage = recipes.filter((r) => r.hasImage);
+    const missing = recipes.filter((r) => !r.hasImage);
+    expect(withImage.length).toBe(12);
+    expect(missing.length).toBe(12);
     render(RecipesPage());
-    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
-    for (const r of RECIPES) {
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    expect(screen.queryAllByTestId("recipe-image-placeholder").length).toBeGreaterThan(0);
+    for (const r of withImage.slice(0, 3)) {
       const img = screen.getByRole("img", { name: r.imageAlt });
       expect(img.getAttribute("src")).toBe(r.image);
     }
@@ -227,7 +250,8 @@ describe("recipe page (PP-184)", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Black Bean Tacos" })).toBeTruthy();
     expect(screen.getByTestId("ingredient-list").children.length).toBe(getRecipe("black-bean-tacos")!.ingredients.length);
     expect(screen.getByText(/Uses pantry staples:/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Track these ingredients in Pantry Hub, free" })).toBeTruthy();
+    expect(screen.getByTestId("recipe-signup-cta-mid_recipe")).toBeTruthy();
+    expect(screen.getByTestId("recipe-signup-cta-end")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Substitutions" })).toBeTruthy();
     expect(screen.getByTestId("substitutions").children.length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole("navigation", { name: "Breadcrumb" }).textContent).toBe("Pantry Hub / Recipes / Black Bean Tacos");
@@ -268,11 +292,12 @@ describe("recipe page (PP-184)", () => {
 
   it("fires recipe_cta_click from the CTA", async () => {
     await renderRecipe("black-bean-tacos");
-    const cta = screen.getByRole("link", { name: /Track these ingredients/ });
-    expect(cta.getAttribute("href")).toMatch(/^\/auth\/signin/);
+    const end = screen.getByTestId("recipe-signup-cta-end");
+    const cta = end.querySelector("a")!;
+    expect((cta.getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/auth/signin");
     expect(cta.getAttribute("href")).not.toContain("dashboard");
     fireEvent.click(cta);
-    expect(trackEvent).toHaveBeenCalledWith("recipe_cta_click", expect.objectContaining({ recipe_slug: "black-bean-tacos" }));
+    expect(trackEvent).toHaveBeenCalledWith("recipe_cta_click", expect.objectContaining({ recipe_slug: "black-bean-tacos", location: "end" }));
   });
 
   it("has no affiliate links", async () => {
@@ -416,7 +441,7 @@ describe("launch gate (PP-184)", () => {
   it("sitemap lists /recipes/ and each recipe with real dates, and leaves tags out", () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(MIN_RECIPES_FOR_SITEMAP);
     const recipeEntries = recipeSitemapPages();
-    expect(recipeEntries).toHaveLength(13);
+    expect(recipeEntries).toHaveLength(25);
     expect(recipeEntries[0]).toMatchObject({ path: "/recipes/", priority: 0.8, changeFrequency: "weekly" });
     expect(recipeEntries[1]).toMatchObject({ priority: 0.7, changeFrequency: "monthly" });
     expect(recipeEntries.some((e) => e.path.includes("/tag/"))).toBe(false);

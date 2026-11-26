@@ -18,6 +18,7 @@ import {
 } from "@/lib/recipe-scaling";
 import { RecipeCard } from "./RecipeCard";
 import { RecipeImage } from "./RecipeImage";
+import { RecipeSignupCta } from "./RecipeSignupCtas";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -178,6 +179,9 @@ export function RecipeDetail({ recipe, related }: { recipe: RecipeWithImage; rel
             <p className="mt-4 text-sm text-slate-600">
               <span className="font-semibold text-slate-800">Uses pantry staples:</span> {recipe.pantryStaples.join(", ")}.
             </p>
+            <div className="mt-6">
+              <RecipeSignupCta placement="mid_recipe" recipeSlug={recipe.slug} />
+            </div>
           </section>
 
           <section aria-labelledby="steps-heading">
@@ -231,19 +235,9 @@ export function RecipeDetail({ recipe, related }: { recipe: RecipeWithImage; rel
           </section>
         ) : null}
 
-        <aside className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 print:hidden">
-          <p className="font-serif-heading text-lg font-bold text-slate-900">Keep track of what is in your kitchen</p>
-          <p className="mt-1 text-sm text-slate-700">
-            Pantry Hub keeps a simple list of what you have and what is running low, so shopping and cooking start from the same page.
-          </p>
-          <Link
-            href="/auth/signin/"
-            onClick={() => trackEvent("recipe_cta_click", { recipe_slug: recipe.slug, location: "recipe_page" })}
-            className="mt-3 inline-block rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--primary-hover)]"
-          >
-            Track these ingredients in Pantry Hub, free
-          </Link>
-        </aside>
+        <div className="mt-10">
+          <RecipeSignupCta placement="end" recipeSlug={recipe.slug} />
+        </div>
 
         {related.length > 0 ? (
           <section aria-labelledby="related-heading" className="mt-10 print:hidden">
