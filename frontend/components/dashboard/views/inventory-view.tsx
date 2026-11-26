@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Barcode, Loader2, Package, Plus, Search, Settings } from "lucide-react";
 import { PantryListRow } from "@/components/dashboard/PantryListRow";
+import { UsedItTypeahead } from "@/components/dashboard/UsedItTypeahead";
 import { GroupListRow } from "@/components/dashboard/GroupListRow";
 import { DashboardLink } from "@/components/dashboard/dashboard-link";
 import { usePantry } from "@/contexts/pantry-provider";
@@ -56,6 +57,7 @@ export function InventoryView() {
     setShowThresholdSettings,
     combineSimilar: combineSimilarSetting,
     setCombineSimilar,
+    consumeItems,
   } = usePantry();
   const combineSimilar = combineSimilarSetting !== false;
 
@@ -300,6 +302,13 @@ export function InventoryView() {
           Add manually
         </DashboardLink>
       </div>
+
+      {inventory.length > 0 && consumeItems && (
+        <UsedItTypeahead
+          inventory={inventory}
+          onUse={(item, amount) => consumeItems([{ itemId: item.id, amount }])}
+        />
+      )}
 
       <div className="relative">
         <Search

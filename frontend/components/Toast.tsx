@@ -9,6 +9,8 @@ export interface ToastMessage {
   message: string;
   type: ToastType;
   duration?: number;
+  /** PP-191: optional action button, e.g. Undo. */
+  action?: { label: string; onClick: () => void };
 }
 
 interface ToastProps {
@@ -82,6 +84,18 @@ const ToastItem: React.FC<ToastProps> = ({ toast, onRemove }) => {
         {getIcon()}
       </span>
       <p className="flex-1 text-sm font-medium">{toast.message}</p>
+      {toast.action && (
+        <button
+          type="button"
+          onClick={() => {
+            toast.action?.onClick();
+            handleDismiss();
+          }}
+          className="flex-shrink-0 min-h-[44px] px-3 rounded-lg bg-white/20 hover:bg-white/30 text-sm font-semibold transition-colors"
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button
         onClick={handleDismiss}
         className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors text-lg leading-none"
@@ -103,7 +117,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
 
   return (
     <div
-      className="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"
+      className="fixed bottom-24 left-4 right-4 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 z-[200] flex flex-col items-center sm:items-end gap-2 pointer-events-none"
       aria-live="polite"
       aria-atomic="true"
     >
@@ -118,13 +132,19 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
 export const useToast = () => {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const addToast = (message: string, type: ToastType = 'success', duration?: number) => {
+  const addToast = (
+    message: string,
+    type: ToastType = 'success',
+    duration?: number,
+    action?: ToastMessage['action'],
+  ) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newToast: ToastMessage = {
       id,
       message,
       type,
       duration: duration ?? (type === 'error' ? 5000 : 3000),
+      ...(action ? { action } : {}),
     };
     setToasts((prev) => [...prev, newToast]);
     return id;
@@ -137,6 +157,8 @@ export const useToast = () => {
   const success = (message: string, duration?: number) => addToast(message, 'success', duration);
   const error = (message: string, duration?: number) => addToast(message, 'error', duration);
   const info = (message: string, duration?: number) => addToast(message, 'info', duration);
+  const successWithAction = (message: string, action: NonNullable<ToastMessage['action']>, duration = 9000) =>
+    addToast(message, 'success', duration, action);
 
   return {
     toasts,
@@ -145,6 +167,7 @@ export const useToast = () => {
     success,
     error,
     info,
+    successWithAction,
   };
 };
 
