@@ -7,7 +7,9 @@ import { GroupListRow } from "@/components/dashboard/GroupListRow";
 import { DashboardLink } from "@/components/dashboard/dashboard-link";
 import { usePantry } from "@/contexts/pantry-provider";
 import { BRAND_NAME } from "@/lib/site-content";
+import { toTitleCase } from "@/lib/item-group-match";
 import { INVENTORY_SORT_OPTIONS } from "@/lib/inventory-sort";
+import { clusterSimilarItems } from "@/lib/combine-similar";
 import type { InventorySortBy, ItemGroup, PantryItem } from "@/types";
 
 type PantryEntry =
@@ -15,6 +17,7 @@ type PantryEntry =
       type: "group";
       id: string;
       group: ItemGroup;
+      combined?: boolean;
       members: PantryItem[];
       name: string;
       category: string;
@@ -51,7 +54,10 @@ export function InventoryView() {
     setEditingItem,
     updatingItemIds,
     setShowThresholdSettings,
+    combineSimilar: combineSimilarSetting,
+    setCombineSimilar,
   } = usePantry();
+  const combineSimilar = combineSimilarSetting !== false;
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -126,8 +132,48 @@ export function InventoryView() {
       }
     }
 
+    // PP-190: combine similar ungrouped items into display-only rows (rows are never merged).
+    const combinedIds = new Set<string>();
+    if (combineSimilar) {
+      for (const cluster of clusterSimilarItems(ungroupedItems)) {
+        const allMembers = cluster.members;
+        const combinedQty = allMembers.reduce((sum, m) => sum + (Number(m.quantity) || 0), 0);
+        const rep = cluster.representative;
+        const isOutC = combinedQty <= 0;
+        const isLowC = combinedQty <= 1 || allMembers.every((m) => itemIsLowStock(m));
+        if (pantryFilter === "low" && !(isLowC || allMembers.some((m) => itemIsLowStock(m)))) continue;
+        if (pantryFilter === "out" && !isOutC) continue;
+        if (q && !allMembers.some((m) => m.name.toLowerCase().includes(q))) continue;
+        allMembers.forEach((m) => combinedIds.add(m.id));
+        const latestUpdated = allMembers.reduce(
+          (latest, m) =>
+            !latest || new Date(m.lastUpdated).getTime() > new Date(latest).getTime()
+              ? m.lastUpdated
+              : latest,
+          allMembers[0]?.lastUpdated || ""
+        );
+        entries.push({
+          type: "group",
+          id: cluster.id,
+          combined: true,
+          group: {
+            id: cluster.id,
+            name: toTitleCase(rep.name),
+            targetQuantity: null,
+            itemIds: allMembers.map((m) => m.id),
+          },
+          members: allMembers,
+          name: rep.name,
+          category: rep.category || "other",
+          quantity: combinedQty,
+          lastUpdated: latestUpdated,
+        });
+      }
+    }
+
     // Process ungrouped items
     for (const item of ungroupedItems) {
+      if (combinedIds.has(item.id)) continue;
       if (pantryFilter === "low" && !itemIsLowStock(item)) continue;
       if (pantryFilter === "out" && item.quantity > 0) continue;
       if (q && !item.name.toLowerCase().includes(q)) continue;
@@ -163,7 +209,7 @@ export function InventoryView() {
           );
       }
     });
-  }, [inventory, itemGroups, pantryFilter, searchQuery, sortBy, itemIsLowStock]);
+  }, [inventory, itemGroups, pantryFilter, searchQuery, sortBy, itemIsLowStock, combineSimilar]);
 
   const categoryGroups = useMemo(() => {
     if (sortBy !== "category") return null;
@@ -203,6 +249,7 @@ export function InventoryView() {
           onRename={renameGroup}
           onSetTarget={setGroupTarget}
           onUngroup={deleteGroup}
+          combined={entry.combined}
         />
       ) : (
         <PantryListRow
@@ -284,6 +331,20 @@ export function InventoryView() {
               {chip.label}
             </button>
           ))}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={combineSimilar}
+            onClick={() => setCombineSimilar?.(!combineSimilar)}
+            title="Show near-duplicates like two pie crusts as one row. Your items are never merged."
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+              combineSimilar
+                ? "bg-[var(--primary-light)] text-[var(--primary)]"
+                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            Combine similar
+          </button>
         </div>
         <select
           value={sortBy}

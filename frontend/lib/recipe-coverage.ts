@@ -209,7 +209,7 @@ function isIdentityChanging(token: string): boolean {
   return !VARIANT_TOKENS.has(token) && !DESCRIPTORS.has(token) && !STOPWORDS.has(token);
 }
 
-function scoreTokenMatch(ingredientTokens: string[], pantryTokens: string[]): number {
+export function scoreTokenMatch(ingredientTokens: string[], pantryTokens: string[]): number {
   if (ingredientTokens.length === 0 || pantryTokens.length === 0) return 0;
 
   const same =

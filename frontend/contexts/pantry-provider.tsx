@@ -28,6 +28,7 @@ import {
   sortInventoryItems,
 } from "@/lib/inventory-sort";
 import { barcodesMatch } from "@/lib/barcode-variants";
+import { COMBINE_SIMILAR_STORAGE_KEY, buildSimilarRepresentativeMap } from "@/lib/combine-similar";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/contexts/confirm-provider";
 import { trackFirstScan } from "@/lib/analytics";
@@ -186,6 +187,24 @@ export function usePantryState() {
     setSortByState(value);
     try {
       localStorage.setItem(INVENTORY_SORT_STORAGE_KEY, value);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // PP-190: combine similar pantry items (display grouping only). On by default, per-device opt-out.
+  const [combineSimilar, setCombineSimilarState] = useState<boolean>(true);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(COMBINE_SIMILAR_STORAGE_KEY) === "off") setCombineSimilarState(false);
+    } catch {
+      // ignore private-mode / storage errors
+    }
+  }, []);
+  const setCombineSimilar = useCallback((value: boolean) => {
+    setCombineSimilarState(value);
+    try {
+      localStorage.setItem(COMBINE_SIMILAR_STORAGE_KEY, value ? "on" : "off");
     } catch {
       // ignore
     }
@@ -452,6 +471,11 @@ export function usePantryState() {
           itemThresholdOverrides,
           safeShoppingList,
           itemGroups,
+          combineSimilar
+            ? buildSimilarRepresentativeMap(
+                inventoryArray.filter((i) => !(i.groupId && itemGroups.some((g) => g.id === i.groupId))),
+              )
+            : undefined,
         );
         const autoNames = new Set(autoItems.map((i) => normalizeItemName(i.name)));
         // Keep manual items that aren't already represented in the newly generated items
@@ -470,6 +494,7 @@ export function usePantryState() {
     thresholdConfig,
     itemThresholdOverrides,
     itemGroups,
+    combineSimilar,
   ]);
 
   useEffect(() => {
@@ -1312,6 +1337,7 @@ export function usePantryState() {
     startingSession, handleStartSessionInline,
     viewMode, setViewMode,
     sortBy, setSortBy,
+    combineSimilar, setCombineSimilar,
     statCardFilter, setStatCardFilter,
     pantryFilter, setPantryFilter,
     itemIsLowStock,

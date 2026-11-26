@@ -37,6 +37,8 @@ export function buildAutoShoppingListItems(
   itemOverrides?: ItemThresholdOverrides,
   existingShoppingList: ShoppingListItem[] = [],
   groups?: ItemGroup[],
+  /** PP-190: itemId → representative item for similar ungrouped items; they roll up as one row. */
+  similarRepresentatives?: Map<string, PantryItem>,
 ): ShoppingListItem[] {
   const knownGroups = new Map<string, ItemGroup>();
   if (groups) {
@@ -52,7 +54,8 @@ export function buildAutoShoppingListItems(
     if (item.groupId && knownGroups.has(item.groupId)) {
       key = `group:${item.groupId}`;
     } else {
-      key = `name:${normalizeItemName(item.name)}`;
+      const rep = similarRepresentatives?.get(item.id);
+      key = `name:${normalizeItemName(rep ? rep.name : item.name)}`;
     }
 
     const existing = buckets.get(key);
@@ -60,6 +63,15 @@ export function buildAutoShoppingListItems(
       existing.push(item);
     } else {
       buckets.set(key, [item]);
+    }
+  }
+
+  if (similarRepresentatives && similarRepresentatives.size > 0) {
+    // The representative leads each combined bucket so the row uses its name/id.
+    for (const bucket of buckets.values()) {
+      const repId = similarRepresentatives.get(bucket[0].id)?.id;
+      const at = repId ? bucket.findIndex((i) => i.id === repId) : -1;
+      if (at > 0) bucket.unshift(...bucket.splice(at, 1));
     }
   }
 
