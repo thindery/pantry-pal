@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   ChefHat,
-  ExternalLink,
   Globe,
+  LayoutGrid,
+  LayoutList,
   Loader2,
   PenTool,
   Plus,
@@ -26,6 +27,34 @@ import {
   getRecipes,
   importRecipe,
 } from "@/services/recipeService";
+
+
+const LAYOUT_KEY = "ph-recipes-layout";
+
+type RecipeLayout = "list" | "grid";
+type RecipesTab = "mine" | "ai";
+
+function sourceHost(sourceUrl?: string | null): string | null {
+  if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) return null;
+  try {
+    const host = new URL(sourceUrl).hostname.replace(/^www\./, "");
+    return host || null;
+  } catch {
+    return null;
+  }
+}
+
+function servingsLabel(servings?: string | null): string | null {
+  if (!servings) return null;
+  const trimmed = servings.trim();
+  if (!trimmed) return null;
+  return /serv/i.test(trimmed) ? trimmed : `Serves ${trimmed}`;
+}
+
+function inPantryLabel(coverage: { haveCount: number; totalCount: number; stapleCount?: number }): string {
+  const have = coverage.haveCount + (coverage.stapleCount ?? 0);
+  return `${have}/${coverage.totalCount} ingredients in pantry`;
+}
 
 export function RecipesView() {
   const router = useRouter();
@@ -53,6 +82,8 @@ export function RecipesView() {
   const [manualInstructions, setManualInstructions] = useState("");
   const [savingManual, setSavingManual] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  const [tab, setTab] = useState<RecipesTab>("mine");
+  const [layout, setLayout] = useState<RecipeLayout>("list");
 
   const loadRecipes = async () => {
     setLoading(true);
@@ -70,6 +101,24 @@ export function RecipesView() {
   useEffect(() => {
     loadRecipes();
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(LAYOUT_KEY);
+      if (saved === "list" || saved === "grid") setLayout(saved);
+    } catch {
+      // ignore unavailable storage
+    }
+  }, []);
+
+  const persistLayout = (next: RecipeLayout) => {
+    setLayout(next);
+    try {
+      window.localStorage.setItem(LAYOUT_KEY, next);
+    } catch {
+      // ignore unavailable storage
+    }
+  };
 
   const handleImportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,10 +218,10 @@ export function RecipesView() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 min-w-0 max-w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+        <div className="min-w-0">
           <h1 className="text-2xl font-serif-heading font-bold text-[var(--foreground)]">
-            Saved Recipes
+            Recipes
           </h1>
           <p className="text-sm text-[var(--muted)] mt-1">
             Track ingredients against your pantry and cook with what you have.
@@ -186,7 +235,7 @@ export function RecipesView() {
             setManualError(null);
             setShowAddModal(true);
           }}
-          className="inline-flex items-center justify-center gap-2 bg-[var(--accent)] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[var(--accent-hover)] transition-colors shadow-sm"
+          className="inline-flex items-center justify-center gap-2 bg-[var(--accent)] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[var(--accent-hover)] transition-colors shadow-sm shrink-0"
         >
           <Plus size={18} />
           Add Recipe
@@ -194,8 +243,8 @@ export function RecipesView() {
       </div>
 
       {!isPaid && (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
-          <div>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm min-w-0">
+          <div className="min-w-0">
             <p className="font-medium text-[var(--foreground)]">
               {recipes.length} of {FREE_MAX_SAVED_RECIPES} free recipes saved
             </p>
@@ -208,7 +257,7 @@ export function RecipesView() {
           <button
             type="button"
             onClick={() => router.push("/pricing/")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] self-start sm:self-auto transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] self-start sm:self-auto transition-colors shrink-0"
           >
             <Sparkles size={14} />
             Upgrade to Pro
@@ -216,14 +265,67 @@ export function RecipesView() {
         </div>
       )}
 
-      <AiRecipeBuilder
-        inventory={inventory}
-        shoppingList={shoppingList}
-        onAddShoppingItems={addBatchShoppingItems}
-        onRecipeSaved={(created) => setRecipes((prev) => [created, ...prev])}
-        onUpgrade={() => router.push("/pricing/")}
-      />
+      <div
+        role="tablist"
+        aria-label="Recipes"
+        className="flex border-b border-[var(--border)] min-w-0 max-w-full"
+      >
+        <button
+          type="button"
+          role="tab"
+          id="recipes-tab-mine"
+          aria-controls="recipes-panel-mine"
+          aria-selected={tab === "mine"}
+          onClick={() => setTab("mine")}
+          className={`flex-1 min-w-0 pb-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            tab === "mine"
+              ? "border-[var(--accent)] text-[var(--accent)]"
+              : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
+          }`}
+        >
+          My recipes
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="recipes-tab-ai"
+          aria-controls="recipes-panel-ai"
+          aria-selected={tab === "ai"}
+          onClick={() => setTab("ai")}
+          className={`flex-1 min-w-0 pb-2.5 text-sm font-medium border-b-2 -mb-px inline-flex items-center justify-center gap-1.5 transition-colors ${
+            tab === "ai"
+              ? "border-[var(--accent)] text-[var(--accent)]"
+              : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
+          }`}
+        >
+          <Sparkles size={14} />
+          Suggest with AI
+        </button>
+      </div>
 
+      <div
+        id="recipes-panel-ai"
+        role="tabpanel"
+        aria-labelledby="recipes-tab-ai"
+        hidden={tab !== "ai"}
+        className="min-w-0 max-w-full"
+      >
+        <AiRecipeBuilder
+          inventory={inventory}
+          shoppingList={shoppingList}
+          onAddShoppingItems={addBatchShoppingItems}
+          onRecipeSaved={(created) => setRecipes((prev) => [created, ...prev])}
+          onUpgrade={() => router.push("/pricing/")}
+        />
+      </div>
+
+      <div
+        id="recipes-panel-mine"
+        role="tabpanel"
+        aria-labelledby="recipes-tab-mine"
+        hidden={tab !== "mine"}
+        className="space-y-3 min-w-0 max-w-full"
+      >
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 text-[var(--muted)]">
           <Loader2 className="animate-spin mb-2" size={32} />
@@ -258,91 +360,111 @@ export function RecipesView() {
       )}
 
       {!loading && !error && recipes.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recipes.map((recipe) => {
-            const coverage = calculateRecipeCoverage(recipe, inventory);
-            return (
-              <div
-                key={recipe.id}
-                className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--accent)] hover:shadow-sm transition-all flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <Link href={`/dashboard/recipes/${recipe.id}/`}>
-                      <h2 className="font-serif-heading font-semibold text-lg text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">
+        <div className="space-y-2 min-w-0">
+          <div className="flex items-center justify-end gap-1">
+            <button
+              type="button"
+              aria-label="List view"
+              aria-pressed={layout === "list"}
+              onClick={() => persistLayout("list")}
+              className={`p-1.5 rounded-lg transition-colors ${
+                layout === "list"
+                  ? "bg-[var(--surface-muted)] text-[var(--foreground)]"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <LayoutList size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label="Grid view"
+              aria-pressed={layout === "grid"}
+              onClick={() => persistLayout("grid")}
+              className={`p-1.5 rounded-lg transition-colors ${
+                layout === "grid"
+                  ? "bg-[var(--surface-muted)] text-[var(--foreground)]"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <LayoutGrid size={16} />
+            </button>
+          </div>
+
+          <div
+            data-testid="recipes-list"
+            data-layout={layout}
+            className={
+              layout === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 min-w-0"
+                : "flex flex-col gap-1.5 min-w-0"
+            }
+          >
+            {recipes.map((recipe) => {
+              const coverage = calculateRecipeCoverage(recipe, inventory);
+              const host = sourceHost(recipe.sourceUrl);
+              const servings = servingsLabel(recipe.servings);
+              const pantry =
+                recipe.isComplete === false
+                  ? "Details not imported"
+                  : inPantryLabel(coverage);
+              const pantryClass =
+                recipe.isComplete === false
+                  ? "text-[var(--muted)]"
+                  : coverage.coveragePercentage === 100
+                    ? "text-emerald-700"
+                    : coverage.coveragePercentage > 0
+                      ? "text-amber-800"
+                      : "text-[var(--muted)]";
+              const meta = [servings, pantry, host].filter(Boolean).join(" · ");
+              return (
+                <article
+                  key={recipe.id}
+                  data-testid="recipe-card"
+                  className="bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition-all min-w-0 max-w-full rounded-xl px-2.5 py-2 flex items-center gap-2.5"
+                >
+                  <Link
+                    href={`/dashboard/recipes/${recipe.id}/`}
+                    className="min-w-0 flex-1 flex items-center gap-2.5"
+                  >
+                    {recipe.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={recipe.imageUrl}
+                        alt=""
+                        className="h-11 w-11 rounded-lg object-cover shrink-0 bg-[var(--surface-muted)]"
+                      />
+                    ) : (
+                      <div
+                        className="h-11 w-11 rounded-lg bg-[var(--surface-muted)] flex items-center justify-center shrink-0 text-[var(--muted)]"
+                        aria-hidden="true"
+                      >
+                        <ChefHat size={18} />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-semibold text-sm text-[var(--foreground)] truncate">
                         {recipe.title}
                       </h2>
-                    </Link>
-                    <button
-                      type="button"
-                      aria-label="Delete recipe"
-                      onClick={(e) => handleDelete(recipe.id, e)}
-                      className="text-[var(--muted)] hover:text-red-600 p-1 rounded transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-
-                  {recipe.servings && (
-                    <p className="text-xs text-[var(--muted)] mt-1">
-                      Servings: {recipe.servings}
-                    </p>
-                  )}
-
-                  {recipe.isComplete === false ? (
-                    <p className="mt-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--surface-muted)] text-[var(--muted)] border border-[var(--border)]">
-                        Details not imported
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="text-xs text-[var(--muted)] mt-1">
-                      {recipe.ingredients.length} ingredients · {recipe.instructions.length} steps
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-5 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    {recipe.isComplete === false ? (
-                      <Link
-                        href={`/dashboard/recipes/${recipe.id}/`}
-                        className="text-[var(--accent)] font-medium hover:underline"
-                      >
-                        Add details
-                      </Link>
-                    ) : (
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
-                          coverage.coveragePercentage === 100
-                            ? "bg-emerald-100 text-emerald-800"
-                            : coverage.coveragePercentage > 0
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {coverage.haveCount + coverage.stapleCount}/{coverage.totalCount} in pantry ({coverage.coveragePercentage}%)
-                      </span>
-                    )}
-                  </div>
-
-                  {recipe.sourceUrl && /^https?:\/\//i.test(recipe.sourceUrl) && (
-                    <a
-                      href={recipe.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[var(--muted)] inline-flex items-center gap-1 hover:text-[var(--foreground)]"
-                    >
-                      <ExternalLink size={12} />
-                      View original
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                      <p className={`text-[11px] leading-snug mt-0.5 truncate ${pantryClass}`}>
+                        {meta}
+                      </p>
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label="Delete recipe"
+                    onClick={(e) => handleDelete(recipe.id, e)}
+                    className="text-[var(--muted)] hover:text-red-600 p-1 rounded transition-colors shrink-0 self-start"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </article>
+              );
+            })}
+          </div>
         </div>
       )}
+      </div>
 
       {/* Add Recipe Modal */}
       {showAddModal && (
