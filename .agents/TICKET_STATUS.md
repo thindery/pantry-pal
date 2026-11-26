@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 11:44 AM CT (PP-189 live at bd8cf4f; PP-190 combine-similar-items ticket filed; PP-192 recipes page compact layout in progress; PP-191 I-used-this design filed, not built)
+Last updated: 2026-11-26, 1:15 PM CT (PP-200 session-aware public recipe chrome in progress; Tylor t84u/t85u)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,11 +16,11 @@ Last updated: 2026-11-26, 11:44 AM CT (PP-189 live at bd8cf4f; PP-190 combine-si
 | | Count |
 |--|-------|
 | Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
-| In progress | 0 |
+| In progress | 1 (PP-200) |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 6 · P2: 12 · P3: 2 (25 on the board below) |
+| Open by priority | P0: 5 · P1: 7 · P2: 12 · P3: 2 (26 on the board below) |
 | User action pending | Tylor: Bing Webmaster import (PP-119); add GA4 Viewer for the read-only SA (PP-121); create a Resend read key in the mypantryhub Resend account (PP-129); OK the low-stock email copy (PP-137); AdSense in-app ad unit (PP-140); recipes and photos (PP-139) |
 
 ---
@@ -138,7 +138,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-152 | E2E: checkout to Pro (Stripe test mode + webhook → plan active) | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 | PP-153 | E2E: cancel subscription and billing portal | 🟡 Partly done (backend integration #99; Stripe test-mode browser run blocked on test keys) | E2E |
 
-### P1 — next up, high impact (6)
+### P1 — next up, high impact (7)
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
@@ -152,6 +152,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-166 | $1 first-month offer test on Pro monthly (live Nov 25, 1:57 PM CT) | ✅ Done (live) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
 | PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | ✅ Done (live 11:21 AM CT, `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) | User-reported |
+| PP-200 | Session-aware public recipe chrome: logged-in header, app nav, pantry match, save to My recipes | 🟡 In progress | User-reported |
 
 ### P2 — soon (12)
 
@@ -548,3 +549,9 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking live (#144). Waiting on Tylor to add the webhook in the Resend dashboard (secret not set on prod) |
 | PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
 | PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags (build `92a55d6`). Blocked from go-live: Cloudflare challenges `/email/*` for mail image proxies (needs a Skip rule, Tylor's OK). 4 AI gap images pending |
+
+## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-200 | Public recipe pages show Sign in when he is logged in; signed-in chrome should match the app (dashboard nav, Back to my recipes, pantry match, Save to my recipes) | P1 | 🟡 In progress |
