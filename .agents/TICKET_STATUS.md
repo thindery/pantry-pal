@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, 9:10 AM CT (PP-179 live at ceb4b7b)
+Last updated: 2026-11-26, 11:03 AM CT (PP-189 recipe pantry matching in progress)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -16,11 +16,11 @@ Last updated: 2026-11-26, 9:10 AM CT (PP-179 live at ceb4b7b)
 | | Count |
 |--|-------|
 | Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
-| In progress | 0 |
+| In progress | 1 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
-| Open by priority | P0: 5 · P1: 6 · P2: 9 · P3: 2 (22 on the board below) |
+| Open by priority | P0: 5 · P1: 7 · P2: 9 · P3: 2 (23 on the board below) |
 | User action pending | Tylor: Bing Webmaster import (PP-119); add GA4 Viewer for the read-only SA (PP-121); create a Resend read key in the mypantryhub Resend account (PP-129); OK the low-stock email copy (PP-137); AdSense in-app ad unit (PP-140); recipes and photos (PP-139) |
 
 ---
@@ -151,6 +151,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-108 | First public content set and truthful landing (Quick Scan, receipts, screenshots) | ✅ Done (live 2026-11-25) | SEO / AEO |
 | PP-166 | $1 first-month offer test on Pro monthly (live Nov 25, 1:57 PM CT) | ✅ Done (live) | Revenue |
 | PP-148 | E2E: sign-up and login | 📋 Backlog | E2E |
+| PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | 🟡 In progress | User-reported |
 
 ### P2 — soon (9)
 
@@ -517,3 +518,9 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 📋 Open |
 | PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
 | PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | ✅ Done (live 5:26 PM CT, build `a356ed4`, [#128](https://github.com/thindery/pantry-pal/pull/128)) |
+
+## Tickets from Tylor's Nov 26 reports
+
+| Ticket | Title | Priority | Status |
+|--------|-------|----------|--------|
+| PP-189 | Robust recipe-to-pantry ingredient matching on the saved-recipe Ingredients card | P1 | 🟡 In progress |

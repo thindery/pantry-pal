@@ -305,7 +305,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
                     ) : null}
                     <span>Serves {idea.servings}</span>
                     <span>
-                      {coverage.haveCount}/{coverage.totalCount} in pantry
+                      {coverage.haveCount + coverage.stapleCount}/{coverage.totalCount} in pantry
                     </span>
                   </p>
                   {idea.usesSoon.length > 0 && (
@@ -315,7 +315,7 @@ export function AiRecipeBuilder({ inventory, shoppingList, onAddShoppingItems, o
                 <ul className="text-sm space-y-0.5">
                   {coverage.items.map((c, i) => (
                     <li key={i} className={`${c.status === "missing" ? "text-[var(--muted)]" : "text-[var(--foreground)]"} break-words`}>
-                      {c.status === "have" ? "✓ " : c.status === "missing" ? "+ " : "? "}
+                      {c.status === "have" || c.status === "staple" ? "✓ " : c.status === "missing" ? "+ " : "? "}
                       {c.ingredient.raw || c.ingredient.name}
                     </li>
                   ))}

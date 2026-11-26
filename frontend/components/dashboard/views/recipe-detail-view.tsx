@@ -310,11 +310,11 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm text-[var(--foreground)]">
-                  Pantry Coverage: {coverage.haveCount} of {coverage.totalCount} ingredients ({coverage.coveragePercentage}%)
+                  Pantry Coverage: {coverage.haveCount + coverage.stapleCount} of {coverage.totalCount} ingredients ({coverage.coveragePercentage}%)
                 </span>
               </div>
               <p className="text-xs text-[var(--muted)] mt-0.5">
-                Exact match against your pantry items.
+                Matched against your pantry items.
               </p>
             </div>
 
@@ -527,6 +527,12 @@ export function RecipeDetailView({ params }: { params?: Promise<{ id: string }> 
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
                       <XCircle size={12} />
                       Missing
+                    </span>
+                  )}
+
+                  {status === "staple" && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                      Pantry staple
                     </span>
                   )}
 
