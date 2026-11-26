@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-25, 5:26 PM CT (PP-187 live at a356ed4; [PR #128](https://github.com/thindery/pantry-pal/pull/128))
+Last updated: 2026-11-26, 9:10 AM CT (PP-179 live at ceb4b7b)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -512,7 +512,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | 📋 Open |
+| PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | ✅ Done (live 9:10 AM CT Nov 26, build `ceb4b7b`, migration 033) |
 | PP-180 | Item Details modal title hidden under the desktop navbar (modal rendered inside `relative z-0` wrapper) | P2 | ✅ Done (live 5:03 PM CT, build `5fec893`, [#125](https://github.com/thindery/pantry-pal/pull/125)) |
 | PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 📋 Open |
 | PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |

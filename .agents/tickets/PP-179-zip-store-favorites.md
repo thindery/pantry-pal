@@ -1,6 +1,6 @@
 # PP-179: Favorite stores per ZIP code on the weekly-ads hub
 
-**Status:** 📋 Open
+**Status:** ✅ Done (live 2026-11-26, about 9:10 AM CT, build `ceb4b7b`; migration 033 applied after backup pre-033-pp179-20261126-1505.sql)
 **Priority:** P2
 **Phase:** Weekly ads / shopping
 **Created:** 2026-11-25, 2:57 PM America/Chicago
