@@ -157,6 +157,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
+| PP-193 | Capture-only public recipe newsletter signup (no emails sent) | 🟡 Shipping | Growth / recipes |
 | PP-192 | Compact recipes page: tabs for the AI generator, denser recipe cards | 🟡 In progress | Recipes UX |
 | PP-190 | Combine similar pantry items using the PP-189 normalizer (ticket only) | 📋 Open | User-reported |
 | PP-186 | Receipt scan AI: Ollama Cloud default, Gemini fallback, admin toggle ([#119](https://github.com/thindery/pantry-pal/pull/119); live 4:10 PM CT Nov 25, build `32cb176`, migration 031 app_settings, `AI_RECEIPT_SCAN_ENABLED=1`) | ✅ Done | Pro AI |
@@ -518,7 +519,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 |--------|-------|----------|--------|
 | PP-179 | Favorite (star) stores per ZIP code on the weekly-ads hub | P2 | ✅ Done (live 9:10 AM CT Nov 26, build `ceb4b7b`, migration 033) |
 | PP-180 | Item Details modal title hidden under the desktop navbar (modal rendered inside `relative z-0` wrapper) | P2 | ✅ Done (live 5:03 PM CT, build `5fec893`, [#125](https://github.com/thindery/pantry-pal/pull/125)) |
-| PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 🟢 Live (PUBLIC_RECIPES_INDEXABLE=true). Batch 2 written (placeholders until images). Signup CTAs on recipe pages. Tag pages still noindex. No newsletter capture existed, so none was added |
+| PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 🟢 Live (PUBLIC_RECIPES_INDEXABLE=true). Batch 2 illustrations shipped (PP-193). Signup CTAs on recipe pages. Tag pages still noindex. Newsletter capture is PP-193 |
 | PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
 | PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | ✅ Done (live 5:26 PM CT, build `a356ed4`, [#128](https://github.com/thindery/pantry-pal/pull/128)) |
 

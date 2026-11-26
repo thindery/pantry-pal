@@ -159,6 +159,8 @@ Marked **classic** or **trending/seasonal**. Evidence for the trending/seasonal 
 
 ## Batch 2, signup CTAs, and newsletter (2026-11-26)
 
-- **Batch 2** (12 recipes from the backlog) is in `frontend/content/recipes/`. Image files are not in the repo yet, so those pages use the gradient placeholder and omit `image` from Recipe JSON-LD until `frontend/public/recipes/<slug>.webp` is added.
+- **Batch 2** (12 recipes from the backlog) is in `frontend/content/recipes/`. Batch 2 AI illustrations now live at `frontend/public/recipes/<slug>.webp` (shipped with PP-193).
 - **Signup CTAs** on `/recipes/`, mid-recipe (after ingredients), and at the end of each recipe page. Copy is limited to barcode scan, pantry inventory, shopping list, and AI recipe ideas. Hidden for signed-in visitors. Links go to `/auth/signin/`.
 - **Newsletter:** there is no existing public email-capture endpoint or in-repo Resend audience/segment wired for a recipe newsletter (Resend is used for transactional mail and the low-stock digest). No "Get new recipes by email" form was added, because it could not actually capture emails. No new email infrastructure was built, and no mail was sent.
+
+- **Batch 2 illustrations** shipped with PP-193 as `frontend/public/recipes/<slug>.webp`. Placeholders are gone; Recipe JSON-LD now includes `image`.

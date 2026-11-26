@@ -97,6 +97,12 @@ export default function PrivacyPage() {
             <strong className="text-slate-900">Technical metadata:</strong> IP addresses, browser
             user-agent strings, and request timestamps in server logs for security and operations.
           </li>
+          <li>
+            <strong className="text-slate-900">Recipe newsletter:</strong> if you sign up for new-recipe
+            emails, we store the email address you submit, the page you signed up from, and the time
+            you consented. Emails collected for the recipe newsletter are used only to send that
+            newsletter. You can unsubscribe at any time.
+          </li>
         </ul>
         <p>
           We do not knowingly collect personal information from children under 13. Contact us if you

@@ -213,16 +213,16 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByText(/No recipes match/)).toBeTruthy();
   });
 
-  it("renders committed WebP illustrations, and placeholders when the file is still missing", () => {
+  it("renders committed WebP illustrations for every recipe, with no placeholders", () => {
     const recipes = allRecipesWithImageState();
-    const withImage = recipes.filter((r) => r.hasImage);
-    const missing = recipes.filter((r) => !r.hasImage);
-    expect(withImage.length).toBe(12);
-    expect(missing.length).toBe(12);
+    expect(recipes.every((r) => r.hasImage)).toBe(true);
+    expect(recipes).toHaveLength(24);
     render(RecipesPage());
-    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
-    expect(screen.queryAllByTestId("recipe-image-placeholder").length).toBeGreaterThan(0);
-    for (const r of withImage.slice(0, 3)) {
+    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
+    expect(screen.getByTestId("recipe-newsletter-form")).toBeTruthy();
+    expect(screen.getByText("Get new pantry recipes by email")).toBeTruthy();
+    expect(screen.getByText("We'll email new recipes occasionally. Unsubscribe anytime.")).toBeTruthy();
+    for (const r of recipes.slice(0, 3)) {
       const img = screen.getByRole("img", { name: r.imageAlt });
       expect(img.getAttribute("src")).toBe(r.image);
     }
@@ -362,6 +362,23 @@ describe("recipe page (PP-184)", () => {
         .find((t) => t.includes('"Recipe"')) ?? "{}"
     );
     expect(recipeLd.image).toEqual(["https://www.mypantryhub.com/recipes/canned-tuna-pasta.webp"]);
+  });
+
+  it("uses the batch 2 illustration in JSON-LD and has no placeholder", async () => {
+    const meta = await generateMetadata({ params: Promise.resolve({ slug: "lasagna-soup" }) });
+    expect(JSON.stringify(meta.openGraph?.images)).toContain("/recipes/lasagna-soup.webp");
+    const { container } = await renderRecipe("lasagna-soup");
+    expect(screen.queryByTestId("recipe-image-placeholder")).toBeNull();
+    const hero = screen.getByRole("img", { name: getRecipe("lasagna-soup")!.imageAlt });
+    expect(hero.getAttribute("src")).toBe("/recipes/lasagna-soup.webp");
+    const recipeLd = JSON.parse(
+      Array.from(container.querySelectorAll('script[type="application/ld+json"]'))
+        .map((n) => n.textContent ?? "")
+        .find((t) => t.includes('"Recipe"')) ?? "{}"
+    );
+    expect(recipeLd.image).toEqual(["https://www.mypantryhub.com/recipes/lasagna-soup.webp"]);
+    expect(screen.getAllByTestId("recipe-newsletter-form").length).toBeGreaterThan(0);
+    expect(screen.getByText("We'll email new recipes occasionally. Unsubscribe anytime.")).toBeTruthy();
   });
 });
 

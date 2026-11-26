@@ -34,6 +34,7 @@ const PUBLIC_PREFIXES = [
   "/api/webhooks/stripe",
   "/api/webhooks/resend",
   "/api/public/offer",
+  "/api/public/recipe-newsletter",
   // PP-137: one-click unsubscribe from the low-stock email must work signed out
   "/api/public/email/unsubscribe",
 ];
