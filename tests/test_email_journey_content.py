@@ -81,15 +81,18 @@ def test_recipe_links_point_at_real_recipes():
             assert (RECIPES_DIR / f"{slug}.ts").exists(), slug
 
 
-def test_hero_prefers_dedicated_images():
+def test_only_approved_welcome_hero_is_used():
     assert j.pick_hero("recipe_welcome") == "hero-pantry-welcome"
-    assert j.pick_hero("recipe_know_your_pantry") == "hero-pantry-shelf"
-    assert j.pick_hero("onboarding_scan_first_item") == "hero-scan-first-item"
-    assert j.pick_hero("onboarding_pro") == "hero-household-pantry"
+    assert j.pick_hero("recipe_know_your_pantry") == "easy-lasagna"
+    assert j.pick_hero("onboarding_scan_first_item") == "baked-potato-soup"
+    assert j.pick_hero("onboarding_pro") == "sunday-pot-roast"
     html = j.render_recipe_welcome(send_id=SID, unsubscribe_url=UNSUB).html
     assert 'src="https://www.mypantryhub.com/email/hero-pantry-welcome.jpg"' in html
-    # The tuna pasta image remains as a recipe card, not the hero.
     assert html.index("hero-pantry-welcome.jpg") < html.index("canned-tuna-pasta.jpg")
-    assert 'src="https://www.mypantryhub.com/email/hero-pantry-shelf.jpg"' in j.render_recipe_know_your_pantry(send_id=SID, unsubscribe_url=UNSUB).html
-    assert 'src="https://www.mypantryhub.com/email/hero-scan-first-item.jpg"' in j.render_onboarding_scan(send_id=SID, unsubscribe_url=UNSUB).html
-    assert 'src="https://www.mypantryhub.com/email/hero-household-pantry.jpg"' in j.render_onboarding_pro(send_id=SID, unsubscribe_url=UNSUB).html
+    assert "hero-pantry-shelf.jpg" not in html
+    assert "hero-scan-first-item.jpg" not in j.render_onboarding_scan(send_id=SID, unsubscribe_url=UNSUB).html
+    assert "hero-household-pantry.jpg" not in j.render_onboarding_pro(send_id=SID, unsubscribe_url=UNSUB).html
+    assert "hero-pantry-shelf.jpg" not in j.render_recipe_know_your_pantry(send_id=SID, unsubscribe_url=UNSUB).html
+    for rejected in ("hero-pantry-shelf", "hero-scan-first-item", "hero-household-pantry"):
+        assert rejected not in j.AVAILABLE_IMAGES
+        assert not (EMAIL_DIR / f"{rejected}.jpg").exists()

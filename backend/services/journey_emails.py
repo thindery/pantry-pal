@@ -37,9 +37,6 @@ AVAILABLE_IMAGES = frozenset(
         "baked-potato-soup",
         "sunday-pot-roast",
         "hero-pantry-welcome",
-        "hero-pantry-shelf",
-        "hero-scan-first-item",
-        "hero-household-pantry",
     }
 )
 IMAGE_W, IMAGE_H = 600, 450
@@ -57,9 +54,6 @@ ALT = {
     "baked-potato-soup": "AI illustration of baked potato soup",
     "sunday-pot-roast": "AI illustration of a Sunday pot roast",
     "hero-pantry-welcome": "AI illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes",
-    "hero-pantry-shelf": "AI illustration of a neat pantry shelf with labeled glass jars, pasta and canned goods",
-    "hero-scan-first-item": "AI illustration of a hand holding a phone scanning a can of beans",
-    "hero-household-pantry": "AI illustration of a family kitchen with a shared pantry and a phone showing a stock list",
 }
 RECIPE_TITLES = {
     "canned-tuna-pasta": "Canned Tuna Pasta",
@@ -73,10 +67,10 @@ RECIPE_TITLES = {
 HEROES = {
     "recipe_welcome": ["hero-pantry-welcome", "canned-tuna-pasta"],
     "recipe_cupboard_dinners": ["rice-and-beans-with-canned-beans"],
-    "recipe_know_your_pantry": ["hero-pantry-shelf", "easy-lasagna"],
-    "onboarding_scan_first_item": ["hero-scan-first-item", "baked-potato-soup"],
+    "recipe_know_your_pantry": ["easy-lasagna"],
+    "onboarding_scan_first_item": ["baked-potato-soup"],
     "onboarding_recipes": ["sheet-pan-chicken-and-vegetables"],
-    "onboarding_pro": ["hero-household-pantry", "sunday-pot-roast"],
+    "onboarding_pro": ["sunday-pot-roast"],
 }
 SIGN_UP_PATH = "/auth/signin/"
 
