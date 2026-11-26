@@ -522,6 +522,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-184 | Free public recipe library for SEO: /recipes browse + recipe pages, AI images, ½×/2× serving scaler (coordinate with SEO & AEO Desk) | P2 | 🟢 Live (PUBLIC_RECIPES_INDEXABLE=true). Batch 2 illustrations shipped (PP-193). Signup CTAs on recipe pages. Tag pages still noindex. Newsletter capture is PP-193 |
 | PP-185 | Generic "AI" wording, no model/vendor names (audit: none on the live site; 2 code comments + README) | P3 | 📋 Open (PP-183 follows it) |
 | PP-187 | Shopping list: tap name/picture for product info popup; clearer "Have X · need Y" reason line | P2 | ✅ Done (live 5:26 PM CT, build `a356ed4`, [#128](https://github.com/thindery/pantry-pal/pull/128)) |
+<<<<<<< HEAD
 
 ## Tickets from Tylor's Nov 26 reports
 
@@ -536,3 +537,6 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
 | PP-191 | "I used this" / "I cooked this" flow: recipe checklist, pantry typeahead, scan-to-use (design only; see `.agents/docs/i-used-this-flow-design.md`) | P2 | 📋 Open (design only; depends on PP-189) |
+=======
+| PP-188 | Run shared site-qa after every deploy (local step at the end of deploy/deploy-docker.sh; never fails the deploy; SITE_QA_SKIP=1 skips) | P2 | ✅ Done (Nov 26; hook run 12:51 PM CT: 0 findings) |
+>>>>>>> 631c5be (chore(PP-188): run site-qa after every deploy)

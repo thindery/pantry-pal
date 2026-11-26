@@ -195,3 +195,12 @@ ssh ovh "
 "
 
 echo "Deploy complete: $TAG"
+
+SITE_QA_HOOK="/Users/thindery/projects/site-qa/hooks/post-deploy.sh"
+if [ "${SITE_QA_SKIP:-0}" = "1" ]; then echo "site-qa: skipped (SITE_QA_SKIP=1)";
+elif [ -f "$SITE_QA_HOOK" ]; then
+  # PP-188: shared live-site QA after each deploy; never rolls back or fails the deploy.
+  set +e; bash "$SITE_QA_HOOK" pantry-hub; QA_RC=$?; set -e
+  if [ "$QA_RC" -ne 0 ]; then echo "site-qa: P0/P1 after deploy (exit $QA_RC) — see /Users/thindery/projects/site-qa/BUGS.md"; fi
+else echo "site-qa: hook not found at $SITE_QA_HOOK; skipped"; fi
+
