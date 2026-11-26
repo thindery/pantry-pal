@@ -11,13 +11,17 @@ import os
 from typing import Optional
 
 from fastapi import HTTPException, Request
-from jose import jwt
-from jose.exceptions import JWTError
+import jwt
+from jwt.exceptions import PyJWTError
 
 from backend.clerk_auth import (
     _test_auth_enabled,
     error_detail,
 )
+
+
+# Tolerate small clock drift between the web and API containers (iat/nbf/exp).
+_JWT_LEEWAY_SECONDS = 30
 
 
 def _auth_secret() -> str:
@@ -39,8 +43,9 @@ def verify_nextauth_token(token: str) -> tuple[Optional[str], Optional[str]]:
             algorithms=["HS256"],
             audience=_jwt_audience(),
             options={"verify_aud": True},
+            leeway=_JWT_LEEWAY_SECONDS,
         )
-    except JWTError:
+    except PyJWTError:
         return None, None
     aud = claims.get("aud")
     expected_aud = _jwt_audience()
