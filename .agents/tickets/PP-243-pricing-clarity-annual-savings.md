@@ -1,6 +1,6 @@
 # PP-243: Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists
 
-**Status:** Shipping in this PR
+**Status:** ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175). Also sped up the recipe browse test that timed out on CI at 96 recipes (test-only).
 **Priority:** P1
 **Ship mode:** can ship now
 **Phase:** Race to $50 / Conversion / pricing copy
@@ -19,8 +19,8 @@ Annual plans exist (Pro $39.99/yr, Family $59.99/yr) but had 0 subscribers and t
 
 ## Acceptance Criteria
 
-- [ ] Yearly cards show the per-month cost and the computed saving (Pro $3.33/mo, save 33% = $19.89/yr; Family save 37% = $35.89/yr). Numbers come from one cents table in `frontend/lib/pricing.ts`, never hardcoded strings.
-- [ ] Monthly cards show the yearly alternative; the Pro monthly card shows the live $1 first month only when `/api/public/offer` says it is on.
-- [ ] Pro and Free lists name only enforced, shipped benefits (items, AI receipt scans, AI recipe builder, saved recipes).
-- [ ] The 30-day guarantee claim is removed from /pricing and the paywall (it contradicts Terms); see PP-250.
-- [ ] No Stripe price, product or coupon change. Checkout path covered by a unit test (no real charge).
+- [x] Yearly cards show the per-month cost and the computed saving (Pro $3.33/mo, save 33% = $19.89/yr; Family save 37% = $35.89/yr). Numbers come from one cents table in `frontend/lib/pricing.ts`, never hardcoded strings.
+- [x] Monthly cards show the yearly alternative; the Pro monthly card shows the live $1 first month only when `/api/public/offer` says it is on.
+- [x] Pro and Free lists name only enforced, shipped benefits (items, AI receipt scans, AI recipe builder, saved recipes).
+- [x] The 30-day guarantee claim is removed from /pricing and the paywall (it contradicts Terms); see PP-250.
+- [x] No Stripe price, product or coupon change. Checkout path covered by a unit test (no real charge).
