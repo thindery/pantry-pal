@@ -63,6 +63,20 @@ import { oatmealCookies } from "./oatmeal-cookies";
 import { peachCobbler } from "./peach-cobbler";
 import { snickerdoodles } from "./snickerdoodles";
 
+import { bakedMacAndCheese } from "./baked-mac-and-cheese";
+import { bakedZiti } from "./baked-ziti";
+import { beefStew } from "./beef-stew";
+import { beefStroganoff } from "./beef-stroganoff";
+import { chickenAndDumplings } from "./chicken-and-dumplings";
+import { chickenEnchiladas } from "./chicken-enchiladas";
+import { chickenNoodleSoup } from "./chicken-noodle-soup";
+import { chickenPotPie } from "./chicken-pot-pie";
+import { shepherdsPie } from "./shepherds-pie";
+import { sloppyJoes } from "./sloppy-joes";
+import { spaghettiAndMeatballs } from "./spaghetti-and-meatballs";
+import { tunaNoodleCasserole } from "./tuna-noodle-casserole";
+
+
 
 
 
@@ -130,6 +144,18 @@ export const RECIPES: readonly Recipe[] = [
   lemonBars,
   easyChocolateCake,
   classicRicePudding,
+  chickenPotPie,
+  spaghettiAndMeatballs,
+  beefStew,
+  bakedMacAndCheese,
+  chickenNoodleSoup,
+  chickenEnchiladas,
+  tunaNoodleCasserole,
+  bakedZiti,
+  sloppyJoes,
+  shepherdsPie,
+  chickenAndDumplings,
+  beefStroganoff,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {

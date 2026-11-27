@@ -1,0 +1,52 @@
+import type { Recipe } from "./types";
+
+export const chickenAndDumplings: Recipe = {
+  slug: "chicken-and-dumplings",
+  title: "Chicken and Dumplings",
+  seoTitle: "Chicken and Dumplings for a Weeknight Dinner",
+  metaSummary: "Chicken and dumplings, about 50 minutes",
+  intro:
+    "This is one-pot chicken and dumplings that takes about 50 minutes. A creamy chicken stew with carrots and celery is topped with drop dumplings that steam under a lid until they are cooked through. The dumplings are a simple mix of flour, baking powder, and milk.",
+  meal: "dinner",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 20,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/chicken-and-dumplings.webp",
+  imageAlt: "AI-generated illustration of chicken and dumplings in a bowl, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "tbsp", item: "butter" },
+    { qty: 1, item: "onion", note: "chopped", plural: "onions" },
+    { qty: 3, item: "carrot", plural: "carrots", note: "sliced" },
+    { qty: 2, unit: "stalk", item: "celery", note: "sliced" },
+    { qty: 0.25, unit: "cup", item: "all-purpose flour", note: "for the stew" },
+    { qty: 4, unit: "cup", item: "chicken broth" },
+    { qty: 2, unit: "cup", item: "cooked shredded chicken" },
+    { qty: 0.5, unit: "cup", item: "frozen peas" },
+    { qty: 0.75, unit: "tsp", item: "salt" },
+    { qty: 1.5, unit: "cup", item: "all-purpose flour", note: "for the dumplings" },
+    { qty: 2, unit: "tsp", item: "baking powder" },
+    { qty: 0.75, unit: "cup", item: "milk" },
+  ],
+  steps: [
+    "Melt the butter in a large pot or Dutch oven over medium heat. Cook the onion, carrots, and celery for 6 to 8 minutes, until the onion is softened. Stir in ¼ cup flour and cook for 1 minute.",
+    "Gradually whisk in the broth and add ½ teaspoon of the salt. Simmer for 8 to 10 minutes, until the vegetables are almost tender and the stew has thickened slightly. Stir in the chicken and peas.",
+    "In a bowl, whisk 1½ cups flour, the baking powder, and the remaining ¼ teaspoon salt. Stir in the milk just until a thick batter forms. Do not overmix.",
+    "Drop rounded tablespoons of dumpling batter onto the simmering stew, spacing them apart. Cover the pot and cook over low heat for 12 to 15 minutes, until the dumplings are cooked through and a toothpick inserted in the center of one comes out clean. Do not lift the lid for the first 12 minutes.",
+    "Ladle the stew and dumplings into bowls and serve hot.",
+  ],
+  substitutions: [
+    "Cooked chicken: use leftover roast chicken or turkey, or poach 1 pound of boneless chicken in the broth first, then shred it.",
+    "Frozen peas: use frozen mixed vegetables, or skip the peas.",
+    "Milk in the dumplings: use buttermilk for a slightly tangier dumpling.",
+    "Butter: use oil or bacon fat to cook the vegetables.",
+  ],
+  tips: [
+    "Keep the lid on while the dumplings steam; lifting it early can make them dense.",
+    "The stew should be at a gentle simmer, not a hard boil, when you add the dumplings.",
+  ],
+  pantryStaples: ["cooked chicken", "chicken broth", "flour", "carrots"],
+  related: ["chicken-pot-pie", "chicken-noodle-soup", "sunday-chicken-and-rice"],
+};
