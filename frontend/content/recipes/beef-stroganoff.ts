@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const beefStroganoff: Recipe = {
+  slug: "beef-stroganoff",
+  title: "Beef Stroganoff",
+  seoTitle: "Easy Beef Stroganoff with Mushrooms and Noodles",
+  metaSummary: "Beef stroganoff with egg noodles, about 40 minutes",
+  intro:
+    "This is beef stroganoff that takes about 40 minutes. Strips of beef and mushrooms cook in a sour cream gravy, then get served over egg noodles. It is a weeknight version of the classic, made in one skillet plus a pot for the pasta.",
+  meal: "dinner",
+  tags: [],
+  servings: 4,
+  prepMin: 15,
+  cookMin: 25,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/beef-stroganoff.webp",
+  imageAlt: "AI-generated illustration of beef stroganoff over egg noodles, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "lb", item: "beef sirloin", note: "sliced into thin strips" },
+    { qty: 2, unit: "tbsp", item: "butter" },
+    { qty: 8, unit: "oz", item: "sliced mushrooms" },
+    { qty: 1, item: "onion", note: "thinly sliced", plural: "onions" },
+    { qty: 2, unit: "clove", item: "garlic", plural: "garlic cloves", note: "minced" },
+    { qty: 1, unit: "cup", item: "beef broth" },
+    { qty: 1, unit: "tbsp", item: "all-purpose flour" },
+    { qty: 0.75, unit: "cup", item: "sour cream" },
+    { qty: 0.75, unit: "tsp", item: "salt" },
+    { qty: 8, unit: "oz", item: "egg noodles" },
+  ],
+  steps: [
+    "Cook the egg noodles in salted boiling water until al dente. Drain and toss with a little butter or oil to keep them from sticking.",
+    "Meanwhile, pat the beef dry and season it with ½ teaspoon of the salt. Melt 1 tablespoon of the butter in a large skillet over medium-high heat. Sear the beef in a single layer for 1 to 2 minutes per side, until browned but still pink inside. Transfer it to a plate.",
+    "Melt the remaining 1 tablespoon butter in the skillet. Cook the mushrooms and onion for 6 to 8 minutes, until the mushrooms have given off their liquid and started to brown. Stir in the garlic for 30 seconds.",
+    "Sprinkle the flour over the vegetables and cook for 1 minute. Stir in the broth and the remaining ¼ teaspoon salt. Simmer until the sauce thickens slightly, about 3 minutes. Take the skillet off the heat and stir in the sour cream, then return the beef and any juices to the pan. Warm through over low heat; do not boil.",
+    "Serve the stroganoff over the egg noodles.",
+  ],
+  substitutions: [
+    "Beef sirloin: use flank steak, sliced thin against the grain, or 1 pound lean ground beef, browned and drained.",
+    "Sour cream: use plain Greek yogurt, stirred in off the heat so it does not curdle.",
+    "Egg noodles: use 8 ounces of any wide noodle, or serve the sauce over rice.",
+    "Beef broth: use chicken broth plus 1 teaspoon Worcestershire sauce.",
+  ],
+  tips: [
+    "Slice the beef thin and sear it quickly so it stays tender; overcooking the strips will make them tough.",
+    "Stir the sour cream in off the heat so the sauce stays smooth.",
+  ],
+  pantryStaples: ["beef sirloin", "mushrooms", "sour cream", "egg noodles"],
+  related: ["beef-stew", "sunday-pot-roast", "peanut-butter-noodles"],
+};

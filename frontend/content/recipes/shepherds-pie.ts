@@ -1,0 +1,52 @@
+import type { Recipe } from "./types";
+
+export const shepherdsPie: Recipe = {
+  slug: "shepherds-pie",
+  title: "Shepherd's Pie",
+  seoTitle: "Easy Shepherd's Pie with a Mashed Potato Top",
+  metaSummary: "Shepherd's pie with beef, about 60 minutes",
+  intro:
+    "This is a shepherd's pie that takes about 60 minutes, including time in the oven. A filling of ground beef, carrots, and peas is topped with mashed potatoes and baked until the peaks are browned. In many American kitchens the filling is made with beef; you can use lamb if you want the traditional version.",
+  meal: "dinner",
+  tags: [],
+  servings: 6,
+  prepMin: 25,
+  cookMin: 35,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/shepherds-pie.webp",
+  imageAlt: "AI-generated illustration of shepherd's pie with a mashed potato topping, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "lb", item: "potatoes", note: "peeled and cut into chunks" },
+    { qty: 0.5, unit: "cup", item: "milk" },
+    { qty: 3, unit: "tbsp", item: "butter" },
+    { qty: 1, unit: "lb", item: "ground beef" },
+    { qty: 1, item: "onion", note: "chopped", plural: "onions" },
+    { qty: 2, item: "carrot", plural: "carrots", note: "diced" },
+    { qty: 1, unit: "cup", item: "frozen peas" },
+    { qty: 2, unit: "tbsp", item: "all-purpose flour" },
+    { qty: 1, unit: "cup", item: "beef broth" },
+    { qty: 1, unit: "tbsp", item: "Worcestershire sauce" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+  ],
+  steps: [
+    "Heat the oven to 400°F (200°C). Boil the potatoes in salted water until tender, about 15 minutes. Drain, mash with the milk, butter, and ½ teaspoon of the salt, and set aside.",
+    "Meanwhile, cook the ground beef, onion, and carrots in a skillet over medium heat until the beef is no longer pink and the carrots are starting to soften, about 8 minutes. Drain extra fat.",
+    "Stir in the flour for 1 minute. Add the broth, Worcestershire sauce, remaining ½ teaspoon salt, and the pepper. Simmer until the mixture is thick, about 3 minutes. Stir in the peas.",
+    "Spread the filling in a 2-quart or 8-inch square baking dish. Spoon the mashed potatoes over the top and spread them to the edges. Rough up the surface with a fork so it browns.",
+    "Bake for 20 to 25 minutes, until the filling is bubbling and the potato peaks are browned in spots. Rest for 10 minutes before serving.",
+  ],
+  substitutions: [
+    "Ground beef: use ground lamb for a traditional shepherd's pie, or a mix of beef and lamb.",
+    "Fresh potatoes: use 4 cups prepared mashed potatoes.",
+    "Beef broth: use chicken broth plus 1 teaspoon soy sauce or Worcestershire sauce.",
+    "Frozen peas: use frozen mixed vegetables and skip or reduce the carrots.",
+  ],
+  tips: [
+    "Spread the potatoes to the edges of the dish so the filling does not bubble over as much.",
+    "A few minutes under the broiler at the end will brown the topping more if it is still pale.",
+  ],
+  pantryStaples: ["ground beef", "potatoes", "frozen peas", "beef broth"],
+  related: ["classic-meatloaf", "beef-stew", "sunday-pot-roast"],
+};

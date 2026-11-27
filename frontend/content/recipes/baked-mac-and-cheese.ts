@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const bakedMacAndCheese: Recipe = {
+  slug: "baked-mac-and-cheese",
+  title: "Baked Mac and Cheese",
+  seoTitle: "Creamy Baked Mac and Cheese from the Pantry",
+  metaSummary: "Baked mac and cheese, about 45 minutes",
+  intro:
+    "This is a creamy baked mac and cheese that takes about 45 minutes. Elbow pasta is tossed with a cheddar sauce made from butter, flour, and milk, then baked with a breadcrumb topping until the top is golden. It is a vegetarian main or a side for a larger table.",
+  meal: "dinner",
+  tags: ["vegetarian"],
+  servings: 8,
+  prepMin: 15,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/baked-mac-and-cheese.webp",
+  imageAlt: "AI-generated illustration of baked mac and cheese in a dish, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "lb", item: "elbow macaroni" },
+    { qty: 0.25, unit: "cup", item: "butter" },
+    { qty: 0.25, unit: "cup", item: "all-purpose flour" },
+    { qty: 3, unit: "cup", item: "milk" },
+    { qty: 3, unit: "cup", item: "shredded sharp cheddar" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 0.5, unit: "tsp", item: "dry mustard", note: "or 1 teaspoon Dijon" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+    { qty: 0.75, unit: "cup", item: "plain breadcrumbs" },
+    { qty: 2, unit: "tbsp", item: "butter", note: "melted, for the topping" },
+  ],
+  steps: [
+    "Heat the oven to 375°F (190°C). Grease a 9×13-inch or 3-quart baking dish. Cook the macaroni in salted boiling water until just shy of al dente, about 1 minute less than the package. Drain.",
+    "Melt ¼ cup butter in a saucepan over medium heat. Whisk in the flour and cook for 1 minute. Gradually whisk in the milk and simmer until the sauce is thick, about 5 minutes. Take the pan off the heat and stir in the cheddar, salt, mustard, and pepper until smooth.",
+    "Toss the pasta with the sauce and spread it in the dish.",
+    "Stir the breadcrumbs with the 2 tablespoons melted butter and sprinkle them over the top.",
+    "Bake for 20 to 25 minutes, until the sauce is bubbling and the topping is golden. Cool for 5 minutes before serving.",
+  ],
+  substitutions: [
+    "Sharp cheddar: use a mix of cheddar and Monterey Jack, or cheddar and a little Parmesan.",
+    "Elbow macaroni: use shells, cavatappi, or another short pasta.",
+    "Plain breadcrumbs: use panko, or crushed crackers, or skip the topping and just bake until bubbling.",
+    "Milk: use whole milk for the creamiest sauce; 2% works too.",
+  ],
+  tips: [
+    "Undercook the pasta slightly so it does not turn mushy in the oven.",
+    "If the topping browns before the sauce bubbles, tent the dish with foil.",
+  ],
+  pantryStaples: ["elbow macaroni", "cheddar", "milk", "butter"],
+  related: ["tuna-noodle-casserole", "baked-ziti", "easy-lasagna"],
+};

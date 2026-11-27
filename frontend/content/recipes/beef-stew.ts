@@ -1,0 +1,51 @@
+import type { Recipe } from "./types";
+
+export const beefStew: Recipe = {
+  slug: "beef-stew",
+  title: "Beef Stew",
+  seoTitle: "Classic One-Pot Beef Stew for Sunday Dinner",
+  metaSummary: "One-pot beef stew, about 2 hours",
+  intro:
+    "This is a classic one-pot beef stew that takes about 2 hours, most of it at a gentle simmer. Beef, potatoes, and carrots cook in broth until the meat is tender and the gravy is rich. It is a Sunday dinner you can leave on the stove while you do other things.",
+  meal: "dinner",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 20,
+  cookMin: 100,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/beef-stew.webp",
+  imageAlt: "AI-generated illustration of a bowl of beef stew with carrots and potatoes, not a photo of this dish",
+  ingredients: [
+    { qty: 2, unit: "lb", item: "beef stew meat", note: "cut into 1-inch pieces" },
+    { qty: 3, unit: "tbsp", item: "all-purpose flour" },
+    { qty: 2, unit: "tbsp", item: "olive oil" },
+    { qty: 1, item: "onion", note: "chopped", plural: "onions" },
+    { qty: 3, unit: "clove", item: "garlic", plural: "garlic cloves", note: "minced" },
+    { qty: 4, unit: "cup", item: "beef broth" },
+    { qty: 4, item: "carrot", plural: "carrots", note: "peeled and cut into chunks" },
+    { qty: 1.5, unit: "lb", item: "potatoes", note: "peeled and cut into chunks" },
+    { qty: 1, unit: "tsp", item: "dried thyme" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+  ],
+  steps: [
+    "Pat the beef dry and toss it with the flour, ½ teaspoon of the salt, and the pepper.",
+    "Heat the oil in a heavy pot or Dutch oven over medium-high heat. Brown the beef in batches, then set it aside.",
+    "Add the onion to the pot and cook for 4 to 5 minutes, until softened. Stir in the garlic for 30 seconds. Pour in the broth and scrape up the browned bits on the bottom.",
+    "Return the beef to the pot. Add the thyme and the remaining ½ teaspoon salt. Bring to a simmer, cover, and cook over low heat for 1 hour.",
+    "Add the carrots and potatoes. Cover and simmer for 30 to 40 minutes more, until the beef and vegetables are tender. Taste and adjust the salt. Serve in bowls.",
+  ],
+  substitutions: [
+    "Beef stew meat: use chuck roast, trimmed and cut into 1-inch pieces.",
+    "Beef broth: use chicken broth plus 1 tablespoon soy sauce or Worcestershire sauce.",
+    "Potatoes: use Yukon Gold or russet potatoes; waxy potatoes hold their shape a little better.",
+    "Dried thyme: use 1 teaspoon Italian seasoning, or 2 sprigs of fresh thyme, removed before serving.",
+  ],
+  tips: [
+    "Browning the beef first gives the gravy more flavor; do not crowd the pot or the meat will steam.",
+    "If the gravy is thinner than you like at the end, simmer uncovered for 5 to 10 minutes.",
+  ],
+  pantryStaples: ["beef stew meat", "beef broth", "potatoes", "carrots"],
+  related: ["sunday-pot-roast", "shepherds-pie", "beef-stroganoff"],
+};

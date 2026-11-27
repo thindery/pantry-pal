@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const chickenNoodleSoup: Recipe = {
+  slug: "chicken-noodle-soup",
+  title: "Chicken Noodle Soup",
+  seoTitle: "Easy Homemade Chicken Noodle Soup from Scratch",
+  metaSummary: "Homemade chicken noodle soup, about 45 minutes",
+  intro:
+    "This is homemade chicken noodle soup that takes about 45 minutes. Chicken, carrots, celery, and egg noodles simmer in broth until the vegetables are tender and the noodles are cooked. It is a straightforward lunch or light dinner from pantry broth and a few fresh vegetables.",
+  meal: "lunch",
+  tags: ["one-pot"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/chicken-noodle-soup.webp",
+  imageAlt: "AI-generated illustration of a bowl of chicken noodle soup, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "tbsp", item: "olive oil" },
+    { qty: 1, item: "onion", note: "chopped", plural: "onions" },
+    { qty: 3, item: "carrot", plural: "carrots", note: "sliced" },
+    { qty: 3, unit: "stalk", item: "celery", note: "sliced" },
+    { qty: 8, unit: "cup", item: "chicken broth" },
+    { qty: 2, unit: "cup", item: "cooked shredded chicken" },
+    { qty: 6, unit: "oz", item: "egg noodles" },
+    { qty: 1, unit: "tsp", item: "dried thyme" },
+    { qty: 0.75, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+  ],
+  steps: [
+    "Heat the oil in a large pot over medium heat. Cook the onion, carrots, and celery for 6 to 8 minutes, until the onion is softened.",
+    "Pour in the broth and add the thyme, salt, and pepper. Bring to a simmer and cook for 10 minutes, until the carrots are almost tender.",
+    "Stir in the chicken and egg noodles. Simmer for 6 to 8 minutes, until the noodles are tender.",
+    "Taste and adjust the salt.",
+    "Ladle into bowls and serve hot.",
+  ],
+  substitutions: [
+    "Cooked chicken: use leftover roast chicken or turkey, or poach 1 pound of boneless chicken in the broth, then shred it and return it to the pot.",
+    "Egg noodles: use 6 ounces of any short pasta; start checking a minute or two earlier or later as needed.",
+    "Chicken broth: use low-sodium broth and salt to taste, or a mix of broth and water.",
+    "Dried thyme: use 1 bay leaf, removed before serving, or 1 teaspoon Italian seasoning.",
+  ],
+  tips: [
+    "Add the noodles at the end so they do not soak up all the broth if you have leftovers.",
+    "The soup thickens as it sits; add a splash of broth when you reheat it.",
+  ],
+  pantryStaples: ["chicken broth", "egg noodles", "cooked chicken", "carrots"],
+  related: ["leftover-turkey-soup", "chicken-and-dumplings", "easy-vegetable-soup"],
+};
