@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-26, PM CT (PP-235 weekly recipe newsletter in review; journeys live since 6:33 PM CT)
+Last updated: 2026-11-26, 7:25 PM CT (PP-235 weekly recipe newsletter live at `95ce29d` / #159, approval-gated; journeys live since 6:33 PM CT)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -554,7 +554,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | ✅ Live. Admin -> Marketing is in production and showed live webhook events from a [TEST] send |
 | PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | ✅ Live. Heroes on build `596be58`; Cloudflare `/email/*` skip verified with GoogleImageProxy UA; copy approved (t96u); journeys on 6:33 PM CT Nov 26 |
 | PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | ✅ Live Nov 26, 3:51 PM CT, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155). Journeys went live 6:33 PM CT the same day (copy approved, t96u) |
-| PP-235 | Weekly recipe newsletter: 3 rotating recipes + 1 tip, Wed 9 AM CT draft + [TEST] copy to Tylor, admin Approve & send, `EMAIL_WEEKLY_AUTO_SEND` (off), per-issue stats | P2 | 🟡 In review (PR pending). Nothing sent to the list until approved |
+| PP-235 | Weekly recipe newsletter: 3 rotating recipes + 1 tip, Wed 9 AM CT draft + [TEST] copy to Tylor, admin Approve & send, `EMAIL_WEEKLY_AUTO_SEND` (off), per-issue stats | P2 | ✅ Live Nov 26, ~7:25 PM CT, build `95ce29d`, [#159](https://github.com/thindery/pantry-pal/pull/159). Cron installed; 2026-W48 draft + [TEST] copy to Tylor only. Nothing sent to the list until approved |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 

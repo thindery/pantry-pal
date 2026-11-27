@@ -1,6 +1,6 @@
 # PP-235: Weekly recipe newsletter (draft, test copy, approve, send)
 
-**Status:** 🟡 In review (built 2026-11-26 America/Chicago). Nothing is sent to the list until an admin approves an issue.
+**Status:** ✅ Live (2026-11-26, 7:25 PM America/Chicago, build `95ce29d`, [#159](https://github.com/thindery/pantry-pal/pull/159)). Nothing is sent to the list until an admin approves an issue.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, America/Chicago
@@ -99,4 +99,7 @@ Tip: **Put a date on it.** When you open a can or a bag, or put leftovers in a c
 
 ## Rollout log
 
-(filled in after deploy)
+- 2026-11-26, about 7:25 PM CT: PR #159 merged (CI green: quality, test, gitleaks, postgres-integration, e2e-smoke). Deployed with `./deploy/deploy-docker.sh main` (`SKIP_E2E_SMOKE=1`, local Playwright missing; CI e2e-smoke passed). Migration 036 applied. `build-id.txt` in the frontend container: `95ce29d`.
+- `EMAIL_WEEKLY_TEST_TO` added to OVH `.env.prod` (backup kept). `EMAIL_WEEKLY_AUTO_SEND` is not set (off). `EMAIL_JOURNEYS_*` untouched.
+- Cron installed on OVH (both lines above; previous crontab backed up).
+- First issue `2026-W48` built by hand: draft, `[TEST]` copy delivered to the owner address only (subject `[TEST] This week: Green Bean Casserole, Leftover Turkey Soup and 1 more`). Audience right now is 0 (no confirmed recipe subscribers, no app user has opted in), `send` run: 0 sent. The next automatic draft is Wednesday 2026-12-02, 9 AM Central.
