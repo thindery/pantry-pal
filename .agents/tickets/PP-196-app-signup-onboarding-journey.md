@@ -1,6 +1,6 @@
 # PP-196: Onboarding journey for new app signups (scan first item, recipes, Pro)
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26, 6:33 PM America/Chicago). Copy approved (t96u). Enrollment is forward-only via `EMAIL_ONBOARDING_SINCE`.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -110,3 +110,8 @@ Unsubscribe: https://www.mypantryhub.com/api/public/email/unsubscribe?token=<tok
 Pantry Hub, 334 E Kearney St #255, Springfield, MO
 ```
 
+
+
+## Go live (2026-11-26, 6:33 PM CT)
+
+Tylor approved the copy (t96u: "All looks good"). `EMAIL_ONBOARDING_SINCE=2026-11-27T00:32:58+00:00` (6:32:58 PM CT). Only app accounts created at or after that instant are enrolled. The 3 existing users were created 2026-11-25 and were not enrolled. First job run: `enrolled_users: 0`, `sent: 0`.

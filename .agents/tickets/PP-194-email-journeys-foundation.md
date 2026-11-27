@@ -1,6 +1,6 @@
 # PP-194: Email journeys foundation: send gate, journey state, unsubscribe + click endpoints
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26, 6:33 PM America/Chicago). `EMAIL_JOURNEYS_ENABLED=true`; cron installed. First run sent 0.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -32,10 +32,19 @@ Our design: journey state in our own Postgres (visible, testable, $0), idempoten
 2. Migration 035 (+ rollback): `email_sends.category/journey/journey_step`, `email_journey_state`, `email_list_events`, `email_clicks`, double opt-in columns on `recipe_newsletter_subscribers`, `email_preferences.onboarding_tips`.
 3. `email_journeys.run()` + `python -m backend.jobs.email_journeys`: enroll, retry missed confirmations (48h window only), send due steps. Idempotency key `journey:<journey>:<step>:<subject>`; stale steps (7 days late) stop instead of bursting.
 4. `GET /api/public/email/click` (site paths only, no open redirect, scanner UAs recorded but not counted), `GET /api/public/email/confirm`, `GET|POST /api/public/email/unsubscribe?list=recipes|onboarding` (GET shows a button, POST/one-click does it, with undo). `List-Unsubscribe` + `List-Unsubscribe-Post` on all journey mail.
-5. Cron (OVH, not installed until Tylor approves): `*/10 * * * * docker exec pantry-pal-backend python -m backend.jobs.email_journeys` (no-ops while the gate is off).
+5. Cron (OVH, installed 2026-11-26, 6:33 PM CT): `*/15 * * * * docker exec pantry-pal-backend python -m backend.jobs.email_journeys >> /var/tmp/pantry-email-journeys.log 2>&1 # PP-194 email journeys`.
 
 ## Acceptance
 
 - With no env flags set, every journey call returns `journeys_disabled` and nothing reaches Resend (tested).
 - Test mode only reaches the allowlist (tested). Live mode without a mailing address holds commercial mail (tested).
 - Double run cannot double-send (tested). Rollback SQL applies cleanly (verified locally).
+
+
+## Go live (2026-11-26, 6:33 PM CT)
+
+Tylor approved the copy of all 7 emails (t96u: "All looks good"). Forward-only go-live on OVH:
+
+- Backed up `/opt/pantry-pal/.env.prod`, set `EMAIL_JOURNEYS_ENABLED=true` and `EMAIL_ONBOARDING_SINCE=2026-11-27T00:32:58+00:00` (6:32:58 PM CT). `EMAIL_JOURNEYS_TEST_RECIPIENTS` left unset. Backend recreated; `email_gate.mode()` is `on`.
+- Existing app users (3) were created before the cutoff and were not enrolled. Prod had 0 `recipe_newsletter_subscribers` rows; no PP-193 confirm emails went out (`retry_confirmations` only retries pending signups from the last 48 hours, and the first run reported `confirmations: 0`).
+- First `python -m backend.jobs.email_journeys` run (and a `--dry-run` immediately before it): `{"mode": "on", "enrolled_users": 0, "confirmations": 0, "due": 0, "sent": 0, "held": 0, "skipped": 0, "stopped": 0, "failed": 0}`. `email_journey_state` stayed at 0 rows.

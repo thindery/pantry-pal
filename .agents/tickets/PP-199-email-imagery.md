@@ -1,6 +1,6 @@
 # PP-199: Imagery in emails: hero image on every journey email, recipe cards, credits
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26). Heroes are on the live build; Cloudflare skip for `/email/*` is in place and verified with a GoogleImageProxy UA.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -49,3 +49,8 @@ Tylor approved option A of the real free-license set. R3, O1, and O3 now use `he
 Live build `92a55d6` serves the files (verified inside the frontend container), but a request to `https://www.mypantryhub.com/email/canned-tuna-pasta.jpg` with Gmail's image-proxy user agent returns `403` with `cf-mitigated: challenge`. Mail-client image proxies cannot solve a challenge, so images would show as broken in Gmail and others. Same for `/recipes/*.webp` if ever hot-linked in mail.
 
 Fix (Tylor's OK needed; it changes live Cloudflare config): add a WAF custom rule, action **Skip** (Bot Fight / managed challenge / rate limiting), for `URI Path starts with /email/`. Click, confirm and unsubscribe links open in a real browser, so they can stay challenged. Do not turn journeys on until the image rule is in and a Gmail test shows the images.
+
+
+## Go live (2026-11-26)
+
+The Cloudflare challenge on `/email/*` was fixed with a narrow custom skip rule (www + apex, path starts with `/email/`). A GET with Gmail's GoogleImageProxy UA returns HTTP 200 `image/jpeg` with no `cf-mitigated` header. Tylor approved the email copy (t96u) and journeys are on as of 6:33 PM CT.

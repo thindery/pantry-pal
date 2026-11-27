@@ -1,6 +1,6 @@
 # PP-197: Activate the Resend webhook (PP-124) and add first-party click tracking
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26). Webhook is on the mypantryhub Resend account; signing secret is in `/opt/pantry-pal/.env.prod` only; `email.sent` and `email.delivered` events have landed in the admin Marketing view.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -17,12 +17,14 @@ Priority is P2 because bounces and complaints are only suppressed once the webho
 ## Findings
 
 - `POST /api/webhooks/resend` exists with stdlib Svix verification, idempotent `email_events` inserts, and permanent-bounce/complaint suppression (all tested).
-- On OVH, `/opt/pantry-pal/.env.prod` has `RESEND_API_KEY` and `RESEND_FROM_EMAIL` but **no `RESEND_WEBHOOK_SECRET`**, so the endpoint rejects every event and the dashboard shows "pending webhook".
+- On OVH, `/opt/pantry-pal/.env.prod` now has `RESEND_WEBHOOK_SECRET` (set 2026-11-26, quoted; value never committed). Earlier, before the secret was set, the endpoint rejected every event and the dashboard showed "pending webhook".
 - The `user-Resend` connector account holds justwithai / peak-collective / getmd2pdf only. `mypantryhub.com` is on its own free Resend account, so the connector **cannot** create this webhook (verified by listing domains).
 
-## Remaining manual step (Tylor, ~2 minutes)
+## Remaining manual step — done (2026-11-26)
 
-In the Pantry Hub Resend dashboard: Webhooks -> Add endpoint `https://www.mypantryhub.com/api/webhooks/resend`, events `email.sent, email.delivered, email.delivery_delayed, email.bounced, email.complained, email.opened, email.clicked, email.failed`. Also turn on Open and Click tracking for the `mypantryhub.com` domain if he wants opens/clicks from Resend. Then give Grok Bot the signing secret through the secure channel; it goes into `/opt/pantry-pal/.env.prod` only (never git or chat), then the backend restarts and a `delivered@resend.dev` test confirms events land.
+The webhook `https://www.mypantryhub.com/api/webhooks/resend` was created on the mypantryhub Resend account (id `b93b7276-2738-4d85-9cfd-84f348713dc8`, 8 events, enabled). The signing secret is in `/opt/pantry-pal/.env.prod` only (quoted; never git or chat). After a backend recreate, a [TEST] send to Tylor produced `email.sent` and `email.delivered` rows in `email_events` and in Admin -> Marketing. Open tracking had not yet produced an `email.opened` event at that check (`tracking.open_tracking_seen` was false).
+
+DNS-only CNAME `links.mypantryhub.com` → `links2.resend-dns.com` is live (TTL auto, not proxied; documented in [#157](https://github.com/thindery/pantry-pal/pull/157)). When open/click tracking is on, Resend rewrites those links through `links.mypantryhub.com`.
 
 ## Shipped here
 
