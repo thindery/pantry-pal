@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { RECIPES } from "@/content/recipes";
 import { MIN_RECIPES_FOR_SITEMAP, PUBLIC_RECIPES_INDEXABLE } from "@/content/recipes/config";
+import { HOLIDAY_COLLECTION, holidayCollectionLastModified, holidayRecipes } from "@/content/recipes/holiday";
 import { SITE_URL } from "@/lib/site-content";
 
 /**
@@ -34,15 +35,26 @@ const RECIPES_INDEX_LAST_MODIFIED = RECIPES.map((r) => r.updated).sort().at(-1) 
 
 export function recipeSitemapPages(): typeof SITEMAP_PAGES {
   if (!PUBLIC_RECIPES_INDEXABLE || RECIPES.length < MIN_RECIPES_FOR_SITEMAP) return [];
-  return [
+  const pages: Array<(typeof SITEMAP_PAGES)[number]> = [
     { path: "/recipes/", lastModified: RECIPES_INDEX_LAST_MODIFIED, changeFrequency: "weekly", priority: 0.8 },
+  ];
+  if (holidayRecipes().length > 0) {
+    pages.push({
+      path: HOLIDAY_COLLECTION.path,
+      lastModified: holidayCollectionLastModified(),
+      changeFrequency: "weekly",
+      priority: 0.75,
+    });
+  }
+  pages.push(
     ...RECIPES.map((r) => ({
       path: `/recipes/${r.slug}/`,
       lastModified: r.updated,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
-  ];
+  );
+  return pages;
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {

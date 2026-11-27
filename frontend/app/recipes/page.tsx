@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { RecipeBrowser } from "@/components/recipes-public/RecipeBrowser";
 import { JsonLd } from "@/components/recipes-public/JsonLd";
 import { RecipePageShell } from "@/components/recipes-public/RecipePageShell";
@@ -32,6 +33,15 @@ export default function RecipesPage() {
           <p className="mt-3 max-w-2xl text-base text-slate-700 sm:text-lg">
             Cook from pantry staples and leftovers. Every recipe lists times and substitutions, and scales to the number of servings you need.
           </p>
+          <Link
+            href="/recipes/holiday/"
+            className="mt-6 flex max-w-xl flex-col rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 hover:border-emerald-300 sm:px-5"
+          >
+            <span className="font-serif-heading text-lg font-bold text-slate-900">Holiday recipes</span>
+            <span className="mt-0.5 text-sm text-slate-700">
+              Thanksgiving leftovers, Christmas baking, holiday sides, and New Year&apos;s dishes.
+            </span>
+          </Link>
         </div>
       </section>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">

@@ -142,6 +142,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 
 | Ticket | Title | Status | Area |
 |--------|-------|--------|------|
+| PP-238 | Holiday recipe collection and first holiday batch (/recipes/holiday/) | 🟡 Shipping | Growth / recipes |
 | PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | ✅ Done (live 4:11 PM CT, `1fab3f1`, [#120](https://github.com/thindery/pantry-pal/pull/120)) | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
 | PP-183 | AI recipe builder (Pro): recipes from my pantry, adjust, save, add missing; metered weekly tokens, fail closed | ✅ Live 4:34 PM CT, `c5cbe9a` ([#122](https://github.com/thindery/pantry-pal/pull/122)); on for Pro, caps 40k/user, 200k global per week | Pro AI |

@@ -58,10 +58,10 @@ export const TAG_PAGES: readonly RecipeTagPage[] = [
   {
     slug: "leftovers",
     metaDescription:
-      "Recipes for leftover rice and leftover vegetables: egg fried rice and a skillet frittata. Substitutions included. Track the ingredients in Pantry Hub, free.",
-    title: "Recipes for Leftover Rice and Vegetables",
+      "Leftover turkey soup, pot pie, and sandwiches, plus fried rice and a vegetable frittata. Substitutions included. Track the ingredients in Pantry Hub, free.",
+    title: "Recipes for Leftover Turkey, Rice, and Vegetables",
     intro:
-      "Ways to turn what is already in the fridge into a new meal: egg fried rice from cold cooked rice and a frittata for leftover vegetables. Cool and store leftovers promptly, and reheat them until steaming hot.",
+      "Ways to turn what is already in the fridge into a new meal: leftover turkey soup, pot pie, and sandwiches, egg fried rice from cold cooked rice, and a frittata for leftover vegetables. Cool and store leftovers promptly, and reheat them until steaming hot.",
     matches: (r) => r.tags.includes("leftovers"),
   },
 ];

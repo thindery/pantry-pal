@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const pumpkinPie: Recipe = {
+  slug: "pumpkin-pie",
+  title: "Pumpkin Pie",
+  seoTitle: "Easy Homemade Pumpkin Pie from the Pantry",
+  metaSummary: "Easy pumpkin pie, 75 minutes",
+  intro:
+    "This is a homemade pumpkin pie that takes about 75 minutes, most of it in the oven. It uses canned pumpkin, evaporated milk, eggs, sugar, and pantry spices in a store-bought or homemade crust. The filling is mixed in one bowl, and the pie is done when the center still has a slight jiggle.",
+  meal: "snack",
+  tags: ["holiday"],
+  servings: 8,
+  prepMin: 15,
+  cookMin: 60,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/pumpkin-pie.webp",
+  imageAlt: "AI-generated illustration of a sliced pumpkin pie, not a photo of this dish",
+  ingredients: [
+    { qty: 1, item: "unbaked 9-inch pie crust", plural: "unbaked 9-inch pie crusts" },
+    { qty: 1, unit: "can", size: "15 oz", item: "pumpkin puree", note: "not pumpkin pie filling" },
+    { qty: 1, unit: "can", size: "12 oz", item: "evaporated milk" },
+    { qty: 2, item: "egg", plural: "eggs" },
+    { qty: 0.75, unit: "cup", item: "granulated sugar" },
+    { qty: 1, unit: "tsp", item: "ground cinnamon" },
+    { qty: 0.5, unit: "tsp", item: "ground ginger" },
+    { qty: 0.25, unit: "tsp", item: "ground nutmeg" },
+    { qty: 0.5, unit: "tsp", item: "salt" },
+  ],
+  steps: [
+    "Heat the oven to 425°F (220°C). Fit the crust into a 9-inch pie dish and crimp the edge. Line the crust with parchment, fill it with dried beans or pie weights, and bake for 10 minutes. Lift out the weights and parchment.",
+    "In a large bowl, whisk the pumpkin, evaporated milk, eggs, sugar, cinnamon, ginger, nutmeg, and salt until smooth.",
+    "Pour the filling into the warm crust. Reduce the oven temperature to 350°F (175°C).",
+    "Bake for 40 to 50 minutes, until the edges are set and the center still jiggles slightly when you nudge the dish. A knife inserted about 1 inch from the edge should come out clean.",
+    "Cool the pie on a rack for at least 2 hours before slicing. Refrigerate once it is cool.",
+  ],
+  substitutions: [
+    "Evaporated milk: use 1½ cups half-and-half or whole milk; the filling may set a little softer.",
+    "Pumpkin puree: use an equal weight of mashed roasted butternut squash or sweet potato, very smooth.",
+    "Individual spices: use 2 teaspoons pumpkin pie spice in place of the cinnamon, ginger, and nutmeg.",
+    "Granulated sugar: use packed brown sugar for a slightly deeper flavor.",
+    "Store-bought crust: use a homemade single-crust pastry, or a graham cracker crust (skip the blind bake and start at 350°F, checking a few minutes earlier).",
+  ],
+  tips: [
+    "Canned pumpkin pie filling is already sweetened and spiced; this recipe is written for plain pumpkin puree.",
+    "If the crust edge is browning too fast, tent it with a ring of foil for the rest of the bake.",
+  ],
+  pantryStaples: ["canned pumpkin", "evaporated milk", "sugar", "cinnamon"],
+  related: ["easy-sugar-cookies", "peppermint-bark", "homemade-cranberry-sauce"],
+};

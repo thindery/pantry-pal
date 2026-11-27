@@ -8,7 +8,7 @@ export const leftoverTurkeySoup: Recipe = {
   intro:
     "This is a simple soup that turns leftover roast turkey into a new meal in about an hour. It uses the carcass or diced turkey, onions, carrots, celery, and noodles or rice from the pantry. A squeeze of lemon at the end keeps the broth bright.",
   meal: "dinner",
-  tags: ["one-pot", "leftovers", "freezer-friendly"],
+  tags: ["holiday", "one-pot", "leftovers", "freezer-friendly"],
   servings: 6,
   prepMin: 15,
   cookMin: 45,
@@ -60,5 +60,5 @@ export const leftoverTurkeySoup: Recipe = {
     url: "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety",
   },
   pantryStaples: ["cooked turkey", "broth", "egg noodles or rice", "carrots and celery"],
-  related: ["easy-vegetable-soup", "sunday-chicken-and-rice", "leftover-vegetable-frittata"],
+  related: ["leftover-turkey-pot-pie", "leftover-turkey-sandwiches", "classic-stuffing"],
 };

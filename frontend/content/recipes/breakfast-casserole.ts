@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const breakfastCasserole: Recipe = {
+  slug: "breakfast-casserole",
+  title: "Breakfast Casserole",
+  seoTitle: "Easy Breakfast Casserole for Holiday Mornings",
+  metaSummary: "Easy breakfast casserole, about 1 hour",
+  intro:
+    "This is a make-ahead breakfast casserole that takes about an hour, most of it in the oven. It uses cubed bread, breakfast sausage, eggs, milk, and shredded cheese. You can assemble it the night before and bake it in the morning.",
+  meal: "breakfast",
+  tags: ["holiday", "make-ahead"],
+  servings: 8,
+  prepMin: 20,
+  cookMin: 45,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/breakfast-casserole.webp",
+  imageAlt: "AI-generated illustration of a sliced breakfast casserole with sausage and cheese, not a photo of this dish",
+  ingredients: [
+    { qty: 8, unit: "cup", item: "cubed day-old bread", note: "about 10 ounces" },
+    { qty: 1, unit: "lb", item: "breakfast sausage" },
+    { qty: 8, item: "egg", plural: "eggs" },
+    { qty: 2, unit: "cup", item: "milk" },
+    { qty: 1.5, unit: "cup", item: "shredded cheddar cheese", note: "divided" },
+    { qty: 0.5, unit: "tsp", item: "dry mustard", note: "optional" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+    { qty: 2, unit: "tbsp", item: "chopped green onion or parsley", note: "optional, for serving" },
+  ],
+  steps: [
+    "Heat the oven to 350°F (175°C) if you are baking now. Grease a 9-by-13-inch baking dish and spread the bread cubes in it.",
+    "Cook the sausage in a skillet over medium heat, breaking it up, until it is browned and no longer pink, about 8 minutes. Drain off extra fat. Scatter the sausage over the bread and sprinkle on 1 cup of the cheese.",
+    "Whisk the eggs, milk, dry mustard, salt, and pepper. Pour the mixture evenly over the bread and sausage, and press the bread down gently so it soaks up the custard. Sprinkle the remaining cheese on top.",
+    "Bake, uncovered, for 40 to 45 minutes, until the center is set and the top is golden. If you refrigerated the casserole overnight, add 10 to 15 minutes to the bake.",
+    "Let it sit for 10 minutes. Sprinkle with green onion or parsley if you have it, then slice and serve.",
+  ],
+  substitutions: [
+    "Breakfast sausage: use diced ham, leftover turkey, cooked bacon, or skip the meat and add sautéed vegetables.",
+    "Cubed bread: use leftover dinner rolls or a bag of plain croutons. Stale bread holds up better than very fresh bread.",
+    "Cheddar: use Swiss, Monterey Jack, or a mix.",
+    "Milk: use half-and-half for a richer custard, or unsweetened plant milk.",
+    "Dry mustard: use 1/2 teaspoon Dijon mustard whisked into the eggs, or skip it.",
+  ],
+  tips: [
+    "To make it ahead, assemble the casserole, cover, and refrigerate overnight. Set it out while the oven heats, then bake.",
+    "If the top is brown before the center is set, tent it with foil for the last few minutes.",
+  ],
+  pantryStaples: ["bread", "eggs", "breakfast sausage", "cheddar"],
+  related: ["freezer-breakfast-burritos", "sausage-cheese-balls", "baked-oatmeal"],
+};
