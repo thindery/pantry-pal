@@ -1,7 +1,7 @@
 """PP-235: what goes in the weekly recipe email. Pure data and selection, no database, no network.
 
 Recipes come from the public library (``frontend/content/recipes``). ``tests/test_weekly_recipes.py`` checks
-that every catalog row matches the recipe file (slug, title, prep + cook time) and has an email JPG, so the
+that each catalog row matches its recipe file (slug, title, prep + cook time) and has an email JPG, so the
 two cannot drift apart. Tips are plain cooking and kitchen habits. They make no health claims and quote no
 statistics; the one food-safety line repeats the guidance already printed on the recipe pages.
 """

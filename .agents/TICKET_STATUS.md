@@ -144,6 +144,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 |--------|-------|--------|------|
 | PP-238 | Holiday recipe collection and first holiday batch (/recipes/holiday/) | ✅ Live (build `f73f60a`, [#166](https://github.com/thindery/pantry-pal/pull/166)) | Growth / recipes |
 | PP-239 | Public recipe library expansion (~60 more recipes, images with each batch) | ✅ Live (build `336b82a`, [#171](https://github.com/thindery/pantry-pal/pull/171); also #167–#170) | Growth / recipes |
+| PP-240 | Backend test failed on main after PP-239: weekly newsletter catalog must be a subset of the 96-recipe library, not equal (test-only) | ✅ Done Nov 27 (test-only, no deploy) | Tests |
 | PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | ✅ Done (live 4:11 PM CT, `1fab3f1`, [#120](https://github.com/thindery/pantry-pal/pull/120)) | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
 | PP-183 | AI recipe builder (Pro): recipes from my pantry, adjust, save, add missing; metered weekly tokens, fail closed | ✅ Live 4:34 PM CT, `c5cbe9a` ([#122](https://github.com/thindery/pantry-pal/pull/122)); on for Pro, caps 40k/user, 200k global per week | Pro AI |
@@ -559,6 +560,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-235 | Weekly recipe newsletter: 3 rotating recipes + 1 tip, Wed 9 AM CT draft + [TEST] copy to Tylor, admin Approve & send, `EMAIL_WEEKLY_AUTO_SEND` (off), per-issue stats | P2 | ✅ Live Nov 26, ~7:25 PM CT, build `95ce29d`, [#159](https://github.com/thindery/pantry-pal/pull/159). Cron installed; 2026-W48 draft + [TEST] copy to Tylor only. Nothing sent to the list until approved |
 | PP-236 | Admin dashboard 401: admin client sent no bearer token (relied on middleware injection); now uses `getBearerToken` + 401 retry. Regular users unaffected | P0 | ✅ Live Nov 26, build `8962809` ([#161](https://github.com/thindery/pantry-pal/pull/161)) |
 | PP-237 | /admin crashed once the API returned data: dashboard payload did not match UI types (no `alerts`, cents, etc.); added normalizer + test on live payload shapes | P0 | ✅ Live Nov 26, build `30cac52` ([#163](https://github.com/thindery/pantry-pal/pull/163)) |
+| PP-240 | Weekly catalog test: subset of the recipe library instead of exact match (main was failing pre-commit after PP-239); newsletter pool unchanged at 24 | P2 | ✅ Done Nov 27 (test-only, no deploy; live build stays `336b82a`) |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 
