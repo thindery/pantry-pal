@@ -164,3 +164,5 @@ Marked **classic** or **trending/seasonal**. Evidence for the trending/seasonal 
 - **Newsletter:** there is no existing public email-capture endpoint or in-repo Resend audience/segment wired for a recipe newsletter (Resend is used for transactional mail and the low-stock digest). No "Get new recipes by email" form was added, because it could not actually capture emails. No new email infrastructure was built, and no mail was sent.
 
 - **Batch 2 illustrations** shipped with PP-193 as `frontend/public/recipes/<slug>.webp`. Placeholders are gone; Recipe JSON-LD now includes `image`.
+
+Standing rule (Tylor, after PP-238): every public recipe ships with its real WebP illustration at `frontend/public/recipes/<slug>.webp` (same pipeline as batches 1 and 2). Recipe JSON-LD includes the absolute `image` URL only when that file is present. **No placeholders may go live.** Add the image before or with the recipe's deploy.

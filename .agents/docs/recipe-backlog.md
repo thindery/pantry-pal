@@ -1,6 +1,8 @@
 # Public recipe backlog (PP-184)
 
-A planning list of about 100 public recipe topics for the Pantry Hub library. **It is not a set of published recipes.** Batch 1 is live but unlisted (noindex, waiting on Tylor's OK). Later batches are topic candidates only: write them in our own words, with realistic times, no invented ratings, reviews, testimonials or nutrition, no affiliate links, and keep them unlisted until Tylor says go.
+Standing rule (Tylor): every public recipe ships with its real WebP illustration (`frontend/public/recipes/<slug>.webp`, same pipeline as batches 1 and 2: real-world food-photography look, about 1152×864, under ~150KB). Recipe JSON-LD includes the absolute `image` URL only when that file is present. **No placeholders may go live.** Add the image before or with the recipe's deploy, never in a follow-up after the page is already public.
+
+A planning list of about 100 public recipe topics for the Pantry Hub library. **It is not a set of published recipes.** The public library is live and indexable. Later batches are topic candidates only: write them in our own words, with realistic times, no invented ratings, reviews, testimonials or nutrition, and no affiliate links. Ship each batch with its WebP illustrations so no placeholders go live.
 
 The SEO & AEO Desk should check keywords and copy before each batch is written. **No search volumes are claimed** here (Search Console still has almost no query data, and we have no Keyword Planner access). Keyword angles are planning hints from the desk's PP-184 input, Google autocomplete, and published Google Trends roundups, not traffic estimates.
 
@@ -128,3 +130,16 @@ See also [.agents/tickets/PP-184-public-recipe-library-seo.md](../tickets/PP-184
 - Classic: 89
 - Trending/seasonal: 19
 - By meal: breakfast 15, lunch 14, dinner 70, snack 9
+
+| holiday-2 | `brown-sugar-glazed-ham` | Brown Sugar Glazed Ham | brown sugar glazed ham | dinner | trending/seasonal |
+| holiday-2 | `herb-roasted-pork-loin` | Herb Roasted Pork Loin | herb roasted pork loin | dinner | trending/seasonal |
+| holiday-2 | `rosemary-roast-chicken` | Rosemary Roast Chicken | rosemary roast chicken | dinner | trending/seasonal |
+| holiday-2 | `gingerbread-cookies` | Gingerbread Cookies | gingerbread cookies | snack | trending/seasonal |
+| holiday-2 | `pecan-pie` | Pecan Pie | pecan pie | snack | classic |
+| holiday-2 | `apple-pie` | Apple Pie | homemade apple pie | snack | classic |
+| holiday-2 | `chocolate-crinkle-cookies` | Chocolate Crinkle Cookies | chocolate crinkle cookies | snack | trending/seasonal |
+| holiday-2 | `thumbprint-cookies` | Thumbprint Cookies | thumbprint cookies | snack | trending/seasonal |
+| holiday-2 | `spinach-artichoke-dip` | Spinach Artichoke Dip | spinach artichoke dip | snack | trending/seasonal |
+| holiday-2 | `stuffed-mushrooms` | Stuffed Mushrooms | stuffed mushrooms | snack | trending/seasonal |
+| holiday-2 | `cranberry-cocktail-meatballs` | Cranberry Cocktail Meatballs | cranberry cocktail meatballs | snack | trending/seasonal |
+| holiday-2 | `pigs-in-a-blanket` | Pigs in a Blanket | pigs in a blanket | snack | trending/seasonal |

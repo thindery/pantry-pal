@@ -14,7 +14,7 @@ export const HOLIDAY_COLLECTION = {
   metaDescription:
     "Thanksgiving leftovers, Christmas baking, holiday sides, and New Year's dishes. Times and substitutions included. Track the ingredients in Pantry Hub, free.",
   intro:
-    "These are recipes for the stretch from Thanksgiving through New Year's: leftover turkey, holiday sides, Christmas baking, a party appetizer, a breakfast casserole, and a New Year's pot of Hoppin' John. Times and substitutions are listed on every page, and you can scale the yield to the number of people at the table.",
+    "These are recipes for the stretch from Thanksgiving through New Year's: leftover turkey, Christmas dinner mains, holiday sides, Christmas cookies and pies, party appetizers, a breakfast casserole, and a New Year's pot of Hoppin' John. Times and substitutions are listed on every page, and you can scale the yield to the number of people at the table.",
   updated: "2026-11-26",
 };
 

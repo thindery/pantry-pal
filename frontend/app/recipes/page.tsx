@@ -39,7 +39,7 @@ export default function RecipesPage() {
           >
             <span className="font-serif-heading text-lg font-bold text-slate-900">Holiday recipes</span>
             <span className="mt-0.5 text-sm text-slate-700">
-              Thanksgiving leftovers, Christmas baking, holiday sides, and New Year&apos;s dishes.
+              Thanksgiving leftovers, Christmas dinner, holiday baking, party appetizers, and New Year&apos;s dishes.
             </span>
           </Link>
         </div>
