@@ -91,6 +91,7 @@ Terraform (`deploy/terraform/main.tf`) now matches live Cloudflare DNS. **Do not
 - `TXT resend._domainkey` — Resend DKIM
 - `CNAME send` → `send.forge.rmta.net` (DNS only, not proxied)
 - `CNAME rsend` → `rsend.forge.rmta.net` (DNS only, not proxied)
+- `CNAME links` → `links2.resend-dns.com` (DNS only, not proxied; TTL auto). Resend open+click tracking subdomain added 2026-11-26, 6:14 PM CT. When open/click tracking is on, Resend rewrites those links through `links.mypantryhub.com`.
 
 A 2026-11-22 test of `send_payment_confirmation` to Tylor landed in Gmail Inbox with `spf=pass`, `dkim=pass` (`@mypantryhub.com` / `s=resend`), and `dmarc=pass`.
 
