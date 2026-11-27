@@ -1,0 +1,51 @@
+import type { Recipe } from "./types";
+
+export const minestroneSoup: Recipe = {
+  slug: "minestrone-soup",
+  title: "Minestrone Soup",
+  seoTitle: "Easy Minestrone Soup with Beans and Pasta",
+  metaSummary: "Minestrone soup, about 40 minutes",
+  intro:
+    "This is a pot of minestrone that takes about 40 minutes. A tomato broth simmers with beans, pasta, carrots, and zucchini, then you finish it with a little Parmesan. It is a vegetarian dinner that also works well for lunch.",
+  meal: "dinner",
+  tags: ["vegetarian", "one-pot"],
+  servings: 6,
+  prepMin: 15,
+  cookMin: 25,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/minestrone-soup.webp",
+  imageAlt: "AI-generated illustration of a bowl of minestrone soup with beans, pasta, and vegetables, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "can", size: "28 oz", item: "crushed tomatoes" },
+    { qty: 1, unit: "can", size: "15 oz", item: "white beans", note: "drained and rinsed" },
+    { qty: 4, unit: "cup", item: "vegetable broth" },
+    { qty: 0.75, unit: "cup", item: "small pasta", note: "ditalini or elbow" },
+    { qty: 2, item: "carrot", plural: "carrots", note: "sliced" },
+    { qty: 2, unit: "stalk", item: "celery", note: "sliced" },
+    { qty: 1, item: "zucchini", plural: "zucchinis", note: "diced" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "chopped" },
+    { qty: 2, unit: "tbsp", item: "olive oil" },
+    { qty: 1, unit: "tsp", item: "Italian seasoning" },
+    { qty: 0.75, unit: "tsp", item: "salt" },
+    { qty: 0.25, unit: "cup", item: "grated Parmesan", note: "for serving" },
+  ],
+  steps: [
+    "Heat the olive oil in a pot over medium heat. Cook the onion, carrot, and celery until they soften, about 6 minutes. Stir in the Italian seasoning and salt.",
+    "Add the crushed tomatoes, broth, and beans. Bring to a boil, then reduce to a simmer for 10 minutes.",
+    "Stir in the pasta and zucchini. Simmer until the pasta is tender, 8 to 10 minutes, adding a splash of water if the soup gets too thick.",
+    "Taste for salt and serve with Parmesan.",
+  ],
+  substitutions: [
+    "Vegetable broth: use chicken broth if you do not need the soup to stay vegetarian.",
+    "White beans: use a can of kidney beans or chickpeas, drained and rinsed.",
+    "Zucchini: use chopped green beans or a handful of spinach stirred in at the end.",
+    "Parmesan: skip it, or use a vegan hard cheese, to keep the soup vegan.",
+  ],
+  tips: [
+    "The pasta keeps soaking up broth as the soup sits; loosen leftovers with a little water when you reheat them until steaming hot.",
+    "A rind of Parmesan simmered with the soup, then removed, adds extra flavor if you have one.",
+  ],
+  pantryStaples: ["canned tomatoes", "white beans", "pasta"],
+  related: ["pasta-e-fagioli", "easy-vegetable-soup", "easy-red-lentil-soup"],
+};
