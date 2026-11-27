@@ -89,6 +89,19 @@ import { skilletCornbread } from "./skillet-cornbread";
 import { slowCookerPulledPork } from "./slow-cooker-pulled-pork";
 import { vegetableStirFry } from "./vegetable-stir-fry";
 
+import { airFryerRoastedPotatoes } from "./air-fryer-roasted-potatoes";
+import { beefAndBroccoli } from "./beef-and-broccoli";
+import { classicHummus } from "./classic-hummus";
+import { frenchToastCasserole } from "./french-toast-casserole";
+import { greekLemonChicken } from "./greek-lemon-chicken";
+import { honeyGarlicShrimp } from "./honey-garlic-shrimp";
+import { minestroneSoup } from "./minestrone-soup";
+import { noBakeEnergyBites } from "./no-bake-energy-bites";
+import { roastedBroccoli } from "./roasted-broccoli";
+import { slowCookerChickenTacos } from "./slow-cooker-chicken-tacos";
+import { stuffedBellPeppers } from "./stuffed-bell-peppers";
+import { tunaMelts } from "./tuna-melts";
+
 
 
 
@@ -181,6 +194,18 @@ export const RECIPES: readonly Recipe[] = [
   skilletCornbread,
   vegetableStirFry,
   sheetPanLemonSalmon,
+  slowCookerChickenTacos,
+  airFryerRoastedPotatoes,
+  classicHummus,
+  frenchToastCasserole,
+  stuffedBellPeppers,
+  minestroneSoup,
+  greekLemonChicken,
+  honeyGarlicShrimp,
+  noBakeEnergyBites,
+  roastedBroccoli,
+  beefAndBroccoli,
+  tunaMelts,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {
