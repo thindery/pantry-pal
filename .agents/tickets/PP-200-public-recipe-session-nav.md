@@ -1,6 +1,6 @@
 # PP-200: Session-aware public recipe chrome (logged-in header + one-app feel)
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done (live 2026-11-26 in c05f2c9, PR #146; closed 2026-11-27 by the fix-and-test run)
 **Priority:** P1
 **Phase:** Public recipes / logged-in UX
 **Created:** 2026-11-26, 1:10 PM America/Chicago

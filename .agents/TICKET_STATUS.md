@@ -16,7 +16,7 @@ Last updated: 2026-11-26, 7:25 PM CT (PP-235 weekly recipe newsletter live at `9
 | | Count |
 |--|-------|
 | Done | 139 (previous 110 plus 29 shipped overnight 2026-11-25: PP-067, 072, 123–128, 135, 144–147, 149–151, 154, 155, 168–177; PP-148, 152, 153 partly) |
-| In progress | 1 (PP-200) |
+| In progress | 0 |
 | Ready | 25 (PP-119 Bing and PP-121 API keys still open; PP-144–PP-146 design leftovers) |
 | Backlog | 12 (PP-114, PP-115, PP-129, plus PP-147–PP-155 e2e regression suite) |
 | Security open | 0 (PP-067, PP-072 and new PP-172 shipped overnight) |
@@ -158,7 +158,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-232 | Replace python-jose with PyJWT (pip-audit now clean) | P2 | ✅ Live Nov 26, build `2946760` ([#153](https://github.com/thindery/pantry-pal/pull/153)) |
 | PP-233 | Nightly database backup (cron 2:30 AM CT, 14 days, restore tested). Off-server copy is Tylor's call | P0 | ✅ Live Nov 26 |
 | PP-189 | Robust recipe-to-pantry ingredient matching (butter / heavy cream false Missing badges) | ✅ Done (live 11:21 AM CT, `bd8cf4f`, [#131](https://github.com/thindery/pantry-pal/pull/131)) | User-reported |
-| PP-200 | Session-aware public recipe chrome: logged-in header, app nav, pantry match, save to My recipes | 🟡 In progress | User-reported |
+| PP-200 | Session-aware public recipe chrome: logged-in header, app nav, pantry match, save to My recipes | ✅ Live (c05f2c9, #146) | User-reported |
 
 ### P2 — soon (12)
 
@@ -564,4 +564,4 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-200 | Public recipe pages show Sign in when he is logged in; signed-in chrome should match the app (dashboard nav, Back to my recipes, pantry match, Save to my recipes) | P1 | 🟡 In progress |
+| PP-200 | Public recipe pages show Sign in when he is logged in; signed-in chrome should match the app (dashboard nav, Back to my recipes, pantry match, Save to my recipes) | P1 | ✅ Done (live Nov 26, c05f2c9, [#146](https://github.com/thindery/pantry-pal/pull/146)) |
