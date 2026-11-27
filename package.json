@@ -18,7 +18,7 @@
     "test": "npm run test:run -w @pantry-pal/frontend",
     "test:run": "npm run test:run -w @pantry-pal/frontend",
     "test:backend": "ALLOW_TEST_AUTH=1 .venv/bin/python -m pytest tests/ -v --ignore=tests/test_postgres_integration.py",
-    "test:postgres": "RUN_POSTGRES_TESTS=1 .venv/bin/python -m pytest tests/test_postgres_integration.py tests/test_email_triggers_postgres.py tests/test_billing_checkout_postgres.py tests/test_billing_cancel_postgres.py tests/test_item_remove_postgres.py tests/test_refund_postgres.py tests/test_app_settings_postgres.py tests/test_ai_guard_postgres.py -v",
+    "test:postgres": "RUN_POSTGRES_TESTS=1 .venv/bin/python -m pytest tests/test_postgres_integration.py tests/test_email_triggers_postgres.py tests/test_billing_checkout_postgres.py tests/test_billing_cancel_postgres.py tests/test_item_remove_postgres.py tests/test_refund_postgres.py tests/test_app_settings_postgres.py tests/test_ai_guard_postgres.py tests/test_email_journeys_postgres.py tests/test_weekly_recipes_postgres.py -v",
     "test:sql-safety": ".venv/bin/python -m pytest tests/test_sql_upsert_safety.py -v",
     "migrate": ".venv/bin/python database/migrate.py migrate",
     "migrate:status": ".venv/bin/python database/migrate.py status",

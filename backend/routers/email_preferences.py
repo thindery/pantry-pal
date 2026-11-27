@@ -10,20 +10,29 @@ from pydantic import BaseModel
 
 from backend.auth_session import require_authenticated_user_id
 from backend.models.responses import error_response, success_response
-from backend.services import email_journeys, low_stock_digest
+from backend.services import email_gate, email_journeys, low_stock_digest, weekly_recipes
 
 router = APIRouter(tags=["Email preferences"])
 
 
 class EmailPreferencesUpdate(BaseModel):
     lowStockDigest: Optional[bool] = None
+    weeklyRecipes: Optional[bool] = None
     thresholdConfig: Optional[dict[str, Any]] = None
     itemThresholdOverrides: Optional[dict[str, Any]] = None
 
 
+def _preferences(user_id: str) -> dict[str, Any]:
+    prefs = low_stock_digest.get_preferences(user_id)
+    # PP-235: the weekly recipe email is offered only once marketing mail is switched on for everyone.
+    prefs["weeklyRecipesAvailable"] = email_gate.mode() == "on"
+    prefs["weeklyRecipes"] = weekly_recipes.get_user_opt_in(user_id)
+    return prefs
+
+
 @router.get("/api/email-preferences")
 async def get_email_preferences(user_id: str = Depends(require_authenticated_user_id)):
-    return success_response(low_stock_digest.get_preferences(user_id))
+    return success_response(_preferences(user_id))
 
 
 @router.put("/api/email-preferences")
@@ -35,13 +44,20 @@ async def update_email_preferences(
             status_code=409,
             detail=error_response("NOT_AVAILABLE", "The low-stock email is not available yet."),
         )
-    prefs = low_stock_digest.set_preferences(
+    if body.weeklyRecipes is True and email_gate.mode() != "on":
+        raise HTTPException(
+            status_code=409,
+            detail=error_response("NOT_AVAILABLE", "The weekly recipe email is not available yet."),
+        )
+    low_stock_digest.set_preferences(
         user_id,
         low_stock_digest=body.lowStockDigest,
         threshold_config=body.thresholdConfig,
         item_threshold_overrides=body.itemThresholdOverrides,
     )
-    return success_response(prefs)
+    if body.weeklyRecipes is not None:
+        weekly_recipes.set_user_opt_in(user_id, body.weeklyRecipes)
+    return success_response(_preferences(user_id))
 
 
 _PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
@@ -64,6 +80,12 @@ _LISTS = {
         "off": email_journeys.unsubscribe_onboarding,
         "on": email_journeys.resubscribe_onboarding,
     },
+    "weekly": {
+        "label": "the weekly recipe email",
+        "done": "You won't get the weekly recipe email anymore. Account and billing emails are not affected.",
+        "off": weekly_recipes.unsubscribe_weekly,
+        "on": weekly_recipes.resubscribe_weekly,
+    },
 }
 
 
@@ -82,7 +104,7 @@ def _confirm_form(token: str, list_name: str, label: str) -> str:
 async def unsubscribe(request: Request, token: str = "", list: str = "", action: str = ""):
     """Unsubscribe by token.
 
-    ``list=recipes|onboarding`` (PP-195/196): GET shows a one-button page and POST (the page button, or a
+    ``list=recipes|onboarding|weekly`` (PP-195/196): GET shows a one-button page and POST (the page button, or a
     mail client's RFC 8058 one-click) does it, so link scanners that prefetch GETs cannot unsubscribe anyone.
     No ``list`` is the original low-stock digest link (PP-137): GET unsubscribes at once.
     """

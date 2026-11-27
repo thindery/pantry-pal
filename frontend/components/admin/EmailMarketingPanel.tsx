@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, Loader2, Mail, MousePointerClick, UserMinus, Users } from 'lucide-react';
 import type { Period } from '../../types/admin';
 import { getEmailMarketing, type EmailMarketing } from '../../services/adminService';
+import { WeeklyRecipesSection } from './WeeklyRecipesSection';
 
 const MODE_LABEL: Record<EmailMarketing['config']['journeys_mode'], { text: string; cls: string }> = {
   off: { text: 'Journeys OFF: nothing is being sent', cls: 'bg-slate-100 text-slate-700 border-slate-200' },
@@ -163,6 +164,15 @@ export const EmailMarketingPanel: React.FC<{ period: Period }> = ({ period }) =>
           <p className="mt-1 text-xs text-slate-500 flex items-center gap-1"><UserMinus className="w-3.5 h-3.5" /> {j.unsubscribed_in_period} unsubscribed in {period}</p>
         </div>
       ))}
+
+      {data.weekly && (
+        <WeeklyRecipesSection
+          weekly={data.weekly}
+          mode={data.config.journeys_mode}
+          openTrackingSeen={data.tracking.open_tracking_seen}
+          onChanged={() => void load()}
+        />
+      )}
 
       {lifecycle.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4" data-testid="email-templates-table">
