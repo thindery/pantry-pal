@@ -51,7 +51,7 @@ export interface Recipe {
   /** Real dates (YYYY-MM-DD) for JSON-LD datePublished and the sitemap lastModified. Never `new Date()`. */
   datePublished: string;
   updated: string;
-  /** Static image path under /public. Real image lands later; a placeholder renders until then. */
+  /** Static image path under /public. A committed WebP is required before a recipe goes live; the placeholder must not ship. */
   image: string;
   /** Alt text. Must say the image is an AI illustration. */
   imageAlt: string;

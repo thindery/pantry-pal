@@ -37,6 +37,20 @@ import { pumpkinPie } from "./pumpkin-pie";
 import { sausageCheeseBalls } from "./sausage-cheese-balls";
 import { sweetPotatoCasserole } from "./sweet-potato-casserole";
 
+import { applePie } from "./apple-pie";
+import { brownSugarGlazedHam } from "./brown-sugar-glazed-ham";
+import { chocolateCrinkleCookies } from "./chocolate-crinkle-cookies";
+import { cranberryCocktailMeatballs } from "./cranberry-cocktail-meatballs";
+import { gingerbreadCookies } from "./gingerbread-cookies";
+import { herbRoastedPorkLoin } from "./herb-roasted-pork-loin";
+import { pecanPie } from "./pecan-pie";
+import { pigsInABlanket } from "./pigs-in-a-blanket";
+import { rosemaryRoastChicken } from "./rosemary-roast-chicken";
+import { spinachArtichokeDip } from "./spinach-artichoke-dip";
+import { stuffedMushrooms } from "./stuffed-mushrooms";
+import { thumbprintCookies } from "./thumbprint-cookies";
+
+
 
 export type { DietTag, MealType, Recipe, RecipeFaq, RecipeIngredient } from "./types";
 
@@ -78,6 +92,18 @@ export const RECIPES: readonly Recipe[] = [
   sausageCheeseBalls,
   breakfastCasserole,
   hoppinJohn,
+  brownSugarGlazedHam,
+  herbRoastedPorkLoin,
+  rosemaryRoastChicken,
+  gingerbreadCookies,
+  pecanPie,
+  applePie,
+  chocolateCrinkleCookies,
+  thumbprintCookies,
+  spinachArtichokeDip,
+  stuffedMushrooms,
+  cranberryCocktailMeatballs,
+  pigsInABlanket,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {

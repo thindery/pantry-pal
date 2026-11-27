@@ -8,10 +8,10 @@ export type RecipeWithImage = Recipe & {
 };
 
 /**
- * PP-184: images are added later by Pantry Hub Lead as optimized static files.
- * This checks for the file at build time (server pages only) so a recipe
- * switches from the neutral placeholder to its image just by committing the
- * file, with no code change. Never import this from a client component.
+ * PP-184: optimized WebP files at frontend/public/recipes/<slug>.webp.
+ * This checks for the file at build time (server pages only). Standing rule:
+ * every recipe ships with its image; no placeholders may go live.
+ * Never import this from a client component.
  */
 export function recipeHasImage(recipe: Pick<Recipe, "image">): boolean {
   const file = path.join(process.cwd(), "public", recipe.image.replace(/^\//, ""));

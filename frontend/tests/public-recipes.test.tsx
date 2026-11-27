@@ -66,9 +66,9 @@ const EXPECTED_SLUGS = [
 ];
 
 describe("recipe content (PP-184)", () => {
-  it("ships 36 recipes with unique slugs and realistic times", () => {
-    expect(RECIPES).toHaveLength(36);
-    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(36);
+  it("ships 48 recipes with unique slugs and realistic times", () => {
+    expect(RECIPES).toHaveLength(48);
+    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(48);
     for (const r of RECIPES) {
       expect(r.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(r.servings).toBeGreaterThanOrEqual(2);
@@ -84,7 +84,7 @@ describe("recipe content (PP-184)", () => {
     }
   });
 
-  it("keeps the first 24 slugs in order, then the holiday batch", () => {
+  it("keeps the first 24 slugs in order, then the holiday batches", () => {
     expect(RECIPES.map((r) => r.slug).slice(0, 24)).toEqual(EXPECTED_SLUGS);
     expect(RECIPES.map((r) => r.slug).slice(24)).toEqual([
       "leftover-turkey-pot-pie",
@@ -99,6 +99,18 @@ describe("recipe content (PP-184)", () => {
       "sausage-cheese-balls",
       "breakfast-casserole",
       "hoppin-john",
+      "brown-sugar-glazed-ham",
+      "herb-roasted-pork-loin",
+      "rosemary-roast-chicken",
+      "gingerbread-cookies",
+      "pecan-pie",
+      "apple-pie",
+      "chocolate-crinkle-cookies",
+      "thumbprint-cookies",
+      "spinach-artichoke-dip",
+      "stuffed-mushrooms",
+      "cranberry-cocktail-meatballs",
+      "pigs-in-a-blanket",
     ]);
   });
 
@@ -177,7 +189,7 @@ describe("recipe content (PP-184)", () => {
 
 describe("filters (PP-184)", () => {
   it("filters by meal, diet, time, and text", () => {
-    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(36);
+    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(48);
     expect(filterRecipes(RECIPES, { ...DEFAULT_FILTERS, meal: "lunch" }).map((r) => r.slug)).toEqual([
       "easy-red-lentil-soup",
       "easy-vegetable-soup",
@@ -210,12 +222,13 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     for (const r of RECIPES) {
       const link = screen.getByRole("link", { name: new RegExp(r.title) });
       // next/link drops the trailing slash in jsdom; next.config trailingSlash adds it in the real build
       expect((link.getAttribute("href") ?? "").replace(/\/$/, "")).toBe(`/recipes/${r.slug}`);
     }
-    expect(screen.getByText("36 recipes")).toBeTruthy();
+    expect(screen.getByText("48 recipes")).toBeTruthy();
   });
 
   it("filter buttons and search narrow the grid", () => {
@@ -224,7 +237,7 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByRole("button", { name: "Snack" })).toBeTruthy();
     expect(screen.getByText("4 recipes")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByText("36 recipes")).toBeTruthy();
+    expect(screen.getByText("48 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "tortilla" } });
     expect(screen.getByText("2 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nothingmatches" } });
@@ -234,7 +247,7 @@ describe("browse page (PP-184)", () => {
   it("renders committed WebP illustrations for every recipe, with no placeholders", () => {
     const recipes = allRecipesWithImageState();
     expect(recipes.every((r) => r.hasImage)).toBe(true);
-    expect(recipes).toHaveLength(36);
+    expect(recipes).toHaveLength(48);
     render(RecipesPage());
     expect((screen.getByRole("link", { name: /Holiday recipes/ }).getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/recipes/holiday");
     expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
@@ -492,7 +505,7 @@ describe("launch gate (PP-184)", () => {
   it("sitemap lists /recipes/ and each recipe with real dates, and leaves tags out", () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(MIN_RECIPES_FOR_SITEMAP);
     const recipeEntries = recipeSitemapPages();
-    expect(recipeEntries).toHaveLength(38);
+    expect(recipeEntries).toHaveLength(50);
     expect(recipeEntries[0]).toMatchObject({ path: "/recipes/", priority: 0.8, changeFrequency: "weekly" });
     expect(recipeEntries[1]).toMatchObject({ path: "/recipes/holiday/", priority: 0.75, changeFrequency: "weekly" });
     expect(recipeEntries.some((e) => e.path.includes("/tag/"))).toBe(false);
