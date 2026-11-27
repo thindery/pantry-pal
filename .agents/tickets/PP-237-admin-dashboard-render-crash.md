@@ -1,6 +1,6 @@
 # PP-237: /admin crashes ("This page couldn't load") once the API returns data
 
-**Status:** 🔨 In progress (2026-11-26)
+**Status:** ✅ Live (2026-11-26, PR #163, build `30cac52`)
 **Priority:** P0
 **Phase:** Admin
 **Created:** 2026-11-26
