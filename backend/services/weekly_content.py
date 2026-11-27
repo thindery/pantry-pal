@@ -1,19 +1,29 @@
-"""PP-235: what goes in the weekly recipe email. Pure data and selection, no database, no network.
+"""PP-235 / PP-241: what goes in the weekly recipe email. Pure data and selection, no database, no network.
 
-Recipes come from the public library (``frontend/content/recipes``). ``tests/test_weekly_recipes.py`` checks
-that each catalog row matches its recipe file (slug, title, prep + cook time) and has an email JPG, so the
-two cannot drift apart. Tips are plain cooking and kitchen habits. They make no health claims and quote no
+Recipes are loaded from the public library (``frontend/content/recipes``), so every live public
+recipe is in the pool, including ones added later. ``tests/test_weekly_recipes.py`` checks that
+the catalog matches the recipe files (slug, title, prep + cook time) and that each one has an
+email JPG. Tips are plain cooking and kitchen habits. They make no health claims and quote no
 statistics; the one food-safety line repeats the guidance already printed on the recipe pages.
 """
 
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Optional, Sequence
 
 PICK_COUNT = 3
+ROOT = Path(__file__).resolve().parents[2]
+RECIPES_DIR = ROOT / "frontend" / "content" / "recipes"
+
+# Meteorological seasons in the northern hemisphere, plus a wrapping holiday window
+# (Thanksgiving through New Year's) used to boost recipes tagged "holiday".
+HOLIDAY_START = (11, 8)  # month, day
+HOLIDAY_END = (1, 7)
 
 
 @dataclass(frozen=True)
@@ -26,36 +36,135 @@ class CatalogRecipe:
     time_label: str
     seasons: tuple[str, ...] = ()  # empty = good any time of year
     peak: Optional[tuple[str, str]] = None  # ("MM-DD", "MM-DD") window where it is extra timely
+    tags: tuple[str, ...] = ()
+    image_alt: str = "AI illustration"
 
 
-CATALOG: tuple[CatalogRecipe, ...] = (
-    CatalogRecipe("weeknight-chili", "Weeknight Chili", "A one-pot beef and bean chili that freezes well.", "dinner", 60, "about 1 hour", ("fall", "winter")),
-    CatalogRecipe("black-bean-tacos", "Black Bean Tacos", "Vegetarian tacos from canned black beans, ready in about 15 minutes.", "dinner", 15, "15 minutes"),
-    CatalogRecipe("baked-oatmeal", "Baked Oatmeal with Bananas", "A make-ahead banana baked oatmeal for breakfast.", "breakfast", 50, "50 minutes"),
-    CatalogRecipe("pasta-e-fagioli", "Pasta e Fagioli", "Small pasta, cannellini beans and diced tomatoes in one pot.", "dinner", 50, "50 minutes", ("fall", "winter")),
-    CatalogRecipe("sheet-pan-chicken-and-vegetables", "Sheet Pan Chicken and Vegetables", "Chicken thighs and vegetables roasted on a single pan.", "dinner", 55, "55 minutes"),
-    CatalogRecipe("freezer-breakfast-burritos", "Freezer Breakfast Burritos", "Make a batch, freeze them, and reheat from frozen in about two minutes.", "breakfast", 45, "45 minutes"),
-    CatalogRecipe("leftover-rice-fried-rice", "Fried Rice with Leftover Rice", "Egg fried rice that uses up yesterday's rice.", "dinner", 25, "25 minutes"),
-    CatalogRecipe("canned-tuna-pasta", "Canned Tuna Pasta", "Pasta with canned tuna, diced tomatoes and garlic.", "dinner", 20, "20 minutes"),
-    CatalogRecipe("canned-chickpea-curry", "Canned Chickpea Curry", "A creamy vegan curry from canned chickpeas.", "dinner", 30, "30 minutes"),
-    CatalogRecipe("easy-red-lentil-soup", "Easy Red Lentil Soup", "A vegan lentil soup that needs no soaking.", "lunch", 40, "40 minutes", ("fall", "winter")),
-    CatalogRecipe("rice-and-beans-with-canned-beans", "Rice and Beans with Canned Beans", "One-pot rice and beans from pantry staples.", "dinner", 40, "40 minutes"),
-    CatalogRecipe("leftover-vegetable-frittata", "Leftover Vegetable Frittata", "A skillet frittata for leftover cooked vegetables.", "breakfast", 30, "30 minutes"),
-    CatalogRecipe("leftover-turkey-soup", "Leftover Turkey Soup", "An easy soup for the turkey you didn't finish.", "dinner", 60, "about 1 hour", ("fall", "winter"), ("11-24", "12-08")),
-    CatalogRecipe("white-chicken-chili", "White Chicken Chili", "A mild, creamy chili with canned white beans and green chiles.", "dinner", 45, "45 minutes", ("fall", "winter")),
-    CatalogRecipe("baked-potato-soup", "Baked Potato Soup", "Creamy potato soup made on the stove.", "dinner", 45, "45 minutes", ("fall", "winter")),
-    CatalogRecipe("easy-vegetable-soup", "Easy Vegetable Soup", "A simple vegan vegetable soup that freezes well.", "lunch", 40, "40 minutes", ("fall", "winter", "spring")),
-    CatalogRecipe("lasagna-soup", "Lasagna Soup", "Lasagna flavors in a one-pot soup.", "dinner", 40, "40 minutes", ("fall", "winter")),
-    CatalogRecipe("green-bean-casserole", "Green Bean Casserole", "The classic holiday side dish.", "dinner", 45, "45 minutes", ("fall", "winter"), ("11-08", "11-27")),
-    CatalogRecipe("easy-lasagna", "Easy Lasagna", "Meat and cheese lasagna that makes a pan to freeze.", "dinner", 75, "75 minutes", ("fall", "winter")),
-    CatalogRecipe("sunday-chicken-and-rice", "Sunday Chicken and Rice", "One-pan chicken and rice.", "dinner", 65, "about 1 hour", ("fall", "winter")),
-    CatalogRecipe("sunday-pot-roast", "Sunday Pot Roast", "Beef pot roast with potatoes and carrots, mostly hands-off in the oven.", "dinner", 200, "about 3 hours", ("fall", "winter")),
-    CatalogRecipe("classic-meatloaf", "Classic Meatloaf", "A glazed meatloaf you can make ahead.", "dinner", 75, "75 minutes", ("fall", "winter")),
-    CatalogRecipe("peanut-butter-noodles", "Peanut Butter Noodles", "Noodles in a peanut butter and soy sauce, ready in about 15 minutes.", "dinner", 15, "15 minutes"),
-    CatalogRecipe("chickpea-salad-sandwiches", "Chickpea Salad Sandwiches", "No-cook chickpea salad sandwiches for lunch.", "lunch", 15, "15 minutes", ("spring", "summer")),
-)
+# Hand-written blurbs, time labels, seasons and peak windows for the original 24-recipe
+# newsletter set. Everything else is derived from the recipe file (first-sentence blurb,
+# holiday tag → fall/winter). Titles, meals and times always come from the file.
+_OVERRIDES: dict[str, dict] = {
+    "weeknight-chili": {"blurb": "A one-pot beef and bean chili that freezes well.", "time_label": "about 1 hour", "seasons": ("fall", "winter")},
+    "black-bean-tacos": {"blurb": "Vegetarian tacos from canned black beans, ready in about 15 minutes.", "time_label": "15 minutes"},
+    "baked-oatmeal": {"blurb": "A make-ahead banana baked oatmeal for breakfast.", "time_label": "50 minutes"},
+    "pasta-e-fagioli": {"blurb": "Small pasta, cannellini beans and diced tomatoes in one pot.", "time_label": "50 minutes", "seasons": ("fall", "winter")},
+    "sheet-pan-chicken-and-vegetables": {"blurb": "Chicken thighs and vegetables roasted on a single pan.", "time_label": "55 minutes"},
+    "freezer-breakfast-burritos": {"blurb": "Make a batch, freeze them, and reheat from frozen in about two minutes.", "time_label": "45 minutes"},
+    "leftover-rice-fried-rice": {"blurb": "Egg fried rice that uses up yesterday's rice.", "time_label": "25 minutes"},
+    "canned-tuna-pasta": {"blurb": "Pasta with canned tuna, diced tomatoes and garlic.", "time_label": "20 minutes"},
+    "canned-chickpea-curry": {"blurb": "A creamy vegan curry from canned chickpeas.", "time_label": "30 minutes"},
+    "easy-red-lentil-soup": {"blurb": "A vegan lentil soup that needs no soaking.", "time_label": "40 minutes", "seasons": ("fall", "winter")},
+    "rice-and-beans-with-canned-beans": {"blurb": "One-pot rice and beans from pantry staples.", "time_label": "40 minutes"},
+    "leftover-vegetable-frittata": {"blurb": "A skillet frittata for leftover cooked vegetables.", "time_label": "30 minutes"},
+    "leftover-turkey-soup": {"blurb": "An easy soup for the turkey you didn't finish.", "time_label": "about 1 hour", "seasons": ("fall", "winter"), "peak": ("11-24", "12-08")},
+    "white-chicken-chili": {"blurb": "A mild, creamy chili with canned white beans and green chiles.", "time_label": "45 minutes", "seasons": ("fall", "winter")},
+    "baked-potato-soup": {"blurb": "Creamy potato soup made on the stove.", "time_label": "45 minutes", "seasons": ("fall", "winter")},
+    "easy-vegetable-soup": {"blurb": "A simple vegan vegetable soup that freezes well.", "time_label": "40 minutes", "seasons": ("fall", "winter", "spring")},
+    "lasagna-soup": {"blurb": "Lasagna flavors in a one-pot soup.", "time_label": "40 minutes", "seasons": ("fall", "winter")},
+    "green-bean-casserole": {"blurb": "The classic holiday side dish.", "time_label": "45 minutes", "seasons": ("fall", "winter"), "peak": ("11-08", "11-27")},
+    "easy-lasagna": {"blurb": "Meat and cheese lasagna that makes a pan to freeze.", "time_label": "75 minutes", "seasons": ("fall", "winter")},
+    "sunday-chicken-and-rice": {"blurb": "One-pan chicken and rice.", "time_label": "about 1 hour", "seasons": ("fall", "winter")},
+    "sunday-pot-roast": {"blurb": "Beef pot roast with potatoes and carrots, mostly hands-off in the oven.", "time_label": "about 3 hours", "seasons": ("fall", "winter")},
+    "classic-meatloaf": {"blurb": "A glazed meatloaf you can make ahead.", "time_label": "75 minutes", "seasons": ("fall", "winter")},
+    "peanut-butter-noodles": {"blurb": "Noodles in a peanut butter and soy sauce, ready in about 15 minutes.", "time_label": "15 minutes"},
+    "chickpea-salad-sandwiches": {"blurb": "No-cook chickpea salad sandwiches for lunch.", "time_label": "15 minutes", "seasons": ("spring", "summer")},
+}
+
+_BLURB_LIMIT = 110
+
+
+def _unquote(raw: str) -> str:
+    return raw.replace(r"\"", '"').replace(r"\'", "'").replace(r"\n", "\n")
+
+
+def _field_str(src: str, name: str) -> str:
+    m = re.search(rf'{name}:\s*"((?:\\.|[^"\\])*)"', src)
+    if not m:
+        raise ValueError(f"recipe file is missing {name}")
+    return _unquote(m.group(1))
+
+
+def _field_int(src: str, name: str) -> int:
+    m = re.search(rf"{name}:\s*(\d+)", src)
+    if not m:
+        raise ValueError(f"recipe file is missing {name}")
+    return int(m.group(1))
+
+
+def _field_tags(src: str) -> tuple[str, ...]:
+    m = re.search(r"tags:\s*\[([^\]]*)\]", src, re.S)
+    if not m:
+        return ()
+    return tuple(re.findall(r'"([^"]+)"', m.group(1)))
+
+
+def _blurb_from_intro(intro: str, limit: int = _BLURB_LIMIT) -> str:
+    text = " ".join(intro.split())
+    m = re.match(r"(.+?\.)(\s|$)", text)
+    sent = m.group(1) if m else text
+    if len(sent) <= limit:
+        return sent if sent.endswith(".") else f"{sent}."
+    cut = sent[: limit - 1]
+    if " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(".,;: ") + "."
+
+
+def _time_label(minutes: int) -> str:
+    """A short label that stays within 25 minutes of the real prep+cook time."""
+    if minutes < 60:
+        return f"{minutes} minutes"
+    if minutes <= 70:
+        return "about 1 hour"
+    hours = minutes / 60
+    nearest_half = round(hours * 2) / 2
+    if abs(nearest_half * 60 - minutes) <= 25:
+        if nearest_half == 1:
+            return "about 1 hour"
+        if nearest_half == int(nearest_half):
+            return f"about {int(nearest_half)} hours"
+        return f"about {nearest_half:g} hours"
+    return f"{minutes} minutes"
+
+
+def _parse_recipe(path: Path) -> CatalogRecipe:
+    src = path.read_text()
+    slug = _field_str(src, "slug")
+    if slug != path.stem:
+        raise ValueError(f"{path.name} slug {slug!r} does not match the file name")
+    title = _field_str(src, "title")
+    meal = _field_str(src, "meal")
+    minutes = _field_int(src, "prepMin") + _field_int(src, "cookMin")
+    tags = _field_tags(src)
+    image_alt = _field_str(src, "imageAlt").replace("AI-generated illustration", "AI illustration", 1)
+    override = _OVERRIDES.get(slug, {})
+    seasons = override.get("seasons")
+    if seasons is None:
+        seasons = ("fall", "winter") if "holiday" in tags else ()
+    return CatalogRecipe(
+        slug=slug,
+        title=title,
+        blurb=override.get("blurb") or _blurb_from_intro(_field_str(src, "intro")),
+        meal=meal,
+        minutes=minutes,
+        time_label=override.get("time_label") or _time_label(minutes),
+        seasons=tuple(seasons),
+        peak=override.get("peak"),
+        tags=tags,
+        image_alt=image_alt,
+    )
+
+
+def load_catalog(recipes_dir: Path = RECIPES_DIR) -> tuple[CatalogRecipe, ...]:
+    """Every public recipe file, in slug order. Used at import and by tests."""
+    rows = [_parse_recipe(path) for path in sorted(recipes_dir.glob("*.ts")) if ": Recipe = {" in path.read_text()]
+    if not rows:
+        raise RuntimeError(f"no public recipes found in {recipes_dir}")
+    return tuple(rows)
+
+
+CATALOG: tuple[CatalogRecipe, ...] = load_catalog()
 BY_SLUG = {r.slug: r for r in CATALOG}
-
 
 @dataclass(frozen=True)
 class Tip:
@@ -85,6 +194,7 @@ TIPS: tuple[Tip, ...] = (
 )
 TIPS_BY_ID = {t.id: t for t in TIPS}
 
+
 SEASONS = {12: "winter", 1: "winter", 2: "winter", 3: "spring", 4: "spring", 5: "spring",
            6: "summer", 7: "summer", 8: "summer", 9: "fall", 10: "fall", 11: "fall"}
 
@@ -92,6 +202,12 @@ SEASONS = {12: "winter", 1: "winter", 2: "winter", 3: "spring", 4: "spring", 5: 
 def season_for(day: date) -> str:
     """Meteorological season in the northern hemisphere."""
     return SEASONS[day.month]
+
+
+def in_holiday_season(day: date) -> bool:
+    """Thanksgiving through New Year's (Nov 8 to Jan 7), wrapping the year."""
+    md = (day.month, day.day)
+    return md >= HOLIDAY_START or md <= HOLIDAY_END
 
 
 def issue_key_for(day: date) -> str:
@@ -107,9 +223,17 @@ def _in_window(day: date, window: Optional[tuple[str, str]]) -> bool:
 
 
 def season_score(recipe: CatalogRecipe, day: date) -> int:
-    """2 = in season (or in its timely window), 1 = any time of year, 0 = out of season."""
+    """2 = in season, 1 = any time of year, 0 = out of season.
+
+    A timely peak window adds 2 (for example leftover turkey soup around Thanksgiving).
+    A "holiday" tag adds 1 during the Thanksgiving-through-New-Year window, so holiday
+    dishes rank above other in-season recipes but below a peak-window dish.
+    """
     base = 1 if not recipe.seasons else (2 if season_for(day) in recipe.seasons else 0)
-    return base + (2 if _in_window(day, recipe.peak) else 0)
+    score = base + (2 if _in_window(day, recipe.peak) else 0)
+    if "holiday" in recipe.tags and in_holiday_season(day):
+        score += 1
+    return score
 
 
 def _tiebreak(issue_key: str, slug: str) -> str:
@@ -117,7 +241,7 @@ def _tiebreak(issue_key: str, slug: str) -> str:
 
 
 def cooldown_issues(pool_size: int, count: int = PICK_COUNT) -> int:
-    """How many past issues are kept out of the next pick. With 24 recipes and 3 per week that is 7 weeks."""
+    """How many past issues are kept out of the next pick. With 3 a week this is (pool - 3) // 3."""
     return max(0, (pool_size - count) // count)
 
 

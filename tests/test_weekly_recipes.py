@@ -24,13 +24,12 @@ def _ts(slug: str) -> str:
 
 # ---------------------------------------------------------------- catalog matches the real library
 
-def test_catalog_is_a_subset_of_the_recipe_library():
-    index = (RECIPES_DIR / "index.ts").read_text()
+def test_catalog_covers_exactly_the_recipe_library():
     files = {p.stem for p in RECIPES_DIR.glob("*.ts") if ": Recipe = {" in p.read_text()}
     catalog_slugs = {r.slug for r in wc.CATALOG}
-    assert catalog_slugs and catalog_slugs <= files
-    assert len(catalog_slugs) == len(wc.CATALOG) and len(wc.BY_SLUG) == len(wc.CATALOG)
-    assert index  # the library index exists
+    assert catalog_slugs == files
+    assert len(catalog_slugs) == len(wc.CATALOG) == len(wc.BY_SLUG)
+    assert (RECIPES_DIR / "index.ts").is_file()
 
 
 @pytest.mark.parametrize("recipe", wc.CATALOG, ids=lambda r: r.slug)
@@ -71,9 +70,9 @@ def _simulate(start: date, weeks: int):
 
 
 def test_three_distinct_recipes_and_no_repeat_inside_the_cooldown():
-    issues = _simulate(date(2026, 11, 25), 60)
+    issues = _simulate(date(2026, 11, 25), 80)
     window = wc.cooldown_issues(len(wc.CATALOG))
-    assert window == 7
+    assert window == max(0, (len(wc.CATALOG) - wc.PICK_COUNT) // wc.PICK_COUNT)
     for i, (_, picks) in enumerate(issues):
         assert len(picks) == 3 and len(set(picks)) == 3
         earlier = {s for _, p in issues[max(0, i - window): i] for s in p}
@@ -81,7 +80,10 @@ def test_three_distinct_recipes_and_no_repeat_inside_the_cooldown():
 
 
 def test_every_recipe_gets_its_turn():
-    used = {s for _, picks in _simulate(date(2026, 1, 6), 30) for s in picks}
+    # One full cooldown cycle plus a few extra weeks; seasonal scoring still uses every recipe
+    # once the recent window leaves only the unused ones.
+    weeks = wc.cooldown_issues(len(wc.CATALOG)) + 8
+    used = {s for _, picks in _simulate(date(2026, 1, 6), weeks) for s in picks}
     assert used == set(wc.BY_SLUG)
 
 
@@ -121,6 +123,18 @@ def test_thanksgiving_week_is_timely():
 def test_recipes_used_recently_are_skipped_even_when_timely():
     picks = wc.pick_recipes(date(2026, 11, 26), [["leftover-turkey-soup", "green-bean-casserole", "baked-oatmeal"]])
     assert "leftover-turkey-soup" not in picks and "green-bean-casserole" not in picks
+
+
+def test_holiday_season_prefers_holiday_tagged_recipes():
+    assert wc.in_holiday_season(date(2026, 11, 8)) and wc.in_holiday_season(date(2027, 1, 7))
+    assert not wc.in_holiday_season(date(2026, 11, 7)) and not wc.in_holiday_season(date(2027, 1, 8))
+    # The week after Thanksgiving, with last week's issue already sent: holiday dishes first.
+    recent = [["green-bean-casserole", "leftover-turkey-soup", "easy-vegetable-soup"]]
+    picks = wc.pick_recipes(date(2026, 12, 2), recent)
+    assert all("holiday" in wc.BY_SLUG[s].tags for s in picks)
+    # Mid-summer, a fresh start should not reach for Christmas cookies.
+    summer = wc.pick_recipes(date(2026, 7, 8), [])
+    assert not any("holiday" in wc.BY_SLUG[s].tags for s in summer)
 
 
 def test_issue_key_is_iso_week():
