@@ -5,7 +5,14 @@ import { useSession } from 'next-auth/react';
 import { createCheckoutSession, useSubscription } from '../services/subscription';
 import { BrandMark } from '@/components/BrandMark';
 import { stashCheckoutSessionId, trackEvent } from '@/lib/analytics';
-import { OfferBanner } from '@/components/OfferBanner';
+import { OfferBanner, useFirstMonthOffer } from '@/components/OfferBanner';
+import {
+  formatUsd,
+  maxYearlySavingsPercent,
+  yearlyPerMonthCents,
+  yearlySavingsCents,
+  yearlySavingsPercent,
+} from '@/lib/pricing';
 
 interface PricingPageProps {
   onClose: () => void;
@@ -40,16 +47,14 @@ const TIERS: PricingTier[] = [
     features: [
       'Up to 50 pantry items',
       '5 AI receipt scans/month',
-      'Manual item entry',
-      'Basic categories',
-      'Single device',
-      'Shopping list',
+      'Barcode scanning and manual entry',
+      'Shopping list from what runs low',
+      'Save up to 10 recipes',
+      'Use it on any device you sign in on',
     ],
     disabledFeatures: [
-      'Multi-device sync',
-      'Household sharing',
-      'Advanced analytics',
-      'Priority support',
+      'AI recipe ideas from your pantry',
+      'Unlimited items and receipt scans',
     ],
   },
   {
@@ -60,17 +65,15 @@ const TIERS: PricingTier[] = [
     yearlyPrice: 3999,
     monthlyDisplay: '$4.99',
     yearlyDisplay: '$39.99',
-    savings: 'Save 33%',
+    savings: `Save ${yearlySavingsPercent('pro')}%`,
     cta: 'Upgrade to Pro',
     popular: true,
     features: [
       'Unlimited pantry items',
       'Unlimited AI receipt scans',
-      'Cloud sync across devices',
-      'Advanced analytics',
-      'Push notifications',
-      'CSV export',
-      'Priority support',
+      'AI recipe ideas from what you have',
+      'Unlimited saved recipes',
+      'Everything in Free',
     ],
     disabledFeatures: ['Household sharing'],
   },
@@ -82,7 +85,7 @@ const TIERS: PricingTier[] = [
     yearlyPrice: 5999,
     monthlyDisplay: '$7.99',
     yearlyDisplay: '$59.99',
-    savings: 'Save 37%',
+    savings: `Save ${yearlySavingsPercent('family')}%`,
     cta: 'Upgrade to Family',
     features: [
       'Everything in Pro',
@@ -104,6 +107,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const { status } = useSession();
   const isSignedIn = status === 'authenticated';
   const { tierInfo: _tierInfo, isFree, isPro, isFamily, loading: tierLoading } = useSubscription();
+  const offer = useFirstMonthOffer();
 
   const goToSignIn = (callbackPath: string) => {
     const callback = new URL(callbackPath, window.location.origin).toString();
@@ -126,6 +130,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
       const successUrl = `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${window.location.origin}/checkout/cancel`;
 
+      trackEvent('upgrade_click', { source: 'pricing', tier, interval: billingInterval });
       const checkout = await createCheckoutSession(
         tier,
         billingInterval === 'monthly' ? 'month' : 'year',
@@ -229,7 +234,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
             >
               Yearly
               <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
-                Save up to 37%
+                Save up to {maxYearlySavingsPercent()}%
               </span>
             </button>
           </div>
@@ -285,8 +290,17 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
                   <span className="text-slate-500 text-sm ml-1">/{billingInterval === 'monthly' ? 'mo' : 'yr'}</span>
                 </div>
 
-                {billingInterval === 'yearly' && tier.savings && (
-                  <p className="text-sm text-emerald-600 font-medium">{tier.savings}</p>
+                {billingInterval === 'yearly' && tier.id !== 'free' && (
+                  <p className="text-sm text-emerald-600 font-medium" data-testid={`yearly-savings-${tier.id}`}>
+                    {formatUsd(yearlyPerMonthCents(tier.id))}/mo billed yearly · {tier.savings} ({formatUsd(yearlySavingsCents(tier.id))}/yr)
+                  </p>
+                )}
+                {billingInterval === 'monthly' && tier.id !== 'free' && (
+                  <p className="text-sm text-slate-500" data-testid={`monthly-note-${tier.id}`}>
+                    {tier.id === 'pro' && offer?.enabled && typeof offer.offerPriceCents === 'number'
+                      ? `${formatUsd(offer.offerPriceCents)} your first month for new subscribers`
+                      : `or ${tier.yearlyDisplay}/yr, ${tier.savings.toLowerCase()}`}
+                  </p>
                 )}
               </div>
 
@@ -353,7 +367,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
             <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
-            30-day money-back guarantee • Cancel anytime
+            Cancel anytime from your account • Keep Pro until the end of the period you paid for
           </p>
           <p className="mt-2 text-xs text-slate-400">
             Secure payment processing by Stripe. No credit card required for free plan.

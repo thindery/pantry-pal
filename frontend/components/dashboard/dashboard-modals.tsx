@@ -1,11 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePantry } from "@/contexts/pantry-provider";
 import { EditItemModal } from "@/components/dashboard/edit-item-modal";
 import LinkBarcodeModal from "@/components/LinkBarcodeModal";
 import { ApiError } from "@/services/apiService";
 import { getCategoryThreshold } from "@/lib/threshold-utils";
+import UpgradePrompt from "@/components/UpgradePrompt";
+import { UPGRADE_PROMPT_COPY, type UpgradePromptFeature } from "@/lib/paywall";
+import { trackEvent } from "@/lib/analytics";
+
+/** PP-242: the in-app paywall, shown when a free plan limit is hit. */
+export function PlanLimitPrompt({
+  feature,
+  onClose,
+  onUpgrade,
+}: {
+  feature: UpgradePromptFeature | null;
+  onClose: () => void;
+  onUpgrade: () => void;
+}) {
+  useEffect(() => {
+    if (feature) trackEvent("paywall_view", { feature });
+  }, [feature]);
+  if (!feature) return null;
+  const copy = UPGRADE_PROMPT_COPY[feature];
+  return (
+    <UpgradePrompt
+      feature={feature}
+      title={copy.title}
+      message={copy.message}
+      onClose={() => {
+        trackEvent("paywall_dismiss", { feature });
+        onClose();
+      }}
+      onUpgrade={() => {
+        trackEvent("upgrade_click", { source: "paywall", feature });
+        onUpgrade();
+      }}
+    />
+  );
+}
 
 const emptyItem = {
   id: "",
@@ -44,6 +79,8 @@ export function DashboardModals() {
     success,
     handleSaveScannedProduct,
     router,
+    upgradePrompt,
+    setUpgradePrompt,
   } = usePantry();
 
   const [scanSaveError, setScanSaveError] = useState<string | null>(null);
@@ -233,6 +270,14 @@ export function DashboardModals() {
           </div>
         </div>
       )}
+      <PlanLimitPrompt
+        feature={upgradePrompt ?? null}
+        onClose={() => setUpgradePrompt(null)}
+        onUpgrade={() => {
+          setUpgradePrompt(null);
+          router.push("/pricing/");
+        }}
+      />
     </>
   );
 }

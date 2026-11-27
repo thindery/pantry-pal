@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-27, 11:50 AM CT (PP-241 weekly newsletter pool = full public library, live at `e3f23df` / #173)
+Last updated: 2026-11-27, 5:35 PM CT (Race to $50: PP-242–PP-252 filed; PP-242 paywall + PP-243 pricing clarity shipping)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -24,6 +24,39 @@ Last updated: 2026-11-27, 11:50 AM CT (PP-241 weekly newsletter pool = full publ
 | User action pending | Tylor: Bing Webmaster import (PP-119); add GA4 Viewer for the read-only SA (PP-121); create a Resend read key in the mypantryhub Resend account (PP-129); OK the low-stock email copy (PP-137); AdSense in-app ad unit (PP-140); recipes and photos (PP-139) |
 
 ---
+
+
+## Race to $50 (2026-11-27)
+
+Baseline (2026-11-27, 5:14 PM CT, read-only prod DB + live Stripe via the server key): 1 paying subscriber (Pro monthly $4.99, full price), MRR $4.99, all-time net revenue $4.99 ($19.96 gross, $14.97 refunded duplicate checkouts), 0 trials, 3 user accounts total, $1 first-month coupon live with 0 redemptions, 0 yearly subscribers.
+
+Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. Ship mode: *can ship now* (in-app/site UX and copy) or *needs Tylor yes* (price/coupon, Stripe config, customer email, off-site posts, policy).
+
+### P1
+
+| Ticket | Title | Priority | Ship mode | Status |
+|--------|-------|----------|-----------|--------|
+| PP-242 | In-app paywall at the free limits (50 items, 5 receipt scans/month) | P1 | can ship now | Shipping in this PR |
+| PP-243 | Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists | P1 | can ship now | Shipping in this PR |
+| PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | 📋 Open |
+| PP-249 | Family plan sells household features that are not built | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-252 | Acquisition push: directories, recipe pins and posts as Tylor | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
+
+### P2
+
+| Ticket | Title | Priority | Ship mode | Status |
+|--------|-------|----------|-----------|--------|
+| PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | 📋 Open |
+| PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | 📋 Open |
+| PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-248 | Free-limit and upgrade lifecycle emails (templates only, disabled) | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-250 | 30-day money-back guarantee: adopt it in Terms or keep it off | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
+
+### P3
+
+| Ticket | Title | Priority | Ship mode | Status |
+|--------|-------|----------|-----------|--------|
+| PP-251 | Pricing test: default the toggle to Yearly, or a first-year annual offer | P3 | needs Tylor yes | 📋 Open — needs Tylor yes |
 
 
 ## Afternoon 2026-11-25 (after Tylor's "agree with all of this. get it done", 1:54 PM CT)

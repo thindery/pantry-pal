@@ -7,6 +7,8 @@ import { UsedItTypeahead } from "@/components/dashboard/UsedItTypeahead";
 import { GroupListRow } from "@/components/dashboard/GroupListRow";
 import { DashboardLink } from "@/components/dashboard/dashboard-link";
 import { usePantry } from "@/contexts/pantry-provider";
+import { ItemLimitWarning } from "@/components/UpgradePrompt";
+import { trackEvent } from "@/lib/analytics";
 import { BRAND_NAME } from "@/lib/site-content";
 import { toTitleCase } from "@/lib/item-group-match";
 import { INVENTORY_SORT_OPTIONS } from "@/lib/inventory-sort";
@@ -37,6 +39,8 @@ type PantryEntry =
 
 export function InventoryView() {
   const {
+    router,
+    freeItemLimit,
     inventory,
     itemGroups,
     renameGroup,
@@ -267,6 +271,16 @@ export function InventoryView() {
 
   return (
     <div className="space-y-2.5 animate-in fade-in duration-300">
+      {freeItemLimit != null && inventory.length >= freeItemLimit - 5 && (
+        <ItemLimitWarning
+          currentItems={inventory.length}
+          maxItems={freeItemLimit}
+          onUpgrade={() => {
+            trackEvent("upgrade_click", { source: "item_limit_banner", feature: "items" });
+            router?.push("/pricing/");
+          }}
+        />
+      )}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Package className="text-[var(--primary)]" size={18} />

@@ -36,6 +36,11 @@ import { useConfirm } from "@/contexts/confirm-provider";
 import { trackFirstScan } from "@/lib/analytics";
 import { useSubscription } from "@/services/subscription";
 import {
+  ITEM_LIMIT_MESSAGE,
+  isTierLimitError,
+  type UpgradePromptFeature,
+} from "@/lib/paywall";
+import {
   getItems,
   createItem,
   updateItem,
@@ -791,9 +796,17 @@ export function usePantryState() {
   };
 
   // Subscription state
-  const { isPaid, isPro: _isPro, isFree: _isFree, itemsRemaining: _itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
-  const [_showItemLimitPrompt, setShowItemLimitPrompt] = useState(false);
-  const [_showReceiptLimitPrompt, setShowReceiptLimitPrompt] = useState(false);
+  const { tierInfo: subscriptionTier, isPaid, isPro: _isPro, isFree: _isFree, itemsRemaining: _itemsRemaining, receiptScansRemaining, isFeatureAvailable } = useSubscription();
+  // Only paywall once the plan is known, so a paying user is never blocked while it loads.
+  const knownFreePlan = subscriptionTier != null && !isPaid;
+  // PP-242: free-plan item cap for the pantry meter; null when unknown or unlimited.
+  const freeItemLimit: number | null =
+    knownFreePlan && subscriptionTier.limits.maxItems > 0 ? subscriptionTier.limits.maxItems : null;
+  // PP-242: which in-app paywall is open (rendered by DashboardModals). Before this
+  // the limit checks set state nothing rendered, so the add silently did nothing.
+  const [upgradePrompt, setUpgradePrompt] = useState<UpgradePromptFeature | null>(null);
+  const setShowItemLimitPrompt = (open: boolean) => setUpgradePrompt(open ? "items" : null);
+  const setShowReceiptLimitPrompt = (open: boolean) => setUpgradePrompt(open ? "receipts" : null);
 
   const createGroup = useCallback(
     async (name: string, itemIds: string[], targetQuantity?: number | null): Promise<ItemGroup | null> => {
@@ -955,7 +968,7 @@ export function usePantryState() {
     }
 
     // Check item limit before creating a new row
-    if (inventory.length >= 50 && !isPaid) {
+    if (inventory.length >= 50 && knownFreePlan) {
       setShowItemLimitPrompt(true);
       return;
     }
@@ -983,6 +996,10 @@ export function usePantryState() {
       void tryPromptGroupSuggestion(newItem);
       return Promise.resolve();
     } catch (err) {
+      if (isTierLimitError(err)) {
+        setShowItemLimitPrompt(true);
+        throw err;
+      }
       const message =
         err instanceof ApiError
           ? err.message
@@ -1046,16 +1063,27 @@ export function usePantryState() {
         ? product.ingredients.join(", ")
         : undefined;
 
-    const result = await saveBarcodeProduct(product.barcode, {
-      name: displayName,
-      quantity,
-      unit: "units",
-      category: product.category || "other",
-      brand: product.brand,
-      imageUrl: product.image ?? product.imageUrl,
-      ingredients,
-      nutrition: product.nutrition,
-    });
+    if (inventory.length >= 50 && knownFreePlan) {
+      setShowItemLimitPrompt(true);
+      throw new ApiError(ITEM_LIMIT_MESSAGE, 403, "TIER_LIMIT_EXCEEDED");
+    }
+
+    let result: Awaited<ReturnType<typeof saveBarcodeProduct>>;
+    try {
+      result = await saveBarcodeProduct(product.barcode, {
+        name: displayName,
+        quantity,
+        unit: "units",
+        category: product.category || "other",
+        brand: product.brand,
+        imageUrl: product.image ?? product.imageUrl,
+        ingredients,
+        nutrition: product.nutrition,
+      });
+    } catch (err) {
+      if (isTierLimitError(err)) setShowItemLimitPrompt(true);
+      throw err;
+    }
 
     const savedItem: PantryItem = {
       ...result.item,
@@ -1322,12 +1350,12 @@ export function usePantryState() {
 
   const handleScanReceiptClick = useCallback(() => {
     // Check receipt scan limit
-    if (receiptScansRemaining !== Infinity && receiptScansRemaining <= 0) {
+    if (knownFreePlan && receiptScansRemaining !== Infinity && receiptScansRemaining <= 0) {
       setShowReceiptLimitPrompt(true);
     } else {
       router.push('/dashboard/scan-receipt/');
     }
-  }, [receiptScansRemaining]);
+  }, [knownFreePlan, receiptScansRemaining]);
 
   const removeItemFromPantry = useCallback(
     async (item: PantryItem): Promise<boolean> => {
@@ -1411,6 +1439,7 @@ export function usePantryState() {
     router,
     toasts, success, error, info, removeToast,
     toast, showToast,
+    upgradePrompt, setUpgradePrompt, freeItemLimit,
     inventory, activities: safeActivities,
     isProcessing, setIsProcessing,
     isLoadingInventory, isLoadingActivities,
