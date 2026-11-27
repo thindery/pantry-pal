@@ -1,6 +1,6 @@
 # PP-236: Admin dashboard "Failed to Load Dashboard, API error: 401"
 
-**Status:** 🔨 In progress (2026-11-26)
+**Status:** ✅ Live (2026-11-26, PR #161, build `8962809`)
 **Priority:** P0 (admin blocked; ruled out a platform-wide auth outage)
 **Phase:** Admin
 **Created:** 2026-11-26
