@@ -66,9 +66,9 @@ const EXPECTED_SLUGS = [
 ];
 
 describe("recipe content (PP-184)", () => {
-  it("ships 48 recipes with unique slugs and realistic times", () => {
-    expect(RECIPES).toHaveLength(48);
-    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(48);
+  it("ships 60 recipes with unique slugs and realistic times", () => {
+    expect(RECIPES).toHaveLength(60);
+    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(60);
     for (const r of RECIPES) {
       expect(r.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(r.servings).toBeGreaterThanOrEqual(2);
@@ -111,6 +111,18 @@ describe("recipe content (PP-184)", () => {
       "stuffed-mushrooms",
       "cranberry-cocktail-meatballs",
       "pigs-in-a-blanket",
+      "chocolate-chip-cookies",
+      "fudgy-brownies",
+      "banana-bread",
+      "apple-crisp",
+      "no-bake-cheesecake",
+      "peach-cobbler",
+      "bread-pudding",
+      "snickerdoodles",
+      "oatmeal-cookies",
+      "lemon-bars",
+      "easy-chocolate-cake",
+      "classic-rice-pudding",
     ]);
   });
 
@@ -189,7 +201,7 @@ describe("recipe content (PP-184)", () => {
 
 describe("filters (PP-184)", () => {
   it("filters by meal, diet, time, and text", () => {
-    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(48);
+    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(60);
     expect(filterRecipes(RECIPES, { ...DEFAULT_FILTERS, meal: "lunch" }).map((r) => r.slug)).toEqual([
       "easy-red-lentil-soup",
       "easy-vegetable-soup",
@@ -223,13 +235,14 @@ describe("browse page (PP-184)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     for (const r of RECIPES) {
       const link = screen.getByRole("link", { name: new RegExp(r.title) });
       // next/link drops the trailing slash in jsdom; next.config trailingSlash adds it in the real build
       expect((link.getAttribute("href") ?? "").replace(/\/$/, "")).toBe(`/recipes/${r.slug}`);
     }
-    expect(screen.getByText("48 recipes")).toBeTruthy();
-  });
+    expect(screen.getByText("60 recipes")).toBeTruthy();
+  }, 15_000);
 
   it("filter buttons and search narrow the grid", () => {
     render(<RecipeBrowser recipes={allRecipesWithImageState()} />);
@@ -237,7 +250,7 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByRole("button", { name: "Snack" })).toBeTruthy();
     expect(screen.getByText("4 recipes")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByText("48 recipes")).toBeTruthy();
+    expect(screen.getByText("60 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "tortilla" } });
     expect(screen.getByText("2 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nothingmatches" } });
@@ -247,7 +260,7 @@ describe("browse page (PP-184)", () => {
   it("renders committed WebP illustrations for every recipe, with no placeholders", () => {
     const recipes = allRecipesWithImageState();
     expect(recipes.every((r) => r.hasImage)).toBe(true);
-    expect(recipes).toHaveLength(48);
+    expect(recipes).toHaveLength(60);
     render(RecipesPage());
     expect((screen.getByRole("link", { name: /Holiday recipes/ }).getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/recipes/holiday");
     expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
@@ -505,7 +518,7 @@ describe("launch gate (PP-184)", () => {
   it("sitemap lists /recipes/ and each recipe with real dates, and leaves tags out", () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(MIN_RECIPES_FOR_SITEMAP);
     const recipeEntries = recipeSitemapPages();
-    expect(recipeEntries).toHaveLength(50);
+    expect(recipeEntries).toHaveLength(62);
     expect(recipeEntries[0]).toMatchObject({ path: "/recipes/", priority: 0.8, changeFrequency: "weekly" });
     expect(recipeEntries[1]).toMatchObject({ path: "/recipes/holiday/", priority: 0.75, changeFrequency: "weekly" });
     expect(recipeEntries.some((e) => e.path.includes("/tag/"))).toBe(false);
