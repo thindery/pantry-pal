@@ -1,6 +1,6 @@
 # PP-239: Public recipe library expansion (~60 more recipes)
 
-**Status:** 📋 Open
+**Status:** ✅ Live (build `336b82a`, 10:13 PM America/Chicago, 2026-11-26)
 **Priority:** P1
 **Phase:** Growth / public recipes
 **Created:** 2026-11-26
@@ -22,10 +22,24 @@ Ship recipes in batches of about 12. Every recipe in a batch goes live with its 
 
 ## Acceptance Criteria
 
-- [ ] About 60 additional public recipes shipped in batches of ~12, each with images before or with its deploy
-- [ ] Order: more holiday (Christmas dinner mains, cookies and pies, party apps, New Year's), then desserts, then new concepts mixed with the classic backlog
-- [ ] Same content rules as PP-184: original writing, substitutions, FAQs only where real, no invented ratings or nutrition, no affiliate links, no expiry or food-waste tracking claims
-- [ ] Standing image rule recorded in `.agents/docs/ticket-template.md` and `.agents/docs/recipe-backlog.md`
-- [ ] Sitemap updated and resubmitted in GSC after each batch
+- [x] About 60 additional public recipes shipped in batches of ~12, each with images before or with its deploy
+- [x] Order: more holiday (Christmas dinner mains, cookies and pies, party apps, New Year's), then desserts, then new concepts mixed with the classic backlog
+- [x] Same content rules as PP-184: original writing, substitutions, FAQs only where real, no invented ratings or nutrition, no affiliate links, no expiry or food-waste tracking claims
+- [x] Standing image rule recorded in `.agents/docs/ticket-template.md` and `.agents/docs/recipe-backlog.md`
+- [x] Sitemap updated and resubmitted in GSC after each batch
 
-- Dessert batch (12 recipes + WebP illustrations) is in progress on `feature/PP-239-desserts`.
+## Live
+
+Public library is 96 recipes, all with real WebPs (no placeholders). Holiday collection is 26 recipes. GSC `sc-domain:mypantryhub.com` sitemap submitted 106 web URLs (0 errors) at 10:13 PM America/Chicago.
+
+| Batch | PR | Build | Recipes after | GSC web URLs |
+|-------|----|-------|---------------|--------------|
+| Holiday collection + first 12 (placeholders at ship) | [#165](https://github.com/thindery/pantry-pal/pull/165) | `a6519f7` | 36 | 46 |
+| Real WebPs for the first 12 holiday recipes | [#166](https://github.com/thindery/pantry-pal/pull/166) | `f73f60a` | 36 | 46 |
+| Holiday batch 2 (12 recipes + WebPs) | [#167](https://github.com/thindery/pantry-pal/pull/167) | `7d278e4` | 48 | 58 |
+| Desserts (12 + WebPs) | [#168](https://github.com/thindery/pantry-pal/pull/168) | `ab211bd` | 60 | 70 |
+| Classics (12 + WebPs) | [#169](https://github.com/thindery/pantry-pal/pull/169) | `d407db5` | 72 | 82 |
+| Methods and cuisines (12 + WebPs) | [#170](https://github.com/thindery/pantry-pal/pull/170) | `e068d06` | 84 | 94 |
+| Remaining concepts and backlog (12 + WebPs) | [#171](https://github.com/thindery/pantry-pal/pull/171) | `336b82a` | 96 | 106 |
+
+Tonight added 60 recipes (holiday-2, desserts, classics, methods, concepts) plus real images for the original 12 holiday recipes from PP-238.
