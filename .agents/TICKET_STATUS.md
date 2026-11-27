@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-27, 11:35 AM CT (PP-241 weekly newsletter pool = full public library, in progress)
+Last updated: 2026-11-27, 11:50 AM CT (PP-241 weekly newsletter pool = full public library, live at `e3f23df` / #173)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -145,7 +145,7 @@ Triage board for work that is not done. Area inventories later in this file stay
 | PP-238 | Holiday recipe collection and first holiday batch (/recipes/holiday/) | ✅ Live (build `f73f60a`, [#166](https://github.com/thindery/pantry-pal/pull/166)) | Growth / recipes |
 | PP-239 | Public recipe library expansion (~60 more recipes, images with each batch) | ✅ Live (build `336b82a`, [#171](https://github.com/thindery/pantry-pal/pull/171); also #167–#170) | Growth / recipes |
 | PP-240 | Backend test failed on main after PP-239: weekly newsletter catalog must be a subset of the 96-recipe library, not equal (test-only) | ✅ Done Nov 27 (test-only, no deploy) | Tests |
-| PP-241 | Weekly recipe newsletter draws from the full public library (96 now, auto-includes later recipes), with holiday-tag preference and cooldown | 🔨 In progress | Growth / email |
+| PP-241 | Weekly recipe newsletter draws from the full public library (96 now, auto-includes later recipes), with holiday-tag preference and cooldown | ✅ Live (build `e3f23df`, [#173](https://github.com/thindery/pantry-pal/pull/173)) | Growth / email |
 | PP-182 | Privacy must disclose AdSense ad cookies and analytics accurately (legal audit 2026-11-25) | ✅ Done (live 4:11 PM CT, `1fab3f1`, [#120](https://github.com/thindery/pantry-pal/pull/120)) | Legal |
 | PP-181 | Don't cache or serve 1–2 character product names | ✅ Done (live 3:19 PM CT, `d70df3c`) | User-reported |
 | PP-183 | AI recipe builder (Pro): recipes from my pantry, adjust, save, add missing; metered weekly tokens, fail closed | ✅ Live 4:34 PM CT, `c5cbe9a` ([#122](https://github.com/thindery/pantry-pal/pull/122)); on for Pro, caps 40k/user, 200k global per week | Pro AI |
@@ -562,7 +562,7 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 | PP-236 | Admin dashboard 401: admin client sent no bearer token (relied on middleware injection); now uses `getBearerToken` + 401 retry. Regular users unaffected | P0 | ✅ Live Nov 26, build `8962809` ([#161](https://github.com/thindery/pantry-pal/pull/161)) |
 | PP-237 | /admin crashed once the API returned data: dashboard payload did not match UI types (no `alerts`, cents, etc.); added normalizer + test on live payload shapes | P0 | ✅ Live Nov 26, build `30cac52` ([#163](https://github.com/thindery/pantry-pal/pull/163)) |
 | PP-240 | Weekly catalog test: subset of the recipe library instead of exact match (main was failing pre-commit after PP-239); newsletter pool unchanged at 24 | P2 | ✅ Done Nov 27 (test-only, no deploy; live build stays `336b82a`) |
-| PP-241 | Weekly recipe newsletter uses the full public library (not the fixed 24-recipe list); holiday tags preferred Nov 8–Jan 7; cooldown scales with the pool | P1 | 🔨 In progress |
+| PP-241 | Weekly recipe newsletter uses the full public library (not the fixed 24-recipe list); holiday tags preferred Nov 8–Jan 7; cooldown scales with the pool | P1 | ✅ Live Nov 27, 11:50 AM CT, build `e3f23df`, [#173](https://github.com/thindery/pantry-pal/pull/173). No email sent; next draft Wed 2026-12-02 9 AM CT |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 
