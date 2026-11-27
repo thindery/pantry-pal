@@ -1,6 +1,6 @@
 # PP-198: Admin email dashboard: subscribers, journeys, per-email engagement, clicks, events
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26, 6:33 PM America/Chicago). Admin -> Marketing is in production and already showed live webhook events from a [TEST] send.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -31,3 +31,8 @@ Better than JWA, where visibility meant polling the Resend MCP by hand.
 
 - Backend integration test seeds real rows and checks the response (tested). Vitest covers OFF/LIVE/empty/error states.
 - Screenshot at 390px from a local test database (not production data).
+
+
+## Go live (2026-11-26, 6:33 PM CT)
+
+The dashboard was already shipped behind the journeys work. After the Resend webhook was activated, Admin -> Marketing showed `test_preview_webhook` sent/delivered counts and recent `email.sent` / `email.delivered` events. Journeys are now on; the first cron-equivalent run enrolled 0 and sent 0, so the journey funnels stay empty until a new confirm or a new signup after `EMAIL_ONBOARDING_SINCE`.

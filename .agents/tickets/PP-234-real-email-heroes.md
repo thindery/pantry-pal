@@ -1,6 +1,6 @@
 # PP-234: Ship approved real Pexels photos on three email hero slots
 
-**Status:** ✅ Live (2026-11-26, 3:51 PM America/Chicago, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155)). Send flags unchanged.
+**Status:** ✅ Live (2026-11-26, 3:51 PM America/Chicago, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155)). Journeys went live 6:33 PM CT the same day (copy approved, t96u).
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 3:40 PM America/Chicago
@@ -31,6 +31,6 @@ Alt text for the three new files describes the photograph and does not start wit
 
 Tylor provided the CAN-SPAM footer address (t94u): `334 E Kearney St #255, Springfield, MO`. It is set as `EMAIL_MAILING_ADDRESS` on OVH (quoted in `.env.prod` so the `#255` suite number is not treated as a comment). `EMAIL_JOURNEYS_ENABLED` and `EMAIL_JOURNEYS_TEST_RECIPIENTS` were not set. Journey copy in PP-195 / PP-196 now uses this address in the footer examples.
 
-## Still blocked from go-live (unchanged)
+## Go live follow-up (2026-11-26, 6:33 PM CT)
 
-Cloudflare still challenges `/email/*` for mail image proxies (see PP-199). Send flags stay off. Copy in PP-195 / PP-196 still needs Tylor's OK.
+The earlier go-live blockers are cleared: a Cloudflare skip covers `/email/*` (see PP-199), Tylor approved the copy (t96u: "All looks good"), and send flags are on (`EMAIL_JOURNEYS_ENABLED=true`, `EMAIL_ONBOARDING_SINCE=2026-11-27T00:32:58+00:00`). The heroes themselves were already live at build `596be58`.

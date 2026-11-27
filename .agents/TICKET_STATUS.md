@@ -547,13 +547,13 @@ See **`deploy/CUTOVER.md`** for the full checklist.
 
 | Ticket | Title | Priority | Status |
 |--------|-------|----------|--------|
-| PP-194 | Email journeys foundation: send gate (`EMAIL_JOURNEYS_ENABLED`), journey state, click/confirm/unsubscribe endpoints | P2 | ✅ Live Nov 26, build `92a55d6`, [#144](https://github.com/thindery/pantry-pal/pull/144), migration 035. Everything off, nothing sends |
-| PP-195 | Recipe newsletter double opt-in + 3-email welcome journey + one-click unsubscribe | P2 | ✅ Live behind flags (build `92a55d6`, #144). Copy needs Tylor's OK before the flag turns on |
-| PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | ✅ Live behind flags (build `92a55d6`, #144). Enrollment off until `EMAIL_ONBOARDING_SINCE` is set, copy needs Tylor's OK |
-| PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | 🟡 Click tracking live (#144). Waiting on Tylor to add the webhook in the Resend dashboard (secret not set on prod) |
-| PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | 🟡 Shipping |
-| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | 🟡 Live behind flags. Welcome hero approved. Three real Pexels heroes shipped in PP-234. Still blocked from go-live: Cloudflare challenges `/email/*` (needs a Skip rule, Tylor's OK) |
-| PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | ✅ Live Nov 26, 3:51 PM CT, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155). Mailing address set on OVH (full street address, not city-only). Send flags unchanged |
+| PP-194 | Email journeys foundation: send gate (`EMAIL_JOURNEYS_ENABLED`), journey state, click/confirm/unsubscribe endpoints | P2 | ✅ Live and on Nov 26, 6:33 PM CT (code since build `92a55d6`, [#144](https://github.com/thindery/pantry-pal/pull/144)). `EMAIL_JOURNEYS_ENABLED=true`; 15-min cron; first run sent 0 |
+| PP-195 | Recipe newsletter double opt-in + 3-email welcome journey + one-click unsubscribe | P2 | ✅ Live Nov 26, 6:33 PM CT. Copy approved (t96u). No confirm emails to existing PP-193 subscribers (0 pending rows on prod; first run `confirmations: 0`) |
+| PP-196 | Onboarding journey for new app signups (scan first item, recipes, Pro) | P2 | ✅ Live Nov 26, 6:33 PM CT. Copy approved (t96u). `EMAIL_ONBOARDING_SINCE=2026-11-27T00:32:58+00:00`; existing 3 users not enrolled; first run `enrolled_users: 0` |
+| PP-197 | Activate the Resend webhook (PP-124) + first-party click tracking | P2 | ✅ Live Nov 26. Webhook on the mypantryhub Resend account; secret in `.env.prod` only; `email.sent`/`email.delivered` landed in Marketing. Tracking CNAME `links.mypantryhub.com` ([#157](https://github.com/thindery/pantry-pal/pull/157)) |
+| PP-198 | Admin email dashboard: subscribers, journeys, clicks, events | P2 | ✅ Live. Admin -> Marketing is in production and showed live webhook events from a [TEST] send |
+| PP-199 | Imagery in emails: heroes, recipe cards, credits, AI gap list | P2 | ✅ Live. Heroes on build `596be58`; Cloudflare `/email/*` skip verified with GoogleImageProxy UA; copy approved (t96u); journeys on 6:33 PM CT Nov 26 |
+| PP-234 | Ship approved real Pexels photos on R3 / O1 / O3 hero slots; keep welcome as-is | P2 | ✅ Live Nov 26, 3:51 PM CT, build `596be58`, [#155](https://github.com/thindery/pantry-pal/pull/155). Journeys went live 6:33 PM CT the same day (copy approved, t96u) |
 
 ## Tickets from Tylor's Nov 26 public-recipe session report (t84u / t85u)
 

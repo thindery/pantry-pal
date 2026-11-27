@@ -1,6 +1,6 @@
 # PP-195: Recipe newsletter: double opt-in confirm + 3-email welcome journey + one-click unsubscribe
 
-**Status:** 🟡 Shipping (code behind flags; no email goes to any real address until Tylor approves)
+**Status:** ✅ Live (2026-11-26, 6:33 PM America/Chicago). Copy approved (t96u). No confirm emails to existing PP-193 subscribers.
 **Priority:** P2
 **Phase:** Growth / email
 **Created:** 2026-11-26, 1:10 PM America/Chicago
@@ -135,3 +135,8 @@ Unsubscribe: https://www.mypantryhub.com/api/public/email/unsubscribe?token=<tok
 Pantry Hub, 334 E Kearney St #255, Springfield, MO
 ```
 
+
+
+## Go live (2026-11-26, 6:33 PM CT)
+
+Tylor approved the copy (t96u: "All looks good"). Journeys are on. New recipe-list signups will get a confirm email; existing PP-193 subscribers do not. At go-live, prod had 0 rows in `recipe_newsletter_subscribers`, and the first journeys job reported `confirmations: 0` / `sent: 0`.
