@@ -1,0 +1,51 @@
+import type { Recipe } from "./types";
+
+export const sweetPotatoCasserole: Recipe = {
+  slug: "sweet-potato-casserole",
+  title: "Sweet Potato Casserole",
+  seoTitle: "Sweet Potato Casserole (Pecan Topping)",
+  metaSummary: "Sweet potato casserole with pecans, 1 hour",
+  intro:
+    "This is a sweet potato casserole with a pecan crumb topping, ready in about an hour. The filling is mashed sweet potatoes, butter, brown sugar, and a little milk and spice. It is a holiday side, not a dessert, though it sits on the sweeter end of the table.",
+  meal: "dinner",
+  tags: ["holiday", "make-ahead"],
+  servings: 8,
+  prepMin: 25,
+  cookMin: 35,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/sweet-potato-casserole.webp",
+  imageAlt: "AI-generated illustration of a sweet potato casserole with a pecan topping, not a photo of this dish",
+  ingredients: [
+    { qty: 3, unit: "lb", item: "sweet potatoes", note: "peeled and cut into chunks" },
+    { qty: 4, unit: "tbsp", item: "butter", note: "melted, plus 2 tablespoons for the topping" },
+    { qty: 1/3, unit: "cup", item: "packed brown sugar", note: "plus 1/3 cup for the topping" },
+    { qty: 0.25, unit: "cup", item: "milk" },
+    { qty: 1, item: "egg", plural: "eggs", note: "beaten" },
+    { qty: 1, unit: "tsp", item: "vanilla extract" },
+    { qty: 0.5, unit: "tsp", item: "ground cinnamon" },
+    { qty: 0.5, unit: "tsp", item: "salt" },
+    { qty: 0.5, unit: "cup", item: "all-purpose flour", note: "for the topping" },
+    { qty: 0.75, unit: "cup", item: "chopped pecans", note: "for the topping" },
+  ],
+  steps: [
+    "Heat the oven to 350°F (175°C). Grease a 2-quart baking dish. Boil the sweet potatoes in salted water until they are very tender, about 15 minutes, then drain well.",
+    "Mash the potatoes with 4 tablespoons of melted butter, 1/3 cup of the brown sugar, the milk, egg, vanilla, cinnamon, and salt until mostly smooth. Spread the filling in the baking dish.",
+    "In a bowl, mix the flour, remaining 1/3 cup brown sugar, 2 tablespoons of softened or melted butter, and the pecans until the mixture looks like damp crumbs. Sprinkle it over the filling.",
+    "Bake, uncovered, for 30 to 35 minutes, until the topping is browned and the filling is hot in the center.",
+    "Let the casserole sit for 10 minutes before serving.",
+  ],
+  substitutions: [
+    "Fresh sweet potatoes: use two 29-oz cans of sweet potatoes, drained and mashed, and skip the boiling step.",
+    "Pecans: use walnuts, or a topping of mini marshmallows added for the last 10 minutes instead of the crumb.",
+    "Brown sugar: use maple syrup in the filling (start with 1/4 cup) and granulated sugar in the topping.",
+    "Milk: use half-and-half, evaporated milk, or unsweetened plant milk.",
+    "Egg: leave it out for a slightly looser filling; the casserole will still set as it cools.",
+  ],
+  tips: [
+    "You can assemble the filling a day ahead, cover, and refrigerate. Add the topping just before baking and give it an extra 10 minutes in the oven.",
+    "If the potatoes seem watery after boiling, return them to the hot pot for a minute to steam off extra moisture before you mash them.",
+  ],
+  pantryStaples: ["sweet potatoes", "brown sugar", "pecans", "butter"],
+  related: ["green-bean-casserole", "classic-stuffing", "homemade-cranberry-sauce"],
+};

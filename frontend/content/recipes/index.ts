@@ -24,6 +24,19 @@ import { sundayChickenAndRice } from "./sunday-chicken-and-rice";
 import { sundayPotRoast } from "./sunday-pot-roast";
 import { whiteChickenChili } from "./white-chicken-chili";
 
+import { breakfastCasserole } from "./breakfast-casserole";
+import { classicStuffing } from "./classic-stuffing";
+import { easyChocolateFudge } from "./easy-chocolate-fudge";
+import { easySugarCookies } from "./easy-sugar-cookies";
+import { homemadeCranberrySauce } from "./homemade-cranberry-sauce";
+import { hoppinJohn } from "./hoppin-john";
+import { leftoverTurkeyPotPie } from "./leftover-turkey-pot-pie";
+import { leftoverTurkeySandwiches } from "./leftover-turkey-sandwiches";
+import { peppermintBark } from "./peppermint-bark";
+import { pumpkinPie } from "./pumpkin-pie";
+import { sausageCheeseBalls } from "./sausage-cheese-balls";
+import { sweetPotatoCasserole } from "./sweet-potato-casserole";
+
 
 export type { DietTag, MealType, Recipe, RecipeFaq, RecipeIngredient } from "./types";
 
@@ -53,6 +66,18 @@ export const RECIPES: readonly Recipe[] = [
   classicMeatloaf,
   peanutButterNoodles,
   chickpeaSaladSandwiches,
+  leftoverTurkeyPotPie,
+  leftoverTurkeySandwiches,
+  sweetPotatoCasserole,
+  homemadeCranberrySauce,
+  classicStuffing,
+  pumpkinPie,
+  easySugarCookies,
+  peppermintBark,
+  easyChocolateFudge,
+  sausageCheeseBalls,
+  breakfastCasserole,
+  hoppinJohn,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {

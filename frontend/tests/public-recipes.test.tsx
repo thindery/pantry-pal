@@ -18,6 +18,8 @@ import TagPage, {
   generateStaticParams as generateTagStaticParams,
 } from "@/app/recipes/tag/[tag]/page";
 import sitemap, { recipeSitemapPages } from "@/app/sitemap";
+import HolidayRecipesPage, { metadata as holidayMetadata } from "@/app/recipes/holiday/page";
+import { holidayRecipes, HOLIDAY_COLLECTION } from "@/content/recipes/holiday";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { RecipeBrowser } from "@/components/recipes-public/RecipeBrowser";
@@ -64,9 +66,9 @@ const EXPECTED_SLUGS = [
 ];
 
 describe("recipe content (PP-184)", () => {
-  it("ships 24 recipes with unique slugs and realistic times", () => {
-    expect(RECIPES).toHaveLength(24);
-    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(24);
+  it("ships 36 recipes with unique slugs and realistic times", () => {
+    expect(RECIPES).toHaveLength(36);
+    expect(new Set(RECIPES.map((r) => r.slug)).size).toBe(36);
     for (const r of RECIPES) {
       expect(r.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(r.servings).toBeGreaterThanOrEqual(2);
@@ -82,8 +84,22 @@ describe("recipe content (PP-184)", () => {
     }
   });
 
-  it("uses the SEO desk's 12 slugs in order", () => {
-    expect(RECIPES.map((r) => r.slug)).toEqual(EXPECTED_SLUGS);
+  it("keeps the first 24 slugs in order, then the holiday batch", () => {
+    expect(RECIPES.map((r) => r.slug).slice(0, 24)).toEqual(EXPECTED_SLUGS);
+    expect(RECIPES.map((r) => r.slug).slice(24)).toEqual([
+      "leftover-turkey-pot-pie",
+      "leftover-turkey-sandwiches",
+      "sweet-potato-casserole",
+      "homemade-cranberry-sauce",
+      "classic-stuffing",
+      "pumpkin-pie",
+      "easy-sugar-cookies",
+      "peppermint-bark",
+      "easy-chocolate-fudge",
+      "sausage-cheese-balls",
+      "breakfast-casserole",
+      "hoppin-john",
+    ]);
   });
 
   it("follows the title, meta, and H1 patterns (brand only via the template)", () => {
@@ -118,7 +134,7 @@ describe("recipe content (PP-184)", () => {
 
   it("only has FAQs where the question is real, and cites the source for safety facts", () => {
     const withFaqs = RECIPES.filter((r) => r.faqs?.length).map((r) => r.slug);
-    expect(withFaqs.sort()).toEqual(["canned-tuna-pasta", "easy-red-lentil-soup", "leftover-rice-fried-rice", "leftover-turkey-soup"]);
+    expect(withFaqs.sort()).toEqual(["canned-tuna-pasta", "easy-red-lentil-soup", "leftover-rice-fried-rice", "leftover-turkey-pot-pie", "leftover-turkey-sandwiches", "leftover-turkey-soup"]);
     const rice = getRecipe("leftover-rice-fried-rice")!;
     expect(rice.faqSource?.url).toMatch(/^https:\/\/www\.fsis\.usda\.gov\//);
     expect(rice.faqs![0].answer).toMatch(/165°F/);
@@ -161,11 +177,12 @@ describe("recipe content (PP-184)", () => {
 
 describe("filters (PP-184)", () => {
   it("filters by meal, diet, time, and text", () => {
-    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(24);
+    expect(filterRecipes(RECIPES, DEFAULT_FILTERS)).toHaveLength(36);
     expect(filterRecipes(RECIPES, { ...DEFAULT_FILTERS, meal: "lunch" }).map((r) => r.slug)).toEqual([
       "easy-red-lentil-soup",
       "easy-vegetable-soup",
       "chickpea-salad-sandwiches",
+      "leftover-turkey-sandwiches",
     ]);
     const vegan = filterRecipes(RECIPES, { ...DEFAULT_FILTERS, diet: "vegan" });
     expect(vegan.length).toBeGreaterThan(0);
@@ -192,37 +209,42 @@ describe("browse page (PP-184)", () => {
     render(RecipesPage());
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
     for (const r of RECIPES) {
       const link = screen.getByRole("link", { name: new RegExp(r.title) });
       // next/link drops the trailing slash in jsdom; next.config trailingSlash adds it in the real build
       expect((link.getAttribute("href") ?? "").replace(/\/$/, "")).toBe(`/recipes/${r.slug}`);
     }
-    expect(screen.getByText("24 recipes")).toBeTruthy();
+    expect(screen.getByText("36 recipes")).toBeTruthy();
   });
 
   it("filter buttons and search narrow the grid", () => {
     render(<RecipeBrowser recipes={allRecipesWithImageState()} />);
     fireEvent.click(screen.getByRole("button", { name: "Lunch" }));
-    expect(screen.queryByRole("button", { name: "Snack" })).toBeNull();
-    expect(screen.getByText("3 recipes")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Snack" })).toBeTruthy();
+    expect(screen.getByText("4 recipes")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByText("24 recipes")).toBeTruthy();
+    expect(screen.getByText("36 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "tortilla" } });
     expect(screen.getByText("2 recipes")).toBeTruthy();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nothingmatches" } });
     expect(screen.getByText(/No recipes match/)).toBeTruthy();
   });
 
-  it("renders committed WebP illustrations for every recipe, with no placeholders", () => {
+  it("renders committed WebP illustrations, and placeholders for the holiday batch", () => {
     const recipes = allRecipesWithImageState();
-    expect(recipes.every((r) => r.hasImage)).toBe(true);
-    expect(recipes).toHaveLength(24);
+    expect(recipes.filter((r) => r.hasImage)).toHaveLength(24);
+    expect(recipes.filter((r) => !r.hasImage)).toHaveLength(12);
+    expect(recipes).toHaveLength(36);
     render(RecipesPage());
-    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
+    expect((screen.getByRole("link", { name: /Holiday recipes/ }).getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/recipes/holiday");
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
+    expect(screen.queryAllByTestId("recipe-image-placeholder").length).toBeGreaterThan(0);
     expect(screen.getByTestId("recipe-newsletter-form")).toBeTruthy();
     expect(screen.getByText("Get new pantry recipes by email")).toBeTruthy();
     expect(screen.getByText("We'll email new recipes occasionally. Unsubscribe anytime.")).toBeTruthy();
-    for (const r of recipes.slice(0, 3)) {
+    for (const r of recipes.filter((r) => r.hasImage).slice(0, 3)) {
       const img = screen.getByRole("img", { name: r.imageAlt });
       expect(img.getAttribute("src")).toBe(r.image);
     }
@@ -458,14 +480,16 @@ describe("launch gate (PP-184)", () => {
   it("sitemap lists /recipes/ and each recipe with real dates, and leaves tags out", () => {
     expect(RECIPES.length).toBeGreaterThanOrEqual(MIN_RECIPES_FOR_SITEMAP);
     const recipeEntries = recipeSitemapPages();
-    expect(recipeEntries).toHaveLength(25);
+    expect(recipeEntries).toHaveLength(38);
     expect(recipeEntries[0]).toMatchObject({ path: "/recipes/", priority: 0.8, changeFrequency: "weekly" });
-    expect(recipeEntries[1]).toMatchObject({ priority: 0.7, changeFrequency: "monthly" });
+    expect(recipeEntries[1]).toMatchObject({ path: "/recipes/holiday/", priority: 0.75, changeFrequency: "weekly" });
     expect(recipeEntries.some((e) => e.path.includes("/tag/"))).toBe(false);
     for (const e of recipeEntries) expect(String(e.lastModified)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const urls = sitemap().map((e) => e.url);
     expect(urls).toContain("https://www.mypantryhub.com/recipes/");
+    expect(urls).toContain("https://www.mypantryhub.com/recipes/holiday/");
     expect(urls).toContain("https://www.mypantryhub.com/recipes/canned-tuna-pasta/");
+    expect(urls).toContain("https://www.mypantryhub.com/recipes/hoppin-john/");
     expect(urls.some((u) => u.includes("/tag/"))).toBe(false);
   });
 
@@ -486,5 +510,33 @@ describe("launch gate (PP-184)", () => {
     for (const file of ["app/recipes/page.tsx", "app/recipes/[slug]/page.tsx", "app/sitemap.ts", "components/marketing/MarketingFooter.tsx", "components/marketing/MarketingNav.tsx", "components/LandingPage.tsx"]) {
       expect(fs.readFileSync(path.join(process.cwd(), file), "utf8")).toContain("PUBLIC_RECIPES_INDEXABLE");
     }
+  });
+});
+
+
+describe("holiday collection (PP-238)", () => {
+  it("is indexable, has a unique intro, and lists every holiday recipe", () => {
+    expect(holidayMetadata.robots).toBeUndefined();
+    expect(holidayMetadata.alternates?.canonical).toBe("/recipes/holiday/");
+    expect(HOLIDAY_COLLECTION.metaDescription.length).toBeGreaterThanOrEqual(140);
+    expect(HOLIDAY_COLLECTION.metaDescription.length).toBeLessThanOrEqual(160);
+    expect(holidayRecipes().length).toBeGreaterThanOrEqual(12);
+    expect(holidayRecipes().every((r) => r.tags.includes("holiday"))).toBe(true);
+    expect(holidayRecipes().map((r) => r.slug)).toEqual(expect.arrayContaining([
+      "leftover-turkey-soup",
+      "green-bean-casserole",
+      "leftover-turkey-pot-pie",
+      "peppermint-bark",
+      "hoppin-john",
+      "breakfast-casserole",
+    ]));
+    const { container } = render(HolidayRecipesPage());
+    expect(screen.getByRole("heading", { level: 1, name: "Holiday Recipes" })).toBeTruthy();
+    expect(screen.getByText(HOLIDAY_COLLECTION.intro)).toBeTruthy();
+    expect(container.querySelectorAll("ul li a[href*='/recipes/']").length).toBe(holidayRecipes().length);
+    const types = Array.from(container.querySelectorAll('script[type="application/ld+json"]')).map(
+      (n) => JSON.parse(n.textContent ?? "{}")["@type"],
+    );
+    expect(types).toEqual(["BreadcrumbList", "CollectionPage"]);
   });
 });

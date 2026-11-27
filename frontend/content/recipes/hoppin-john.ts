@@ -1,0 +1,53 @@
+import type { Recipe } from "./types";
+
+export const hoppinJohn: Recipe = {
+  slug: "hoppin-john",
+  title: "Hoppin' John",
+  seoTitle: "Hoppin' John with Black-Eyed Peas (New Year's)",
+  metaSummary: "Hoppin' John with black-eyed peas, 45 minutes",
+  intro:
+    "This is a pantry version of Hoppin' John, the black-eyed pea and rice pot often served on New Year's Day, ready in about 45 minutes. It uses canned black-eyed peas, long-grain rice, onion, and broth, with a little smoked paprika if you do not have a ham hock. A side of greens is traditional if you have them.",
+  meal: "dinner",
+  tags: ["holiday", "one-pot"],
+  servings: 6,
+  prepMin: 10,
+  cookMin: 35,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/hoppin-john.webp",
+  imageAlt: "AI-generated illustration of a bowl of Hoppin' John with black-eyed peas and rice, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "tbsp", item: "olive oil or bacon drippings" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 1, unit: "stalk", item: "celery", note: "diced, optional" },
+    { qty: 2, unit: "clove", item: "garlic", note: "minced" },
+    { qty: 1, unit: "cup", item: "long-grain white rice", note: "rinsed" },
+    { qty: 2, unit: "can", size: "15 oz", item: "black-eyed peas", note: "drained and rinsed" },
+    { qty: 2, unit: "cup", item: "chicken or vegetable broth" },
+    { qty: 1, unit: "tsp", item: "smoked paprika" },
+    { qty: 0.5, unit: "tsp", item: "dried thyme" },
+    { qty: 1, unit: "tsp", item: "salt", note: "plus more to taste" },
+    { qty: 0.25, unit: "tsp", item: "black pepper" },
+    { qty: 2, unit: "cup", item: "chopped greens", note: "optional, such as kale or frozen collards, thawed" },
+  ],
+  steps: [
+    "Warm the oil in a large pot over medium heat. Cook the onion and celery for about 5 minutes, until the onion is soft. Stir in the garlic and cook for 30 seconds.",
+    "Add the rice, smoked paprika, and thyme, and stir until the rice looks coated, about 1 minute.",
+    "Pour in the broth, black-eyed peas, salt, and pepper. Bring the pot to a boil, then lower the heat, cover, and simmer for 15 minutes.",
+    "If you are using greens, stir them in, cover again, and cook until the rice is tender and the liquid is absorbed, about 5 to 10 minutes more.",
+    "Take the pot off the heat and let it stand, covered, for 5 minutes. Fluff the rice, taste, and add more salt if it needs it.",
+  ],
+  substitutions: [
+    "Canned black-eyed peas: use cooked dried peas (about 3 cups), or canned field peas or pigeon peas.",
+    "Smoked paprika: use a diced slice of leftover ham, bacon, or a smoked turkey wing browned with the onion, and cut back a little on the salt.",
+    "Long-grain white rice: use brown rice and add about 15 minutes to the simmer, with a splash more broth if the pot looks dry.",
+    "Greens: skip them, or serve sautéed or canned greens on the side.",
+    "Chicken broth: use vegetable broth or water plus a little extra salt and oil.",
+  ],
+  tips: [
+    "If you have leftover ham from a holiday meal, dice about a cup and cook it with the onion in place of some of the smoked paprika.",
+    "Leftovers keep in the fridge for 3 to 4 days. Reheat with a splash of broth so the rice does not dry out.",
+  ],
+  pantryStaples: ["canned black-eyed peas", "rice", "broth", "onion"],
+  related: ["rice-and-beans-with-canned-beans", "weeknight-chili", "leftover-turkey-soup"],
+};

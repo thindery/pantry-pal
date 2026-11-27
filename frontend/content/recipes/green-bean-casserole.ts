@@ -8,7 +8,7 @@ export const greenBeanCasserole: Recipe = {
   intro:
     "This is the classic green bean casserole, ready in about 45 minutes. It uses canned or frozen green beans, a can of condensed cream of mushroom soup, and a can of fried onions. The beans bake in the sauce, and the onions go on at the end so they stay crisp.",
   meal: "dinner",
-  tags: ["make-ahead"],
+  tags: ["holiday", "make-ahead"],
   servings: 8,
   prepMin: 15,
   cookMin: 30,
@@ -43,5 +43,5 @@ export const greenBeanCasserole: Recipe = {
     "If the sauce looks tight after baking, stir in a splash of milk before you add the topping.",
   ],
   pantryStaples: ["green beans", "canned soup", "fried onions", "milk"],
-  related: ["sunday-pot-roast", "classic-meatloaf", "sunday-chicken-and-rice"],
+  related: ["classic-stuffing", "sweet-potato-casserole", "homemade-cranberry-sauce"],
 };

@@ -1,0 +1,51 @@
+import type { Recipe } from "./types";
+
+export const classicStuffing: Recipe = {
+  slug: "classic-stuffing",
+  title: "Classic Stuffing",
+  seoTitle: "Classic Bread Stuffing for the Holidays",
+  metaSummary: "Classic bread stuffing, about 1 hour",
+  intro:
+    "This is a classic bread stuffing baked in a dish, ready in about an hour. It uses cubed bread, onion, celery, butter, broth, and poultry seasoning or sage. Baking it outside the bird keeps the texture even and makes the timing easier to control.",
+  meal: "dinner",
+  tags: ["holiday", "make-ahead"],
+  servings: 8,
+  prepMin: 20,
+  cookMin: 40,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/classic-stuffing.webp",
+  imageAlt: "AI-generated illustration of a baking dish of classic bread stuffing, not a photo of this dish",
+  ingredients: [
+    { qty: 12, unit: "cup", item: "cubed day-old bread", note: "about 1 pound, from a loaf of sandwich or rustic bread" },
+    { qty: 8, unit: "tbsp", item: "butter" },
+    { qty: 1, item: "yellow onion", plural: "yellow onions", note: "diced" },
+    { qty: 3, unit: "stalk", item: "celery", note: "diced" },
+    { qty: 2, unit: "tsp", item: "poultry seasoning", note: "or 1 teaspoon dried sage plus 1 teaspoon dried thyme" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 0.5, unit: "tsp", item: "black pepper" },
+    { qty: 2, unit: "cup", item: "chicken or turkey broth", note: "plus more if the bread looks dry" },
+    { qty: 2, item: "egg", plural: "eggs", note: "beaten, optional, for a tighter slice" },
+    { qty: 2, unit: "tbsp", item: "chopped fresh parsley", note: "optional" },
+  ],
+  steps: [
+    "Heat the oven to 350°F (175°C). Grease a 9-by-13-inch baking dish. If the bread is still soft, spread the cubes on a sheet pan and bake for 10 to 15 minutes to dry them.",
+    "Melt the butter in a large skillet over medium heat. Cook the onion and celery for about 8 minutes, until they are soft.",
+    "Stir in the poultry seasoning, salt, and pepper. Toss the vegetables and butter with the bread cubes in a large bowl.",
+    "Pour in the broth and the eggs, if you are using them, and toss until the bread is evenly moistened but not soggy. Stir in the parsley. Taste and add a pinch more salt if it needs it.",
+    "Spread the stuffing in the baking dish. Cover with foil and bake for 25 minutes, then uncover and bake for 15 minutes more, until the top is golden. Let it sit for 5 minutes before serving.",
+  ],
+  substitutions: [
+    "Day-old bread: use a bag of unseasoned dried stuffing cubes and skip the drying step.",
+    "Poultry seasoning: use 1 teaspoon dried sage and 1 teaspoon dried thyme, or a little chopped fresh sage.",
+    "Chicken broth: use turkey broth, vegetable broth, or water plus a little extra butter and salt.",
+    "Eggs: leave them out for a looser, more traditional stuffing; add a splash more broth if the cubes look dry.",
+    "Onion and celery: use leftover cooked vegetables, chopped, and warm them in the butter before tossing with the bread.",
+  ],
+  tips: [
+    "You can cube and dry the bread a day ahead, and you can sauté the vegetables ahead too. Toss everything with the broth just before baking.",
+    "If the top is brown before the center is hot, cover it with foil for the last few minutes.",
+  ],
+  pantryStaples: ["bread", "broth", "onion and celery", "poultry seasoning"],
+  related: ["leftover-turkey-soup", "green-bean-casserole", "sweet-potato-casserole"],
+};
