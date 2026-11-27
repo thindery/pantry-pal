@@ -231,20 +231,17 @@ describe("browse page (PP-184)", () => {
     expect(screen.getByText(/No recipes match/)).toBeTruthy();
   });
 
-  it("renders committed WebP illustrations, and placeholders for the holiday batch", () => {
+  it("renders committed WebP illustrations for every recipe, with no placeholders", () => {
     const recipes = allRecipesWithImageState();
-    expect(recipes.filter((r) => r.hasImage)).toHaveLength(24);
-    expect(recipes.filter((r) => !r.hasImage)).toHaveLength(12);
+    expect(recipes.every((r) => r.hasImage)).toBe(true);
     expect(recipes).toHaveLength(36);
     render(RecipesPage());
     expect((screen.getByRole("link", { name: /Holiday recipes/ }).getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/recipes/holiday");
-    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
-    fireEvent.click(screen.getByRole("button", { name: "Show more recipes" }));
-    expect(screen.queryAllByTestId("recipe-image-placeholder").length).toBeGreaterThan(0);
+    expect(screen.queryAllByTestId("recipe-image-placeholder")).toHaveLength(0);
     expect(screen.getByTestId("recipe-newsletter-form")).toBeTruthy();
     expect(screen.getByText("Get new pantry recipes by email")).toBeTruthy();
     expect(screen.getByText("We'll email new recipes occasionally. Unsubscribe anytime.")).toBeTruthy();
-    for (const r of recipes.filter((r) => r.hasImage).slice(0, 3)) {
+    for (const r of recipes.slice(0, 3)) {
       const img = screen.getByRole("img", { name: r.imageAlt });
       expect(img.getAttribute("src")).toBe(r.image);
     }
@@ -401,6 +398,21 @@ describe("recipe page (PP-184)", () => {
     expect(recipeLd.image).toEqual(["https://www.mypantryhub.com/recipes/lasagna-soup.webp"]);
     expect(screen.getAllByTestId("recipe-newsletter-form").length).toBeGreaterThan(0);
     expect(screen.getByText("We'll email new recipes occasionally. Unsubscribe anytime.")).toBeTruthy();
+  });
+
+  it("uses the holiday illustration in JSON-LD and has no placeholder", async () => {
+    const meta = await generateMetadata({ params: Promise.resolve({ slug: "leftover-turkey-pot-pie" }) });
+    expect(JSON.stringify(meta.openGraph?.images)).toContain("/recipes/leftover-turkey-pot-pie.webp");
+    const { container } = await renderRecipe("leftover-turkey-pot-pie");
+    expect(screen.queryByTestId("recipe-image-placeholder")).toBeNull();
+    const hero = screen.getByRole("img", { name: getRecipe("leftover-turkey-pot-pie")!.imageAlt });
+    expect(hero.getAttribute("src")).toBe("/recipes/leftover-turkey-pot-pie.webp");
+    const recipeLd = JSON.parse(
+      Array.from(container.querySelectorAll('script[type="application/ld+json"]'))
+        .map((n) => n.textContent ?? "")
+        .find((t) => t.includes('"Recipe"')) ?? "{}"
+    );
+    expect(recipeLd.image).toEqual(["https://www.mypantryhub.com/recipes/leftover-turkey-pot-pie.webp"]);
   });
 });
 
