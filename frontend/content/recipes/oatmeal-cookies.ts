@@ -1,0 +1,50 @@
+import type { Recipe } from "./types";
+
+export const oatmealCookies: Recipe = {
+  slug: "oatmeal-cookies",
+  title: "Oatmeal Cookies",
+  seoTitle: "Easy Oatmeal Cookies from Pantry Staples",
+  metaSummary: "Chewy oatmeal cookies, about 30 minutes",
+  intro:
+    "These are chewy oatmeal cookies that take about 30 minutes. The dough uses rolled oats, brown sugar, butter, and flour, and it bakes into cookies with craggy edges and a soft center. Raisins or chocolate chips are optional if you have them.",
+  meal: "snack",
+  tags: ["vegetarian"],
+  servings: 24,
+  prepMin: 15,
+  cookMin: 15,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/oatmeal-cookies.webp",
+  imageAlt: "AI-generated illustration of oatmeal cookies on a plate, not a photo of this dish",
+  ingredients: [
+    { qty: 1, unit: "cup", item: "butter", note: "softened" },
+    { qty: 1, unit: "cup", item: "packed brown sugar" },
+    { qty: 0.5, unit: "cup", item: "granulated sugar" },
+    { qty: 2, item: "egg", plural: "eggs" },
+    { qty: 1, unit: "tsp", item: "vanilla extract" },
+    { qty: 1.5, unit: "cup", item: "all-purpose flour" },
+    { qty: 3, unit: "cup", item: "old-fashioned rolled oats" },
+    { qty: 1, unit: "tsp", item: "baking soda" },
+    { qty: 1, unit: "tsp", item: "ground cinnamon" },
+    { qty: 0.5, unit: "tsp", item: "salt" },
+  ],
+  steps: [
+    "Heat the oven to 350°F (175°C). Line two baking sheets with parchment.",
+    "Beat the butter, brown sugar, and granulated sugar until creamy. Beat in the eggs and vanilla.",
+    "In a second bowl, whisk the flour, baking soda, cinnamon, and salt. Mix the dry ingredients into the butter mixture, then stir in the oats.",
+    "Drop rounded tablespoons of dough 2 inches apart on the sheets. Bake for 10 to 12 minutes, until the edges are golden and the centers still look slightly soft.",
+    "Cool on the sheet for 5 minutes, then move to a rack.",
+  ],
+  substitutions: [
+    "Old-fashioned oats: use quick oats; the cookies will be a little less chewy.",
+    "Add-ins: stir in 1 cup raisins or chocolate chips with the oats.",
+    "Butter: use an equal amount of plant butter.",
+    "Brown sugar: use all granulated sugar; the cookies will be crisper.",
+  ],
+  tips: [
+    "Do not overbake; oatmeal cookies firm up as they cool and can turn dry if they bake too long.",
+    "If the dough seems loose, stir in 2 extra tablespoons of flour or chill it for 15 minutes.",
+  ],
+  pantryStaples: ["rolled oats", "brown sugar", "flour", "butter"],
+  related: ["apple-crisp", "chocolate-chip-cookies", "snickerdoodles"],
+};

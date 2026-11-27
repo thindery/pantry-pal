@@ -1,0 +1,53 @@
+import type { Recipe } from "./types";
+
+export const easyChocolateCake: Recipe = {
+  slug: "easy-chocolate-cake",
+  title: "Easy Chocolate Cake",
+  seoTitle: "Easy Chocolate Cake from Pantry Staples",
+  metaSummary: "Easy chocolate cake, about 50 minutes",
+  intro:
+    "This is an easy chocolate cake that takes about 50 minutes, including time in the oven. The batter uses cocoa, flour, sugar, oil, and eggs, and it bakes in two round pans or one 9×13-inch pan. A simple cocoa frosting goes on once the cake is cool.",
+  meal: "snack",
+  tags: ["vegetarian"],
+  servings: 12,
+  prepMin: 20,
+  cookMin: 30,
+  datePublished: "2026-11-26",
+  updated: "2026-11-26",
+  image: "/recipes/easy-chocolate-cake.webp",
+  imageAlt: "AI-generated illustration of a sliced chocolate cake with chocolate frosting, not a photo of this dish",
+  ingredients: [
+    { qty: 1.75, unit: "cup", item: "all-purpose flour" },
+    { qty: 1.75, unit: "cup", item: "granulated sugar" },
+    { qty: 0.75, unit: "cup", item: "unsweetened cocoa powder", note: "divided" },
+    { qty: 1.5, unit: "tsp", item: "baking soda" },
+    { qty: 1, unit: "tsp", item: "baking powder" },
+    { qty: 1, unit: "tsp", item: "salt" },
+    { qty: 2, item: "egg", plural: "eggs" },
+    { qty: 1, unit: "cup", item: "milk" },
+    { qty: 0.5, unit: "cup", item: "vegetable oil" },
+    { qty: 2, unit: "tsp", item: "vanilla extract" },
+    { qty: 1, unit: "cup", item: "hot water" },
+    { qty: 0.5, unit: "cup", item: "butter", note: "softened, for the frosting" },
+    { qty: 2, unit: "cup", item: "powdered sugar" },
+  ],
+  steps: [
+    "Heat the oven to 350°F (175°C). Grease and flour two 8-inch or 9-inch round pans, or one 9×13-inch pan.",
+    "In a large bowl, whisk the flour, granulated sugar, ½ cup of the cocoa, the baking soda, baking powder, and salt. Add the eggs, milk, oil, and 1 teaspoon of the vanilla. Beat until smooth, then stir in the hot water. The batter will be thin.",
+    "Divide the batter between the pans. Bake for 28 to 35 minutes, until a toothpick in the center comes out clean. Cool in the pans for 10 minutes, then turn out onto a rack and cool completely. If you used a 9×13-inch pan, you can frost the cake in the pan.",
+    "For the frosting, beat the butter with the remaining ¼ cup cocoa, the remaining 1 teaspoon vanilla, and the powdered sugar, adding 1 to 2 tablespoons milk if needed to make a spreadable frosting.",
+    "Frost the cooled cake. For two layers, place one cake on a plate, spread a layer of frosting, add the second cake, and frost the top and sides.",
+  ],
+  substitutions: [
+    "Vegetable oil: use canola or another neutral oil, or melted coconut oil, cooled slightly.",
+    "Milk: use 2%, whole, or unsweetened plant milk in the batter and frosting.",
+    "Hot water: use hot coffee for a deeper chocolate flavor; the cake will not taste like coffee.",
+    "Two round pans: bake in a greased 9×13-inch pan for 30 to 35 minutes and frost the top only.",
+  ],
+  tips: [
+    "The thin batter is normal; it bakes into a moist crumb.",
+    "Wait until the cake is fully cool before frosting or the frosting will melt.",
+  ],
+  pantryStaples: ["cocoa powder", "flour", "sugar", "oil"],
+  related: ["fudgy-brownies", "chocolate-chip-cookies", "easy-chocolate-fudge"],
+};

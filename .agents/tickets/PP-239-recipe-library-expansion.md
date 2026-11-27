@@ -27,3 +27,5 @@ Ship recipes in batches of about 12. Every recipe in a batch goes live with its 
 - [ ] Same content rules as PP-184: original writing, substitutions, FAQs only where real, no invented ratings or nutrition, no affiliate links, no expiry or food-waste tracking claims
 - [ ] Standing image rule recorded in `.agents/docs/ticket-template.md` and `.agents/docs/recipe-backlog.md`
 - [ ] Sitemap updated and resubmitted in GSC after each batch
+
+- Dessert batch (12 recipes + WebP illustrations) is in progress on `feature/PP-239-desserts`.

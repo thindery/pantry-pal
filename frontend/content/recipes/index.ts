@@ -50,6 +50,20 @@ import { spinachArtichokeDip } from "./spinach-artichoke-dip";
 import { stuffedMushrooms } from "./stuffed-mushrooms";
 import { thumbprintCookies } from "./thumbprint-cookies";
 
+import { appleCrisp } from "./apple-crisp";
+import { bananaBread } from "./banana-bread";
+import { breadPudding } from "./bread-pudding";
+import { chocolateChipCookies } from "./chocolate-chip-cookies";
+import { classicRicePudding } from "./classic-rice-pudding";
+import { easyChocolateCake } from "./easy-chocolate-cake";
+import { fudgyBrownies } from "./fudgy-brownies";
+import { lemonBars } from "./lemon-bars";
+import { noBakeCheesecake } from "./no-bake-cheesecake";
+import { oatmealCookies } from "./oatmeal-cookies";
+import { peachCobbler } from "./peach-cobbler";
+import { snickerdoodles } from "./snickerdoodles";
+
+
 
 
 export type { DietTag, MealType, Recipe, RecipeFaq, RecipeIngredient } from "./types";
@@ -104,6 +118,18 @@ export const RECIPES: readonly Recipe[] = [
   stuffedMushrooms,
   cranberryCocktailMeatballs,
   pigsInABlanket,
+  chocolateChipCookies,
+  fudgyBrownies,
+  bananaBread,
+  appleCrisp,
+  noBakeCheesecake,
+  peachCobbler,
+  breadPudding,
+  snickerdoodles,
+  oatmealCookies,
+  lemonBars,
+  easyChocolateCake,
+  classicRicePudding,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {
