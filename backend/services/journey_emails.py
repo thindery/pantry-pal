@@ -12,6 +12,7 @@ from typing import Optional
 from urllib.parse import quote
 
 from backend.services import email_gate
+from backend.services import weekly_content as weekly_content
 from backend.services.email_service import (
     COLOR_ACCENT,
     COLOR_MUTED,
@@ -24,73 +25,27 @@ from backend.services.email_service import (
     _wrap,
 )
 
-# Files that exist in frontend/public/email/. Add a name here only after the file is committed.
-# Gap images (see PP-199) go first in each HERO list so they win as soon as they exist.
-AVAILABLE_IMAGES = frozenset(
+# Files that exist in frontend/public/email/. Hero names are listed here; every
+# catalog recipe is included automatically once its JPG is committed (tests check).
+HERO_IMAGES = frozenset(
     {
-        "canned-tuna-pasta",
-        "black-bean-tacos",
-        "easy-red-lentil-soup",
-        "rice-and-beans-with-canned-beans",
-        "leftover-rice-fried-rice",
-        "pasta-e-fagioli",
-        "sheet-pan-chicken-and-vegetables",
-        "easy-lasagna",
-        "baked-potato-soup",
-        "sunday-pot-roast",
-        "baked-oatmeal",
-        "canned-chickpea-curry",
-        "chickpea-salad-sandwiches",
-        "classic-meatloaf",
-        "easy-vegetable-soup",
-        "freezer-breakfast-burritos",
-        "green-bean-casserole",
-        "lasagna-soup",
-        "leftover-turkey-soup",
-        "leftover-vegetable-frittata",
-        "peanut-butter-noodles",
-        "sunday-chicken-and-rice",
-        "weeknight-chili",
-        "white-chicken-chili",
         "hero-pantry-welcome",
         "hero-pantry-shelf",
         "hero-scan-first-item",
         "hero-household-pantry",
     }
 )
-IMAGE_W, IMAGE_H = 600, 450
-SHOWN_W = 464  # card width (520) minus padding (56)
-
-ALT = {
-    "canned-tuna-pasta": "AI illustration of canned tuna pasta in a bowl",
-    "black-bean-tacos": "AI illustration of black bean tacos",
-    "easy-red-lentil-soup": "AI illustration of a bowl of red lentil soup",
-    "rice-and-beans-with-canned-beans": "AI illustration of rice and beans",
-    "leftover-rice-fried-rice": "AI illustration of fried rice made with leftover rice",
-    "pasta-e-fagioli": "AI illustration of pasta e fagioli",
-    "sheet-pan-chicken-and-vegetables": "AI illustration of sheet-pan chicken and vegetables",
-    "easy-lasagna": "AI illustration of lasagna",
-    "baked-potato-soup": "AI illustration of baked potato soup",
-    "sunday-pot-roast": "AI illustration of a Sunday pot roast",
-    "baked-oatmeal": "AI illustration of baked oatmeal with bananas",
-    "canned-chickpea-curry": "AI illustration of a bowl of chickpea curry",
-    "chickpea-salad-sandwiches": "AI illustration of chickpea salad sandwiches",
-    "classic-meatloaf": "AI illustration of a glazed meatloaf",
-    "easy-vegetable-soup": "AI illustration of a bowl of vegetable soup",
-    "freezer-breakfast-burritos": "AI illustration of breakfast burritos",
-    "green-bean-casserole": "AI illustration of green bean casserole",
-    "lasagna-soup": "AI illustration of a bowl of lasagna soup",
-    "leftover-turkey-soup": "AI illustration of a bowl of turkey soup",
-    "leftover-vegetable-frittata": "AI illustration of a vegetable frittata",
-    "peanut-butter-noodles": "AI illustration of peanut butter noodles",
-    "sunday-chicken-and-rice": "AI illustration of chicken and rice in a pan",
-    "weeknight-chili": "AI illustration of a bowl of chili",
-    "white-chicken-chili": "AI illustration of a bowl of white chicken chili",
+HERO_ALT = {
     "hero-pantry-welcome": "AI illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes",
     "hero-pantry-shelf": "Wooden kitchen shelf of glass jars filled with pasta, flour, and oats",
     "hero-scan-first-item": "Hands putting glass jars of pasta, walnuts, and oats on a kitchen counter",
     "hero-household-pantry": "A person placing glass jars of dry goods on a white kitchen shelf",
 }
+AVAILABLE_IMAGES = frozenset(r.slug for r in weekly_content.CATALOG) | HERO_IMAGES
+IMAGE_W, IMAGE_H = 600, 450
+SHOWN_W = 464  # card width (520) minus padding (56)
+
+ALT = {**HERO_ALT, **{r.slug: r.image_alt for r in weekly_content.CATALOG}}
 RECIPE_TITLES = {
     "canned-tuna-pasta": "Canned Tuna Pasta",
     "black-bean-tacos": "Black Bean Tacos",

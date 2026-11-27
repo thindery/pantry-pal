@@ -118,8 +118,14 @@ def build_issue(*, day: Optional[date] = None, send_test: bool = True) -> dict[s
 
     with db_connection() as conn:
         with conn.cursor() as cur:
+            # Enough rows to cover the recipe cooldown (grows with the library) and the tip rotation.
+            recent_limit = max(
+                weekly_content.cooldown_issues(len(weekly_content.CATALOG)),
+                len(weekly_content.TIPS),
+            ) + 5
             cur.execute(
-                "SELECT recipe_slugs, tip_id FROM email_weekly_issues WHERE status <> 'skipped' ORDER BY created_at DESC LIMIT 30"
+                "SELECT recipe_slugs, tip_id FROM email_weekly_issues WHERE status <> 'skipped' ORDER BY created_at DESC LIMIT %s",
+                (recent_limit,),
             )
             recent = cur.fetchall()
     slugs = weekly_content.pick_recipes(day, [list(r["recipe_slugs"]) for r in recent])
