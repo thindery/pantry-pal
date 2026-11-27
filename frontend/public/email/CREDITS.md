@@ -20,6 +20,22 @@ Resized JPG copies of the AI-generated recipe illustrations in `frontend/public/
 | easy-lasagna.jpg | recipes/easy-lasagna.webp |
 | baked-potato-soup.jpg | recipes/baked-potato-soup.webp |
 | sunday-pot-roast.jpg | recipes/sunday-pot-roast.webp |
+| baked-oatmeal.jpg | recipes/baked-oatmeal.webp |
+| canned-chickpea-curry.jpg | recipes/canned-chickpea-curry.webp |
+| chickpea-salad-sandwiches.jpg | recipes/chickpea-salad-sandwiches.webp |
+| classic-meatloaf.jpg | recipes/classic-meatloaf.webp |
+| easy-vegetable-soup.jpg | recipes/easy-vegetable-soup.webp |
+| freezer-breakfast-burritos.jpg | recipes/freezer-breakfast-burritos.webp |
+| green-bean-casserole.jpg | recipes/green-bean-casserole.webp |
+| lasagna-soup.jpg | recipes/lasagna-soup.webp |
+| leftover-turkey-soup.jpg | recipes/leftover-turkey-soup.webp |
+| leftover-vegetable-frittata.jpg | recipes/leftover-vegetable-frittata.webp |
+| peanut-butter-noodles.jpg | recipes/peanut-butter-noodles.webp |
+| sunday-chicken-and-rice.jpg | recipes/sunday-chicken-and-rice.webp |
+| weeknight-chili.jpg | recipes/weeknight-chili.webp |
+| white-chicken-chili.jpg | recipes/white-chicken-chili.webp |
+
+The last 14 rows were added for the weekly recipe newsletter (PP-235) so the library can rotate without repeating soon.
 
 ## Unsplash photos (Unsplash License)
 

@@ -6,7 +6,7 @@ import logging
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 
 from backend.auth_session import resolve_authenticated_user
 from backend.clerk_auth import is_admin_user
@@ -110,6 +110,35 @@ async def email_marketing(
             status_code=500,
             detail=error_response("INTERNAL_ERROR", "Failed to retrieve email marketing data"),
         )
+
+
+@router.post("/email-marketing/weekly/{issue_id}/approve")
+async def approve_weekly_issue(issue_id: str, background: BackgroundTasks, admin_id: str = Depends(require_admin)):
+    """PP-235: "Approve & send". Moves a draft to approved and starts sending; the 15-minute cron resumes it."""
+    from backend.services import weekly_recipes
+
+    issue = weekly_recipes.approve_issue(issue_id, admin_id)
+    if not issue:
+        raise HTTPException(
+            status_code=409,
+            detail=error_response("NOT_A_DRAFT", "This issue is not a draft, so it can't be approved."),
+        )
+    logger.info("weekly recipe issue %s approved by admin", issue["issue_key"])
+    background.add_task(weekly_recipes.process_sends)
+    return success_response({"id": issue["id"], "issue_key": issue["issue_key"], "status": "approved"})
+
+
+@router.post("/email-marketing/weekly/{issue_id}/skip")
+async def skip_weekly_issue(issue_id: str, _admin: str = Depends(require_admin)):
+    """PP-235: skip an issue that has not started sending."""
+    from backend.services import weekly_recipes
+
+    if not weekly_recipes.skip_issue(issue_id):
+        raise HTTPException(
+            status_code=409,
+            detail=error_response("CANNOT_SKIP", "Only a draft, or an approved issue that has not started sending, can be skipped."),
+        )
+    return success_response({"id": issue_id, "status": "skipped"})
 
 
 class AiProviderUpdate(BaseModel):

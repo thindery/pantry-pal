@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from backend.services import email_gate, email_journeys
+from backend.services import email_gate, email_journeys, weekly_recipes
 from backend.services.admin_service import _mask_email_str
 from database.db import db_connection
 
@@ -240,4 +240,5 @@ def get_email_marketing(period: str = "30d") -> dict[str, Any]:
             "click_source": "first-party redirect (human clicks) plus Resend webhook clicks when enabled",
         },
         "recent_events": recent_events,
+        "weekly": weekly_recipes.admin_summary(),
     }

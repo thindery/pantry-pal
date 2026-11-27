@@ -13,8 +13,10 @@ from urllib.parse import quote
 
 from backend.services import email_gate
 from backend.services.email_service import (
+    COLOR_ACCENT,
     COLOR_MUTED,
     COLOR_TEXT,
+    COLOR_WASH,
     PRO_FEATURES,
     FREE_FEATURES,
     _app_url,
@@ -36,6 +38,20 @@ AVAILABLE_IMAGES = frozenset(
         "easy-lasagna",
         "baked-potato-soup",
         "sunday-pot-roast",
+        "baked-oatmeal",
+        "canned-chickpea-curry",
+        "chickpea-salad-sandwiches",
+        "classic-meatloaf",
+        "easy-vegetable-soup",
+        "freezer-breakfast-burritos",
+        "green-bean-casserole",
+        "lasagna-soup",
+        "leftover-turkey-soup",
+        "leftover-vegetable-frittata",
+        "peanut-butter-noodles",
+        "sunday-chicken-and-rice",
+        "weeknight-chili",
+        "white-chicken-chili",
         "hero-pantry-welcome",
         "hero-pantry-shelf",
         "hero-scan-first-item",
@@ -56,6 +72,20 @@ ALT = {
     "easy-lasagna": "AI illustration of lasagna",
     "baked-potato-soup": "AI illustration of baked potato soup",
     "sunday-pot-roast": "AI illustration of a Sunday pot roast",
+    "baked-oatmeal": "AI illustration of baked oatmeal with bananas",
+    "canned-chickpea-curry": "AI illustration of a bowl of chickpea curry",
+    "chickpea-salad-sandwiches": "AI illustration of chickpea salad sandwiches",
+    "classic-meatloaf": "AI illustration of a glazed meatloaf",
+    "easy-vegetable-soup": "AI illustration of a bowl of vegetable soup",
+    "freezer-breakfast-burritos": "AI illustration of breakfast burritos",
+    "green-bean-casserole": "AI illustration of green bean casserole",
+    "lasagna-soup": "AI illustration of a bowl of lasagna soup",
+    "leftover-turkey-soup": "AI illustration of a bowl of turkey soup",
+    "leftover-vegetable-frittata": "AI illustration of a vegetable frittata",
+    "peanut-butter-noodles": "AI illustration of peanut butter noodles",
+    "sunday-chicken-and-rice": "AI illustration of chicken and rice in a pan",
+    "weeknight-chili": "AI illustration of a bowl of chili",
+    "white-chicken-chili": "AI illustration of a bowl of white chicken chili",
     "hero-pantry-welcome": "AI illustration of a tidy kitchen counter with jars of rice, beans, pasta and canned tomatoes",
     "hero-pantry-shelf": "Wooden kitchen shelf of glass jars filled with pasta, flour, and oats",
     "hero-scan-first-item": "Hands putting glass jars of pasta, walnuts, and oats on a kitchen counter",
@@ -366,3 +396,93 @@ def render_onboarding_pro(*, send_id: str, unsubscribe_url: str, name: Optional[
         footer_text=footer_text,
     )
     return Rendered("What Pro adds to Pantry Hub", html, text)
+
+
+WEEKLY_JOURNEY = "weekly_recipes"
+
+
+def render_weekly_issue(
+    *,
+    send_id: str,
+    content: dict,
+    subject: str,
+    preheader: str,
+    unsubscribe_url: str,
+    audience: str = "subscriber",
+    test: bool = False,
+) -> Rendered:
+    """PP-235: the weekly recipe email, rendered from the stored issue content.
+
+    ``audience`` is ``subscriber`` (confirmed recipe newsletter) or ``user`` (app user opted in).
+    ``test`` adds a banner and a [TEST] subject so a review copy can't be mistaken for the real one.
+    """
+    recipes = content["recipes"]
+    tip = content["tip"]
+    blocks_html, blocks_text = [], []
+    for r in recipes:
+        url = tracked(send_id, f"weekly:{r['slug']}", f"/recipes/{r['slug']}/")
+        image = f'<a href="{_html_escape(url)}">{_img(r["slug"])}</a>' if r["slug"] in AVAILABLE_IMAGES else ""
+        blocks_html.append(
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px 0;"><tr><td>'
+            f"{image}"
+            f'<p style="margin:10px 0 2px 0;font-size:18px;font-weight:700;line-height:1.3;">'
+            f'<a href="{_html_escape(url)}" style="color:{COLOR_TEXT};text-decoration:none;">{_html_escape(r["title"])}</a></p>'
+            f'<p style="margin:0 0 6px 0;font-size:13px;color:{COLOR_MUTED};">{_html_escape(r["time"])}</p>'
+            f'<p style="margin:0;">{_html_escape(r["blurb"])} '
+            f'<a href="{_html_escape(url)}" style="color:{COLOR_TEXT};font-weight:700;">Get the recipe</a></p>'
+            "</td></tr></table>"
+        )
+        blocks_text.append(f"{r['title']} ({r['time']})\n{r['blurb']}\n{url}")
+    tip_html = (
+        f'<div style="margin:0 0 18px 0;padding:14px 16px;background-color:{COLOR_WASH};border-left:4px solid {COLOR_ACCENT};border-radius:4px;">'
+        f'<p style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:{COLOR_MUTED};text-transform:uppercase;letter-spacing:0.04em;">Pantry tip</p>'
+        f'<p style="margin:0 0 4px 0;font-weight:700;">{_html_escape(tip["title"])}</p>'
+        f'<p style="margin:0;">{_html_escape(tip["body"])}</p></div>'
+    )
+    tip_text = f"PANTRY TIP: {tip['title']}\n{tip['body']}"
+    if audience == "user":
+        cta_url = tracked(send_id, "weekly_open_app", "/dashboard/")
+        soft_html = _p(
+            "Open Pantry Hub to check these against what's in your pantry. "
+            f'<a href="{_html_escape(cta_url)}" style="color:{COLOR_TEXT};font-weight:700;">Open Pantry Hub</a>'
+        )
+        soft_text = f"Open Pantry Hub to check these against what's in your pantry: {cta_url}"
+        cta_label, reason = "Open Pantry Hub", "You're getting this weekly recipe email because you turned it on in your Pantry Hub account."
+    else:
+        soft_html, soft_text = _signup_promo(send_id, "weekly_signup")
+        cta_label, cta_url = "Browse all recipes", tracked(send_id, "weekly_browse", "/recipes/")
+        reason = "You're getting this weekly recipe email because you confirmed recipe emails from Pantry Hub."
+    banner_html = banner_text = ""
+    if test:
+        msg = "This is a test copy for review. It has not been sent to the list."
+        banner_html = (
+            f'<p style="margin:0 0 16px 0;padding:10px 12px;background-color:#fef3c7;color:#92400e;border-radius:6px;font-size:14px;"><strong>[TEST]</strong> {msg}</p>'
+        )
+        banner_text = f"[TEST] {msg}\n\n"
+        subject = f"[TEST] {subject}"
+    body_html = (
+        banner_html
+        + _p("Three recipes from the Pantry Hub library this week, plus one small kitchen tip.")
+        + "".join(blocks_html)
+        + tip_html
+        + _p('<span style="font-size:13px;color:#64748b;">The pictures are AI illustrations, not photos of the dishes.</span>')
+        + soft_html
+    )
+    body_text = (
+        banner_text
+        + "Three recipes from the Pantry Hub library this week, plus one small kitchen tip.\n\n"
+        + "\n\n".join(blocks_text)
+        + f"\n\n{tip_text}\n\n(The pictures are AI illustrations, not photos of the dishes.)\n\n{soft_text}"
+    )
+    footer_html, footer_text = _footer(reason, unsubscribe_url)
+    html, text = _wrap(
+        title="This week from the pantry",
+        preheader=preheader,
+        body_html=body_html,
+        body_text=body_text,
+        cta_label=cta_label,
+        cta_url=cta_url,
+        footer_html=footer_html,
+        footer_text=footer_text,
+    )
+    return Rendered(subject, html, text)

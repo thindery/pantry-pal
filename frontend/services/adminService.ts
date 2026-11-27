@@ -190,6 +190,43 @@ export interface EmailMarketingTemplate {
   bounce_rate: number | null;
 }
 
+export type WeeklyIssueStatus = 'draft' | 'approved' | 'sending' | 'sent' | 'skipped';
+
+export interface WeeklyIssue {
+  id: string;
+  issue_key: string;
+  status: WeeklyIssueStatus;
+  subject: string;
+  recipes: { slug: string; title: string }[];
+  tip_title: string | null;
+  test_sent_at: string | null;
+  approved_at: string | null;
+  approved_by: 'admin' | 'auto' | null;
+  send_started_at: string | null;
+  send_completed_at: string | null;
+  created_at: string;
+  stats: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    bounced: number;
+    complained: number;
+    open_rate: number | null;
+    click_rate: number | null;
+  };
+  can_approve: boolean;
+  can_skip: boolean;
+}
+
+export interface WeeklyRecipes {
+  auto_send: boolean;
+  auto_send_delay_hours: number;
+  test_recipient_set: boolean;
+  audience: { subscribers: number; app_users: number; total: number };
+  issues: WeeklyIssue[];
+}
+
 export interface EmailMarketing {
   period: Period;
   config: {
@@ -216,6 +253,8 @@ export interface EmailMarketing {
   bot_clicks_ignored: number;
   tracking: { webhook_events_seen: boolean; open_tracking_seen: boolean; click_source: string };
   recent_events: { occurred_at: string | null; event_type: string; template: string | null; journey: string | null; to_email: string | null }[];
+  /** PP-235. Absent on servers that predate the weekly recipe email. */
+  weekly?: WeeklyRecipes;
 }
 
 export const getEmailMarketing = async (period: Period = '30d'): Promise<EmailMarketing> => {
@@ -227,6 +266,13 @@ export const getEmailMarketing = async (period: Period = '30d'): Promise<EmailMa
   }
   return res as EmailMarketing;
 };
+
+/** PP-235: "Approve & send". Only moves a draft to approved; the server does the sending. */
+export const approveWeeklyIssue = (issueId: string): Promise<unknown> =>
+  fetchApi<unknown>(`/api/admin/email-marketing/weekly/${encodeURIComponent(issueId)}/approve`, { method: 'POST' });
+
+export const skipWeeklyIssue = (issueId: string): Promise<unknown> =>
+  fetchApi<unknown>(`/api/admin/email-marketing/weekly/${encodeURIComponent(issueId)}/skip`, { method: 'POST' });
 
 export const getTransactions = (limit: number = 10): Promise<Transaction[]> =>
   fetchApi<Transaction[]>(`/api/admin/transactions?limit=${limit}`);

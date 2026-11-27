@@ -23,6 +23,7 @@ import {
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
 import { trackEvent } from "@/lib/analytics";
 import { LowStockDigestToggle } from "@/components/LowStockDigestToggle";
+import { WeeklyRecipesToggle } from "@/components/WeeklyRecipesToggle";
 
 export function AccountView() {
   const { data: session } = useSession();
@@ -169,6 +170,8 @@ export function AccountView() {
         thresholdConfig={thresholdConfig}
         itemThresholdOverrides={itemThresholdOverrides}
       />
+
+      <WeeklyRecipesToggle />
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
         <div className="flex items-start justify-between gap-4">
