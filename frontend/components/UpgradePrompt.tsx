@@ -1,5 +1,18 @@
 import React from 'react';
 import { PRO_PLAN_NAME } from '@/lib/site-content';
+import { useFirstMonthOffer } from '@/components/OfferBanner';
+import { PLAN_PRICES_CENTS, formatUsd, yearlySavingsPercent } from '@/lib/pricing';
+
+/** PP-243: one honest price line for the in-app paywall. Exported for tests. */
+export function upgradePriceLine(offerPriceCents?: number | null): string {
+  const month = formatUsd(PLAN_PRICES_CENTS.pro.month);
+  const year = formatUsd(PLAN_PRICES_CENTS.pro.year);
+  const save = yearlySavingsPercent('pro');
+  if (typeof offerPriceCents === 'number') {
+    return `${formatUsd(offerPriceCents)} your first month, then ${month}/mo. Or ${year}/yr (save ${save}%).`;
+  }
+  return `${month}/mo, or ${year}/yr (save ${save}%).`;
+}
 
 interface UpgradePromptProps {
   title: string;
@@ -16,6 +29,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   onClose,
   onUpgrade,
 }) => {
+  const offer = useFirstMonthOffer();
   const getFeatureIcon = () => {
     switch (feature) {
       case 'items':
@@ -32,7 +46,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
       case 'items':
         return 'Unlimited Items';
       case 'receipts':
-        return 'AI Receipt Scanning';
+        return 'Unlimited AI Receipt Scans';
       default:
         return 'Pro Features';
     }
@@ -40,7 +54,13 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 md:p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        data-testid={`upgrade-prompt-${feature}`}
+        className="bg-white rounded-2xl w-full max-w-md p-6 md:p-8 shadow-2xl animate-in zoom-in-95 duration-200"
+      >
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
@@ -56,6 +76,9 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
           <p className="text-sm text-emerald-800 text-center">
             Unlock <span className="font-semibold">{getFeatureName()}</span> and more with {PRO_PLAN_NAME}
+          </p>
+          <p className="text-sm text-emerald-900 text-center font-semibold mt-2" data-testid="upgrade-price-line">
+            {upgradePriceLine(offer?.offerPriceCents)}
           </p>
         </div>
 
@@ -78,7 +101,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({
 
         {/* Trust Signal */}
         <p className="text-center text-xs text-slate-400 mt-4">
-          🛡️ Secure checkout • Cancel anytime • 30-day guarantee
+          🛡️ Secure checkout by Stripe • Cancel anytime
         </p>
       </div>
     </div>
@@ -93,20 +116,28 @@ export const ItemLimitWarning: React.FC<{
   maxItems: number;
   onUpgrade: () => void;
 }> = ({ currentItems, maxItems, onUpgrade }) => {
-  const remaining = maxItems - currentItems;
-  const isNearLimit = remaining <= 5 && remaining > 0;
-  const percentage = (currentItems / maxItems) * 100;
+  const remaining = Math.max(0, maxItems - currentItems);
+  const atLimit = remaining === 0;
+  const isNearLimit = remaining <= 5;
+  const percentage = Math.min(100, (currentItems / maxItems) * 100);
 
   return (
-    <div className={`rounded-xl p-4 mb-4 ${isNearLimit ? 'bg-amber-50 border border-amber-200' : 'hidden'}`}>
+    <div
+      data-testid="item-limit-warning"
+      className={`rounded-xl p-4 mb-4 ${isNearLimit ? 'bg-amber-50 border border-amber-200' : 'hidden'}`}
+    >
       <div className="flex items-start gap-3">
         <div className="text-2xl">⚠️</div>
         <div className="flex-1">
           <h3 className="font-semibold text-amber-800 mb-1">
-            You're approaching your item limit
+            {atLimit ? `You've reached the ${maxItems}-item free limit` : "You're approaching your item limit"}
           </h3>
           <p className="text-sm text-amber-700 mb-3">
-            You have <span className="font-bold">{remaining}</span> items remaining on the free plan ({currentItems}/{maxItems} used).
+            {atLimit ? (
+              <>New items won&apos;t be added on the free plan ({currentItems}/{maxItems} used). You can still update the ones you have.</>
+            ) : (
+              <>You have <span className="font-bold">{remaining}</span> item{remaining === 1 ? '' : 's'} remaining on the free plan ({currentItems}/{maxItems} used).</>
+            )}
           </p>
 
           {/* Progress Bar */}
