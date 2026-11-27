@@ -145,14 +145,61 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 // Dashboard API
+// PP-237: the backend payload (backend/services/admin_service.get_dashboard_metrics) does not
+// match the DashboardMetrics shape the UI was written for (no alerts, logins.data, products.growth,
+// per-transaction email/description; amounts in cents; empty sparklines). Normalise it so the page
+// renders instead of throwing on undefined fields.
+type Raw = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+function toIso(value: unknown): string {
+  const raw = String(value ?? '');
+  if (!raw) return '';
+  if (/[zZ]|[+-]\d\d:?\d\d$/.test(raw)) return raw;
+  return `${raw.replace(' ', 'T')}Z`;
+}
+
+function toTxStatus(status: unknown): Transaction['status'] {
+  if (status === 'succeeded' || status === 'success') return 'success';
+  if (status === 'failed') return 'failed';
+  return 'pending';
+}
+
+export function normalizeDashboardMetrics(raw: Raw): DashboardMetrics {
+  const num = (v: unknown, d = 0) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+  const arr = (v: unknown): number[] => (Array.isArray(v) ? (v as number[]) : []);
+  const users: Raw = raw?.users ?? {};
+  const products: Raw = raw?.products ?? {};
+  const revenue: Raw = raw?.revenue ?? {};
+  const logins: Raw = raw?.logins ?? {};
+  const txns: Raw[] = Array.isArray(raw?.transactions) ? raw.transactions : [];
+  const failed = raw?.alerts?.failedPayments ?? raw?.failedPayments?.count ?? 0;
+  return {
+    users: { total: num(users.total), growth: num(users.growth), sparkline: arr(users.sparkline) },
+    products: { total: num(products.total), growth: num(products.growth), sparkline: arr(products.sparkline) },
+    revenue: {
+      // backend reports cents; the card formats dollars
+      lifetime: num(revenue.lifetime) / 100,
+      momGrowth: num(revenue.momGrowth),
+      trend: arr(revenue.trend),
+    },
+    logins: { data: Array.isArray(logins.data) ? logins.data : [] },
+    transactions: txns.map((t) => ({
+      id: String(t.id),
+      userId: String(t.userId ?? ''),
+      userEmail: t.userEmail ?? (t.userId ? `User ${String(t.userId).slice(0, 8)}` : 'Unknown user'),
+      amount: typeof t.amount === 'number' ? t.amount : num(t.amountCents) / 100,
+      status: toTxStatus(t.status),
+      timestamp: toIso(t.timestamp ?? t.createdAt),
+      description: t.description ?? (t.tier ? `${t.tier} plan${t.status === 'refunded' ? ' (refunded)' : ''}` : ''),
+    })),
+    alerts: { failedPayments: typeof failed === 'number' ? failed : 0 },
+  };
+}
+
 export const getDashboardMetrics = async (period: Period = '7d'): Promise<DashboardMetrics> => {
-  const res = await fetchApi<DashboardMetrics | { success: boolean; data: DashboardMetrics }>(
-    `/api/admin/dashboard?period=${period}`
-  );
-  if (res && typeof res === 'object' && 'data' in res && res.data) {
-    return (res as { data: DashboardMetrics }).data;
-  }
-  return res as DashboardMetrics;
+  const res = await fetchApi<Raw>(`/api/admin/dashboard?period=${period}`);
+  const data = res && typeof res === 'object' && 'data' in res && res.data ? res.data : res;
+  return normalizeDashboardMetrics(data as Raw);
 };
 
 export const getFunnelMetrics = async (period: Period = '7d'): Promise<FunnelMetrics> => {
