@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar, KPICard, ChartCard, TransactionsList, FunnelTiles, MarketingView, AiProviderPanel } from './admin';
 import { RevenueCard } from './admin/RevenueCard';
 import type { Period, DashboardMetrics } from '../types/admin';
-import { getDashboardMetrics } from '../services/adminService';
+import { authedFetch, getDashboardMetrics } from '../services/adminService';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import FeatureFlagsPanel from '../src/components/FeatureFlagsPanel';
 
@@ -61,7 +61,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   useEffect(() => {
     if (activeView === 'errors') {
       setLoadingErrors(true);
-      fetch('/api/client-errors?resolved=false')
+      authedFetch('/api/client-errors?resolved=false')
         .then(r => r.json())
         .then(data => setErrors(data.errors ?? []))
         .catch(console.error)
@@ -72,7 +72,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   // Handle resolve error
   const resolveError = async (id: string) => {
     try {
-      const res = await fetch(`/api/client-errors/${id}/resolve`, {
+      const res = await authedFetch(`/api/client-errors/${id}/resolve`, {
         method: 'PATCH',
       });
       if (res.ok) {

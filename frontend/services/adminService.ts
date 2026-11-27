@@ -1,6 +1,7 @@
 import type { DashboardMetrics, Period, Transaction, AnalyticsEvent } from '../types/admin';
 
 import { getApiBaseUrl } from '@/lib/env';
+import { clearCachedBearerToken, getBearerToken } from '@/lib/get-bearer-token';
 
 const API_URL = getApiBaseUrl();
 
@@ -102,16 +103,39 @@ export interface EmailMetrics {
   recent_sends: EmailRecentSend[];
 }
 
-// Helper for API calls
-async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+// Helper for API calls.
+// PP-236: send the bearer token explicitly (same source as apiService). Relying on
+// middleware to inject Authorization into the proxied request left /admin with a 401
+// whenever middleware could not read the session cookie.
+export async function authedFetch(
+  endpoint: string,
+  options?: RequestInit,
+  retryOnAuth = true,
+): Promise<Response> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
+  const token = await getBearerToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_URL}${endpoint}`, {
-    headers,
+    credentials: 'include',
     ...options,
+    headers: { ...headers, ...((options?.headers as Record<string, string> | undefined) ?? {}) },
   });
+
+  if (response.status === 401 && retryOnAuth) {
+    clearCachedBearerToken();
+    return authedFetch(endpoint, options, false);
+  }
+  return response;
+}
+
+async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const response = await authedFetch(endpoint, options);
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status} ${response.statusText}`);
