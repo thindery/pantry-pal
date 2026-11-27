@@ -1,6 +1,6 @@
 # PP-241: Weekly recipe newsletter uses the full public library
 
-**Status:** 📋 Open
+**Status:** ✅ Live (2026-11-27, 11:50 AM America/Chicago, build `e3f23df`, [#173](https://github.com/thindery/pantry-pal/pull/173)). No email was sent; the next draft is Wed 2026-12-02, 9 AM CT.
 **Priority:** P1
 **Phase:** Growth / email
 **Created:** 2026-11-27, 11:35 AM America/Chicago
@@ -29,10 +29,17 @@ The weekly recipe job (`backend/services/weekly_content.py`) still picked from t
 
 ## Acceptance Criteria
 
-- [ ] Catalog equals the public recipe library (not a fixed 24-list)
-- [ ] New recipe files are picked up automatically; the PP-240 subset test is replaced with an exact-library check
-- [ ] Holiday-tagged recipes are preferred in the Thanksgiving-through-New-Year window; recent picks are not repeated
-- [ ] Email JPGs, credits, and alt text exist for every catalog recipe
-- [ ] Backend pytest and vitest pass
-- [ ] Merged to main and deployed; live `build-id.txt` verified
-- [ ] No list send and no `build`/`send` job run on production
+- [x] Catalog equals the public recipe library (not a fixed 24-list)
+- [x] New recipe files are picked up automatically; the PP-240 subset test is replaced with an exact-library check
+- [x] Holiday-tagged recipes are preferred in the Thanksgiving-through-New-Year window; recent picks are not repeated
+- [x] Email JPGs, credits, and alt text exist for every catalog recipe
+- [x] Backend pytest and vitest pass (644 passed, 63 skipped; vitest 401 passed). CI: quality, test, gitleaks, postgres-integration, e2e-smoke green; migration-check skipped.
+- [x] Merged to main (`e3f23df`) and deployed; live `build-id.txt` in the frontend container is `e3f23df`
+- [x] No list send and no `build`/`send` job run on production
+
+
+## Rollout log
+
+- 2026-11-27, 11:50 AM CT: PR #173 squash-merged (`e3f23df`). Deployed with `./deploy/deploy-docker.sh main` (`SKIP_E2E_SMOKE=1`). Frontend and backend containers healthy. `build-id.txt` in the frontend container: `e3f23df`.
+- No weekly `build` or `send` job was run. Production still has only the 2026-W48 draft (Green Bean Casserole, Leftover Turkey Soup, Easy Vegetable Soup; tip `date-it`).
+- Local dry-run of the picker for 2026-W49 (no database write): Classic Stuffing, Leftover Turkey Pot Pie, Easy Sugar Cookies. Subject: `This week: Classic Stuffing, Leftover Turkey Pot Pie and 1 more`. Next tip in rotation: Look before you shop.
