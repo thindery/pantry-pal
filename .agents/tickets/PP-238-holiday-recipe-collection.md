@@ -20,5 +20,6 @@ Priority is P1 because Tylor asked to ship Thanksgiving leftovers and holiday re
 ## Out of scope
 
 - Flipping `RECIPE_TAG_PAGES_INDEXABLE`
-- AI illustrations for the new slugs (gradient placeholders until images land)
 - Later backlog batches (classic weeknight dishes after this collection ships)
+
+- Holiday batch WebP illustrations shipped in a follow-up commit; Recipe JSON-LD now includes `image` for all 12.
