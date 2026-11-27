@@ -1,6 +1,6 @@
 # PP-242: In-app paywall at the free limits (50 items, 5 receipt scans/month)
 
-**Status:** Shipping in this PR
+**Status:** ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175). Also sped up the recipe browse test that timed out on CI at 96 recipes (test-only).
 **Priority:** P1
 **Ship mode:** can ship now
 **Phase:** Race to $50 / Conversion
@@ -19,8 +19,8 @@ Free users who hit 50 items or 5 receipt scans got nothing: the limit checks set
 
 ## Acceptance Criteria
 
-- [ ] Item add (manual and barcode) at the 50-item cap opens a clear upgrade prompt instead of a no-op or raw error; backend `TIER_LIMIT_EXCEEDED` opens the same prompt.
-- [ ] Receipt scan at 0 remaining opens the receipt prompt.
-- [ ] Paywalls only fire once the plan is known, so a paying user is never blocked while the plan loads.
-- [ ] Pantry shows a free-plan meter from 45/50 items, and an at-limit message at 50.
-- [ ] GA4 events (consent-gated): `paywall_view`, `paywall_dismiss`, `upgrade_click` with `source` and `feature`.
+- [x] Item add (manual and barcode) at the 50-item cap opens a clear upgrade prompt instead of a no-op or raw error; backend `TIER_LIMIT_EXCEEDED` opens the same prompt.
+- [x] Receipt scan at 0 remaining opens the receipt prompt.
+- [x] Paywalls only fire once the plan is known, so a paying user is never blocked while the plan loads.
+- [x] Pantry shows a free-plan meter from 45/50 items, and an at-limit message at 50.
+- [x] GA4 events (consent-gated): `paywall_view`, `paywall_dismiss`, `upgrade_click` with `source` and `feature`.

@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-27, 5:35 PM CT (Race to $50: PP-242–PP-252 filed; PP-242 paywall + PP-243 pricing clarity shipping)
+Last updated: 2026-11-27, 5:35 PM CT (Race to $50: PP-242–PP-252 filed; PP-242 paywall + PP-243 pricing clarity live at `002891b`, #175)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -36,8 +36,8 @@ Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. S
 
 | Ticket | Title | Priority | Ship mode | Status |
 |--------|-------|----------|-----------|--------|
-| PP-242 | In-app paywall at the free limits (50 items, 5 receipt scans/month) | P1 | can ship now | Shipping in this PR |
-| PP-243 | Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists | P1 | can ship now | Shipping in this PR |
+| PP-242 | In-app paywall at the free limits (50 items, 5 receipt scans/month) | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
+| PP-243 | Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
 | PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | 📋 Open |
 | PP-249 | Family plan sells household features that are not built | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
 | PP-252 | Acquisition push: directories, recipe pins and posts as Tylor | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
