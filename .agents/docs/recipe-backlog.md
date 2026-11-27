@@ -143,3 +143,17 @@ See also [.agents/tickets/PP-184-public-recipe-library-seo.md](../tickets/PP-184
 | holiday-2 | `stuffed-mushrooms` | Stuffed Mushrooms | stuffed mushrooms | snack | trending/seasonal |
 | holiday-2 | `cranberry-cocktail-meatballs` | Cranberry Cocktail Meatballs | cranberry cocktail meatballs | snack | trending/seasonal |
 | holiday-2 | `pigs-in-a-blanket` | Pigs in a Blanket | pigs in a blanket | snack | trending/seasonal |
+
+
+| methods | `sheet-pan-sausage-and-peppers` | Sheet-Pan Sausage and Peppers | sheet pan sausage and peppers | dinner | classic |
+| methods | `one-pot-creamy-chicken-pasta` | One-Pot Creamy Chicken Pasta | one pot creamy chicken pasta | dinner | classic |
+| methods | `slow-cooker-pulled-pork` | Slow-Cooker Pulled Pork | slow cooker pulled pork | dinner | classic |
+| methods | `air-fryer-chicken-thighs` | Air-Fryer Chicken Thighs | air fryer chicken thighs | dinner | classic |
+| methods | `butter-chicken` | Butter Chicken | butter chicken | dinner | trending/seasonal |
+| methods | `chicken-fajitas` | Chicken Fajitas | chicken fajitas | dinner | classic |
+| methods | `shakshuka` | Shakshuka | shakshuka | breakfast | classic |
+| methods | `buttermilk-pancakes` | Buttermilk Pancakes | buttermilk pancakes | breakfast | classic |
+| methods | `garlic-mashed-potatoes` | Garlic Mashed Potatoes | garlic mashed potatoes | dinner | classic |
+| methods | `skillet-cornbread` | Skillet Cornbread | skillet cornbread | dinner | classic |
+| methods | `vegetable-stir-fry` | Vegetable Stir-Fry | vegetable stir-fry | dinner | classic |
+| methods | `sheet-pan-lemon-salmon` | Sheet-Pan Lemon Salmon | sheet pan lemon salmon | dinner | classic |
