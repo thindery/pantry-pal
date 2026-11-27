@@ -76,6 +76,19 @@ import { sloppyJoes } from "./sloppy-joes";
 import { spaghettiAndMeatballs } from "./spaghetti-and-meatballs";
 import { tunaNoodleCasserole } from "./tuna-noodle-casserole";
 
+import { airFryerChickenThighs } from "./air-fryer-chicken-thighs";
+import { butterChicken } from "./butter-chicken";
+import { buttermilkPancakes } from "./buttermilk-pancakes";
+import { chickenFajitas } from "./chicken-fajitas";
+import { garlicMashedPotatoes } from "./garlic-mashed-potatoes";
+import { onePotCreamyChickenPasta } from "./one-pot-creamy-chicken-pasta";
+import { shakshuka } from "./shakshuka";
+import { sheetPanLemonSalmon } from "./sheet-pan-lemon-salmon";
+import { sheetPanSausageAndPeppers } from "./sheet-pan-sausage-and-peppers";
+import { skilletCornbread } from "./skillet-cornbread";
+import { slowCookerPulledPork } from "./slow-cooker-pulled-pork";
+import { vegetableStirFry } from "./vegetable-stir-fry";
+
 
 
 
@@ -156,6 +169,18 @@ export const RECIPES: readonly Recipe[] = [
   shepherdsPie,
   chickenAndDumplings,
   beefStroganoff,
+  sheetPanSausageAndPeppers,
+  onePotCreamyChickenPasta,
+  slowCookerPulledPork,
+  airFryerChickenThighs,
+  butterChicken,
+  chickenFajitas,
+  shakshuka,
+  buttermilkPancakes,
+  garlicMashedPotatoes,
+  skilletCornbread,
+  vegetableStirFry,
+  sheetPanLemonSalmon,
 ];
 
 export const MEAL_LABELS: Record<MealType, string> = {
