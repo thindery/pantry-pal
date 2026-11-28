@@ -1,6 +1,6 @@
 # PP-253: Skip GA4 on localhost and block it in Playwright
 
-**Status:** 📋 Open
+**Status:** ✅ Live Nov 28, 8:52 AM CT, build `630d006`, [#180](https://github.com/thindery/pantry-pal/pull/180)
 **Priority:** P2
 **Phase:** Analytics / data quality
 **Created:** 2026-11-28
@@ -24,8 +24,8 @@ A 2026-11-28 GA4 audit of property `565428577` (stream `G-LEW78LC3EF`) found 382
 
 ## Acceptance Criteria
 
-- [ ] Hostname guard in `frontend/lib/analytics.ts` and/or `AnalyticsScripts.tsx`; no gtag load or event send on local hosts.
-- [ ] Production fallback ID is unchanged; gtag still loads on www after deploy.
-- [ ] Global Playwright route block in `e2e/support` (all specs import the shared fixture).
-- [ ] Frontend typecheck or lint passes.
-- [ ] Deployed; `https://www.mypantryhub.com/build-id.txt` matches the commit; live HTML/JS still references gtag / `G-LEW78LC3EF`.
+- [x] Hostname guard in `frontend/lib/analytics.ts` and/or `AnalyticsScripts.tsx`; no gtag load or event send on local hosts.
+- [x] Production fallback ID is unchanged; gtag still loads on www after deploy.
+- [x] Global Playwright route block in `e2e/support` (all specs import the shared fixture).
+- [x] Frontend typecheck or lint passes.
+- [x] Deployed; `https://www.mypantryhub.com/build-id.txt` matches the commit; live HTML/JS still references gtag / `G-LEW78LC3EF`.
