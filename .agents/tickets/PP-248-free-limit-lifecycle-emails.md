@@ -1,6 +1,6 @@
 # PP-248: Free-limit lifecycle emails (45 of 50 items, hit the limit)
 
-**Status:** 🚧 Shipping — approved by Tylor (6:02 PM CT, relayed by Remy)
+**Status:** ✅ Live Nov 27, 6:27 PM CT, build `7f79083`, [#178](https://github.com/thindery/pantry-pal/pull/178). `FREE_LIMIT_EMAILS_ENABLED=true`, `FREE_LIMIT_EMAILS_SINCE=2026-11-28T00:26:55Z` (6:26 PM CT). [TEST] copies of both emails sent to thindery@gmail.com at 6:26 PM CT. No real user qualifies yet (0 free users at 45+ items).
 **Priority:** P2
 **Ship mode:** approved (Tylor, 2026-11-27 6:02 PM CT)
 **Phase:** Race to $50 / Lifecycle email

@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-27, 6:35 PM CT (Race to $50: PP-242/243 live at `002891b` #175; PP-244–247, 249, 251 live at `35f9a8f` #177; PP-248 free-limit emails approved by Tylor 6:02 PM CT, shipping)
+Last updated: 2026-11-27, 6:35 PM CT (Race to $50: PP-242/243 live at `002891b` #175; PP-244–247, 249, 251 live at `35f9a8f` #177; PP-248 free-limit emails live at `7f79083` #178, flag on)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -49,7 +49,7 @@ Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. S
 | PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
 | PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
 | PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | approved (Tylor via Remy, 5:16 PM CT) | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177); Stripe portal config (Pro monthly↔yearly only) active via `STRIPE_PORTAL_CONFIGURATION_ID` |
-| PP-248 | Free-limit lifecycle emails (45 of 50 items, hit the limit) with the $1 first month | P2 | approved (Tylor, 6:02 PM CT) | 🚧 Shipping (forward-only, [TEST] to Tylor first) |
+| PP-248 | Free-limit lifecycle emails (45 of 50 items, hit the limit) with the $1 first month | P2 | approved (Tylor, 6:02 PM CT) | ✅ Live Nov 27, 6:27 PM CT, build `7f79083`, [#178](https://github.com/thindery/pantry-pal/pull/178); flag on, forward-only from 2026-11-28T00:26:55Z; 2 [TEST] copies sent to Tylor; 0 real sends so far |
 | PP-250 | 30-day money-back guarantee: adopt it in Terms or keep it off | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
 
 ### P3
