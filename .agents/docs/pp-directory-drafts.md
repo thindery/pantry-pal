@@ -1,6 +1,6 @@
 # Pantry Hub directory listing drafts
 
-**Status:** DRAFTS ONLY. Do not submit, post, or create accounts until Tylor approves each listing.  
+**Status:** Free directory submissions approved by Tylor (2026-11-27, 6:02 PM CT, PP-252): Pantry Hub brand, contact hello@mypantryhub.com, $0 only (skip any that need payment, a card, or a personal profile as Tylor). Every site below needs an account and a browser form; none have been submitted as of 6:40 PM CT. Log each live URL in the tracker after submitting.  
 **Prepared:** Sunday, Nov 22, 2026, ~4:30 PM America/Chicago (SEO desk)  
 **Ticket:** PP-111  
 **Destination URL:** https://www.mypantryhub.com (homepage; never `/auth/signin`)  
@@ -24,19 +24,18 @@ Pantry Hub is a web app for household pantry inventory. Scan barcodes with Quick
 **Long description:**  
 Pantry Hub helps you keep a running list of what is in the pantry. Scan a barcode with Quick Scan to add or update items as you put groceries away. You can also photograph a grocery receipt and review the extracted items before they go into your inventory, or add items by hand. When something is running low, it can go onto a shopping list.
 
-It is a web app — use it in the browser on a phone, tablet, or desktop. There is no separate iOS or Android store listing. A free plan is available (up to 50 pantry items, 5 receipt scans per month, manual entry, basic categories, single device). Pantry Hub Pro is $4.99 per month, or $39.99 per year, for unlimited items and receipt scans, sync across devices, and extra features. A Family plan is $7.99 per month, or $59.99 per year, and adds sharing for up to five household members.
+It is a web app — use it in the browser on a phone, tablet, or desktop. There is no separate iOS or Android store listing. A free plan is available (up to 50 pantry items, 5 AI receipt scans per month, barcode scanning and manual entry, a shopping list from what runs low, up to 10 saved recipes). Pantry Hub Pro is $4.99 per month, or $39.99 per year, for unlimited items and AI receipt scans, AI recipe ideas from what you have, and unlimited saved recipes.
 
 Barcode lookups use public product data (including Open Food Facts), with a fallback when a catalog is down. Always check that the name and size match what is in your hand.
 
-**Pricing note (verified from the live pricing page, Nov 22, 2026):**
+**Pricing note (updated 2026-11-27, 6:40 PM CT from the live pricing page at build `35f9a8f`):**
 
 | Plan | Price | What’s listed |
 |------|-------|----------------|
-| Free | $0 | Up to 50 pantry items; 5 receipt scans/month; manual entry; basic categories; single device; shopping list. No credit card required. |
-| Pro | $4.99/month or $39.99/year | Unlimited items and receipt scans; cloud sync; advanced analytics; push notifications; CSV export; priority support. |
-| Family | $7.99/month or $59.99/year | Everything in Pro; up to 5 household members; shared inventory; personal + shared lists; activity feed; admin controls. |
+| Free | $0 | Up to 50 pantry items; 5 AI receipt scans/month; barcode scanning and manual entry; shopping list from what runs low; save up to 10 recipes; any device you sign in on. No credit card required. |
+| Pro | $4.99/month or $39.99/year (save 33%) | Unlimited pantry items; unlimited AI receipt scans; AI recipe ideas from what you have; unlimited saved recipes; everything in Free. New subscribers pay $1 for the first month while that offer is live. |
 
-The pricing page also shows a “Save up to 37%” yearly toggle (Family annual savings is listed as 37%; Pro as 33%). Do not advertise “Family meal planning” or expiration tracking. Meal planning appears on the live Family card but is not treated as a confirmed, shipped feature in these drafts.
+The Family plan is no longer sold on the site (PP-249): never list it, household sharing, or the old Pro extras (cloud sync, analytics, push notifications, CSV export, priority support). Do not advertise meal planning or expiration tracking.
 
 **Category / tags (adapt to each form):** pantry inventory, barcode scanner, grocery shopping list, kitchen organization, household inventory, receipt scanner, web app  
 
