@@ -28,6 +28,8 @@ if (rawBaseUrl) {
 }
 
 export default defineConfig({
+  // PP-253: all specs must import test from e2e/support/fixtures.ts
+  // so googletagmanager.com / google-analytics.com are aborted.
   testDir: "e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

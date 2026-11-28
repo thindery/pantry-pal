@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/fixtures";
 import { signInAsTestUser } from "./support/auth";
 import { installMockApi } from "./support/mock-api";
 

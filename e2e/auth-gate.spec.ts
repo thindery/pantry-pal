@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/fixtures";
 
 /**
  * PP-172: protected pages must fail closed for anonymous visitors, even when
