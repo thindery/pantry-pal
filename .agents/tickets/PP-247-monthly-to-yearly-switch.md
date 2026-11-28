@@ -1,6 +1,6 @@
 # PP-247: Monthly-to-yearly switch offer for active Pro monthly subscribers
 
-**Status:** 📋 Open — needs Tylor yes
+**Status:** ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177)
 **Priority:** P2
 **Ship mode:** needs Tylor yes
 **Phase:** Race to $50 / Revenue

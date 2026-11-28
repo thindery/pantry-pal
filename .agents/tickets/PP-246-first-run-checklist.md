@@ -1,6 +1,6 @@
 # PP-246: First-run checklist: first scan to value in under a minute
 
-**Status:** 📋 Open
+**Status:** ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177)
 **Priority:** P2
 **Ship mode:** can ship now
 **Phase:** Race to $50 / Onboarding

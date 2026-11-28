@@ -1,6 +1,6 @@
 # PP-245: Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in
 
-**Status:** 📋 Open
+**Status:** ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177)
 **Priority:** P2
 **Ship mode:** can ship now
 **Phase:** Race to $50 / SEO to signup

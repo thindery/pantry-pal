@@ -1,6 +1,6 @@
 # Ticket Status — Pantry Hub
 
-Last updated: 2026-11-27, 5:35 PM CT (Race to $50: PP-242–PP-252 filed; PP-242 paywall + PP-243 pricing clarity live at `002891b`, #175)
+Last updated: 2026-11-27, 6:35 PM CT (Race to $50: PP-242/243 live at `002891b` #175; PP-244–247, 249, 251 live at `35f9a8f` #177; PP-248 free-limit emails approved by Tylor 6:02 PM CT, shipping)
 
 **Product:** Pantry Hub (Peak Collective LLC dba Pantry Hub) — smart pantry inventory & ledger  
 **Domain:** **mypantryhub.com** (canonical: `www.mypantryhub.com`)  
@@ -38,25 +38,25 @@ Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. S
 |--------|-------|----------|-----------|--------|
 | PP-242 | In-app paywall at the free limits (50 items, 5 receipt scans/month) | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
 | PP-243 | Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
-| PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | 🚧 Shipping (second race PR) |
-| PP-249 | Family plan sells household features that are not built | P1 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
-| PP-252 | Acquisition push: directories, recipe pins and posts as Tylor | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
+| PP-249 | Family plan sells household features that are not built | P1 | approved (Tylor via Remy, 5:16 PM CT) | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
+| PP-252 | Acquisition push: directories, recipe pins and posts as Tylor | P1 | directories approved (Tylor, 6:02 PM CT); posts still need Tylor yes | 🚧 Directories in progress (free only, Pantry Hub brand); no social posts |
 
 ### P2
 
 | Ticket | Title | Priority | Ship mode | Status |
 |--------|-------|----------|-----------|--------|
-| PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | 🚧 Shipping (second race PR) |
-| PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | 🚧 Shipping (second race PR) |
-| PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
-| PP-248 | Free-limit and upgrade lifecycle emails (templates only, disabled) | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
+| PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
+| PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | approved (Tylor via Remy, 5:16 PM CT) | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177); Stripe portal config (Pro monthly↔yearly only) active via `STRIPE_PORTAL_CONFIGURATION_ID` |
+| PP-248 | Free-limit lifecycle emails (45 of 50 items, hit the limit) with the $1 first month | P2 | approved (Tylor, 6:02 PM CT) | 🚧 Shipping (forward-only, [TEST] to Tylor first) |
 | PP-250 | 30-day money-back guarantee: adopt it in Terms or keep it off | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
 
 ### P3
 
 | Ticket | Title | Priority | Ship mode | Status |
 |--------|-------|----------|-----------|--------|
-| PP-251 | Pricing test: default the toggle to Yearly, or a first-year annual offer | P3 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
+| PP-251 | Pricing test: default the toggle to Yearly, or a first-year annual offer | P3 | approved (Tylor via Remy, 5:16 PM CT) | ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177) |
 
 
 ## Afternoon 2026-11-25 (after Tylor's "agree with all of this. get it done", 1:54 PM CT)
