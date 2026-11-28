@@ -327,11 +327,9 @@ COLOR_DARK_TEXT = "#e2e8f0"
 PRO_FEATURES = [
     "Unlimited pantry items",
     "Unlimited AI receipt scans",
-    "Cloud sync across devices",
-    "Advanced analytics",
-    "Push notifications",
-    "CSV export",
-    "Priority support",
+    "AI recipe ideas from what you have",
+    "Unlimited saved recipes",
+    "Everything in Free",
 ]
 FAMILY_FEATURES = [
     "Everything in Pro",

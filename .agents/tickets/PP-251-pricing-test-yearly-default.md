@@ -1,6 +1,6 @@
 # PP-251: Pricing test: default the toggle to Yearly, or a first-year annual offer
 
-**Status:** 📋 Open — needs Tylor yes
+**Status:** ✅ Live Nov 27, ~6:20 PM CT, build `35f9a8f`, [#177](https://github.com/thindery/pantry-pal/pull/177)
 **Priority:** P3
 **Ship mode:** needs Tylor yes
 **Phase:** Race to $50 / Pricing test
