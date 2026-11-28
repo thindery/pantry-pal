@@ -111,7 +111,7 @@ export default function BarcodeScanningGuide() {
             <li>Hold the barcode flat and fill about half the frame. Move closer rather than zooming.</li>
             <li>Avoid glare from overhead lights on shiny packages. Tilt the item slightly.</li>
             <li>Use the flashlight button in a dark pantry or basement.</li>
-            <li>The Free plan holds up to 50 pantry items. Pro and Family have no item limit. See <Link href="/pricing/" className="underline">pricing</Link>.</li>
+            <li>The Free plan holds up to 50 pantry items. Pro has no item limit. See <Link href="/pricing/" className="underline">pricing</Link>.</li>
           </ul>
           <p>
             Have a stack of groceries and a receipt? <Link href="/guides/receipt-scanning/" className="underline">Receipt scanning</Link> adds a whole trip at once.

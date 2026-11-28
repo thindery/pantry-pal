@@ -34,7 +34,13 @@ export function yearlyPerMonthCents(plan: PaidPlan): number {
   return Math.floor(PLAN_PRICES_CENTS[plan].year / 12);
 }
 
-/** Largest yearly saving across paid plans, for the toggle badge. */
+/**
+ * Plans offered on /pricing. PP-249: Family is hidden until household sharing
+ * exists; its Stripe prices stay so nothing breaks for any future subscriber.
+ */
+export const PLANS_ON_SALE: readonly PaidPlan[] = ['pro'];
+
+/** Largest yearly saving across plans on sale, for the toggle badge. */
 export function maxYearlySavingsPercent(): number {
-  return Math.max(...(Object.keys(PLAN_PRICES_CENTS) as PaidPlan[]).map(yearlySavingsPercent));
+  return Math.max(...PLANS_ON_SALE.map(yearlySavingsPercent));
 }

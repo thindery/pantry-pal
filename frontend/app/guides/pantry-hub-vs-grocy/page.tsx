@@ -33,8 +33,8 @@ const ROWS: { label: string; grocy: string; hub: string }[] = [
   { label: "Receipt scanning", grocy: "Not listed on grocy.info", hub: "Photo of a receipt read with OCR; confirm the list, then add all" },
   { label: "Shopping list", grocy: "Minimum stock amounts feed the list; group by store section", hub: "Shopping list from items that are running low" },
   { label: "Beyond the pantry", grocy: "Recipes, meal planning, due dates, chores, tasks, batteries, equipment manuals, custom fields, REST API", hub: "Focused on what is on the shelf, scanning groceries in, and the shopping list" },
-  { label: "Sharing", grocy: "Whoever can reach your server", hub: "Family plan: up to 5 household members share one pantry" },
-  { label: "Cost", grocy: "Free (donations welcome); you provide the hardware and upkeep", hub: "Free plan up to 50 items and 5 receipt scans a month; Pro $4.99/month; Family $7.99/month" },
+  { label: "Sharing", grocy: "Whoever can reach your server", hub: "One pantry per account today; household sharing is planned" },
+  { label: "Cost", grocy: "Free (donations welcome); you provide the hardware and upkeep", hub: "Free plan up to 50 items and 5 receipt scans a month; Pro $4.99/month or $39.99/year" },
 ];
 
 export default function PantryHubVsGrocy() {
@@ -102,7 +102,6 @@ export default function PantryHubVsGrocy() {
             <li>You want to start in a minute from your phone, with nothing to install or update.</li>
             <li>You add groceries in bulk: <Link href="/guides/barcode-scanning/" className="underline">Quick Scan</Link> adds each barcode without a tap, and <Link href="/guides/receipt-scanning/" className="underline">receipt scanning</Link> adds a whole trip.</li>
             <li>You mainly want to know what is on the shelf and what to buy next.</li>
-            <li>You share one pantry with up to 5 people on the Family plan.</li>
           </ul>
           <p>
             Not sure how to add items? See <Link href="/guides/barcode-vs-receipt-vs-manual/" className="underline">barcode vs receipt vs manual entry</Link>, or <Link href="/pricing/" className="underline">compare plans</Link>.

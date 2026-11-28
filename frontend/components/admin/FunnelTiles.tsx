@@ -78,6 +78,7 @@ export const FunnelTiles: React.FC<FunnelTilesProps> = ({ period, data: propData
 
   const signupsPeriod = metrics.signups?.period ?? metrics.signupsPeriod ?? 0;
   const signupsAllTime = metrics.signups?.allTime ?? metrics.signupsAllTime ?? 0;
+  const signupsPreTracking = metrics.signups?.preTracking ?? 0;
 
   const trialsPeriod = metrics.trials?.period ?? metrics.trialsPeriod ?? 0;
   const trialsAllTime = metrics.trials?.allTime ?? metrics.trialsAllTime ?? 0;
@@ -110,7 +111,9 @@ export const FunnelTiles: React.FC<FunnelTilesProps> = ({ period, data: propData
         <KPICard
           title="Signups"
           value={signupsPeriod.toLocaleString()}
-          secondaryText={`All-time: ${signupsAllTime.toLocaleString()}`}
+          secondaryText={`All-time: ${signupsAllTime.toLocaleString()}${
+            signupsPreTracking > 0 ? ` (${signupsPreTracking} from before signup dates were recorded)` : ""
+          }`}
           color="blue"
         />
         <KPICard

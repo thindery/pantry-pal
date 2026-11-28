@@ -209,6 +209,34 @@ def increment_usage(user_id: str, usage_type: str) -> None:
             )
 
 
+def billing_interval_for_price(price_id: Optional[str]) -> Optional[str]:
+    """PP-247: 'month' or 'year' for a known Stripe price id, else None."""
+    if not price_id:
+        return None
+    import os
+
+    for interval, names in (
+        ("month", ("STRIPE_PRO_MONTHLY_PRICE_ID", "STRIPE_FAMILY_MONTHLY_PRICE_ID")),
+        ("year", ("STRIPE_PRO_YEARLY_PRICE_ID", "STRIPE_FAMILY_YEARLY_PRICE_ID")),
+    ):
+        if any(os.getenv(n, "").strip() == price_id for n in names):
+            return interval
+    return None
+
+
+def _yearly_switch_available(subscription: dict[str, Any]) -> bool:
+    """PP-247: show the switch-to-yearly prompt only when the portal allows it."""
+    import os
+
+    return (
+        bool(os.getenv("STRIPE_PORTAL_CONFIGURATION_ID", "").strip())
+        and subscription.get("tier") == "pro"
+        and subscription.get("subscriptionStatus") == "active"
+        and not subscription.get("cancelAtPeriodEnd")
+        and billing_interval_for_price(subscription.get("stripePriceId")) == "month"
+    )
+
+
 def get_user_tier_info(user_id: str, current_item_count: int) -> dict[str, Any]:
     subscription = get_or_create_user_subscription(user_id)
     usage = get_or_create_usage_limits(user_id)
@@ -229,6 +257,8 @@ def get_user_tier_info(user_id: str, current_item_count: int) -> dict[str, Any]:
                 "stripeSubscriptionId": subscription["stripeSubscriptionId"],
                 "subscriptionEndDate": subscription["subscriptionEndDate"],
                 "cancelAtPeriodEnd": bool(subscription.get("cancelAtPeriodEnd")),
+                "billingInterval": billing_interval_for_price(subscription.get("stripePriceId")),
+                "yearlySwitchAvailable": _yearly_switch_available(subscription),
             }
             if subscription["stripeCustomerId"]
             else None

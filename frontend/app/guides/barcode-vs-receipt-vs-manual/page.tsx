@@ -62,7 +62,7 @@ export default function EntryMethodsGuide() {
             <li>Take or upload one photo of the receipt. {BRAND_NAME} reads it with OCR and lists the items it found.</li>
             <li>Check the list, then tap Confirm &amp; Add All.</li>
             <li>Store abbreviations can shorten names, so give the list a quick look.</li>
-            <li>Free plan: 5 receipt scans a month. Pro and Family: unlimited.</li>
+            <li>Free plan: 5 receipt scans a month. Pro: unlimited.</li>
           </ul>
           <p><Link href="/guides/receipt-scanning/" className="underline">Full receipt scanning guide</Link></p>
         </LegalSection>

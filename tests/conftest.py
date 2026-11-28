@@ -9,6 +9,8 @@ from fastapi.testclient import TestClient
 
 os.environ.setdefault("ALLOW_TEST_AUTH", "1")
 os.environ.setdefault("RATE_LIMIT_STORE", "memory")
+# PP-244: unit tests have no database; test_activity_service enables tracking explicitly.
+os.environ.setdefault("ACTIVITY_TRACKING_DISABLED", "1")
 os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/pantry_pal_test")
 
 from app import app  # noqa: E402

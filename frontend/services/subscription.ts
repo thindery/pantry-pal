@@ -37,6 +37,9 @@ export interface UserTierInfo {
     stripeSubscriptionId: string;
     subscriptionEndDate: string;
     cancelAtPeriodEnd?: boolean;
+    /** PP-247 */
+    billingInterval?: 'month' | 'year' | null;
+    yearlySwitchAvailable?: boolean;
   } | null;
 }
 

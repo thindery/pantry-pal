@@ -53,9 +53,13 @@ class FixtureCursor:
         # 1. Signups
         if clean_sql == "SELECT COUNT(*) AS count FROM users":
             self.last_result = {"count": len(self.db.users)}
+        elif clean_sql == "SELECT COUNT(*) AS count FROM users WHERE created_at_estimated":
+            self.last_result = {"count": sum(1 for u in self.db.users if u.get("estimated"))}
         elif "FROM users WHERE created_at >= %s" in clean_sql:
             cutoff = params[0]
-            count = sum(1 for u in self.db.users if u["created_at"] >= cutoff)
+            count = sum(
+                1 for u in self.db.users if u["created_at"] >= cutoff and not u.get("estimated")
+            )
             self.last_result = {"count": count}
 
         # 2. Trials
@@ -255,6 +259,9 @@ def test_funnel_metrics_conversions_and_churn():
 
     # Verify parameterized SQL was used (every query with a cutoff has %s and params passed)
     for sql, params in fake_db.executed_queries:
+        # PP-244: the pre-tracking count filters on a boolean flag, not a cutoff.
+        if sql.endswith("WHERE created_at_estimated"):
+            continue
         if "WHERE" in sql and ("created_at" in sql or "updated_at" in sql):
             assert "%s" in sql
             assert len(params) > 0

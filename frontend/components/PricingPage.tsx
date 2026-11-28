@@ -6,6 +6,7 @@ import { createCheckoutSession, useSubscription } from '../services/subscription
 import { BrandMark } from '@/components/BrandMark';
 import { stashCheckoutSessionId, trackEvent } from '@/lib/analytics';
 import { OfferBanner, useFirstMonthOffer } from '@/components/OfferBanner';
+import { signInHrefReturningTo } from '@/lib/recipe-save-signin';
 import {
   formatUsd,
   maxYearlySavingsPercent,
@@ -77,30 +78,10 @@ const TIERS: PricingTier[] = [
     ],
     disabledFeatures: ['Household sharing'],
   },
-  {
-    id: 'family',
-    name: 'Family',
-    description: 'For households managing together',
-    monthlyPrice: 799,
-    yearlyPrice: 5999,
-    monthlyDisplay: '$7.99',
-    yearlyDisplay: '$59.99',
-    savings: `Save ${yearlySavingsPercent('family')}%`,
-    cta: 'Upgrade to Family',
-    features: [
-      'Everything in Pro',
-      'Up to 5 household members',
-      'Shared household inventory',
-      'Personal + shared lists',
-      'Activity feed (who used what)',
-      'Admin controls',
-    ],
-    disabledFeatures: [],
-  },
 ];
 
 const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('yearly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const upgradeInFlight = useRef(false);
@@ -109,9 +90,10 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
   const { tierInfo: _tierInfo, isFree, isPro, isFamily, loading: tierLoading } = useSubscription();
   const offer = useFirstMonthOffer();
 
+  // PP-245: same-origin path only; SignInForm's safeCallbackUrl drops absolute
+  // URLs, which sent signed-out Upgrade clicks to /dashboard instead of back here.
   const goToSignIn = (callbackPath: string) => {
-    const callback = new URL(callbackPath, window.location.origin).toString();
-    window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(callback)}`;
+    window.location.href = signInHrefReturningTo(callbackPath);
   };
 
   const handleUpgrade = async (tier: 'pro' | 'family') => {
@@ -205,7 +187,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
             {isSignedIn ? "Upgrade your pantry experience" : "Simple, transparent pricing"}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Choose the plan that fits your household. Start free and upgrade when you need more power.
+            Start free. Upgrade to Pro when you need more room.
           </p>
         </div>
 
@@ -234,7 +216,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
             >
               Yearly
               <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
-                Save up to {maxYearlySavingsPercent()}%
+                Save {maxYearlySavingsPercent()}%
               </span>
             </button>
           </div>
@@ -248,7 +230,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ onClose }) => {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
           {TIERS.map((tier) => (
             <div
               key={tier.id}

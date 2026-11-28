@@ -38,17 +38,17 @@ Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. S
 |--------|-------|----------|-----------|--------|
 | PP-242 | In-app paywall at the free limits (50 items, 5 receipt scans/month) | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
 | PP-243 | Pricing clarity: annual savings in real numbers, $1 offer on the Pro card, honest plan lists | P1 | can ship now | ✅ Live Nov 27, ~5:50 PM CT, build `002891b`, [#175](https://github.com/thindery/pantry-pal/pull/175) |
-| PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | 📋 Open |
-| PP-249 | Family plan sells household features that are not built | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-244 | Real signup timestamps and login events so 7/30-day signups are measurable | P1 | can ship now | 🚧 Shipping (second race PR) |
+| PP-249 | Family plan sells household features that are not built | P1 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
 | PP-252 | Acquisition push: directories, recipe pins and posts as Tylor | P1 | needs Tylor yes | 📋 Open — needs Tylor yes |
 
 ### P2
 
 | Ticket | Title | Priority | Ship mode | Status |
 |--------|-------|----------|-----------|--------|
-| PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | 📋 Open |
-| PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | 📋 Open |
-| PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-245 | Signed-out "Save this recipe" on public recipe pages, back to the recipe after sign-in | P2 | can ship now | 🚧 Shipping (second race PR) |
+| PP-246 | First-run checklist: first scan to value in under a minute | P2 | can ship now | 🚧 Shipping (second race PR) |
+| PP-247 | Monthly-to-yearly switch offer for active Pro monthly subscribers | P2 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
 | PP-248 | Free-limit and upgrade lifecycle emails (templates only, disabled) | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
 | PP-250 | 30-day money-back guarantee: adopt it in Terms or keep it off | P2 | needs Tylor yes | 📋 Open — needs Tylor yes |
 
@@ -56,7 +56,7 @@ Legend: P0 broken/blocking revenue now · P1 next up · P2 soon · P3 someday. S
 
 | Ticket | Title | Priority | Ship mode | Status |
 |--------|-------|----------|-----------|--------|
-| PP-251 | Pricing test: default the toggle to Yearly, or a first-year annual offer | P3 | needs Tylor yes | 📋 Open — needs Tylor yes |
+| PP-251 | Pricing test: default the toggle to Yearly, or a first-year annual offer | P3 | approved (Tylor via Remy, 5:16 PM CT) | 🚧 Shipping (second race PR) |
 
 
 ## Afternoon 2026-11-25 (after Tylor's "agree with all of this. get it done", 1:54 PM CT)

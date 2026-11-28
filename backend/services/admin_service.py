@@ -179,13 +179,27 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
 
             offer_metrics = _offer_metrics(cur)
 
+            # PP-244: active = any authenticated API call that day (user_active_days)
+            # or a fresh sign-in (login_events). Sign-ins alone undercount because
+            # sessions last 30 days.
             cur.execute(
                 """
-                SELECT COUNT(DISTINCT user_id) AS count FROM login_events
-                WHERE created_at >= CURRENT_DATE
+                SELECT
+                    COUNT(DISTINCT user_id) FILTER (WHERE day >= CURRENT_DATE) AS dau,
+                    COUNT(DISTINCT user_id) FILTER (WHERE day >= CURRENT_DATE - 6) AS wau,
+                    COUNT(DISTINCT user_id) FILTER (WHERE day >= CURRENT_DATE - 29) AS mau
+                FROM (
+                    SELECT user_id, day FROM user_active_days WHERE day >= CURRENT_DATE - 29
+                    UNION
+                    SELECT user_id, created_at::date AS day FROM login_events
+                    WHERE created_at >= CURRENT_DATE - 29
+                ) active
                 """
             )
-            dau = int(cur.fetchone()["count"])
+            active_row = cur.fetchone() or {}
+            dau = int(active_row.get("dau") or 0)
+            wau = int(active_row.get("wau") or 0)
+            mau = int(active_row.get("mau") or 0)
 
             cur.execute(
                 """
@@ -241,7 +255,7 @@ def get_dashboard_metrics(period: Period = "7d") -> dict[str, Any]:
             "momGrowth": round(mom_growth, 1),
             "trend": [],
         },
-        "logins": {"dau": dau, "sparkline": []},
+        "logins": {"dau": dau, "wau": wau, "mau": mau, "sparkline": []},
         "transactions": recent_txns,
         "failedPayments": {"count": failed_count, "recent": failed_recent},
         "offer": offer_metrics,
@@ -327,11 +341,16 @@ def get_funnel_metrics(period: Period = "7d") -> dict[str, Any]:
             cur.execute("SELECT COUNT(*) AS count FROM users")
             signups_all_time = int(cur.fetchone()["count"])
 
+            # PP-244: rows backfilled by migration 025 carry the migration time, not a
+            # real signup time, so they never count as signups in a period.
             cur.execute(
-                "SELECT COUNT(*) AS count FROM users WHERE created_at >= %s",
+                "SELECT COUNT(*) AS count FROM users WHERE created_at >= %s AND NOT created_at_estimated",
                 (start_date,),
             )
             signups_period = int(cur.fetchone()["count"])
+
+            cur.execute("SELECT COUNT(*) AS count FROM users WHERE created_at_estimated")
+            signups_pre_tracking = int(cur.fetchone()["count"])
 
             # 2. Trials (user_subscriptions with subscription_status = 'trialing')
             cur.execute(
@@ -425,6 +444,8 @@ def get_funnel_metrics(period: Period = "7d") -> dict[str, Any]:
         "signups": {
             "period": signups_period,
             "allTime": signups_all_time,
+            # Accounts created before signup times were recorded (date unknown).
+            "preTracking": signups_pre_tracking,
         },
         "trials": {
             "period": trials_period,

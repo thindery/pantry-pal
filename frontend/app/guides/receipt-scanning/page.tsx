@@ -74,7 +74,7 @@ export default function ReceiptScanningGuide() {
         <LegalSection id="limits" number="4" title="Monthly limits">
           <ul className="list-disc pl-6 space-y-2">
             <li>Free plan: 5 receipt scans a month.</li>
-            <li>Pro and Family plans: unlimited receipt scans.</li>
+            <li>Pro plan: unlimited receipt scans.</li>
           </ul>
           <p>
             Compare plans on the <Link href="/pricing/" className="underline">pricing page</Link>.

@@ -73,13 +73,6 @@ export function SoftwareApplicationSchema() {
         priceCurrency: "USD",
         priceValidUntil: "2027-12-31",
       },
-      {
-        "@type": "Offer",
-        name: "Family",
-        price: "7.99",
-        priceCurrency: "USD",
-        priceValidUntil: "2027-12-31",
-      },
     ],
     featureList: [
       "Receipt scanning (OCR)",
@@ -87,7 +80,6 @@ export function SoftwareApplicationSchema() {
       "Quick Scan",
       "Pantry inventory",
       "Shopping lists",
-      "Household sharing (Family plan)",
     ],
     description: "Track pantry inventory, scan receipts and barcodes, and build shopping lists from what is running low.",
     url: `${SITE_URL}/`,
