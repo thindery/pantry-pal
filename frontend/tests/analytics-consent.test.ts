@@ -10,6 +10,8 @@ import {
   getCheckoutTransactionId,
   getQueuedAnalyticsEvents,
   installGtag,
+  isCurrentHostLocalAnalytics,
+  isLocalAnalyticsHost,
   isValidMeasurementId,
   stashCheckoutSessionId,
   trackEvent,
@@ -70,6 +72,29 @@ Object.defineProperty(globalThis, "sessionStorage", {
   writable: true,
 });
 
+let stubbedHostname = "www.mypantryhub.com";
+
+function stubLocationHostname(hostname: string) {
+  stubbedHostname = hostname;
+}
+
+// jsdom's default hostname is localhost, which PP-253 must not send to GA.
+// Only override hostname so window.location.search / history still work.
+Object.defineProperty(window, "location", {
+  configurable: true,
+  value: new Proxy(window.location, {
+    get(target, prop, receiver) {
+      if (prop === "hostname") return stubbedHostname;
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  }),
+});
+
+beforeEach(() => {
+  stubLocationHostname("www.mypantryhub.com");
+});
+
 describe("region detection", () => {
   it("identifies EEA, UK, and Swiss countries", () => {
     expect(isEeaCountry("DE")).toBe(true);
@@ -110,6 +135,36 @@ describe("measurement ID validation", () => {
     expect(isValidMeasurementId(null)).toBe(false);
     expect(isValidMeasurementId(undefined)).toBe(false);
     expect(isValidMeasurementId("UA-12345-6")).toBe(false);
+  });
+});
+
+describe("local analytics host guard (PP-253)", () => {
+  it("treats localhost, 127.0.0.1, and ::1 as local", () => {
+    expect(isLocalAnalyticsHost("localhost")).toBe(true);
+    expect(isLocalAnalyticsHost("LOCALHOST")).toBe(true);
+    expect(isLocalAnalyticsHost("127.0.0.1")).toBe(true);
+    expect(isLocalAnalyticsHost("::1")).toBe(true);
+    expect(isLocalAnalyticsHost("[::1]")).toBe(true);
+  });
+
+  it("does not treat the production host as local", () => {
+    expect(isLocalAnalyticsHost("www.mypantryhub.com")).toBe(false);
+    expect(isLocalAnalyticsHost("mypantryhub.com")).toBe(false);
+    expect(isLocalAnalyticsHost("")).toBe(false);
+    expect(isLocalAnalyticsHost(null)).toBe(false);
+    expect(isLocalAnalyticsHost(undefined)).toBe(false);
+  });
+
+  it("does not queue or send events on a local hostname", () => {
+    const gtagMock = vi.fn();
+    window.gtag = gtagMock;
+    window.__gaLoaded = true;
+    stubLocationHostname("127.0.0.1");
+
+    expect(isCurrentHostLocalAnalytics()).toBe(true);
+    trackEvent("sign_up", { method: "Google" });
+    expect(gtagMock).not.toHaveBeenCalled();
+    expect(getQueuedAnalyticsEvents()).toHaveLength(0);
   });
 });
 

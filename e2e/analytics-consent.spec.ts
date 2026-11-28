@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Request } from "@playwright/test";
+import { test, expect, type Page, type Request } from "./support/fixtures";
 
 /**
  * E2E test suite for analytics consent, GA4 gating, GPC, and Cloudflare beacon.

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/fixtures";
 
 /**
  * PP-067: production CSP drops 'unsafe-eval'. Runs against the production

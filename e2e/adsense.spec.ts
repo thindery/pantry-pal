@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/fixtures";
 
 /**
  * AdSense: verification meta + auto-ads script on public marketing pages only;

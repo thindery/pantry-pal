@@ -8,6 +8,7 @@ import {
   determineInitialConsent,
   flushAnalyticsQueue,
   installGtag,
+  isCurrentHostLocalAnalytics,
   isValidMeasurementId,
 } from "@/lib/analytics";
 
@@ -24,6 +25,11 @@ export function AnalyticsScripts() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // PP-253: never load or configure gtag on the local harness.
+    if (isCurrentHostLocalAnalytics()) {
+      return;
+    }
 
     // Initialize dataLayer and window.gtag (must push Arguments, not an Array)
     installGtag();
@@ -67,6 +73,10 @@ export function AnalyticsScripts() {
       });
     }
 
+    if (isCurrentHostLocalAnalytics()) {
+      return;
+    }
+
     if (isValidMeasurementId(GA_MEASUREMENT_ID)) {
       setLoadGaScript(true);
     }
@@ -88,6 +98,9 @@ export function AnalyticsScripts() {
   };
 
   const onGtagLoaded = () => {
+    if (isCurrentHostLocalAnalytics()) {
+      return;
+    }
     if (typeof window.gtag === "function" && isValidMeasurementId(GA_MEASUREMENT_ID)) {
       window.gtag("js", new Date());
       window.gtag("config", GA_MEASUREMENT_ID, {

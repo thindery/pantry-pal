@@ -26,6 +26,23 @@ export function isValidMeasurementId(id?: string | null): boolean {
   );
 }
 
+/**
+ * Local / loopback hosts must never send hits to the production GA4 property.
+ * Production Docker does not pass NEXT_PUBLIC_GA_MEASUREMENT_ID, so the
+ * G-LEW78LC3EF fallback stays for www.mypantryhub.com; this guard is the
+ * safe minimum (PP-253).
+ */
+export function isLocalAnalyticsHost(hostname?: string | null): boolean {
+  if (!hostname) return false;
+  const host = hostname.trim().toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+}
+
+export function isCurrentHostLocalAnalytics(): boolean {
+  if (typeof window === "undefined") return false;
+  return isLocalAnalyticsHost(window.location.hostname);
+}
+
 export type ConsentStatus = "granted" | "denied";
 
 export interface GtagConsentParams {
@@ -197,6 +214,7 @@ function startQueueCheck(): void {
  */
 export function flushAnalyticsQueue(): void {
   if (typeof window === "undefined") return;
+  if (isCurrentHostLocalAnalytics()) return;
   if (!window.__gaLoaded || typeof window.gtag !== "function") return;
 
   const now = Date.now();
@@ -235,6 +253,7 @@ export function getQueuedAnalyticsEvents(): readonly QueuedAnalyticsEvent[] {
  */
 export function trackEvent(name: string, params?: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
+  if (isCurrentHostLocalAnalytics()) return;
 
   if (window.__gaLoaded && typeof window.gtag === "function") {
     try {
