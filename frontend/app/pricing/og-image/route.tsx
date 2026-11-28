@@ -35,7 +35,7 @@ export async function GET() {
             opacity: 0.9,
           }}
         >
-          Free • Pro $4.99/mo • Family $7.99/mo
+          Free • Pro $4.99/mo or $39.99/yr
         </div>
       </div>
     ),

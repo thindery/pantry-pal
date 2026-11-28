@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { trackEvent } from "@/lib/analytics";
+import { signInHrefReturningTo } from "@/lib/recipe-save-signin";
 
 const SIGN_UP_HREF = "/auth/signin/";
 
@@ -56,7 +57,7 @@ export function RecipeSignupCta({
         <p className="mt-1 text-sm text-slate-700">{copy.body}</p>
       </div>
       <Link
-        href={SIGN_UP_HREF}
+        href={recipeSlug ? signInHrefReturningTo(`/recipes/${recipeSlug}/`) : SIGN_UP_HREF}
         onClick={() =>
           trackEvent("recipe_cta_click", {
             location: placement,

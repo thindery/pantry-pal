@@ -19,7 +19,8 @@ export interface FunnelConversions {
 
 export interface FunnelMetrics {
   period: Period;
-  signups: FunnelBreakdown;
+  /** PP-244: preTracking = accounts from before signup times were recorded. */
+  signups: FunnelBreakdown & { preTracking?: number };
   trials: FunnelBreakdown;
   paidConversions: FunnelConversions;
   churned: FunnelBreakdown;

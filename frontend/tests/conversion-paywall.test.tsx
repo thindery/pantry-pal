@@ -53,7 +53,7 @@ describe("PP-243 pricing math (real computed savings)", () => {
     expect(yearlyPerMonthCents("pro")).toBe(333);
     expect(yearlySavingsCents("family")).toBe(3589);
     expect(yearlySavingsPercent("family")).toBe(37);
-    expect(maxYearlySavingsPercent()).toBe(37);
+    expect(maxYearlySavingsPercent()).toBe(33); // PP-249: Family not on sale
     expect(formatUsd(1989)).toBe("$19.89");
     expect(formatUsd(100)).toBe("$1");
   });
@@ -102,21 +102,27 @@ describe("PP-242 in-app paywall", () => {
 });
 
 describe("PP-243 /pricing", () => {
-  it("shows the yearly per-month price and real savings, and no money-back claim", () => {
+  it("monthly Pro card shows the yearly alternative when the offer is off", () => {
+    render(<PricingPage onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Monthly" }));
+    expect(screen.getByTestId("monthly-note-pro")).toHaveTextContent("or $39.99/yr, save 33%");
+  });
+
+  it("defaults to yearly (PP-251) with real savings, no money-back claim, no Family plan (PP-249)", () => {
     render(<PricingPage onClose={vi.fn()} />);
     expect(document.body).not.toHaveTextContent(/money-back/i);
-    fireEvent.click(screen.getByRole("button", { name: /Yearly/ }));
     expect(screen.getByTestId("yearly-savings-pro")).toHaveTextContent("$3.33/mo billed yearly · Save 33% ($19.89/yr)");
-    expect(screen.getByTestId("yearly-savings-family")).toHaveTextContent("Save 37% ($35.89/yr)");
+    expect(screen.queryByText("Family")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Upgrade to Family/ })).toBeNull();
   });
 
   it("Pro monthly card mentions the $1 first month only when the offer is on", async () => {
     offerState.value = { enabled: true, tier: "pro", interval: "month", listPriceCents: 499, offerPriceCents: 100 };
     render(<PricingPage onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Monthly" }));
     await waitFor(() =>
       expect(screen.getByTestId("monthly-note-pro")).toHaveTextContent("$1 your first month for new subscribers"),
     );
-    expect(screen.getByTestId("monthly-note-family")).toHaveTextContent("or $59.99/yr, save 37%");
   });
 
   it("Upgrade still starts Stripe Checkout for the chosen plan and interval (no charge in tests)", async () => {

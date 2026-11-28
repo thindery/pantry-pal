@@ -367,8 +367,16 @@ def _has_ever_subscribed(customer_id: str, stored: Optional[dict[str, Any]]) -> 
         return True
 
 
+def _portal_session_kwargs() -> dict[str, str]:
+    """PP-247: optional Customer Portal configuration (plan switching). Blank = Stripe default."""
+    config_id = os.getenv("STRIPE_PORTAL_CONFIGURATION_ID", "").strip()
+    return {"configuration": config_id} if config_id else {}
+
+
 def _portal_redirect(customer_id: str, return_url: str) -> dict[str, str]:
-    session = stripe.billing_portal.Session.create(customer=customer_id, return_url=return_url)
+    session = stripe.billing_portal.Session.create(
+        customer=customer_id, return_url=return_url, **_portal_session_kwargs()
+    )
     return {"sessionId": _obj_get(session, "id") or "", "url": session.url}
 
 
@@ -564,6 +572,7 @@ async def create_portal_session(
     session = stripe.billing_portal.Session.create(
         customer=subscription["stripeCustomerId"],
         return_url=return_url,
+        **_portal_session_kwargs(),
     )
     return {"url": session.url}
 

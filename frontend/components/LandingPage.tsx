@@ -13,7 +13,6 @@ import {
   ClipboardList, 
   Smartphone, 
   BarChart3, 
-  Users, 
   Receipt, 
   CheckCircle2, 
   ArrowRight,
@@ -70,11 +69,6 @@ const FEATURES = [
     title: 'Shopping Lists',
     description: 'Auto-generated shopping lists based on what you\'re running low on. Never forget essentials again.',
   },
-  {
-    icon: Users,
-    title: 'Household Sharing',
-    description: 'On the Family plan, up to 5 household members share one pantry and see what is needed.',
-  },
 ];
 
 // How It Works steps
@@ -106,9 +100,9 @@ const PRICING_TIERS = [
     features: [
       'Up to 50 pantry items',
       '5 receipt scans/month',
-      'Manual item entry',
-      'Basic categories',
-      'Single device',
+      'Barcode scanning and manual entry',
+      'Shopping list from what runs low',
+      'Use it on any device you sign in on',
     ],
     cta: 'Get Started Free',
     popular: false,
@@ -120,30 +114,13 @@ const PRICING_TIERS = [
     period: '/month',
     features: [
       'Unlimited pantry items',
-      'Unlimited receipt scans',
-      'Cloud sync across devices',
-      'Advanced analytics',
-      'Push notifications',
-      'Priority support',
+      'Unlimited AI receipt scans',
+      'AI recipe ideas from what you have',
+      'Unlimited saved recipes',
+      'Everything in Free',
     ],
     cta: 'Upgrade to Pro',
     popular: true,
-  },
-  {
-    id: 'family',
-    name: 'Family',
-    price: '$7.99',
-    period: '/month',
-    features: [
-      'Everything in Pro',
-      'Up to 5 household members',
-      'Shared household inventory',
-      'Personal + shared lists',
-      'Activity feed',
-      'Admin controls',
-    ],
-    cta: 'Upgrade to Family',
-    popular: false,
   },
 ];
 
@@ -170,19 +147,19 @@ const PROOF_CARDS = [
 export const FAQS = [
   {
     question: 'How does the receipt scanning work?',
-    answer: 'Take a photo of your grocery receipt. Pantry Hub reads the text with OCR, suggests the items it finds, and lets you review and fix them before anything is added to your pantry. The Free plan includes 5 receipt scans a month; Pro and Family plans are unlimited.',
+    answer: 'Take a photo of your grocery receipt. Pantry Hub reads the text with OCR, suggests the items it finds, and lets you review and fix them before anything is added to your pantry. The Free plan includes 5 receipt scans a month; Pro is unlimited.',
   },
   {
     question: `Can I use ${BRAND_NAME} with multiple devices?`,
-    answer: `${BRAND_NAME} runs in your web browser on a phone, tablet, or computer. Pro and Family plans include use across multiple devices. The Free plan is for a single device.`,
+    answer: `${BRAND_NAME} runs in your web browser on a phone, tablet, or computer. Sign in on any of them and you see the same pantry, on every plan.`,
   },
   {
     question: 'Is there a limit on how many items I can track?',
-    answer: 'The Free plan tracks up to 50 items. Pro and Family plans have no item limit.',
+    answer: 'The Free plan tracks up to 50 items. Pro has no item limit.',
   },
   {
     question: 'Can I share my pantry with family members?',
-    answer: 'Yes. The Family plan lets up to 5 household members share one pantry inventory.',
+    answer: 'Not yet. Each account has its own pantry today. Household sharing is planned, and this answer will change when it ships.',
   },
   {
     question: `Is there a ${BRAND_NAME} app for iPhone or Android?`,
@@ -548,7 +525,7 @@ const PricingPreview: React.FC<{
   showFullPricing?: boolean;
 }> = ({ onSelectPlan, showFullPricing = false }) => {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${showFullPricing ? 'max-w-6xl mx-auto px-4 py-8' : ''}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto ${showFullPricing ? 'max-w-6xl mx-auto px-4 py-8' : ''}`}>
       {PRICING_TIERS.map((tier) => (
         <div 
           key={tier.id}

@@ -7,6 +7,7 @@ import { usePantry } from "@/contexts/pantry-provider";
 import { QuickActionBar, createQuickActions } from "@/components/QuickActionBar";
 import { StatCardMini, LowStockPreview, ShoppingListPreview, CategoryPills, InlineQuickAdd, RecentActivityPreview } from "@/components/DashboardComponents";
 import { InventoryItemRow } from "@/components/dashboard/inventory-item-row";
+import { FirstRunChecklist } from "@/components/dashboard/FirstRunChecklist";
 import { CATEGORIES, UNITS } from "@/lib/constants";
 
 export function DashboardHome() {
@@ -81,6 +82,10 @@ export function DashboardHome() {
                 />
               )}
             </div>
+
+            {!isLoadingInventory && !inventoryError && (
+              <FirstRunChecklist itemCount={inventory.length} onScanReceipt={handleScanReceiptClick} />
+            )}
 
             {/* Stats Row */}
             <StatCardMini

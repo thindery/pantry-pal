@@ -388,8 +388,12 @@ describe("recipe page (PP-184)", () => {
     await renderRecipe("black-bean-tacos");
     const end = screen.getByTestId("recipe-signup-cta-end");
     const cta = end.querySelector("a")!;
-    expect((cta.getAttribute("href") ?? "").replace(/\/$/, "")).toBe("/auth/signin");
-    expect(cta.getAttribute("href")).not.toContain("dashboard");
+    // PP-245: sign-in returns to this recipe, never the dashboard.
+    const href = cta.getAttribute("href") ?? "";
+    const url = new URL(href, "https://x.test");
+    expect(url.pathname.replace(/\/$/, "")).toBe("/auth/signin");
+    expect(url.searchParams.get("callbackUrl")).toBe("/recipes/black-bean-tacos/");
+    expect(href).not.toContain("dashboard");
     fireEvent.click(cta);
     expect(trackEvent).toHaveBeenCalledWith("recipe_cta_click", expect.objectContaining({ recipe_slug: "black-bean-tacos", location: "end" }));
   });

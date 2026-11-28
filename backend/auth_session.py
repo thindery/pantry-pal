@@ -89,4 +89,10 @@ async def require_authenticated_user_id(request: Request) -> str:
             status_code=401,
             detail=error_detail("UNAUTHORIZED", "Authentication required. Please sign in."),
         )
+    # PP-244: one activity row per user per day (cached, best effort, never raises).
+    from fastapi.concurrency import run_in_threadpool
+
+    from backend.services import activity_service
+
+    await run_in_threadpool(activity_service.touch, user_id)
     return user_id

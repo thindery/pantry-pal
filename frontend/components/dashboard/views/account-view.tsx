@@ -22,6 +22,7 @@ import {
 } from "@/services/subscription";
 import { BRAND_NAME, PRO_PLAN_NAME } from "@/lib/site-content";
 import { trackEvent } from "@/lib/analytics";
+import { formatUsd, yearlySavingsCents } from "@/lib/pricing";
 import { LowStockDigestToggle } from "@/components/LowStockDigestToggle";
 import { WeeklyRecipesToggle } from "@/components/WeeklyRecipesToggle";
 
@@ -122,6 +123,29 @@ export function AccountView() {
             <Sparkles size={16} />
             Upgrade
           </button>
+        )}
+        {isPaid && subscription?.yearlySwitchAvailable && (
+          <div
+            data-testid="yearly-switch-offer"
+            className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
+          >
+            Switch to yearly and save {formatUsd(yearlySavingsCents("pro"))} a year ($39.99/yr instead of
+            12 × $4.99). You choose it in Manage billing; nothing changes unless you confirm there.
+            <button
+              type="button"
+              disabled={billingBusy}
+              onClick={() =>
+                runBilling(async () => {
+                  trackEvent("yearly_switch_click", { source: "account" });
+                  const portal = await createCustomerPortal(`${window.location.origin}/dashboard/account/`);
+                  window.location.href = portal.url;
+                })
+              }
+              className="mt-2 block font-semibold underline underline-offset-2 disabled:opacity-50"
+            >
+              Switch to yearly
+            </button>
+          </div>
         )}
         {isPaid && (
           <div className="mt-3 flex flex-wrap gap-2">

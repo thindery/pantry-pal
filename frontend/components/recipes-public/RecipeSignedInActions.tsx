@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Check, Loader2 } from "lucide-react";
 import type { Recipe as PublicRecipe } from "@/content/recipes/types";
@@ -15,6 +15,8 @@ import {
   publicRecipeSourceUrl,
 } from "@/lib/public-recipe-coverage";
 import { SITE_URL } from "@/lib/site-content";
+import { trackEvent } from "@/lib/analytics";
+import { SAVE_AFTER_SIGNIN_PARAM, recipeSaveSignInHref } from "@/lib/recipe-save-signin";
 import { getItems } from "@/services/apiService";
 import { createRecipe, getRecipes } from "@/services/recipeService";
 import type { RecipeCoverage } from "@/types";
@@ -53,9 +55,7 @@ export function RecipeSignedInActions({ recipe }: { recipe: PublicRecipe }) {
     };
   }, [status, recipe]);
 
-  if (status !== "authenticated") return null;
-
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
     setSaveError(null);
     try {
@@ -79,7 +79,46 @@ export function RecipeSignedInActions({ recipe }: { recipe: PublicRecipe }) {
     } finally {
       setSaving(false);
     }
-  };
+  }, [recipe]);
+
+  // PP-245: a visitor who tapped "Save this recipe" while signed out comes back
+  // here after sign-in with ?save=1. Save once, then drop the param from the URL.
+  const autoSaveTried = useRef(false);
+  useEffect(() => {
+    if (status !== "authenticated" || !ready || autoSaveTried.current) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get(SAVE_AFTER_SIGNIN_PARAM) !== "1") return;
+    autoSaveTried.current = true;
+    url.searchParams.delete(SAVE_AFTER_SIGNIN_PARAM);
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    if (!savedId) {
+      trackEvent("recipe_save_after_signin", { recipe_slug: recipe.slug });
+      void handleSave();
+    }
+  }, [status, ready, savedId, handleSave, recipe.slug]);
+
+  if (status === "unauthenticated") {
+    return (
+      <div
+        data-testid="recipe-save-signed-out"
+        className="mt-6 flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between print:hidden"
+      >
+        <p className="text-sm text-slate-700">
+          Save this recipe to a free {"Pantry Hub"} account and see what you already have for it.
+        </p>
+        <a
+          href={recipeSaveSignInHref(recipe.slug)}
+          onClick={() => trackEvent("recipe_save_signup", { recipe_slug: recipe.slug })}
+          className="inline-flex shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--primary-hover)]"
+          data-testid="recipe-save-signin"
+        >
+          Save this recipe
+        </a>
+      </div>
+    );
+  }
+
+  if (status !== "authenticated") return null;
 
   return (
     <div
